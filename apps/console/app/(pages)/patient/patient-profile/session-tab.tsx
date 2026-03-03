@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import SessionsTable from '../_components/sessions-table'
-import usePatientSession from '@/hooks/queries/patient-session/use-patient-session'
+import { usePatientSession } from '@virtality/react-query'
 import SessionCard from '../_components/session-card'
 
 interface SessionTabProps {

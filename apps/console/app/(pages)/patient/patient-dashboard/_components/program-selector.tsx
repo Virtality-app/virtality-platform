@@ -17,8 +17,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Check, ChevronsUpDown, Loader2, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import usePatient from '@/hooks/queries/patient/use-patient'
-import usePatientPrograms from '@/hooks/queries/patient-program/use-patient-programs'
+import { usePatient, usePatientPrograms } from '@virtality/react-query'
 
 const ProgramSelector = ({ className }: { className?: string }) => {
   const { state, handler, store, patientLocalData, patientId } =

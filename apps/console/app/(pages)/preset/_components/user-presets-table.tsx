@@ -6,6 +6,16 @@ import {
   VisibilityState,
 } from '@tanstack/react-table'
 import { useState } from 'react'
+import Link from 'next/link'
+import { PlusSquare, Trash2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Preset } from '@virtality/db'
+import {
+  getQueryClient,
+  useORPC,
+  usePresetsByUser,
+  useDeletePreset,
+} from '@virtality/react-query'
 import { tableDefaults } from '@/components/tables/tanstack-table'
 import {
   DataTableBody,
@@ -13,15 +23,7 @@ import {
   DataTableHeader,
 } from '@/components/tables/data-table'
 import { Button } from '@/components/ui/button'
-import Link from 'next/link'
-import { PlusSquare, Trash2 } from 'lucide-react'
-import { Preset } from '@virtality/db'
-import usePresetsByUser from '@/hooks/queries/preset/use-preset-by-user'
 import DeleteConfirmDialog from '@/components/ui/delete-confirm-dialog'
-import useDeletePreset from '@/hooks/mutations/preset/use-delete-preset'
-import { orpc } from '@/integrations/orpc/client'
-import { getQueryClient } from '@/integrations/tanstack-query/provider'
-import { useRouter } from 'next/navigation'
 
 interface UserPresetsTableProps {
   columns: ColumnDef<Preset>[]
@@ -29,7 +31,8 @@ interface UserPresetsTableProps {
 }
 
 export default function UserPresetsTable({ columns }: UserPresetsTableProps) {
-  const { queryClient } = getQueryClient()
+  const queryClient = getQueryClient()
+  const orpc = useORPC()
   const router = useRouter()
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState('')

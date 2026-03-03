@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/popover'
 import ExerciseSettings from '@/components/ui/exercise-settings'
 import { motion } from 'motion/react'
-import useExercise from '@/hooks/queries/use-exercise'
+import { useExercise } from '@virtality/react-query'
 
 const ExerciseList = ({ className }: { className?: string }) => {
   const { state, handler, currExercise } = usePatientDashboard()

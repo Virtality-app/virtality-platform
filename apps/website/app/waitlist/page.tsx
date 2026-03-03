@@ -2,25 +2,10 @@
 import { Bell, Gift } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import WaitlistForm from '@/components/call-to-action/waitlist-form'
-import { redirect, useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
-
-const WaitlistPageWrapper = () => {
-  return (
-    <Suspense>
-      <WaitlistPage />
-    </Suspense>
-  )
-}
 
 const WaitlistPage = () => {
-  const params = useSearchParams()
-  const plan = params.get('plan') ?? undefined
-
-  redirect('https://linktr.ee/virtality')
-
   return (
-    <section className='min-h-screen items-center flex flex-col bg-gradient-to-br from-slate-50 to-teal-50'>
+    <section className='min-h-screen items-center flex flex-col bg-linear-to-br from-slate-50 to-teal-50'>
       <div className='m-auto'>
         <div className='flex flex-col justify-center items-center max-sm:p-6'>
           <h1 className='max-sm:text-2xl text-4xl md:text-5xl font-bold text-slate-800 mb-6'>
@@ -54,8 +39,8 @@ const WaitlistPage = () => {
             {/* Benefits Grid */}
             <div className='grid md:grid-cols-2 gap-6 mb-8'>
               <div className='text-center p-4'>
-                <div className='w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center mx-auto mb-3'>
-                  <Bell className='w-6 h-6 text-teal-600' />
+                <div className='size-12 bg-teal-100 rounded-lg flex items-center justify-center mx-auto mb-3'>
+                  <Bell className='size-6 text-teal-600' />
                 </div>
                 <h3 className='font-semibold text-slate-800 mb-2'>
                   Early Access
@@ -65,8 +50,8 @@ const WaitlistPage = () => {
                 </p>
               </div>
               <div className='text-center p-4'>
-                <div className='w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center mx-auto mb-3'>
-                  <Gift className='w-6 h-6 text-teal-600' />
+                <div className='size-12 bg-teal-100 rounded-lg flex items-center justify-center mx-auto mb-3'>
+                  <Gift className='size-6 text-teal-600' />
                 </div>
                 <h3 className='font-semibold text-slate-800 mb-2'>
                   Special Discounts
@@ -78,7 +63,7 @@ const WaitlistPage = () => {
             </div>
             {/* Email Signup Form */}
             <div className='max-w-md mx-auto'>
-              <WaitlistForm plan={plan} />
+              <WaitlistForm />
             </div>
           </CardContent>
         </Card>
@@ -87,4 +72,4 @@ const WaitlistPage = () => {
   )
 }
 
-export default WaitlistPageWrapper
+export default WaitlistPage

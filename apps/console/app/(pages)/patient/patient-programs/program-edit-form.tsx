@@ -22,11 +22,13 @@ import { Input } from '@/components/ui/input'
 import LoadingScreen from '@/components/ui/loading-screen'
 import { useExerciseLibrary } from '@/context/exercise-library-context'
 import { useEffect } from 'react'
-import useUpdatePatientProgram from '@/hooks/mutations/program/use-update-program'
-import { getQueryClient } from '@/integrations/tanstack-query/provider'
-import usePatientProgram from '@/hooks/queries/patient-program/use-patient-program'
-import useUpdateProgramExercises from '@/hooks/mutations/program-exercise/use-update-program-exercises'
-import { orpc } from '@/integrations/orpc/client'
+import {
+  getQueryClient,
+  useORPC,
+  useUpdateProgram,
+  usePatientProgram,
+  useUpdateProgramExercises,
+} from '@virtality/react-query'
 
 // Types
 interface ProgramEditFormProps {
@@ -35,7 +37,8 @@ interface ProgramEditFormProps {
 }
 
 const ProgramEditForm = ({ patientId, programId }: ProgramEditFormProps) => {
-  const { queryClient } = getQueryClient()
+  const queryClient = getQueryClient()
+  const orpc = useORPC()
   const router = useRouter()
   const { state, handler } = useExerciseLibrary()
 
@@ -47,8 +50,7 @@ const ProgramEditForm = ({ patientId, programId }: ProgramEditFormProps) => {
 
   const { t } = useClientT('common')
 
-  const { mutate: updateProgram, isPending: isUpdating } =
-    useUpdatePatientProgram({})
+  const { mutate: updateProgram, isPending: isUpdating } = useUpdateProgram({})
 
   const { mutate: updateProgramExercises } = useUpdateProgramExercises({
     onSuccess: () => {

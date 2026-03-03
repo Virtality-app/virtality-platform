@@ -1,5 +1,5 @@
 'use client'
-import useDevice, { useDeviceData } from '@/hooks/queries/use-device'
+import useDevice, { useDeviceData } from '@/hooks/use-device'
 
 import { createContext, useContext, ReactNode } from 'react'
 

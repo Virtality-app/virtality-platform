@@ -20,8 +20,7 @@ import placeholder from '@/public/placeholder.svg'
 import { MouseEvent } from 'react'
 import { usePatientDashboard } from '@/context/patient-dashboard-context'
 import { Button } from '@/components/ui/button'
-import usePatient from '@/hooks/queries/patient/use-patient'
-import useAvatar from '@/hooks/queries/use-avatar'
+import { usePatient, useAvatar } from '@virtality/react-query'
 
 const AvatarSelector = () => {
   const { state, handler, store, patientLocalData, patientId } =

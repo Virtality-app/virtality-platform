@@ -16,13 +16,15 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { PlusSquare, Trash2 } from 'lucide-react'
 import { useState } from 'react'
-import usePatients from '@/hooks/queries/patient/use-patients'
 import { columns } from './patients-columns'
-import useDeletePatient from '@/hooks/mutations/patient/use-delete-patient'
 import DeleteConfirmDialog from '@/components/ui/delete-confirm-dialog'
-import { getQueryClient } from '@/integrations/tanstack-query/provider'
 import useIsAuthed from '@/hooks/use-is-authed'
-import { orpc } from '@/integrations/orpc/client'
+import {
+  usePatients,
+  useDeletePatient,
+  useORPC,
+  getQueryClient,
+} from '@virtality/react-query'
 
 const rowNavigationExceptions = [
   'div[data-slot="dialog-content"]',
@@ -35,7 +37,8 @@ const rowNavigationExceptions = [
 
 const PatientsTable = () => {
   useIsAuthed()
-  const { queryClient } = getQueryClient()
+  const queryClient = getQueryClient()
+  const orpc = useORPC()
   const router = useRouter()
 
   const [sorting, setSorting] = useState<SortingState>([])

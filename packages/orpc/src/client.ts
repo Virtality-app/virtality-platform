@@ -5,6 +5,13 @@ import { router } from './router.ts'
 
 export type ORPCClient = RouterClient<typeof router>
 
+export type ORPCClientLink = RPCLinkOptions<typeof router>
+
+/** 
+  Create an oRPC client from a link.
+  @param link - The link to create the client from.
+  @returns The created client.
+**/
 export function createORPCClient(link: RPCLinkOptions<any>): ORPCClient {
   return _createORPCClient(new RPCLink(link))
 }

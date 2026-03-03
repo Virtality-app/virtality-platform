@@ -10,29 +10,30 @@ import {
 import { usePatientDashboard } from '@/context/patient-dashboard-context'
 import { FormCheckbox, FormInput } from '@/components/ui/form-v2'
 import {
-  useCreateSupplementalTherapyRelMutation,
-  useSupplementalTherapyQuery,
-} from '@/hooks/queries/use-supplemental-therapy'
-import {
   PatientSessionSchema,
   PatientSessionForm,
 } from '@virtality/shared/types'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-import useCompleteSession from '@/hooks/mutations/patient-session/use-complete-session'
 import { z } from 'zod'
-import useUpdatePatientSession from '@/hooks/mutations/patient-session/use-update-patient-session'
-import usePatientSession from '@/hooks/queries/patient-session/use-patient-session'
 import { Textarea } from '@/components/ui/textarea'
-import useDeletePatientSession from '@/hooks/mutations/patient-session/use-delete-patient-session'
-import { orpc } from '@/integrations/orpc/client'
-import { getQueryClient } from '@/integrations/tanstack-query/provider'
+import {
+  getQueryClient,
+  useCreateSupplementalTherapyRelMutation,
+  useSupplementalTherapyQuery,
+  usePatientSession,
+  useDeletePatientSession,
+  useUpdatePatientSession,
+  useORPC,
+  useCompleteSession,
+} from '@virtality/react-query'
 
 const SessionDialog = () => {
+  const queryClient = getQueryClient()
+  const orpc = useORPC()
   const { state, handler, patientSessionId, patientId } = usePatientDashboard()
   const { isDialogOpen } = state
   const { setDialogOpen } = handler
-  const { queryClient } = getQueryClient()
   const { data: supplementalTherapies } = useSupplementalTherapyQuery()
   const { data: patientSessionData } = usePatientSession({
     sessionId: patientSessionId.current,

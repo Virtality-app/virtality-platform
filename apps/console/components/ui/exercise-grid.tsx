@@ -7,7 +7,7 @@ import { Button } from './button'
 import { ChangeEvent, MouseEvent, useMemo, useState } from 'react'
 import sortedUniq from 'lodash.sorteduniq'
 import { useExerciseLibrary } from '@/context/exercise-library-context'
-import useExercise from '@/hooks/queries/use-exercise'
+import { useExercise } from '@virtality/react-query'
 
 const ExerciseGrid = () => {
   const [searchTerm, setSearchTerm] = useState('')

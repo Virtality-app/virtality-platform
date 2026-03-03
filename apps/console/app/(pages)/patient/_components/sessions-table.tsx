@@ -12,7 +12,7 @@ import {
   DataTableHeader,
 } from '@/components/tables/data-table'
 import { useState } from 'react'
-import usePatientSessions from '@/hooks/queries/patient-session/use-patient-sessions'
+import { usePatientSessions } from '@virtality/react-query'
 import { sessionsColumns } from './sessions-columns'
 
 interface SessionsTableProps {

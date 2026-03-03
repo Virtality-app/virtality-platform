@@ -3,12 +3,12 @@ import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 import { serve } from '@hono/node-server'
 import { auth } from '@virtality/auth'
-import { ORPC_PREFIX } from '@virtality/orpc'
 import type { AuthContext } from '@virtality/auth'
 
 import { authMiddleware } from './middleware/auth.ts'
 import { orpcMiddleware } from './middleware/orpc.ts'
 import { findDeviceByDeviceId } from './data/device.ts'
+import { ORPC_PREFIX } from '@virtality/shared/types'
 
 const app = new Hono<AppContext>()
 
@@ -17,6 +17,7 @@ app.use(logger())
 app.use(
   cors({
     origin: [
+      'http://localhost:3000',
       'http://localhost:3001',
       'http://localhost:3002',
       'https://admin.virtality.app',

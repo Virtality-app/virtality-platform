@@ -24,7 +24,7 @@ const initialFormState = {
   },
 }
 
-const WaitlistForm = ({ plan }: { plan?: string }) => {
+const WaitlistForm = () => {
   const [formState, formAction, pending] = useActionState(
     submitWaitlistAction,
     initialFormState,
@@ -38,9 +38,8 @@ const WaitlistForm = ({ plan }: { plan?: string }) => {
   })
 
   const onSubmit = (values: WaitlistFormType) => {
-    const valuesWithPlan = plan ? { ...values, plan } : values
     const formData = new FormData()
-    Object.entries(valuesWithPlan).forEach(([key, value]) => {
+    Object.entries(values).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         formData.append(key, value.toString())
       }
@@ -86,7 +85,7 @@ const WaitlistForm = ({ plan }: { plan?: string }) => {
                       className='h-14 px-6 text-base font-semibold bg-vital-blue-700 hover:bg-vital-blue-800 shadow-lg shadow-vital-blue-700/25 hover:shadow-xl hover:shadow-vital-blue-700/30 transition-all rounded-xl group'
                     >
                       {pending ? 'Submitting...' : 'Join Waitlist'}
-                      <ArrowRight className='w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform' />
+                      <ArrowRight className='size-4 ml-2 group-hover:translate-x-1 transition-transform' />
                     </Button>
                   </div>
                 </FormControl>

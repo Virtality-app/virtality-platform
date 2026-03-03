@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Chart from '@/components/ui/progress-chart'
 import { usePatientDashboard } from '@/context/patient-dashboard-context'
-import useExercise from '@/hooks/queries/use-exercise'
+import { useExercise } from '@virtality/react-query'
 import { getDisplayName } from '@/lib/utils'
 
 const ChartCard = ({ className }: { className?: string }) => {

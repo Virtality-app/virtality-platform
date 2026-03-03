@@ -12,10 +12,12 @@ import { ColumnDef } from '@tanstack/react-table'
 import { Copy, Ellipsis, Pencil, Trash2 } from 'lucide-react'
 import ColumnHeader from '@/components/tables/header-cell'
 import DateCell from '@/components/tables/date-cell'
-import useDeletePreset from '@/hooks/mutations/preset/use-delete-preset'
-import { getQueryClient } from '@/integrations/tanstack-query/provider'
-import { orpc } from '@/integrations/orpc/client'
 import { Preset } from '@virtality/db'
+import {
+  getQueryClient,
+  useORPC,
+  useDeletePreset,
+} from '@virtality/react-query'
 
 export const presetColumns: ColumnDef<Preset>[] = [
   {
@@ -83,7 +85,8 @@ export const presetColumns: ColumnDef<Preset>[] = [
     enableHiding: false,
     cell: function ActionCell({ row }) {
       'use no memo'
-      const { queryClient } = getQueryClient()
+      const queryClient = getQueryClient()
+      const orpc = useORPC()
       const preset = row.original
       const { mutate: deletePreset } = useDeletePreset({
         onSuccess: () =>

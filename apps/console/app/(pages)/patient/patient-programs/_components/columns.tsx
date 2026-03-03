@@ -13,9 +13,11 @@ import { Copy, Ellipsis, Pencil, Trash2 } from 'lucide-react'
 import ColumnHeader from '@/components/tables/header-cell'
 import DateCell from '@/components/tables/date-cell'
 import { CompletePatientProgram } from '@/types/models'
-import useDeletePatientProgram from '@/hooks/mutations/program/use-delete-program'
-import { getQueryClient } from '@/integrations/tanstack-query/provider'
-import { orpc } from '@/integrations/orpc/client'
+import {
+  getQueryClient,
+  useORPC,
+  useDeleteProgram,
+} from '@virtality/react-query'
 
 export const columns: ColumnDef<CompletePatientProgram>[] = [
   {
@@ -81,9 +83,10 @@ export const columns: ColumnDef<CompletePatientProgram>[] = [
     id: 'actions',
     enableHiding: false,
     cell: function ActionCell({ row }) {
-      const { queryClient } = getQueryClient()
+      const queryClient = getQueryClient()
+      const orpc = useORPC()
       const program = row.original
-      const { mutate: deleteProgram } = useDeletePatientProgram({
+      const { mutate: deleteProgram } = useDeleteProgram({
         onSuccess: () =>
           queryClient.invalidateQueries({
             queryKey: orpc.program.list.key(),

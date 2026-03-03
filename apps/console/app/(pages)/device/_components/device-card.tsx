@@ -23,17 +23,17 @@ import MetaQuest3s from '@/public/meta_quest_3s.webp'
 import DeviceCardSkeleton from './device-card-skeleton'
 import { H3, P } from '@/components/ui/typography'
 import { cn } from '@/lib/utils'
-import useDevice from '@/hooks/queries/use-device'
-import { getQueryClient } from '@/integrations/tanstack-query/provider'
-import useSetDeviceId from '@/hooks/mutations/device/use-set-device-id'
-import { orpc } from '@/integrations/orpc/client'
+import useDevice from '@/hooks/use-device'
+import { getQueryClient, useORPC, useSetDeviceId } from '@virtality/react-query'
 
 interface DeviceProps {
   device: VRDevice
 }
 
 const DeviceCard = ({ device }: DeviceProps) => {
-  const { queryClient } = getQueryClient()
+  const queryClient = getQueryClient()
+  const orpc = useORPC()
+
   const connected = useSocketConnection({ device })
   const { removeDevice } = useDevice()
 

@@ -14,6 +14,7 @@ import { presetExercise } from './procedures/preset-exercise.ts'
 import { patientSessionData } from './procedures/patient-session-data.ts'
 import { patientSessionExercise } from './procedures/patient-session-exercise.ts'
 import { user } from './procedures/user.ts'
+import { waitlist } from './procedures/waitlist.ts'
 
 export const router = {
   me,
@@ -32,4 +33,5 @@ export const router = {
   presetExercise,
   patientSessionData,
   patientSessionExercise,
+  waitlist,
 }

@@ -15,8 +15,8 @@ import {
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { PlusSquare } from 'lucide-react'
-import usePresets from '@/hooks/queries/preset/use-presets'
 import { Preset } from '@virtality/db'
+import { usePresets } from '@virtality/react-query'
 
 interface PresetTableProps {
   columns: ColumnDef<Preset>[]

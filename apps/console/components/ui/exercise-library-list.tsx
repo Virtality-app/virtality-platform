@@ -16,7 +16,7 @@ import ExerciseLibraryDialog from '@/components/ui/exercise-library-dialog'
 import { P } from './typography'
 import { useExerciseLibrary } from '@/context/exercise-library-context'
 import { motion } from 'motion/react'
-import useExercise from '@/hooks/queries/use-exercise'
+import { useExercise } from '@virtality/react-query'
 
 interface ExerciseLibraryListProps {
   className?: string

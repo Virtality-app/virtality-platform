@@ -12,15 +12,17 @@ import {
   DataTableFooter,
   DataTableHeader,
 } from '@/components/tables/data-table'
-import usePatientPrograms from '@/hooks/queries/patient-program/use-patient-programs'
 import { CompletePatientProgram } from '@/types/models'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { PlusSquare, Trash2 } from 'lucide-react'
-import { getQueryClient } from '@/integrations/tanstack-query/provider'
-import { orpc } from '@/integrations/orpc/client'
-import useDeletePatientProgram from '@/hooks/mutations/program/use-delete-program'
+import {
+  getQueryClient,
+  useORPC,
+  usePatientPrograms,
+  useDeleteProgram,
+} from '@virtality/react-query'
 
 interface ProgramsTableProps {
   columns: ColumnDef<CompletePatientProgram>[]
@@ -29,7 +31,8 @@ interface ProgramsTableProps {
 }
 
 export function ProgramsTable({ columns, patientId }: ProgramsTableProps) {
-  const { queryClient } = getQueryClient()
+  const queryClient = getQueryClient()
+  const orpc = useORPC()
   const router = useRouter()
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState('')
@@ -59,7 +62,7 @@ export function ProgramsTable({ columns, patientId }: ProgramsTableProps) {
     Object.keys(rowSelection)?.includes(String(index)),
   )
 
-  const { mutate: deleteSelected } = useDeletePatientProgram({
+  const { mutate: deleteSelected } = useDeleteProgram({
     onSuccess: () =>
       queryClient.invalidateQueries({
         queryKey: orpc.program.list.key(),

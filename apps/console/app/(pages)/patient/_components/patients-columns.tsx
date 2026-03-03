@@ -13,12 +13,14 @@ import { Copy, Ellipsis, Pencil, Trash2 } from 'lucide-react'
 import ColumnHeader from '@/components/tables/header-cell'
 import DateCell from '@/components/tables/date-cell'
 import { Patient } from '@virtality/db'
-import useDeletePatient from '@/hooks/mutations/patient/use-delete-patient'
 import DeleteConfirmDialog from '@/components/ui/delete-confirm-dialog'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { getQueryClient } from '@/integrations/tanstack-query/provider'
-import { orpc } from '@/integrations/orpc/client'
+import {
+  useDeletePatient,
+  useORPC,
+  getQueryClient,
+} from '@virtality/react-query'
 
 export const columns: ColumnDef<Patient>[] = [
   {
@@ -96,18 +98,18 @@ export const columns: ColumnDef<Patient>[] = [
     id: 'actions',
     enableHiding: false,
     cell: function ActionCell({ row }) {
-      const { queryClient } = getQueryClient()
+      const queryClient = getQueryClient()
+      const orpc = useORPC()
       const router = useRouter()
       const patient = row.original
 
       const [open, setOpen] = useState(false)
 
       const { mutate: deletePatient } = useDeletePatient({
-        onSuccess: () => {
-          return queryClient.invalidateQueries({
+        onSuccess: () =>
+          queryClient.invalidateQueries({
             queryKey: orpc.patient.list.key(),
-          })
-        },
+          }),
       })
 
       const copyId = () => {

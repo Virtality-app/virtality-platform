@@ -18,20 +18,22 @@ import ComboSelect from '@/app/(pages)/patient/patient-programs/_components/comb
 import { pathologies } from '@/data/static/program-form/data'
 import { P } from '@/components/ui/typography'
 import { PresetExercise } from '@virtality/db'
-import { getQueryClient } from '@/integrations/tanstack-query/provider'
 import ExerciseLibraryList from '@/components/ui/exercise-library-list'
 import LoadingScreen from '@/components/ui/loading-screen'
 import { useExerciseLibrary } from '@/context/exercise-library-context'
 import { useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useClientT } from '@/i18n/use-client-t'
-import usePreset from '@/hooks/queries/preset/use-preset'
-import useUpdatePreset from '@/hooks/mutations/preset/use-update-preset'
-import useUpdatePresetExercises from '@/hooks/mutations/preset-exercise/use-update-preset-exercises'
-import { orpc } from '@/integrations/orpc/client'
-
+import {
+  getQueryClient,
+  usePreset,
+  useUpdatePreset,
+  useUpdatePresetExercises,
+  useORPC,
+} from '@virtality/react-query'
 const PresetEditForm = ({ id }: { id: string }) => {
-  const { queryClient } = getQueryClient()
+  const queryClient = getQueryClient()
+  const orpc = useORPC()
   const router = useRouter()
   const { t } = useClientT('common')
   const { state, handler } = useExerciseLibrary()

@@ -12,7 +12,6 @@ import { Button } from '@/components/ui/button'
 import { useState } from 'react'
 import { ArrowLeft, ArrowRight, Save, Zap } from 'lucide-react'
 import { useExerciseLibrary } from '@/context/exercise-library-context'
-import useExercise from '@/hooks/queries/use-exercise'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -20,13 +19,16 @@ import { ExerciseWithSettings, PatientProgramForm } from '@/types/models'
 import { PatientProgramFormSchema } from '@/lib/definitions'
 import { FormInput } from '@/components/ui/form-v2'
 import { Exercise } from '@virtality/db'
-import { getQueryClient } from '@/integrations/tanstack-query/provider'
 import ErrorToasty from '@/components/ui/ErrorToasty'
 import { generateUUID } from '@virtality/shared/utils'
-import useCreateProgramExercises from '@/hooks/mutations/program-exercise/use-create-program-exercises'
-import useCreateProgram from '@/hooks/mutations/program/use-create-program'
-import { orpc } from '@/integrations/orpc/client'
 import posthog from 'posthog-js'
+import {
+  getQueryClient,
+  useCreateProgram,
+  useCreateProgramExercises,
+  useExercise,
+  useORPC,
+} from '@virtality/react-query'
 
 const applyExercises = (
   exerciseInfo: Exercise[],
@@ -42,7 +44,8 @@ const applyExercises = (
 }
 
 const QuickStartDialog = () => {
-  const { queryClient } = getQueryClient()
+  const queryClient = getQueryClient()
+  const orpc = useORPC()
   const [dialogState, setDialogState] = useState(0)
   const { data: exerciseInfo } = useExercise()
   const {

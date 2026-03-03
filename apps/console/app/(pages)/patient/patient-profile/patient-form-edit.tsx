@@ -17,20 +17,22 @@ import useNavigationGuard from '@/hooks/use-navigation-guard'
 import { toast } from 'react-toastify'
 import { useClientT } from '@/i18n/use-client-t'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { getQueryClient } from '@/integrations/tanstack-query/provider'
 import BasicInfo from '../_components/basic-info'
 import MedicalHistory from '../_components/medical-history-tab'
 import useBeforeUnload from '@/hooks/use-before-unload'
 import { MedicalHistory as MedicalHistoryType, Patient } from '@virtality/db'
 import { useRouter } from 'next/navigation'
 import useMounted from '@/hooks/use-mounted'
-import usePatient from '@/hooks/queries/patient/use-patient'
-import useMedicalHistory from '@/hooks/queries/use-medical-history'
-import useDeletePatient from '@/hooks/mutations/patient/use-delete-patient'
-import useUpdatePatient from '@/hooks/mutations/patient/use-update-patient'
 import DeleteConfirmDialog from '@/components/ui/delete-confirm-dialog'
 import SessionTab from './session-tab'
-import { orpc } from '@/integrations/orpc/client'
+import {
+  getQueryClient,
+  usePatient,
+  useMedicalHistory,
+  useDeletePatient,
+  useUpdatePatient,
+  useORPC,
+} from '@virtality/react-query'
 
 const defaultValues: PatientFormType = {
   name: '',
@@ -55,7 +57,8 @@ interface PatientFormEditProps {
 }
 
 const PatientFormEdit = ({ patientId }: PatientFormEditProps) => {
-  const { queryClient } = getQueryClient()
+  const queryClient = getQueryClient()
+  const orpc = useORPC()
   const { t } = useClientT(['common'])
   const mounted = useMounted()
   const router = useRouter()

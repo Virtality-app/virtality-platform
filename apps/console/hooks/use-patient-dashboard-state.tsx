@@ -1,9 +1,7 @@
 import { Avatar, Map, PatientProgram } from '@virtality/db'
 import { useReducer, useEffect } from 'react'
 import { CompleteExercise, PatientLocalData, VRDevice } from '@/types/models'
-import useAvatar from './queries/use-avatar'
-import useMap from './queries/use-map'
-import usePatientPrograms from './queries/patient-program/use-patient-programs'
+import { useAvatar, useMap, usePatientPrograms } from '@virtality/react-query'
 
 type State = {
   isSettingsOpen: { id: string; open: boolean } | null

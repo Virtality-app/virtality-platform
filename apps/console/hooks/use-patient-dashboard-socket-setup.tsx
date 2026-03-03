@@ -16,12 +16,14 @@ import { ProgressDataSchema } from '@/lib/definitions'
 import { getDisplayName, getUUID } from '@/lib/utils'
 import usePlotData from './use-plot-data'
 import { PatientSession } from '@virtality/db'
-import { getQueryClient } from '@/integrations/tanstack-query/provider'
-import useCreatePatientSessionData from './mutations/patient-session-data/use-create-patient-session-data'
-import useCreatePatientSessionExercises from './mutations/patient-session-exercise/use-create-patient-session-exercises'
-import { orpc } from '@/integrations/orpc/client'
-import useCreatePatientSession from './mutations/patient-session/use-create-patient-session'
 import { generateUUID } from '@virtality/shared/utils'
+import {
+  getQueryClient,
+  useCreatePatientSessionData,
+  useCreatePatientSessionExercises,
+  useCreatePatientSession,
+  useORPC,
+} from '@virtality/react-query'
 
 type ProgressDataPerExercise = {
   [key: string]: ProgressDataPoint[]
@@ -45,7 +47,8 @@ const usePatientDashboardSocketSetup = ({
   currExercise,
   plot,
 }: usePatientDashboardSocketSetupProps) => {
-  const { queryClient } = getQueryClient()
+  const queryClient = getQueryClient()
+  const orpc = useORPC()
 
   const {
     selectedProgram,

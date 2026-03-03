@@ -5,7 +5,7 @@ import Link, { LinkProps } from 'next/link'
 import { usePathname } from 'next/navigation'
 import { HTMLAttributes, ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
-import usePatient from '@/hooks/queries/patient/use-patient'
+import { usePatient } from '@virtality/react-query'
 
 type TabBarProps = {
   patientId?: string

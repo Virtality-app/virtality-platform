@@ -2,9 +2,11 @@ import { useEffect, useReducer, useRef } from 'react'
 import { progressiveRetry } from '@/lib/utils'
 import { VRDevice } from '@/types/models'
 import { useRow, useStore } from 'tinybase/ui-react'
-import useResetDeviceId from './mutations/device/use-reset-device-id'
-import { orpc } from '@/integrations/orpc/client'
-import { getQueryClient } from '@/integrations/tanstack-query/provider'
+import {
+  useORPC,
+  useResetDeviceId,
+  getQueryClient,
+} from '@virtality/react-query'
 
 type State = {
   status: 'paired' | 'pairing' | 'unpaired'
@@ -61,7 +63,8 @@ interface useDeviceCardStateProps {
 }
 
 const useDeviceCardState = ({ device, connected }: useDeviceCardStateProps) => {
-  const { queryClient } = getQueryClient()
+  const queryClient = getQueryClient()
+  const orpc = useORPC()
   const store = useStore()
   const [state, dispatch] = useReducer(stateReducer, initialState)
   const socket = device.socket

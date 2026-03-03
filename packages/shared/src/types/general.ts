@@ -1,6 +1,7 @@
 const API_VERSION = 'v1'
 
 export const API_PREFIX = `/api/${API_VERSION}`
+export const ORPC_PREFIX = `${API_PREFIX}/rpc`
 
 export const CONSOLE_URL = 'https://console.virtality.app'
 export const ADMINBOARD_URL = 'https://adminboard.virtality.app'

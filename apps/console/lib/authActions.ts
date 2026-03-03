@@ -1,9 +1,9 @@
 'use server'
 
 import { Session, User } from '@/auth-client'
-import { ORPC_PREFIX } from '@virtality/orpc'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { ORPC_PREFIX } from '@virtality/shared/types'
 
 const me = process.env.SERVER_URL + ORPC_PREFIX + '/me'
 

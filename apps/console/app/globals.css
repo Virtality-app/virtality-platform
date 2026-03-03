@@ -19,9 +19,6 @@
   --color-vital-blue-800: #06626e;
   --color-vital-blue-900: #033b42;
   --color-vital-blue-950: #011416;
-
-  --grid-template-rows-patient-profile: auto 1fr;
-  --grid-template-columns-patient-profile: auto 1fr;
 }
 
 @theme inline {

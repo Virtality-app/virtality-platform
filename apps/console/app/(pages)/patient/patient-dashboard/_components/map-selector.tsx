@@ -20,8 +20,7 @@ import { Map } from '@virtality/db'
 import { MouseEvent } from 'react'
 import { usePatientDashboard } from '@/context/patient-dashboard-context'
 import { Button } from '@/components/ui/button'
-import usePatient from '@/hooks/queries/patient/use-patient'
-import useMap from '@/hooks/queries/use-map'
+import { usePatient, useMap } from '@virtality/react-query'
 
 const MapSelector = () => {
   const { state, handler, store, patientLocalData, patientId } =

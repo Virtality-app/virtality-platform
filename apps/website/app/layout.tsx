@@ -5,7 +5,12 @@ import { ThemeProvider } from '@/context/ThemeProvider'
 import Navbar from '@/components/layout/navbar'
 import { Toaster } from 'sonner'
 import Footer from '@/components/layout/footer'
-import { WEBSITE_URL, WEBSITE_URL_LOCAL } from '@virtality/shared/types'
+import {
+  ORPC_PREFIX,
+  WEBSITE_URL,
+  WEBSITE_URL_LOCAL,
+} from '@virtality/shared/types'
+import { ORPCProvider, QueryProvider } from '@virtality/react-query'
 
 const dmSans = DM_Sans({
   variable: '--font-dm-sans',
@@ -39,6 +44,8 @@ export const metadata: Metadata = {
   },
 }
 
+const baseURL = process.env.NEXT_PUBLIC_SERVER_URL ?? 'http://localhost:8080'
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -59,10 +66,14 @@ export default function RootLayout({
           defaultTheme='light'
           disableTransitionOnChange
         >
-          <Navbar />
-          <main className='min-h-screen-with-nav'>{children}</main>
-          <Footer />
-          <Toaster />
+          <QueryProvider>
+            <ORPCProvider url={baseURL + ORPC_PREFIX} credentials='include'>
+              <Navbar />
+              <main className='min-h-screen-with-nav'>{children}</main>
+              <Footer />
+              <Toaster />
+            </ORPCProvider>
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>

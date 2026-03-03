@@ -5,7 +5,6 @@ import { PatientProgramForm } from '@/types/models'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PatientProgramFormSchema } from '@/lib/definitions'
-import { getQueryClient } from '@/integrations/tanstack-query/provider'
 import { useClientT } from '@/i18n/use-client-t'
 import { useRouter } from 'next/navigation'
 import { H2, P } from '@/components/ui/typography'
@@ -36,14 +35,16 @@ import {
 import { Input } from '@/components/ui/input'
 import { useExerciseLibrary } from '@/context/exercise-library-context'
 import LoadingScreen from '@/components/ui/loading-screen'
-
-import useExercise from '@/hooks/queries/use-exercise'
-import usePresetsByUser from '@/hooks/queries/preset/use-preset-by-user'
-import usePresets from '@/hooks/queries/preset/use-presets'
-import { orpc } from '@/integrations/orpc/client'
-import useCreateProgramExercises from '@/hooks/mutations/program-exercise/use-create-program-exercises'
-import useCreateProgram from '@/hooks/mutations/program/use-create-program'
 import { generateUUID } from '@virtality/shared/utils'
+import {
+  getQueryClient,
+  useORPC,
+  useExercise,
+  usePresetsByUser,
+  usePresets,
+  useCreateProgram,
+  useCreateProgramExercises,
+} from '@virtality/react-query'
 
 // Types
 interface ProgramFormProps {
@@ -51,7 +52,8 @@ interface ProgramFormProps {
 }
 
 const ProgramForm = ({ patientId }: ProgramFormProps) => {
-  const { queryClient } = getQueryClient()
+  const queryClient = getQueryClient()
+  const orpc = useORPC()
   const router = useRouter()
   const { state, handler } = useExerciseLibrary()
 
@@ -61,8 +63,8 @@ const ProgramForm = ({ patientId }: ProgramFormProps) => {
   const [currentStep, setCurrentStep] = useState(0)
 
   const { data: exercises } = useExercise()
-  const { data: presets } = usePresetsByUser({})
-  const { data: userPresets } = usePresets()
+  const { data: presets } = usePresets()
+  const { data: userPresets } = usePresetsByUser({})
 
   const { t } = useClientT('common')
 

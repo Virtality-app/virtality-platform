@@ -15,15 +15,13 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'react-toastify'
 import { useClientT } from '@/i18n/use-client-t'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { getQueryClient } from '@/integrations/tanstack-query/provider'
 import BasicInfo from '../_components/basic-info'
 import MedicalHistory from '../_components/medical-history-tab'
 import useBeforeUnload from '@/hooks/use-before-unload'
 import { MedicalHistory as MedicalHistoryType, Patient } from '@virtality/db'
 import useMounted from '@/hooks/use-mounted'
-import useNewPatient from '@/hooks/mutations/patient/use-new-patient'
 import useIsAuthed from '@/hooks/use-is-authed'
-import { orpc } from '@/integrations/orpc/client'
+import { getQueryClient, useNewPatient, useORPC } from '@virtality/react-query'
 
 const defaultValues: PatientFormType = {
   name: '',
@@ -46,7 +44,8 @@ const defaultValues: PatientFormType = {
 
 const PatientForm = () => {
   useIsAuthed()
-  const { queryClient } = getQueryClient()
+  const queryClient = getQueryClient()
+  const orpc = useORPC()
   const mounted = useMounted()
   const router = useRouter()
 

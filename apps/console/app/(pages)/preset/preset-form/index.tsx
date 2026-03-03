@@ -17,22 +17,25 @@ import capitalize from 'lodash.capitalize'
 import ComboSelect from '@/app/(pages)/patient/patient-programs/_components/combo-select'
 import { pathologies } from '@/data/static/program-form/data'
 import { P } from '@/components/ui/typography'
-import { getQueryClient } from '@/integrations/tanstack-query/provider'
 import ExerciseLibraryList from '@/components/ui/exercise-library-list'
 import LoadingScreen from '@/components/ui/loading-screen'
 import { toast } from 'react-toastify'
 import { useRouter } from 'next/navigation'
 import { useExerciseLibrary } from '@/context/exercise-library-context'
 import { useClientT } from '@/i18n/use-client-t'
-import useCreatePreset from '@/hooks/mutations/preset/use-create-preset'
-import { orpc } from '@/integrations/orpc/client'
-import useCreatePresetExercises from '@/hooks/mutations/preset-exercise/use-create-preset-exercises'
 import { generateUUID } from '@virtality/shared/utils'
 import useIsAuthed from '@/hooks/use-is-authed'
+import {
+  getQueryClient,
+  useORPC,
+  useCreatePreset,
+  useCreatePresetExercises,
+} from '@virtality/react-query'
 
 const PresetForm = () => {
+  const queryClient = getQueryClient()
+  const orpc = useORPC()
   const { data } = useIsAuthed()
-  const { queryClient } = getQueryClient()
   const router = useRouter()
   const { t } = useClientT('common')
   const { state } = useExerciseLibrary()

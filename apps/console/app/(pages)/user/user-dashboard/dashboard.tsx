@@ -1,95 +1,59 @@
 'use client'
-import { Button } from '@/components/ui/button'
-import JoyrideWrapper from '@/components/ui/joyride-wrapper'
-import { CallBackProps } from '@virtality/react-joyride'
-import { useTour } from '@/context/tour-context'
-import { useRouter } from 'next/navigation'
-import { authClient, User } from '@/auth-client'
-import { steps } from '@/data/static/tour/steps'
-import { CheckSquare, GripVertical, Square } from 'lucide-react'
+
+import { H1, P } from '@/components/ui/typography'
+import { ArrowLeft, ArrowUpRight, GripVertical, Sidebar, X } from 'lucide-react'
+import { Item, ItemContent, ItemMedia } from '@/components/ui/item'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
-import { ChangeEvent, useState } from 'react'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { useRow, useStore } from 'tinybase/ui-react'
+import { UserLocalData } from '@/types/models'
+import { ChangeEvent, useEffect, useState } from 'react'
+import { authClient } from '@/auth-client'
 import {
   Popover,
-  PopoverContent,
   PopoverTrigger,
+  PopoverContent,
 } from '@/components/ui/popover'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import useIsAuthed from '@/hooks/use-is-authed'
 
-const Dashboard = ({ user }: { user: User }) => {
-  const { state, setState } = useTour()
+const Dashboard = () => {
+  const { data } = useIsAuthed()
+
+  const store = useStore()
+  const userLocalData = useRow('users', data?.user.id ?? '') as UserLocalData
+  const [showSuggestionSidebar, setShowSuggestionsSidebar] =
+    useState<boolean>(false)
+  const [showSuggestionDropdown, setShowSuggestionDropdown] =
+    useState<boolean>(false)
+
+  useEffect(() => {
+    if (!data) return
+
+    if (userLocalData.dashboardSuggestionSidebar === undefined)
+      store?.setCell('users', data.user.id, 'dashboardSuggestionSidebar', true)
+    if (userLocalData.dashboardSuggestionDropdown === undefined)
+      store?.setCell('users', data.user.id, 'dashboardSuggestionDropdown', true)
+    setShowSuggestionsSidebar(userLocalData.dashboardSuggestionSidebar)
+    setShowSuggestionDropdown(userLocalData.dashboardSuggestionDropdown)
+  }, [store, userLocalData, data])
+
+  const handleSidebarTipClose = () => {
+    if (!data) return
+    setShowSuggestionsSidebar(false)
+    store?.setCell('users', data.user.id, 'dashboardSuggestionSidebar', false)
+  }
+
+  const handleDropdownTipClose = () => {
+    if (!data) return
+    setShowSuggestionDropdown(false)
+    store?.setCell('users', data.user.id, 'dashboardSuggestionDropdown', false)
+  }
+
   const [open, setOpen] = useState(false)
   const [host, setHost] = useState('')
-
-  const router = useRouter()
-
-  const handleDeviceTour = () => {
-    setState({ ...state, isDropdownOpen: true })
-    setTimeout(
-      () =>
-        setState((prev) => ({
-          ...prev,
-          activeTour: true,
-          run: true,
-        })),
-      500,
-    )
-  }
-
-  const handlePatientTour = () => {
-    setState({ ...state, stepIndex: 3, run: true, activeTour: true })
-  }
-
-  const tourCallback = (data: CallBackProps) => {
-    const { action, index, lifecycle } = data
-
-    const userDevicesURL = `/user/${user.id}/devices`
-    const patientsURL = `/patients`
-
-    switch (action) {
-      case 'next':
-        if (index === 0 && !state.mission.device) {
-          setState({ ...state, isDropdownOpen: true, stepIndex: 1 })
-          break
-        } else if (index === 1 && lifecycle === 'complete') {
-          setState({
-            ...state,
-            stepIndex: 2,
-            isDropdownOpen: false,
-            run: false,
-          })
-          router.push(userDevicesURL)
-          break
-        } else if (index === 3 && lifecycle === 'complete') {
-          setState({
-            ...state,
-            stepIndex: 4,
-            run: false,
-          })
-          router.push(patientsURL)
-        }
-        break
-      case 'prev':
-        if (index === 1) {
-          setState({ ...state, isDropdownOpen: true, stepIndex: 0 })
-        }
-        break
-
-      case 'skip':
-        setState({
-          ...state,
-          run: false,
-          activeTour: false,
-          isDropdownOpen: false,
-          stepIndex: 0,
-        })
-        break
-
-      default:
-        break
-    }
-  }
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const target = e.currentTarget
@@ -133,11 +97,13 @@ const Dashboard = ({ user }: { user: User }) => {
     }
   }
 
+  const user = data?.user
+
   return (
-    <div className='max-h-screen-with-header relative flex flex-col items-center gap-6 overflow-hidden pt-20'>
+    <section className='h-screen-with-header relative flex flex-col justify-center p-10'>
       <Popover open={open}>
         <PopoverTrigger asChild>
-          {user.role === 'admin' && (
+          {user?.role === 'admin' && (
             <Button
               onClick={() => setOpen(!open)}
               className='absolute top-10 right-0 h-10 rounded-l-full pr-1 hover:w-11.5'
@@ -158,91 +124,92 @@ const Dashboard = ({ user }: { user: User }) => {
 
             <Button onClick={handleImpersonate}>Impersonate</Button>
             <Button onClick={handleStopImpersonate}>Stop Impersonate</Button>
-            <Button onClick={testVerificationEmail}>Send Email</Button>
+            <Button disabled onClick={testVerificationEmail}>
+              Send Email
+            </Button>
           </div>
         </PopoverContent>
       </Popover>
 
-      <h1>Complete the Tour.</h1>
-      <ol className='list-decimal space-y-4'>
-        <li>
-          <div className='flex items-center gap-2'>
-            {state.mission.device ? (
-              <CheckSquare className='text-green-500' />
-            ) : (
-              <Square />
-            )}
-            <p className={cn(state.mission.device && 'line-through')}>
-              Pair your first device.
-            </p>
-            <Button
-              variant='outline'
-              size='sm'
-              disabled={state.mission.device}
-              onClick={handleDeviceTour}
-            >
-              Begin
-            </Button>
-          </div>
-        </li>
+      <div className='container'>
+        <H1>
+          Welcome, {user?.name}, to the
+          <span className='text-vital-blue-700'> Virtality </span> Console.
+        </H1>
+      </div>
+      <div className='flex flex-1 items-center'>
+        {showSuggestionSidebar && (
+          <SidebarTip handleSidebarTipClose={handleSidebarTipClose} />
+        )}
+      </div>
 
-        <li>
-          <div className='flex gap-2'>
-            {state.mission.patient ? (
-              <CheckSquare className='text-green-500' />
-            ) : (
-              <Square />
-            )}
-            <p className={cn(state.mission.patient && 'line-through')}>
-              Create your first patient.
-            </p>
-            <Button
-              variant='outline'
-              size='sm'
-              disabled={state.mission.patient || !state.mission.device}
-              onClick={handlePatientTour}
-            >
-              Begin
-            </Button>
-          </div>
-        </li>
-        <li>
-          <div
-            className={cn(
-              'flex gap-2',
-              state.mission.program && 'line-through',
-            )}
-          >
-            {state.mission.program ? (
-              <CheckSquare className='text-green-500' />
-            ) : (
-              <Square />
-            )}
-            <p className=''>Create your first program.</p>
-            <Button
-              variant='outline'
-              size='sm'
-              disabled={state.mission.program || !state.mission.patient}
-            >
-              Begin
-            </Button>
-          </div>
-        </li>
-      </ol>
-      <JoyrideWrapper
-        continuous
-        steps={steps}
-        run={state.run}
-        stepIndex={state.stepIndex}
-        styles={{ overlay: { height: 'auto' } }}
-        callback={tourCallback}
-        hideBackButton
-        disableCloseOnEsc
-        disableOverlayClose
-        debug
-      />
-    </div>
+      {showSuggestionDropdown && (
+        <DropdownTip handleDropdownTipClose={handleDropdownTipClose} />
+      )}
+    </section>
   )
 }
 
 export default Dashboard
+
+const SidebarTip = ({
+  handleSidebarTipClose,
+}: {
+  handleSidebarTipClose: () => void
+}) => {
+  const isMobile = useIsMobile()
+
+  return (
+    <Item variant='outline' className='relative hover:[&_svg]:block'>
+      <ItemMedia variant='icon'>
+        {isMobile ? <Sidebar /> : <ArrowLeft />}
+      </ItemMedia>
+      <ItemContent>
+        {isMobile ? (
+          <P>Tap this icon in the top navigation bar to open the sidebar.</P>
+        ) : (
+          <P>
+            This is the sidebar, it gives you access to most of the app&apos;s
+            features.
+          </P>
+        )}
+      </ItemContent>
+      <X
+        onClick={handleSidebarTipClose}
+        className={cn(
+          'bg-card hover:bg-accent absolute -top-2.5 -right-2.5 hidden rounded-full border p-1',
+          isMobile && 'block',
+        )}
+      />
+    </Item>
+  )
+}
+
+const DropdownTip = ({
+  handleDropdownTipClose,
+}: {
+  handleDropdownTipClose: () => void
+}) => {
+  const isMobile = useIsMobile()
+
+  return (
+    <Item
+      variant='outline'
+      className='bg-card absolute top-4 right-10 m-2 hover:[&_svg]:block'
+    >
+      <ItemContent>
+        <P>Click your name or avatar to open your account menu.</P>
+      </ItemContent>
+      <ItemMedia variant='icon'>
+        <ArrowUpRight />
+      </ItemMedia>
+      <X
+        onClick={handleDropdownTipClose}
+        className={cn(
+          'bg-card hover:bg-accent absolute -top-2.5 -left-2.5 hidden rounded-full border p-1',
+          isMobile && 'block',
+        )}
+      />
+    </Item>
+  )
+}

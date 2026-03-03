@@ -11,14 +11,17 @@ import {
 import Chart from '@/components/ui/progress-chart'
 import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
-import useUpdatePatientSession from '@/hooks/mutations/patient-session/use-update-patient-session'
-import usePatientPrograms from '@/hooks/queries/patient-program/use-patient-programs'
-import useExercise from '@/hooks/queries/use-exercise'
-import useUserName from '@/hooks/queries/user/use-user-name'
-import { orpc } from '@/integrations/orpc/client'
-import { getQueryClient } from '@/integrations/tanstack-query/provider'
+
 import { getDisplayName } from '@/lib/utils'
 import { ExtendedPatientSession, ProgressDataPoint } from '@/types/models'
+import {
+  getQueryClient,
+  useExercise,
+  useORPC,
+  usePatientPrograms,
+  useUpdatePatientSession,
+  useUserName,
+} from '@virtality/react-query'
 import { format } from 'date-fns'
 import {
   ChartArea,
@@ -38,8 +41,8 @@ interface SessionCardProps {
 }
 
 const SessionCard = ({ session, patientId, onBack }: SessionCardProps) => {
-  const { queryClient } = getQueryClient()
-
+  const queryClient = getQueryClient()
+  const orpc = useORPC()
   const [chartIndex, setChartIndex] = useState(0)
   const [notes, setNotes] = useState(session?.notes ?? '')
   const [isEditing, setIsEditing] = useState(false)

@@ -13,18 +13,20 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { SessionNotesSchema, SessionNotes } from '@virtality/shared/types'
 import { Save } from 'lucide-react'
 import { usePatientDashboard } from '@/context/patient-dashboard-context'
-import useUpdatePatientSession from '@/hooks/mutations/patient-session/use-update-patient-session'
-
-import { getQueryClient } from '@/integrations/tanstack-query/provider'
-import { orpc } from '@/integrations/orpc/client'
 import { cn } from '@/lib/utils'
+import {
+  getQueryClient,
+  useORPC,
+  useUpdatePatientSession,
+} from '@virtality/react-query'
 
 interface SessionNotesCardProps {
   className?: string
 }
 
 const SessionNotesCard = ({ className }: SessionNotesCardProps) => {
-  const { queryClient } = getQueryClient()
+  const queryClient = getQueryClient()
+  const orpc = useORPC()
   const { state, patientSessionId, patientId } = usePatientDashboard()
   const { programState } = state
 

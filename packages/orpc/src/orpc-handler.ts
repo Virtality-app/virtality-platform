@@ -2,8 +2,6 @@ import { RPCHandler } from '@orpc/server/fetch'
 import { onError } from '@orpc/server'
 import { router } from './router.ts'
 
-const ORPC_PREFIX = '/api/v1/rpc'
-
 export const orpcHandler = new RPCHandler(router, {
   plugins: [],
   interceptors: [
@@ -12,5 +10,3 @@ export const orpcHandler = new RPCHandler(router, {
     }),
   ],
 })
-
-export { ORPC_PREFIX }

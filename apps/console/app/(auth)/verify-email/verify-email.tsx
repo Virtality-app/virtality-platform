@@ -12,7 +12,7 @@ import { Mail, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { authClient } from '@/auth-client'
-import useIsUserVerified from '@/hooks/queries/user/use-is-user-verified.ts'
+import { useIsUserVerified } from '@virtality/react-query'
 
 const COOKIE_NAME = 'verification_time'
 
