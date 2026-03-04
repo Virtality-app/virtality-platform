@@ -8,6 +8,7 @@ import { ChangeEvent, MouseEvent, useMemo, useState } from 'react'
 import sortedUniq from 'lodash.sorteduniq'
 import { useExerciseLibrary } from '@/context/exercise-library-context'
 import { useExercise } from '@virtality/react-query'
+import { withRom } from '@/lib/with-rom'
 
 const ExerciseGrid = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -43,7 +44,7 @@ const ExerciseGrid = () => {
         speed: 1.0,
         exercise: exerciseToAdd,
       }
-      selectExercise(preppedExercise)
+      selectExercise(withRom(preppedExercise))
     }
   }
 

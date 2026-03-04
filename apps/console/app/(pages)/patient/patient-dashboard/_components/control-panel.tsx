@@ -1,6 +1,7 @@
 import { useEffect, useState, MouseEvent, useRef } from 'react'
 import {
   CircleAlert,
+  MonitorPlay,
   PauseCircle,
   PlayCircle,
   RectangleGoggles,
@@ -112,6 +113,7 @@ const ControlPanel = ({ className }: { className?: string }) => {
           restTime: ex.restTime,
           holdTime: ex.holdTime,
           speed: ex.speed,
+          romMode: ex.romMode,
         }
         return newEx
       })
@@ -201,7 +203,7 @@ const ControlPanel = ({ className }: { className?: string }) => {
   const isProgramPaused = programState === 'paused'
   const isMain = selectedMode === 'main'
 
-  const { GuardDialog } = useNavigationGuard(connected ? true : false, () => {
+  const { GuardDialog } = useNavigationGuard(connected, () => {
     selectedDevice?.socket.disconnect()
   })
 
@@ -242,6 +244,11 @@ const ControlPanel = ({ className }: { className?: string }) => {
 
         <DeviceSelector devices={devices} connected={connected} />
 
+        <Button>
+          <MonitorPlay />
+          Cast
+        </Button>
+
         {isProgramInactive && isMain && <ProgramSelector className='flex-1' />}
 
         <SceneSettings
@@ -260,16 +267,7 @@ const ControlPanel = ({ className }: { className?: string }) => {
 
 export default ControlPanel
 
-const Controls = ({
-  selectedMode,
-  isProgramPaused,
-  isProgramInactive,
-  isProgramActive,
-  programStart,
-  programEnd,
-  skipExercise,
-  handleWarmupStart,
-}: {
+interface ControlsProps {
   selectedMode: PatientDashboardValue['state']['selectedMode']
   isProgramPaused: boolean
   isProgramInactive: boolean
@@ -278,7 +276,18 @@ const Controls = ({
   programEnd: () => void
   handleWarmupStart: () => Id | undefined
   skipExercise: (e: MouseEvent) => void
-}) => {
+}
+
+const Controls = ({
+  selectedMode,
+  isProgramPaused,
+  isProgramInactive,
+  isProgramActive,
+  programStart,
+  programEnd,
+  handleWarmupStart,
+  skipExercise,
+}: ControlsProps) => {
   const StartProgramButton = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
@@ -369,15 +378,17 @@ const Controls = ({
   }
 }
 
+interface ModeSelectorProps {
+  selectedMode: PatientDashboardValue['state']['selectedMode']
+  setSelectedMode: PatientDashboardValue['handler']['setSelectedMode']
+  programState: PatientDashboardValue['state']['programState']
+}
+
 const ModeSelector = ({
   selectedMode,
   setSelectedMode,
   programState,
-}: {
-  selectedMode: PatientDashboardValue['state']['selectedMode']
-  setSelectedMode: PatientDashboardValue['handler']['setSelectedMode']
-  programState: PatientDashboardValue['state']['programState']
-}) => {
+}: ModeSelectorProps) => {
   const isProgramActive = programState === 'started'
   const isProgramPaused = programState === 'paused'
 
@@ -401,13 +412,15 @@ const ModeSelector = ({
   )
 }
 
+interface SceneSettingsProps {
+  missingSettings: boolean
+  selectedDevice: PatientDashboardValue['state']['selectedDevice']
+}
+
 const SceneSettings = ({
   missingSettings,
   selectedDevice,
-}: {
-  missingSettings: boolean
-  selectedDevice: PatientDashboardValue['state']['selectedDevice']
-}) => {
+}: SceneSettingsProps) => {
   const [openSceneSettings, setOpenSceneSettings] = useState(false)
   const [isSitting, setSitting] = useState(false)
 
@@ -500,13 +513,12 @@ const SceneSettings = ({
   )
 }
 
-const DeviceSelector = ({
-  devices,
-  connected,
-}: {
+interface DeviceSelectorProps {
   devices: DeviceContextValue['devices']
   connected: boolean
-}) => {
+}
+
+const DeviceSelector = ({ devices, connected }: DeviceSelectorProps) => {
   const [openDevicePop, setOpenDevicePop] = useState(false)
   const handleDevicePopover = () => {
     setOpenDevicePop(!openDevicePop)

@@ -45,6 +45,7 @@ import {
   useCreateProgram,
   useCreateProgramExercises,
 } from '@virtality/react-query'
+import { withRom } from '@/lib/with-rom'
 
 // Types
 interface ProgramFormProps {
@@ -139,7 +140,7 @@ const ProgramForm = ({ patientId }: ProgramFormProps) => {
         return { ...e, exercise: defaultEx }
       })
 
-      updateExercises(mapped)
+      updateExercises(withRom(mapped))
     }
   }
 

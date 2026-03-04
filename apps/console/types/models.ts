@@ -42,11 +42,9 @@ export type OrganizationWithMembers = Organization & {
 
 export type OrganizationMember = z.infer<typeof OrganizationMemberSchema>
 
-export interface CompleteProgramExercise extends ProgramExercise {
-  exercise: Exercise
+export type ExerciseWithSettings = Omit<ProgramExercise, 'programId'> & {
+  romMode: 0 | 1
 }
-
-export type ExerciseWithSettings = Omit<ProgramExercise, 'programId'>
 
 export interface CompleteExercise extends ExerciseWithSettings {
   exercise?: Exercise

@@ -31,6 +31,7 @@ import {
   useUpdatePresetExercises,
   useORPC,
 } from '@virtality/react-query'
+import { withRom } from '@/lib/with-rom'
 const PresetEditForm = ({ id }: { id: string }) => {
   const queryClient = getQueryClient()
   const orpc = useORPC()
@@ -58,7 +59,7 @@ const PresetEditForm = ({ id }: { id: string }) => {
   }, [presetData])
 
   useEffect(() => {
-    if (preset) updateExercises(presetExercise)
+    if (preset) updateExercises(withRom(presetExercise))
   }, [preset])
 
   const { mutate: updatePresetMutation, isPending: isUpdating } =

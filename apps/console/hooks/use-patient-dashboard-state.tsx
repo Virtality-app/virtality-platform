@@ -2,6 +2,7 @@ import { Avatar, Map, PatientProgram } from '@virtality/db'
 import { useReducer, useEffect } from 'react'
 import { CompleteExercise, PatientLocalData, VRDevice } from '@/types/models'
 import { useAvatar, useMap, usePatientPrograms } from '@virtality/react-query'
+import { withRom } from '@/lib/with-rom'
 
 type State = {
   isSettingsOpen: { id: string; open: boolean } | null
@@ -110,9 +111,11 @@ const usePatientDashboardState = ({
 
       const firstExercise = exercises[0]
 
+      const exercisesWithRomMode = withRom(exercises)
+
       updatePatientDashboardState({
         selectedProgram: program,
-        exercises,
+        exercises: exercisesWithRomMode,
         activeExerciseData: {
           ...state.activeExerciseData,
           id: firstExercise ? firstExercise.exerciseId : null,

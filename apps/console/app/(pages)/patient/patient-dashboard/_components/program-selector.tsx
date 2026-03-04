@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button'
 import { Check, ChevronsUpDown, Loader2, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { usePatient, usePatientPrograms } from '@virtality/react-query'
+import { withRom } from '@/lib/with-rom'
 
 const ProgramSelector = ({ className }: { className?: string }) => {
   const { state, handler, store, patientLocalData, patientId } =
@@ -48,7 +49,7 @@ const ProgramSelector = ({ className }: { className?: string }) => {
 
     updatePatientDashboardState({
       selectedProgram: pickedProgram,
-      exercises,
+      exercises: withRom(exercises),
       activeExerciseData: {
         ...activeExerciseData,
         id: firstExercise ? firstExercise.exerciseId : null,

@@ -6,6 +6,7 @@ import { CompleteExercise } from '@/types/models'
 import { useRef } from 'react'
 import { PatientDashboardValue } from '@/context/patient-dashboard-context'
 import { cn } from '@/lib/utils'
+import { Switch } from './switch'
 
 const applyBulkUpdate = (
   exercises: CompleteExercise[],
@@ -57,6 +58,7 @@ const ExerciseSettings = ({
   orientation = 'horizontal',
 }: ExerciseSettingsProps) => {
   const sliderRef = useRef<HTMLSpanElement | null>(null)
+  const romRef = useRef<HTMLButtonElement | null>(null)
 
   const settingsChange = (target: {
     name: string
@@ -101,6 +103,26 @@ const ExerciseSettings = ({
     }
 
     setExercises(applyUpdate(exercises, +index, name, value[0]))
+  }
+
+  const romModeChangeHandler = (value: boolean) => {
+    const target = romRef.current
+    if (!target || !exercises) return
+
+    const { id } = target
+    const [name, index] = id.split(',')
+
+    const currentExercise = exercises[+index]
+    const hasBulkUpdates = selectedItems
+      ? selectedItems.length !== 0 && selectedItems.includes(currentExercise.id)
+      : false
+
+    if (hasBulkUpdates) {
+      return setExercises(
+        applyBulkUpdate(exercises, selectedItems!, name, value ? 1 : 0),
+      )
+    }
+    setExercises(applyUpdate(exercises, +index, name, value ? 1 : 0))
   }
 
   return (
@@ -157,6 +179,16 @@ const ExerciseSettings = ({
           value={ex.holdTime}
           onSetValue={settingsChange}
           className='w-16 border dark:border-zinc-600'
+        />
+      </div>
+      <div className='flex items-center gap-2'>
+        <Label htmlFor={'romMode,' + index}>ROM</Label>
+        <Switch
+          ref={romRef}
+          name='romMode'
+          id={'romMode,' + index}
+          checked={ex.romMode === 1}
+          onCheckedChange={romModeChangeHandler}
         />
       </div>
       <div className='flex items-center gap-2'>

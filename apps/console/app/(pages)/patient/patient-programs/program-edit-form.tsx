@@ -29,6 +29,7 @@ import {
   usePatientProgram,
   useUpdateProgramExercises,
 } from '@virtality/react-query'
+import { withRom } from '@/lib/with-rom'
 
 // Types
 interface ProgramEditFormProps {
@@ -67,7 +68,7 @@ const ProgramEditForm = ({ patientId, programId }: ProgramEditFormProps) => {
   })
 
   useEffect(() => {
-    updateExercises(oldProgram?.programExercise ?? [])
+    updateExercises(withRom(oldProgram?.programExercise ?? []))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [oldProgram])
 

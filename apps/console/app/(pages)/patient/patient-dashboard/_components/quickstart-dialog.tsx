@@ -29,6 +29,7 @@ import {
   useExercise,
   useORPC,
 } from '@virtality/react-query'
+import { withRom } from '@/lib/with-rom'
 
 const applyExercises = (
   exerciseInfo: Exercise[],
@@ -86,7 +87,7 @@ const QuickStartDialog = () => {
 
       updateExercises([])
       updatePatientDashboardState({
-        exercises: formattedExercises,
+        exercises: withRom(formattedExercises),
         inQuickStart: false,
       })
     },
