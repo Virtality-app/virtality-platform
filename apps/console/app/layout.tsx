@@ -8,6 +8,7 @@ import TinyBaseProvider from '@/context/tinybase-context'
 import TourProvider from '@/context/tour-context'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import RootSidebar from '@/components/layout/sidebar'
+import CookieBanner from '@/components/layout/cookie-banner'
 import { ORPCProvider, QueryProvider } from '@virtality/react-query'
 import { ORPC_PREFIX } from '@virtality/shared/types'
 
@@ -68,6 +69,7 @@ export default async function RootLayout({
                       pauseOnHover={false}
                       theme='dark'
                     />
+                    <CookieBanner />
                   </div>
                 </TourProvider>
               </TinyBaseProvider>
