@@ -46,10 +46,10 @@ app.use('/api/v1/devices/:deviceId', async (c) => {
   const device = await findDeviceByDeviceId(deviceId)
 
   if (!device) {
-    return c.json({ error: 'Device not found' }, 404)
+    return c.json(null)
   }
 
-  return c.json(device)
+  return c.json({ device })
 })
 
 app.use(`${ORPC_PREFIX}/*`, authMiddleware, orpcMiddleware)
