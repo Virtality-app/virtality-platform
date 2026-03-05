@@ -21,7 +21,7 @@ const PresetEditPage = async ({
       <div className='flex justify-between'>
         <H2>Edit Preset</H2>
         <div className='flex gap-2'>
-          <Button>
+          <Button asChild>
             <Link href={`/presets`}>{t('btn.cancel')}</Link>
           </Button>
           <Button form='presetForm' variant='primary'>

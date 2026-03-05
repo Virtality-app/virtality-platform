@@ -7,6 +7,7 @@ import { useRef } from 'react'
 import { PatientDashboardValue } from '@/context/patient-dashboard-context'
 import { cn } from '@/lib/utils'
 import { Switch } from './switch'
+import { useFeatureFlagResult } from 'posthog-js/react'
 
 const applyBulkUpdate = (
   exercises: CompleteExercise[],
@@ -59,6 +60,8 @@ const ExerciseSettings = ({
 }: ExerciseSettingsProps) => {
   const sliderRef = useRef<HTMLSpanElement | null>(null)
   const romRef = useRef<HTMLButtonElement | null>(null)
+
+  const romEnabled = useFeatureFlagResult('rom_mode_feature')
 
   const settingsChange = (target: {
     name: string
@@ -181,16 +184,18 @@ const ExerciseSettings = ({
           className='w-16 border dark:border-zinc-600'
         />
       </div>
-      <div className='flex items-center gap-2'>
-        <Label htmlFor={'romMode,' + index}>ROM</Label>
-        <Switch
-          ref={romRef}
-          name='romMode'
-          id={'romMode,' + index}
-          checked={ex.romMode === 1}
-          onCheckedChange={romModeChangeHandler}
-        />
-      </div>
+      {romEnabled?.enabled && romEnabled.payload === true && (
+        <div className='flex items-center gap-2'>
+          <Label htmlFor={'romMode,' + index}>ROM</Label>
+          <Switch
+            ref={romRef}
+            name='romMode'
+            id={'romMode,' + index}
+            checked={ex.romMode === 1}
+            onCheckedChange={romModeChangeHandler}
+          />
+        </div>
+      )}
       <div className='flex items-center gap-2'>
         <Label htmlFor={'speed,' + index}>Speed</Label>
         <Slider
