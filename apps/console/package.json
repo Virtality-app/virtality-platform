@@ -53,6 +53,7 @@
     "@virtality/orpc": "workspace:*",
     "@virtality/react-query": "workspace:*",
     "@virtality/shared": "workspace:*",
+    "@virtality/auth": "workspace:*",
     "accept-language": "3.0.20",
     "better-auth": "1.4.18",
     "class-variance-authority": "0.7.1",

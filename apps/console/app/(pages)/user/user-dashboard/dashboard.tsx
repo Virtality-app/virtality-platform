@@ -1,25 +1,18 @@
 'use client'
 
 import { H1, P } from '@/components/ui/typography'
-import { ArrowLeft, ArrowUpRight, GripVertical, Sidebar, X } from 'lucide-react'
+import { ArrowLeft, ArrowUpRight, Sidebar, X } from 'lucide-react'
 import { Item, ItemContent, ItemMedia } from '@/components/ui/item'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 import { useRow, useStore } from 'tinybase/ui-react'
 import { UserLocalData } from '@/types/models'
-import { ChangeEvent, useEffect, useState } from 'react'
-import { authClient } from '@/auth-client'
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from '@/components/ui/popover'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-import useIsAuthed from '@/hooks/use-is-authed'
+import { useEffect, useState } from 'react'
 
-const Dashboard = () => {
+import useIsAuthed from '@/hooks/use-is-authed'
+import AdminTool from '../_components/admin-tool'
+
+const Dashboard = ({ isImpersonating }: { isImpersonating?: boolean }) => {
   const { data } = useIsAuthed()
 
   const store = useStore()
@@ -52,84 +45,11 @@ const Dashboard = () => {
     store?.setCell('users', data.user.id, 'dashboardSuggestionDropdown', false)
   }
 
-  const [open, setOpen] = useState(false)
-  const [host, setHost] = useState('')
-
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const target = e.currentTarget
-    const { value } = target
-    setHost(value)
-  }
-
-  const handleImpersonate = async () => {
-    if (host === '') return
-
-    const { error } = await authClient.admin.impersonateUser({
-      userId: host, // required
-    })
-
-    if (error) {
-      console.error('[Error]: ', error.code, ', message: ', error.message)
-      return
-    }
-
-    setHost('')
-    window.location.reload()
-  }
-
-  const handleStopImpersonate = async () => {
-    const { error } = await authClient.admin.stopImpersonating()
-    if (error) {
-      console.error('[Error]: ', error.code, ', message: ', error.message)
-      return
-    }
-    window.location.reload()
-  }
-
-  const testVerificationEmail = async () => {
-    try {
-      await authClient.sendVerificationEmail({
-        email: 's.pnevmatikakis@virtality.app',
-        callbackURL: 'http://localhost:3001',
-      })
-    } catch (error) {
-      console.log('Error sending verification email: ', error)
-    }
-  }
-
   const user = data?.user
 
   return (
     <section className='h-screen-with-header relative flex flex-col justify-center p-10'>
-      <Popover open={open}>
-        <PopoverTrigger asChild>
-          {user?.role === 'admin' && (
-            <Button
-              onClick={() => setOpen(!open)}
-              className='absolute top-10 right-0 h-10 rounded-l-full pr-1 hover:w-11.5'
-            >
-              <GripVertical />
-            </Button>
-          )}
-        </PopoverTrigger>
-        <PopoverContent>
-          <div className='grid grid-rows-2 gap-1'>
-            <Label htmlFor='userId'>User ID</Label>
-            <Input
-              type='text'
-              id='userId'
-              value={host}
-              onChange={handleInputChange}
-            />
-
-            <Button onClick={handleImpersonate}>Impersonate</Button>
-            <Button onClick={handleStopImpersonate}>Stop Impersonate</Button>
-            <Button disabled onClick={testVerificationEmail}>
-              Send Email
-            </Button>
-          </div>
-        </PopoverContent>
-      </Popover>
+      <AdminTool isImpersonating={isImpersonating} />
 
       <div className='container'>
         <H1>

@@ -5,10 +5,13 @@ import {
   API_PREFIX,
   SERVER_URL,
   SERVER_URL_LOCAL,
+  SERVER_URL_STAGING,
 } from '@virtality/shared/types'
 
+const env = process.env.ENV || 'development'
+
 const me =
-  `${process.env.NODE_ENV === 'production' ? SERVER_URL : SERVER_URL_LOCAL}` +
+  `${env === 'production' ? SERVER_URL : env === 'preview' ? SERVER_URL_STAGING : SERVER_URL_LOCAL}` +
   API_PREFIX +
   '/rpc/me'
 
@@ -16,8 +19,6 @@ const fetchOptions: RequestInit = {
   credentials: 'include',
   cache: 'no-store',
 }
-
-console.log('me URL: ', me)
 
 const fetchUserSession = async () => {
   try {

@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { betterFetch } from '@better-fetch/fetch'
-import { Subscription } from '@better-auth/stripe'
+import { headers } from 'next/headers'
 import acceptLanguage from 'accept-language'
 import { settings } from '@/i18n/settings'
-import { getUserAndSession } from './lib/authActions'
+import { auth } from '@virtality/auth'
 
 acceptLanguage.languages(settings.languages)
 
@@ -80,12 +79,12 @@ const sessionHandler = async (request: NextRequest) => {
   }
 
   const websiteURL = process.env.WEBSITE_DOMAIN_URL
-  const serverURL = process.env.SERVER_URL
   const waitlistURL = new URL(`${websiteURL}/waitlist`, request.url)
   const signInURL = new URL('/sign-in', request.url)
-  const cookie = request.headers.get('cookie') || ''
 
-  const data = await getUserAndSession()
+  const data = await auth.api.getSession({
+    headers: await headers(),
+  })
 
   if (!data) return NextResponse.redirect(signInURL)
 
@@ -99,15 +98,11 @@ const sessionHandler = async (request: NextRequest) => {
     return NextResponse.redirect(waitlistURL)
   } else {
     try {
-      const activeSubscriptions = await betterFetch<Subscription[]>(
-        '/api/auth/subscription/list',
-        {
-          baseURL: serverURL,
-          headers: { cookie },
-        },
-      )
+      const activeSubscriptions = await auth.api.listActiveSubscriptions({
+        headers: await headers(),
+      })
 
-      const hasSubscription = activeSubscriptions.data?.find(
+      const hasSubscription = activeSubscriptions.find(
         (as) =>
           as.stripeCustomerId === stripeCustomerId && as.status === 'active',
       )

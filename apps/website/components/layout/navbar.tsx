@@ -9,10 +9,20 @@ import {
   SiLinkedin,
   SiX,
 } from '@icons-pack/react-simple-icons'
-import { CONSOLE_URL, CONSOLE_URL_LOCAL } from '@virtality/shared/types'
+import {
+  CONSOLE_URL,
+  CONSOLE_URL_LOCAL,
+  CONSOLE_URL_STAGING,
+} from '@virtality/shared/types'
+
+const env = process.env.ENV || 'development'
 
 const consoleURL =
-  process.env.NODE_ENV === 'production' ? CONSOLE_URL : CONSOLE_URL_LOCAL
+  env === 'production'
+    ? CONSOLE_URL
+    : env === 'preview'
+      ? CONSOLE_URL_STAGING
+      : CONSOLE_URL_LOCAL
 
 const X_URL = process.env.X_URL
 const LINKEDIN_URL = process.env.LINKEDIN_URL

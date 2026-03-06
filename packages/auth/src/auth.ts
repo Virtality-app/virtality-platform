@@ -13,24 +13,28 @@ import {
   sendResetPassword,
   sendVerificationEmail,
 } from '@virtality/nodemailer'
-
-const DOMAIN = process.env.BETTER_AUTH_URL
-  ? new URL(process.env.BETTER_AUTH_URL)
-  : undefined
-
-if (!DOMAIN) throw Error('Site domain undefined')
+import {
+  SERVER_URL,
+  SERVER_URL_LOCAL,
+  SERVER_URL_STAGING,
+} from '@virtality/shared/types'
 
 const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-08-27.basil',
 })
 
-const from = process.env.FROM_AUTH_ALIAS
+const env = process.env.ENV || 'development'
 
-if (!from) {
-  throw new Error('FROM_AUTH_ALIAS environment variable is required')
-}
+const baseURL =
+  env === 'production'
+    ? SERVER_URL
+    : env === 'preview'
+      ? SERVER_URL_STAGING
+      : SERVER_URL_LOCAL
 
 export const auth = betterAuth({
+  appName: 'virtality',
+  baseURL,
   basePath: '/api/v1/auth',
   database: prismaAdapter(prisma, { provider: 'postgresql' }),
   account: { accountLinking: { enabled: true } },
@@ -91,6 +95,10 @@ export const auth = betterAuth({
     organization(),
   ],
   advanced: {
+    cookies: {
+      session_token: { name: 'virtality_session' },
+      admin_session: { name: 'virtality_admin_session' },
+    },
     crossSubDomainCookies: {
       enabled: true,
       domain:

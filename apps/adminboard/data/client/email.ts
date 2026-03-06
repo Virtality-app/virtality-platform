@@ -1,8 +1,18 @@
 import { Email } from '@/app/email/page'
-import { SERVER_URL, SERVER_URL_LOCAL } from '@virtality/shared/types'
+import {
+  SERVER_URL,
+  SERVER_URL_LOCAL,
+  SERVER_URL_STAGING,
+} from '@virtality/shared/types'
+
+const env = process.env.ENV || 'development'
 
 const baseURL =
-  process.env.NODE_ENV === 'production' ? SERVER_URL : SERVER_URL_LOCAL
+  env === 'production'
+    ? SERVER_URL
+    : env === 'preview'
+      ? SERVER_URL_STAGING
+      : SERVER_URL_LOCAL
 
 export const getEmails = async () => {
   const res = await fetch(`${baseURL}/api/v1/email`)

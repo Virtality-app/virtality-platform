@@ -21,6 +21,7 @@
     "@virtality/db": "workspace:*",
     "@virtality/ui": "workspace:*",
     "@virtality/nodemailer": "workspace:*",
+    "@virtality/shared": "workspace:*",
     "stripe": "18.5.0",
     "better-auth": "1.4.18"
   },

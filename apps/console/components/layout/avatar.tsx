@@ -34,6 +34,7 @@ import AvatarSkeleton from './avatar-skeleton'
 import useMounted from '@/hooks/use-mounted'
 import { useStore } from 'tinybase/ui-react'
 import { useRouter } from 'next/navigation'
+import posthog from 'posthog-js'
 
 const Avatar = () => {
   const websiteDomain = process.env.NEXT_PUBLIC_WEBSITE_URL
@@ -44,10 +45,13 @@ const Avatar = () => {
   const { t, i18n } = useClientT(['avatar', 'glossary'])
   const { data, isPending } = authClient.useSession()
   const store = useStore()
-  const handleSignOut = async () =>
+
+  const handleSignOut = async () => {
+    posthog.reset()
     await authClient.signOut({
       fetchOptions: { onSuccess: () => router.push('/sign-in') },
     })
+  }
 
   const user = data?.user
 

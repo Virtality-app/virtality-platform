@@ -11,7 +11,7 @@ const redis =
   globalForRedis.redis ||
   new Redis(process.env.REDIS_SECRET, { lazyConnect: true })
 
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.ENV !== 'production') {
   globalForRedis.redis = redis
 }
 

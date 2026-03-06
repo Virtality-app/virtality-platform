@@ -7,8 +7,12 @@ import { Toaster } from 'sonner'
 import Footer from '@/components/layout/footer'
 import {
   ORPC_PREFIX,
+  SERVER_URL,
+  SERVER_URL_LOCAL,
+  SERVER_URL_STAGING,
   WEBSITE_URL,
   WEBSITE_URL_LOCAL,
+  WEBSITE_URL_STAGING,
 } from '@virtality/shared/types'
 import { ORPCProvider, QueryProvider } from '@virtality/react-query'
 
@@ -24,8 +28,14 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ['400', '500', '600'],
 })
 
+const env = process.env.ENV || 'development'
+
 const websiteURL =
-  process.env.NODE_ENV === 'production' ? WEBSITE_URL : WEBSITE_URL_LOCAL
+  env === 'production'
+    ? WEBSITE_URL
+    : env === 'preview'
+      ? WEBSITE_URL_STAGING
+      : WEBSITE_URL_LOCAL
 
 export const metadata: Metadata = {
   metadataBase: new URL(websiteURL),
@@ -44,7 +54,12 @@ export const metadata: Metadata = {
   },
 }
 
-const baseURL = process.env.NEXT_PUBLIC_SERVER_URL ?? 'http://localhost:8080'
+const baseURL =
+  env === 'production'
+    ? SERVER_URL
+    : env === 'preview'
+      ? SERVER_URL_STAGING
+      : SERVER_URL_LOCAL
 
 export default function RootLayout({
   children,

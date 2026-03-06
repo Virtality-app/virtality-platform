@@ -19,7 +19,11 @@ import {
 } from '@icons-pack/react-simple-icons'
 import { useParams } from 'next/navigation'
 import { Share } from 'lucide-react'
-import { WEBSITE_URL, WEBSITE_URL_LOCAL } from '@virtality/shared/types'
+import {
+  WEBSITE_URL,
+  WEBSITE_URL_LOCAL,
+  WEBSITE_URL_STAGING,
+} from '@virtality/shared/types'
 
 const post = {
   id: 1,
@@ -82,10 +86,17 @@ const post = {
 </article>`,
 }
 
+const env = process.env.ENV || 'development'
+
+const websiteURL =
+  env === 'production'
+    ? WEBSITE_URL
+    : env === 'preview'
+      ? WEBSITE_URL_STAGING
+      : WEBSITE_URL_LOCAL
+
 const BlogPost = () => {
   const { id } = useParams()
-  const websiteURL =
-    process.env.NODE_ENV === 'production' ? WEBSITE_URL : WEBSITE_URL_LOCAL
   const url = `${websiteURL}/blog/${id}`
   const text = encodeURIComponent(post.title)
 

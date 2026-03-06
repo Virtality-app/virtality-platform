@@ -184,18 +184,19 @@ const ExerciseSettings = ({
           className='w-16 border dark:border-zinc-600'
         />
       </div>
-      {romEnabled?.enabled && romEnabled.payload === true && (
-        <div className='flex items-center gap-2'>
-          <Label htmlFor={'romMode,' + index}>ROM</Label>
-          <Switch
-            ref={romRef}
-            name='romMode'
-            id={'romMode,' + index}
-            checked={ex.romMode === 1}
-            onCheckedChange={romModeChangeHandler}
-          />
-        </div>
-      )}
+      {(romEnabled?.enabled && romEnabled.payload === true) ||
+        (!romEnabled?.enabled && (
+          <div className='flex items-center gap-2'>
+            <Label htmlFor={'romMode,' + index}>ROM</Label>
+            <Switch
+              ref={romRef}
+              name='romMode'
+              id={'romMode,' + index}
+              checked={ex.romMode === 1}
+              onCheckedChange={romModeChangeHandler}
+            />
+          </div>
+        ))}
       <div className='flex items-center gap-2'>
         <Label htmlFor={'speed,' + index}>Speed</Label>
         <Slider

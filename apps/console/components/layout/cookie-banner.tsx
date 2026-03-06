@@ -25,7 +25,7 @@ export default function CookieBanner() {
     setConsentGiven('denied')
   }
 
-  if (consentGiven !== 'pending') {
+  if (consentGiven !== 'pending' || !posthog.__loaded) {
     return null
   }
 
