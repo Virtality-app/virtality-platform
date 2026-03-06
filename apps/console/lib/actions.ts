@@ -9,7 +9,6 @@ import {
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { User } from '@/auth-client'
-import { cookies } from 'next/headers'
 import { prisma } from '@virtality/db'
 import { BugReport, BugReportImage } from '@virtality/db'
 import { getUser, getUserAndSession } from './authActions'
@@ -17,17 +16,6 @@ import { getUUID, randomImageName } from './utils'
 import { uploadFile } from '@/S3'
 
 // GENERAL ACTIONS
-export const getCookie = async (key: string) => {
-  const cookieStore = await cookies()
-  return cookieStore.get(key)
-}
-
-export const setCookie = async (key: string, value: string) => {
-  const cookieStore = await cookies()
-
-  cookieStore.set(key, value)
-  console.log(key, value)
-}
 
 // BUG REPORT ACTIONS
 export const createBugReport = async (
@@ -141,7 +129,6 @@ export const notifyDiscord = async (bugReport: BugReport) => {
 }
 
 // USER ACTIONS
-
 export const updateUserAction = async (
   state: { data: User | null } | undefined,
   formData?: FormData,

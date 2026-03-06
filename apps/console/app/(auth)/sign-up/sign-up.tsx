@@ -22,6 +22,20 @@ import { Loader2 } from 'lucide-react'
 import SignupForm from '@/components/auth/sign-up-form'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import {
+  CONSOLE_URL,
+  CONSOLE_URL_LOCAL,
+  CONSOLE_URL_STAGING,
+} from '@virtality/shared/types'
+
+const env = process.env.NEXT_PUBLIC_ENV || 'development'
+
+const baseURL =
+  env === 'production'
+    ? CONSOLE_URL
+    : env === 'preview'
+      ? CONSOLE_URL_STAGING
+      : CONSOLE_URL_LOCAL
 
 const SignUp = () => {
   const router = useRouter()
@@ -47,7 +61,7 @@ const SignUp = () => {
     const { error } = await authClient.signUp.email({
       ...values,
       ...(referralCode?.trim() && { referralCode: referralCode.trim() }),
-      callbackURL: process.env.NEXT_PUBLIC_DOMAIN_URL,
+      callbackURL: baseURL,
       fetchOptions: {
         onSuccess: () => router.push(`/verify-email?email=${values.email}`),
       },

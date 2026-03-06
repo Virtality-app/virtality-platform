@@ -3,9 +3,23 @@
 import { Session, User } from '@/auth-client'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { ORPC_PREFIX } from '@virtality/shared/types'
+import {
+  ORPC_PREFIX,
+  SERVER_URL_LOCAL,
+  SERVER_URL,
+  SERVER_URL_STAGING,
+} from '@virtality/shared/types'
 
-const me = process.env.SERVER_URL + ORPC_PREFIX + '/me'
+const env = process.env.ENV || 'development'
+
+const baseURL =
+  env === 'production'
+    ? SERVER_URL
+    : env === 'preview'
+      ? SERVER_URL_STAGING
+      : SERVER_URL_LOCAL
+
+const me = baseURL + ORPC_PREFIX + '/me'
 
 const fetchOptions: RequestInit = {
   credentials: 'include',

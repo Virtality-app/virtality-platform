@@ -14,6 +14,7 @@
       "outputs": [".next/**"],
       "env": [
         "ENV",
+        "NEXT_PUBLIC_ENV",
         "CONSOLE_DATABASE_URL",
         "X_URL",
         "LINKEDIN_URL",
@@ -25,7 +26,7 @@
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**"],
-      "env": ["ENV", "CONSOLE_DATABASE_URL"]
+      "env": ["ENV", "NEXT_PUBLIC_ENV", "CONSOLE_DATABASE_URL"]
     },
     "@virtality/console#build": {
       "dependsOn": ["^build"],
@@ -37,7 +38,12 @@
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["dist/**", "console/prisma/generated/**"],
-      "env": ["CONSOLE_DATABASE_URL", "SENTRY_AUTH_TOKEN", "ENV"]
+      "env": [
+        "CONSOLE_DATABASE_URL",
+        "SENTRY_AUTH_TOKEN",
+        "NEXT_PUBLIC_ENV",
+        "ENV"
+      ]
     },
     "@virtality/socket": {
       "dependsOn": ["^build"],

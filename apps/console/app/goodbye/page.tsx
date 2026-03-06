@@ -2,9 +2,24 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import Image from 'next/image'
 import Link from 'next/link'
+import {
+  WEBSITE_URL,
+  WEBSITE_URL_LOCAL,
+  WEBSITE_URL_STAGING,
+} from '@virtality/shared/types'
+
+const env = process.env.NEXT_PUBLIC_ENV || 'development'
+
+const baseURL =
+  env === 'production'
+    ? WEBSITE_URL
+    : env === 'preview'
+      ? WEBSITE_URL_STAGING
+      : WEBSITE_URL_LOCAL
+
+const cdnURL = process.env.NEXT_PUBLIC_CDN_URL
 
 const GoodbyePage = () => {
-  const baseURL = process.env.NEXT_PUBLIC_CDN_URL
   return (
     <section className='flex h-screen items-center justify-center'>
       <Card className='w-full max-w-2xl space-y-6 p-8 text-center md:p-12'>
@@ -14,7 +29,7 @@ const GoodbyePage = () => {
               alt='Company small logo'
               width={50}
               height={50}
-              src={`${baseURL}/small_logo_400x400.png`}
+              src={`${cdnURL}/small_logo_400x400.png`}
             />
           </div>
 
@@ -63,9 +78,7 @@ const GoodbyePage = () => {
               <Link href='/'>Return to Homepage</Link>
             </Button>
             <Button asChild variant='outline' size='lg'>
-              <Link href={`${process.env.NEXT_PUBLIC_WEBSITE_URL}/contact`}>
-                Share Feedback
-              </Link>
+              <Link href={baseURL + '/contact'}>Share Feedback</Link>
             </Button>
           </div>
         </div>

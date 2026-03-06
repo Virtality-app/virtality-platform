@@ -18,6 +18,7 @@ import {
   Check,
   Home,
   Languages,
+  LayoutDashboard,
   LogOut,
   Moon,
   Settings,
@@ -35,9 +36,32 @@ import useMounted from '@/hooks/use-mounted'
 import { useStore } from 'tinybase/ui-react'
 import { useRouter } from 'next/navigation'
 import posthog from 'posthog-js'
+import {
+  WEBSITE_URL,
+  WEBSITE_URL_LOCAL,
+  WEBSITE_URL_STAGING,
+  ADMINBOARD_URL,
+  ADMINBOARD_URL_LOCAL,
+  ADMINBOARD_URL_STAGING,
+} from '@virtality/shared/types'
+
+const env = process.env.NEXT_PUBLIC_ENV || 'development'
+
+const baseURL =
+  env === 'production'
+    ? WEBSITE_URL
+    : env === 'preview'
+      ? WEBSITE_URL_STAGING
+      : WEBSITE_URL_LOCAL
+
+const adminboardURL =
+  env === 'production'
+    ? ADMINBOARD_URL
+    : env === 'preview'
+      ? ADMINBOARD_URL_STAGING
+      : ADMINBOARD_URL_LOCAL
 
 const Avatar = () => {
-  const websiteDomain = process.env.NEXT_PUBLIC_WEBSITE_URL
   const router = useRouter()
   const mounted = useMounted()
   const { setTheme, resolvedTheme, theme, themes } = useTheme()
@@ -92,8 +116,16 @@ const Avatar = () => {
       >
         <DropdownMenuLabel></DropdownMenuLabel>
         <DropdownMenuGroup>
+          {user?.role === 'admin' && (
+            <DropdownMenuItem asChild className='cursor-pointer'>
+              <Link href={adminboardURL} className='flex w-full'>
+                <LayoutDashboard />
+                Adminboard
+              </Link>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem asChild className='cursor-pointer'>
-            <Link href={websiteDomain ?? '#'} className='flex w-full'>
+            <Link href={baseURL} className='flex w-full'>
               <Home />
               {t('home_page')}
             </Link>

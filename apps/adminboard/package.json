@@ -53,6 +53,7 @@
     "uuid": "11.1.0",
     "zod": "4.3.6",
     "@virtality/db": "workspace:*",
+    "@virtality/auth": "workspace:*",
     "@virtality/shared": "workspace:*"
   },
   "devDependencies": {

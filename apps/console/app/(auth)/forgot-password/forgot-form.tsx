@@ -23,6 +23,20 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod/v4'
 import { authClient } from '@/auth-client'
 import { CheckCircle } from 'lucide-react'
+import {
+  CONSOLE_URL,
+  CONSOLE_URL_STAGING,
+  CONSOLE_URL_LOCAL,
+} from '@virtality/shared/types'
+
+const env = process.env.NEXT_PUBLIC_ENV || 'development'
+
+const baseURL =
+  env === 'production'
+    ? CONSOLE_URL
+    : env === 'preview'
+      ? CONSOLE_URL_STAGING
+      : CONSOLE_URL_LOCAL
 
 const ResetSchema = z.object({
   email: z.email({ message: '• Provide valid email (example@domain.com)' }),
@@ -41,7 +55,7 @@ const ForgotForm = () => {
     const { email } = values
     await authClient.requestPasswordReset({
       email,
-      redirectTo: `${process.env.NEXT_PUBLIC_DOMAIN_URL}/reset-password`,
+      redirectTo: baseURL + '/reset-password',
     })
   }
 

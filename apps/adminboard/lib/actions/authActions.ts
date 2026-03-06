@@ -2,7 +2,7 @@
 import { headers } from 'next/headers'
 import { User, Session } from '@virtality/db'
 import {
-  API_PREFIX,
+  ORPC_PREFIX,
   SERVER_URL,
   SERVER_URL_LOCAL,
   SERVER_URL_STAGING,
@@ -10,10 +10,14 @@ import {
 
 const env = process.env.ENV || 'development'
 
-const me =
-  `${env === 'production' ? SERVER_URL : env === 'preview' ? SERVER_URL_STAGING : SERVER_URL_LOCAL}` +
-  API_PREFIX +
-  '/rpc/me'
+const baseURL =
+  env === 'production'
+    ? SERVER_URL
+    : env === 'preview'
+      ? SERVER_URL_STAGING
+      : SERVER_URL_LOCAL
+
+const me = baseURL + ORPC_PREFIX + '/me'
 
 const fetchOptions: RequestInit = {
   credentials: 'include',

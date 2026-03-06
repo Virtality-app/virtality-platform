@@ -9,15 +9,11 @@ import { ac, roles } from './permissions.ts'
 import validateAndConsumeReferralCode from './lib/referral-code.ts'
 import { updateUserRole } from './data/user.ts'
 import {
-  sendDeleteAccountVerification,
-  sendResetPassword,
-  sendVerificationEmail,
-} from '@virtality/nodemailer'
-import {
   SERVER_URL,
   SERVER_URL_LOCAL,
   SERVER_URL_STAGING,
 } from '@virtality/shared/types'
+import { EmailData } from '@virtality/nodemailer'
 
 const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-08-27.basil',
@@ -31,6 +27,24 @@ const baseURL =
     : env === 'preview'
       ? SERVER_URL_STAGING
       : SERVER_URL_LOCAL
+
+async function sendVerificationEmail(data: EmailData) {
+  const { sendVerificationEmail: sendVerificationEmailImpl } =
+    await import('@virtality/nodemailer')
+  return sendVerificationEmailImpl(data)
+}
+
+async function sendResetPassword(data: EmailData) {
+  const { sendResetPassword: sendResetPasswordImpl } =
+    await import('@virtality/nodemailer')
+  return sendResetPasswordImpl(data)
+}
+
+async function sendDeleteAccountVerification(data: EmailData) {
+  const { sendDeleteAccountVerification: sendDeleteAccountVerificationImpl } =
+    await import('@virtality/nodemailer')
+  return sendDeleteAccountVerificationImpl(data)
+}
 
 export const auth = betterAuth({
   appName: 'virtality',

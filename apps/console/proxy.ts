@@ -3,8 +3,22 @@ import { headers } from 'next/headers'
 import acceptLanguage from 'accept-language'
 import { settings } from '@/i18n/settings'
 import { auth } from '@virtality/auth'
+import {
+  WEBSITE_URL,
+  WEBSITE_URL_STAGING,
+  WEBSITE_URL_LOCAL,
+} from '@virtality/shared/types'
 
 acceptLanguage.languages(settings.languages)
+
+const env = process.env.ENV || 'development'
+
+const websiteURL =
+  env === 'production'
+    ? WEBSITE_URL
+    : env === 'preview'
+      ? WEBSITE_URL_STAGING
+      : WEBSITE_URL_LOCAL
 
 const whiteList = [
   'api',
@@ -78,8 +92,7 @@ const sessionHandler = async (request: NextRequest) => {
     return null
   }
 
-  const websiteURL = process.env.WEBSITE_DOMAIN_URL
-  const waitlistURL = new URL(`${websiteURL}/waitlist`, request.url)
+  const waitlistURL = new URL(websiteURL + '/waitlist', request.url)
   const signInURL = new URL('/sign-in', request.url)
 
   const data = await auth.api.getSession({

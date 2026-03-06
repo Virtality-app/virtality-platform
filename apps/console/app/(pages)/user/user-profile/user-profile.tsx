@@ -15,6 +15,11 @@ import { useClientT } from '@/i18n/use-client-t'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Building, Key, UserIcon } from 'lucide-react'
 import SessionsTab from '../_components/sessions-tab'
+import {
+  CONSOLE_URL,
+  CONSOLE_URL_LOCAL,
+  CONSOLE_URL_STAGING,
+} from '@virtality/shared/types'
 // import {
 //   Dialog,
 //   DialogClose,
@@ -32,14 +37,23 @@ import SessionsTab from '../_components/sessions-tab'
 //   InputOTPSlot,
 // } from '../ui/input-otp';
 
+const env = process.env.NEXT_PUBLIC_ENV || 'development'
+
+const baseURL =
+  env === 'production'
+    ? CONSOLE_URL
+    : env === 'preview'
+      ? CONSOLE_URL_STAGING
+      : CONSOLE_URL_LOCAL
+
+const initialState = {
+  data: null,
+}
+
 interface UserProfileProps {
   user: User
   session: Session
   sessions: Session[]
-}
-
-const initialState = {
-  data: null,
 }
 
 const UserProfile = ({ user, session, sessions }: UserProfileProps) => {
@@ -76,7 +90,7 @@ const UserProfile = ({ user, session, sessions }: UserProfileProps) => {
   const handleDeleteUser = async () => {
     setPending(true)
     await authClient.deleteUser({
-      callbackURL: `${process.env.NEXT_PUBLIC_DOMAIN_URL}/goodbye`,
+      callbackURL: baseURL + '/goodbye',
     })
     setPending(false)
   }

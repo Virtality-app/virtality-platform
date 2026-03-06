@@ -1,11 +1,11 @@
 'use client'
 import { io, SocketOptions, ManagerOptions } from 'socket.io-client'
 import { SocketWithQuery } from './types/models'
+import { SOCKET_URL, SOCKET_URL_LOCAL } from '@virtality/shared/types'
 
-const connectionURL =
-  process.env.NEXT_PUBLIC_ENV === 'development'
-    ? 'http://localhost:8081'
-    : process.env.NEXT_PUBLIC_SOCKET_URL
+const env = process.env.NEXT_PUBLIC_ENV || 'development'
+
+const connectionURL = env === 'production' ? SOCKET_URL : SOCKET_URL_LOCAL
 
 const socketOptions = {
   secure: true,

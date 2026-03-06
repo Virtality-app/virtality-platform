@@ -10,7 +10,12 @@ import { SidebarProvider } from '@/components/ui/sidebar'
 import RootSidebar from '@/components/layout/sidebar'
 import CookieBanner from '@/components/layout/cookie-banner'
 import { ORPCProvider, QueryProvider } from '@virtality/react-query'
-import { ORPC_PREFIX } from '@virtality/shared/types'
+import {
+  ORPC_PREFIX,
+  SERVER_URL,
+  SERVER_URL_LOCAL,
+  SERVER_URL_STAGING,
+} from '@virtality/shared/types'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -27,7 +32,14 @@ export const metadata: Metadata = {
   description: 'Because every move matters.',
 }
 
-const baseURL = process.env.NEXT_PUBLIC_SERVER_URL ?? 'http://localhost:8080'
+const env = process.env.ENV || 'development'
+
+const baseURL =
+  env === 'production'
+    ? SERVER_URL
+    : env === 'preview'
+      ? SERVER_URL_STAGING
+      : SERVER_URL_LOCAL
 
 export default async function RootLayout({
   children,

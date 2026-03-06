@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getUserAndSession } from './lib/actions/authActions'
+import { headers } from 'next/headers'
+import { auth } from '@virtality/auth'
 
 const { enabled } = process.env
 
@@ -9,8 +10,9 @@ export async function proxy(request: NextRequest) {
   if (url.pathname === '/userCreation' && (enabled === 'false' || true)) {
     return NextResponse.redirect(new URL('/', request.url))
   }
-
-  const data = await getUserAndSession()
+  const data = await auth.api.getSession({
+    headers: await headers(),
+  })
 
   if (!data) {
     return NextResponse.redirect(new URL('/log-in', request.url))

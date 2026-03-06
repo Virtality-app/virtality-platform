@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
+  AppWindow,
   Check,
   Home,
   LogOut,
@@ -31,10 +32,32 @@ import AvatarSkeleton from './avatar-skeleton'
 import useMounted from '@/hooks/use-mounted'
 import { useRouter } from 'next/navigation'
 
-interface AvatarProps {
-  websiteDomain?: string
-}
-const Avatar = ({ websiteDomain }: AvatarProps) => {
+import {
+  WEBSITE_URL,
+  WEBSITE_URL_LOCAL,
+  WEBSITE_URL_STAGING,
+  CONSOLE_URL,
+  CONSOLE_URL_LOCAL,
+  CONSOLE_URL_STAGING,
+} from '@virtality/shared/types'
+
+const env = process.env.NEXT_PUBLIC_ENV || 'development'
+
+const websiteURL =
+  env === 'production'
+    ? WEBSITE_URL
+    : env === 'preview'
+      ? WEBSITE_URL_STAGING
+      : WEBSITE_URL_LOCAL
+
+const consoleURL =
+  env === 'production'
+    ? CONSOLE_URL
+    : env === 'preview'
+      ? CONSOLE_URL_STAGING
+      : CONSOLE_URL_LOCAL
+
+const Avatar = () => {
   const mounted = useMounted()
   const { setTheme, resolvedTheme, theme, themes } = useTheme()
   const { data, isPending } = authClient.useSession()
@@ -78,7 +101,14 @@ const Avatar = ({ websiteDomain }: AvatarProps) => {
         <DropdownMenuLabel></DropdownMenuLabel>
         <DropdownMenuGroup>
           <DropdownMenuItem asChild className='cursor-pointer'>
-            <Link href={websiteDomain ?? '#'} className='flex w-full'>
+            <Link href={consoleURL} className='flex w-full'>
+              <AppWindow />
+              Console
+            </Link>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem asChild className='cursor-pointer'>
+            <Link href={websiteURL} className='flex w-full'>
               <Home />
               Home Page
             </Link>
