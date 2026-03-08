@@ -448,18 +448,17 @@ const SceneSettings = ({
   }
 
   const sittingChangeHandler = (value: boolean) => {
-    sittingChangeSocketHandler(value)
+    selectedDevice?.events.sittingChange(value)
   }
 
   const sittingChangeSocketHandler = (payload: boolean) => {
-    selectedDevice?.events.sittingChange(payload)
-  }
-
-  const sittingChangeAckSocketHandler = () => {
-    setSitting(!isSitting)
+    setSitting(payload)
   }
 
   useEffect(() => {
+    const sittingChangeAckSocketHandler = () => {
+      setSitting((prev) => !prev)
+    }
     const socket = selectedDevice?.socket
     if (!socket) return
     socket.on(PROGRAM_EVENT.SittingChange, sittingChangeSocketHandler)
@@ -469,7 +468,6 @@ const SceneSettings = ({
       socket.off(PROGRAM_EVENT.SittingChange, sittingChangeSocketHandler)
       socket.off(PROGRAM_EVENT.SittingChangeAck, sittingChangeAckSocketHandler)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDevice])
 
   return (
