@@ -93,6 +93,7 @@ export function useCastingHandshake(socket: SocketWithQuery | null) {
     socket.on(CASTING_EVENT.Offer['name'], handleOffer)
     return () => {
       socket.off(CASTING_EVENT.Offer['name'], handleOffer)
+      socket.emit(CASTING_EVENT.StopCasting['name'])
     }
   }, [socket, handleOffer])
 
