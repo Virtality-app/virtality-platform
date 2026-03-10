@@ -19,12 +19,12 @@ export function withRom(
   if (!Array.isArray(exercises)) {
     return {
       ...exercises,
-      romMode: 1 as const,
+      romMode: 0 as const,
     }
   }
 
   return exercises.map((exercise) => ({
     ...exercise,
-    romMode: 1 as const,
+    romMode: 0 as const,
   }))
 }
