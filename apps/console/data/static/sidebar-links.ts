@@ -17,23 +17,23 @@ type SidebarLink = {
 }
 
 const sidebarLinks: SidebarLink[] = [
-  { title: 'Devices', url: '/devices', icon: RectangleGogglesIcon },
+  { title: 'devices', url: '/devices', icon: RectangleGogglesIcon },
   {
-    title: 'Patients',
+    title: 'patients',
     url: '/patients',
     icon: User,
   },
   {
-    title: 'Presets',
+    title: 'presets',
     url: '/presets',
     icon: BookMarkedIcon,
   },
   {
-    title: 'Guides',
+    title: 'guides',
     url: '/guides',
     icon: CircleQuestionMark,
   },
-  { title: 'Forms', url: '/forms', icon: ScrollText },
+  { title: 'forms', url: '/forms', icon: ScrollText },
 ]
 
 export default sidebarLinks

@@ -1,8 +1,11 @@
-import UserProfile from '@/app/(pages)/user/user-profile/user-profile'
 import { redirect } from 'next/navigation'
 import { getUserAndSession } from '@/lib/authActions'
-import { authClient, Session } from '@/auth-client'
+import { authClient } from '@/auth-client'
 import { headers } from 'next/headers'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Building, Key, UserIcon } from 'lucide-react'
+import SessionsTab from '@/app/(pages)/user/_components/sessions-tab'
+import ProfileInfo from '@/app/(pages)/user/_components/profile-info'
 
 const ProfilePage = async () => {
   const data = await getUserAndSession()
@@ -15,11 +18,33 @@ const ProfilePage = async () => {
   const { user, session } = data
 
   return (
-    <UserProfile
-      user={user}
-      session={session}
-      sessions={(sessionList.data as Session[]) ?? []}
-    />
+    <div className='h-full dark:bg-zinc-950'>
+      <div className='mx-auto max-w-3xl p-4'>
+        <Tabs defaultValue='info'>
+          <TabsList className='w-full gap-2'>
+            <TabsTrigger value='info'>
+              <UserIcon />
+            </TabsTrigger>
+            <TabsTrigger value='organizations'>
+              <Building />
+            </TabsTrigger>
+            <TabsTrigger value='sessions'>
+              <Key />
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value='info'>
+            <ProfileInfo user={user} />
+          </TabsContent>
+          <TabsContent value='organizations'>Organizations</TabsContent>
+          <TabsContent value='sessions'>
+            <SessionsTab
+              sessions={sessionList.data ?? []}
+              currentSessionToken={session.token}
+            />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
   )
 }
 

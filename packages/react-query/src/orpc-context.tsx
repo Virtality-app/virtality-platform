@@ -7,7 +7,6 @@ import {
   createContext,
   type ReactNode,
   useContext,
-  useEffect,
   useMemo,
 } from 'react'
 import { configureORPC } from './orpc.js'
@@ -44,14 +43,12 @@ export function ORPCProvider({
     [url, credentials],
   )
 
-  const orpc = useMemo(
-    () => createTanstackQueryUtils(createORPCClient(link)),
-    [link],
-  )
-
-  useEffect(() => {
-    configureORPC(link, orpc)
-  }, [link, orpc])
+  const orpc = useMemo(() => {
+    const instance = createTanstackQueryUtils(createORPCClient(link))
+    // Keep singleton available immediately for non-React client callers.
+    configureORPC(link, instance)
+    return instance
+  }, [link])
 
   return <ORPCContext.Provider value={orpc}>{children}</ORPCContext.Provider>
 }
