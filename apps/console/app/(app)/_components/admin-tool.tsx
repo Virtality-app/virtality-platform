@@ -12,9 +12,11 @@ import { Input } from '@/components/ui/input'
 import { ChangeEvent, useState } from 'react'
 import { authClient } from '@/auth-client'
 import useIsAuthed from '@/hooks/use-is-authed'
+import useMounted from '@/hooks/use-mounted'
 
 const AdminTool = ({ isImpersonating }: { isImpersonating?: boolean }) => {
-  const { data } = useIsAuthed()
+  const { data, isPending } = useIsAuthed()
+  const mounted = useMounted()
   const user = data?.user
   const [open, setOpen] = useState(false)
   const [host, setHost] = useState('')
@@ -60,6 +62,8 @@ const AdminTool = ({ isImpersonating }: { isImpersonating?: boolean }) => {
       console.log('Error sending verification email: ', error)
     }
   }
+
+  if (!mounted || isPending) return null
 
   return (
     <Popover open={open}>

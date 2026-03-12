@@ -2,9 +2,9 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 const AvatarSkeleton = () => {
   return (
-    <div className='flex items-center gap-2'>
-      <Skeleton className='h-6 w-40' />
-      <Skeleton className='size-12 rounded-full' />
+    <div className='flex h-12 items-center gap-2'>
+      <Skeleton className='bg-accent-foreground h-7 w-48' />
+      <Skeleton className='bg-accent-foreground size-12 rounded-full' />
     </div>
   )
 }

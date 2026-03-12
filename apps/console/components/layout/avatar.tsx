@@ -48,6 +48,7 @@ import { trackAnalyticsEvent } from '@/lib/analytics-contract'
 import useConsoleSessionTracking, {
   finalizeConsoleSession,
 } from '@/hooks/analytics/use-console-session-tracking'
+import useIsAuthed from '@/hooks/use-is-authed'
 
 const env = process.env.NEXT_PUBLIC_ENV || 'development'
 
@@ -66,13 +67,14 @@ const adminboardURL =
       : ADMINBOARD_URL_LOCAL
 
 const Avatar = () => {
+  const { data, isPending } = useIsAuthed()
+
   useConsoleSessionTracking()
   const router = useRouter()
   const mounted = useMounted()
   const { setTheme, resolvedTheme, theme, themes } = useTheme()
   const { state, setState } = useTour()
   const { t, i18n } = useClientT(['avatar', 'glossary'])
-  const { data, isPending } = authClient.useSession()
   const store = useStore()
 
   const handleSignOut = async () => {
@@ -92,7 +94,7 @@ const Avatar = () => {
 
   const user = data?.user
 
-  if (isPending) return <AvatarSkeleton />
+  if (isPending || !mounted) return <AvatarSkeleton />
 
   return (
     <DropdownMenu

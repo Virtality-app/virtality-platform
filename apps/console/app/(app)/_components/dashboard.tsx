@@ -11,9 +11,12 @@ import { useEffect, useState } from 'react'
 
 import useIsAuthed from '@/hooks/use-is-authed'
 import AdminTool from './admin-tool'
+import useMounted from '@/hooks/use-mounted'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const Dashboard = ({ isImpersonating }: { isImpersonating?: boolean }) => {
-  const { data } = useIsAuthed()
+  const { data, isPending } = useIsAuthed()
+  const mounted = useMounted()
 
   const store = useStore()
   const userLocalData = useRow('users', data?.user.id ?? '') as UserLocalData
@@ -53,7 +56,13 @@ const Dashboard = ({ isImpersonating }: { isImpersonating?: boolean }) => {
 
       <div className='container'>
         <H1>
-          Welcome, {user?.name}, to the
+          Welcome,{' '}
+          {isPending || !mounted ? (
+            <Skeleton className='inline-block h-6 w-40' />
+          ) : (
+            user?.name
+          )}
+          , to the
           <span className='text-vital-blue-700'> Virtality </span> Console.
         </H1>
       </div>

@@ -8,7 +8,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSkeleton,
   SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar'
@@ -17,49 +16,13 @@ import Link from 'next/link'
 import SmallLogo from './sm-logo'
 import { BugReportForm } from '../ui/bug-report-form'
 import { Flag, Sidebar as SidebarIcon } from 'lucide-react'
-import useMounted from '@/hooks/use-mounted'
-import { cn } from '@/lib/utils'
-import useIsAuthed from '@/hooks/use-is-authed'
 import {
   AnalyticsEventProps,
-  CommonEventProps,
   trackAnalyticsEvent,
 } from '@/lib/analytics-contract'
 
 const RootSidebar = () => {
-  const { isMobile, open } = useSidebar()
-  const { isPending } = useIsAuthed()
-  const mounted = useMounted()
-
-  // Show loading state until mounted and session is loaded
-  const isLoading = !mounted || isPending
-
-  if (isLoading) {
-    return (
-      <aside className={cn('bg-sidebar w-12', open && 'w-64')}>
-        <SidebarMenuSkeleton
-          showIcon
-          className={cn(
-            'bg-sidebar-accent *:bg-accent-foreground h-[60px] w-full',
-            !open &&
-              'justify-center **:data-[sidebar="menu-skeleton-text"]:hidden',
-          )}
-        />
-
-        {[0, 1, 2, 3].map((index) => (
-          <SidebarMenuSkeleton
-            key={index}
-            showIcon
-            className={cn(
-              'bg-sidebar-accent *:bg-accent-foreground w-full',
-              !open &&
-                'justify-center **:data-[sidebar="menu-skeleton-text"]:hidden',
-            )}
-          />
-        ))}
-      </aside>
-    )
-  }
+  const { isMobile } = useSidebar()
 
   return (
     <Sidebar collapsible='icon'>
