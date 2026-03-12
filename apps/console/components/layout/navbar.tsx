@@ -8,9 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import useIsAuthed from '@/hooks/use-is-authed'
 
 const Navbar = () => {
-  const { data, isPending } = useIsAuthed()
-
-  if (!data) return null
+  const { isPending } = useIsAuthed()
 
   if (isPending)
     return (

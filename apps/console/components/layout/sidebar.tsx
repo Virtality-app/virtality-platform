@@ -28,10 +28,8 @@ import {
 
 const RootSidebar = () => {
   const { isMobile, open } = useSidebar()
-  const { data, isPending } = useIsAuthed()
+  const { isPending } = useIsAuthed()
   const mounted = useMounted()
-
-  if (!data) return null
 
   // Show loading state until mounted and session is loaded
   const isLoading = !mounted || isPending
