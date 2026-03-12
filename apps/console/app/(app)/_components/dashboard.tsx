@@ -7,7 +7,6 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 import { useRow, useStore } from 'tinybase/ui-react'
 import { UserLocalData } from '@/types/models'
-import { useEffect, useState } from 'react'
 
 import useIsAuthed from '@/hooks/use-is-authed'
 import AdminTool from './admin-tool'
@@ -20,31 +19,19 @@ const Dashboard = ({ isImpersonating }: { isImpersonating?: boolean }) => {
 
   const store = useStore()
   const userLocalData = useRow('users', data?.user.id ?? '') as UserLocalData
-  const [showSuggestionSidebar, setShowSuggestionsSidebar] =
-    useState<boolean>(false)
-  const [showSuggestionDropdown, setShowSuggestionDropdown] =
-    useState<boolean>(false)
 
-  useEffect(() => {
-    if (!data) return
-
-    if (userLocalData.dashboardSuggestionSidebar === undefined)
-      store?.setCell('users', data.user.id, 'dashboardSuggestionSidebar', true)
-    if (userLocalData.dashboardSuggestionDropdown === undefined)
-      store?.setCell('users', data.user.id, 'dashboardSuggestionDropdown', true)
-    setShowSuggestionsSidebar(userLocalData.dashboardSuggestionSidebar)
-    setShowSuggestionDropdown(userLocalData.dashboardSuggestionDropdown)
-  }, [store, userLocalData, data])
+  const showSuggestionSidebar = userLocalData.dashboardSuggestionSidebar ?? true
+  const showSuggestionDropdown =
+    userLocalData.dashboardSuggestionDropdown ?? true
 
   const handleSidebarTipClose = () => {
-    if (!data) return
-    setShowSuggestionsSidebar(false)
+    if (!data || !showSuggestionSidebar) return
+
     store?.setCell('users', data.user.id, 'dashboardSuggestionSidebar', false)
   }
 
   const handleDropdownTipClose = () => {
-    if (!data) return
-    setShowSuggestionDropdown(false)
+    if (!data || !showSuggestionDropdown) return
     store?.setCell('users', data.user.id, 'dashboardSuggestionDropdown', false)
   }
 
