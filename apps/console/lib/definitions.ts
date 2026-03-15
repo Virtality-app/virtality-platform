@@ -104,10 +104,27 @@ export const PatientFormSchema = z.object({
   phone: z
     .string()
     .trim()
-    .min(10, 'Phone number must be at least 10 digits')
-    .max(15, 'Phone number must be at most 15 digits')
-    .optional(),
-  email: z.email('Invalid email format').optional(),
+    .optional()
+    .refine(
+      (val) => {
+        if (!val) return true
+        return val.length >= 10 && val.length <= 15
+      },
+      {
+        message: 'Phone number must be between 10 and 15 digits',
+      },
+    ),
+  email: z.string().refine(
+    (val) => {
+      if (!val) return true
+
+      if (z.regexes.email.test(val)) return true
+      else return false
+    },
+    {
+      message: 'Invalid email format',
+    },
+  ),
   dob: z.string().optional(),
   sex: z.string().optional(),
   image: z.instanceof(File).or(z.string()).optional().nullable(),

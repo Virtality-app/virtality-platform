@@ -21,6 +21,7 @@ import {
   useORPC,
   getQueryClient,
 } from '@virtality/react-query'
+import { trackAnalyticsEvent } from '@/lib/analytics-contract'
 
 export const columns: ColumnDef<Patient>[] = [
   {
@@ -106,10 +107,12 @@ export const columns: ColumnDef<Patient>[] = [
       const [open, setOpen] = useState(false)
 
       const { mutate: deletePatient } = useDeletePatient({
-        onSuccess: () =>
-          queryClient.invalidateQueries({
+        onSuccess: () => {
+          trackAnalyticsEvent('patient_deleted', {})
+          return queryClient.invalidateQueries({
             queryKey: orpc.patient.list.key(),
-          }),
+          })
+        },
       })
 
       const copyId = () => {

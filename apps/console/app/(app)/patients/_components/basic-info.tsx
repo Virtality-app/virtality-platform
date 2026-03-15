@@ -190,7 +190,7 @@ const BasicInfo = ({ form, patient }: BasicInfoProps) => {
                 name='email'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('form.email')} *</FormLabel>
+                    <FormLabel>{t('form.email')}</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
@@ -207,7 +207,7 @@ const BasicInfo = ({ form, patient }: BasicInfoProps) => {
                 name='phone'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('form.phone')} *</FormLabel>
+                    <FormLabel>{t('form.phone')}</FormLabel>
                     <FormControl>
                       <PhoneInput {...field} />
                     </FormControl>

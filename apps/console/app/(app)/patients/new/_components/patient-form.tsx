@@ -23,6 +23,7 @@ import useMounted from '@/hooks/use-mounted'
 import useIsAuthed from '@/hooks/use-is-authed'
 import { getQueryClient, useNewPatient, useORPC } from '@virtality/react-query'
 import { trackAnalyticsEvent } from '@/lib/analytics-contract'
+import useNow from '@/hooks/use-now'
 
 const defaultValues: PatientFormType = {
   name: '',
@@ -49,6 +50,7 @@ const PatientForm = () => {
   const orpc = useORPC()
   const mounted = useMounted()
   const router = useRouter()
+  const { ts, now } = useNow()
 
   const medHistoryDeltas = {
     anamnesesDeltas: null,
@@ -59,7 +61,9 @@ const PatientForm = () => {
 
   const { mutate: createPatient, isPending: isFormPending } = useNewPatient({
     onSuccess: (data) => {
-      trackAnalyticsEvent('patient_created', {})
+      trackAnalyticsEvent('patient_created', {
+        time_spent_sec: (now() - ts.current) / 1000,
+      })
       queryClient.invalidateQueries({
         queryKey: orpc.patient.list.key(),
       })

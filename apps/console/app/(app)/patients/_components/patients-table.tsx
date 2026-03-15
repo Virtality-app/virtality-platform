@@ -26,6 +26,7 @@ import {
   getQueryClient,
 } from '@virtality/react-query'
 import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
+import { trackAnalyticsEvent } from '@/lib/analytics-contract'
 
 const rowNavigationExceptions = [
   'div[data-slot="dialog-content"]',
@@ -72,10 +73,13 @@ const PatientsTable = () => {
   )
 
   const { mutate: deletePatients } = useDeletePatient({
-    onSuccess: () =>
-      queryClient.invalidateQueries({
+    onSuccess: () => {
+      trackAnalyticsEvent('patient_deleted', {})
+      setRowSelection({})
+      return queryClient.invalidateQueries({
         queryKey: orpc.patient.list.key(),
-      }),
+      })
+    },
   })
 
   const deleteSelectedHandler = () => {

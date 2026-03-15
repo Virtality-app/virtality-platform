@@ -102,7 +102,9 @@ export type AnalyticsEventPayloadMap = {
     query_length: number
     results_count?: number
   }
-  patient_created: CommonEventProps
+  patient_created: CommonEventProps & {
+    time_spent_sec: number
+  }
   patient_profile_updated: CommonEventProps & {
     updated_fields?: string[]
   }

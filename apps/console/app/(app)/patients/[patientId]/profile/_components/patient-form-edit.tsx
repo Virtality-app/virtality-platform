@@ -144,7 +144,14 @@ const PatientFormEdit = ({ patientId }: PatientFormEditProps) => {
   })
 
   const { mutate: deletePatient, isPending: isDeleting } = useDeletePatient({
-    onSuccess: () => router.push('/patients'),
+    onSuccess: () => {
+      trackAnalyticsEvent('patient_deleted', {})
+      queryClient.invalidateQueries({
+        queryKey: orpc.patient.list.key(),
+      })
+
+      router.push('/patients')
+    },
   })
 
   const form = useForm<PatientFormType>({
