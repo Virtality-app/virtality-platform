@@ -17,8 +17,8 @@ import useNavigationGuard from '@/hooks/use-navigation-guard'
 import { toast } from 'react-toastify'
 import { useClientT } from '@/i18n/use-client-t'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import BasicInfo from '../../../_components/basic-info'
-import MedicalHistory from '../../../_components/medical-history-tab'
+import BasicInfo from '@/app/(app)/patients/_components/basic-info'
+import MedicalHistory from '@/app/(app)/patients/_components/medical-history-tab'
 import useBeforeUnload from '@/hooks/use-before-unload'
 import { MedicalHistory as MedicalHistoryType, Patient } from '@virtality/db'
 import { useRouter } from 'next/navigation'
@@ -131,9 +131,7 @@ const PatientFormEdit = ({ patientId }: PatientFormEditProps) => {
 
   const { mutate: updatePatient, isPending: isFormPending } = useUpdatePatient({
     onSuccess: (_, variables) => {
-      trackAnalyticsEvent('patient_profile_updated', {
-        patient_id: variables.data.patient.id,
-      })
+      trackAnalyticsEvent('patient_profile_updated', {})
       return Promise.all([
         queryClient.invalidateQueries({
           queryKey: orpc.patient.find.key(),

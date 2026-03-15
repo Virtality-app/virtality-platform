@@ -97,7 +97,7 @@ const PatientsTable = () => {
         globalFilter={globalFilter}
         setGlobalFilter={setGlobalFilter}
       >
-        {selectedRow?.length !== 0 && (
+        {selectedRow && selectedRow.length !== 0 && (
           <DeleteConfirmDialog
             title={'Delete Selected Patients'}
             description={
