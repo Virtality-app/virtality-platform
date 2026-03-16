@@ -8,7 +8,7 @@
       "types": "./src/components/*.tsx",
       "default": "./dist/components/*.js"
     },
-    "./components/email/template-registry": {
+    "./template-registry": {
       "types": "./src/components/email/template-registry.ts",
       "default": "./dist/components/email/template-registry.js"
     },

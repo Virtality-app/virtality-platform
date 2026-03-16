@@ -1,16 +1,12 @@
 import { authed } from '../middleware/auth.ts'
 import { base } from '../context.ts'
 import { z } from 'zod/v4'
-import {
-  sendThankYouEmail,
-  sendEmail,
-  reactToHTML,
-} from '@virtality/nodemailer'
+import { sendThankYouEmail, sendEmail } from '@virtality/nodemailer'
 import {
   EMAIL_TEMPLATES,
   getTemplateById,
-} from '@virtality/ui/components/email/template-registry'
-
+} from '@virtality/ui/template-registry'
+import { reactToHTML } from '@virtality/ui/components/email/react-to-html'
 const sendThankYouEmailProcedure = base
   .route({ path: '/email/send-thank-you', method: 'POST' })
   .input(z.object({ email: z.string() }))
