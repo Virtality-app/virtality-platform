@@ -1,7 +1,6 @@
-import { toPlainText } from '@react-email/render'
 import ResetPassword from '@virtality/ui/components/email/reset-password'
+import { reactToHTML, toPlainText } from '@virtality/ui/components/email/react-to-html'
 import { nodemailer } from '../init.js'
-import { reactToHTML } from '../utils/react-to-html.js'
 import type { EmailData } from '../types/auth.js'
 
 export async function sendResetPassword(data: EmailData) {

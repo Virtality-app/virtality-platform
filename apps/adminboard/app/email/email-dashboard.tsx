@@ -9,40 +9,89 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Mail, Send } from 'lucide-react'
-import { Email } from './page'
 import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
-import { sendEmail } from '@/data/client/email'
+import {
+  useEmailTemplate,
+  useEmailTemplatePreview,
+  useEmailTemplates,
+  useSendEmailTemplate,
+} from '@virtality/react-query'
 
-type Props = {
-  payload: Email[]
-}
-
-const EmailDashboard = ({ payload }: Props) => {
-  const [selectedEmail, setSelectedEmail] = useState<Email>()
+const EmailDashboard = () => {
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editSubject, setEditSubject] = useState('')
+  const [editHtml, setEditHtml] = useState('')
   const [recipientEmail, setRecipientEmail] = useState('')
+  const [hasInitializedEditState, setHasInitializedEditState] = useState(false)
 
-  const handleSendEmail = async (e: React.FormEvent) => {
+  const { data: templates, isLoading: templatesLoading } = useEmailTemplates()
+
+  const { data: templateDetail, isLoading: detailLoading } =
+    useEmailTemplate(selectedId)
+
+  const { data: preview } = useEmailTemplatePreview(selectedId)
+
+  if (templateDetail && !hasInitializedEditState) {
+    setEditSubject(templateDetail.subject ?? '')
+    setEditHtml(templateDetail.html ?? '')
+    setHasInitializedEditState(true)
+  }
+
+  const selectedTemplate = templates?.find((t) => t.id === selectedId)
+
+  const handleSelectTemplate = (id: string) => {
+    setSelectedId(id)
+    setIsEditing(false)
+    setHasInitializedEditState(false)
+  }
+
+  const sendEmailMutation = useSendEmailTemplate()
+
+  const handleSendEmail = (e: React.FormEvent) => {
     e.preventDefault()
-
-    if (!recipientEmail || !recipientEmail.includes('@')) {
+    if (!selectedId || !recipientEmail?.includes('@')) {
       toast.error('Please enter a valid email address')
-
       return
     }
 
-    // Simulate API call
-    await sendEmail({ recipientEmail, emailId: selectedEmail?.id })
-
-    toast.success(
-      `Email sent "${selectedEmail?.title}" sent to ${recipientEmail}`,
+    sendEmailMutation.mutate(
+      {
+        templateId: selectedId,
+        recipientEmail: recipientEmail.trim(),
+      },
+      {
+        onSuccess: () => {
+          toast.success(`Email sent to ${recipientEmail.trim()}`)
+          setRecipientEmail('')
+        },
+        onError: (err: unknown) => {
+          toast.error(
+            err instanceof Error ? err.message : 'Failed to send email',
+          )
+        },
+      },
     )
+  }
 
-    setRecipientEmail('')
-    // setSending(false)
+  if (templatesLoading) {
+    return (
+      <div className='flex items-center justify-center py-12'>
+        <p className='text-muted-foreground'>Loading templates...</p>
+      </div>
+    )
+  }
+
+  if (!templates || templates.length === 0) {
+    return (
+      <div className='flex items-center justify-center py-12'>
+        <p className='text-muted-foreground'>No templates found.</p>
+      </div>
+    )
   }
 
   return (
@@ -50,25 +99,26 @@ const EmailDashboard = ({ payload }: Props) => {
       <Card className='overflow-auto lg:row-span-17'>
         <CardHeader>
           <CardTitle>Templates</CardTitle>
-          <CardDescription>Choose from premade emails</CardDescription>
+          <CardDescription>
+            Choose a template to preview and edit
+          </CardDescription>
         </CardHeader>
         <CardContent className='flex gap-3 overflow-auto lg:flex-col'>
-          {payload.map((email, index) => (
+          {templates.map((t) => (
             <button
-              key={index}
-              onClick={() => setSelectedEmail(email)}
+              key={t.id}
+              onClick={() => handleSelectTemplate(t.id)}
               className={cn(
                 'hover:bg-accent rounded-lg p-3 text-left transition-colors max-lg:min-w-3xs lg:w-full',
-                selectedEmail?.id === email.id ? 'bg-accent' : '',
+                selectedId === t.id ? 'bg-accent' : '',
               )}
             >
               <div className='flex items-start gap-3'>
                 <Mail className='text-muted-foreground mt-1 size-4 shrink-0' />
                 <div className='flex-1 space-y-1'>
-                  <p className='leading-none font-medium'>{email.title}</p>
-                  {/* <p className="text-sm text-muted-foreground line-clamp-1">{email.subject}</p> */}
+                  <p className='leading-none font-medium'>{t.title}</p>
                   <Badge variant='secondary' className='mt-1 text-xs'>
-                    {email.category}
+                    {t.category}
                   </Badge>
                 </div>
               </div>
@@ -78,65 +128,127 @@ const EmailDashboard = ({ payload }: Props) => {
       </Card>
 
       <div className='flex flex-1 flex-col space-y-6 lg:row-span-17'>
-        {/* Preview */}
-        <Card className='flex flex-1 flex-col'>
-          <CardHeader>
-            <div className='flex items-start justify-between'>
-              <div>
-                <CardTitle>{selectedEmail?.title}</CardTitle>
-                <CardDescription className='mt-1'>
-                  Preview before sending
+        {!selectedId ? (
+          <Card className='flex flex-1 flex-col'>
+            <CardContent className='flex flex-1 items-center justify-center py-12'>
+              <p className='text-muted-foreground'>
+                Select a template to preview and edit
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            <Card className='flex flex-1 flex-col'>
+              <CardHeader>
+                <div className='flex items-start justify-between'>
+                  <div>
+                    <CardTitle>{selectedTemplate?.title}</CardTitle>
+                    <CardDescription className='mt-1'>
+                      {isEditing
+                        ? 'Edit subject and HTML content'
+                        : 'Preview with sample data'}
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className='flex flex-1 flex-col space-y-4'>
+                {isEditing ? (
+                  <>
+                    <div>
+                      <label className='text-muted-foreground text-sm font-medium'>
+                        Subject
+                      </label>
+                      <Input
+                        className='mt-1'
+                        value={editSubject}
+                        onChange={(e) => setEditSubject(e.target.value)}
+                        placeholder='Email subject'
+                      />
+                    </div>
+                    <div className='flex flex-1 flex-col'>
+                      <label className='text-muted-foreground text-sm font-medium'>
+                        HTML (use {'{{url}}'}, {'{{name}}'}, etc. for
+                        placeholders)
+                      </label>
+                      <textarea
+                        className='bg-muted/50 mt-2 min-h-[300px] flex-1 rounded-lg border p-4 font-mono text-sm'
+                        value={editHtml}
+                        onChange={(e) => setEditHtml(e.target.value)}
+                        placeholder='Leave empty to use default template. Or paste custom HTML with placeholders.'
+                        spellCheck={false}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <label className='text-muted-foreground text-sm font-medium'>
+                        Subject
+                      </label>
+                      <p className='mt-1 text-lg font-medium'>
+                        {detailLoading ? '...' : (preview?.subject ?? '-')}
+                      </p>
+                    </div>
+                    <div className='bg-muted/50 mt-2 min-h-[300px] flex-1 rounded-lg border p-4'>
+                      {detailLoading ? (
+                        <p className='text-muted-foreground'>
+                          Loading preview...
+                        </p>
+                      ) : preview?.html ? (
+                        <iframe
+                          className='h-full min-h-[300px] w-full font-sans text-sm leading-relaxed'
+                          srcDoc={preview.html}
+                          title='Email preview'
+                        />
+                      ) : (
+                        <p className='text-muted-foreground'>
+                          No preview available
+                        </p>
+                      )}
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Send test email</CardTitle>
+                <CardDescription>
+                  Send this template to a specified email address
                 </CardDescription>
-              </div>
-              <Badge>{selectedEmail?.category}</Badge>
-            </div>
-          </CardHeader>
-          <CardContent className='flex flex-1 flex-col space-y-4'>
-            <div>
-              <label className='text-muted-foreground text-sm font-medium'>
-                Subject
-              </label>
-              <p className='mt-1 text-lg font-medium'></p>
-            </div>
-
-            <div className='bg-muted/50 mt-2 flex-1 rounded-lg border p-4'>
-              <iframe
-                className='h-full w-full font-sans text-sm leading-relaxed whitespace-pre-wrap'
-                srcDoc={selectedEmail?.html}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Send Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Send Email</CardTitle>
-            <CardDescription>
-              Enter recipient&apos;s email address
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSendEmail} className='flex gap-3'>
-              <Input
-                type='email'
-                placeholder='recipient@example.com'
-                value={recipientEmail}
-                onChange={(e) => setRecipientEmail(e.target.value)}
-                className='flex-1'
-                required
-              />
-              <Button
-                type='submit'
-                // disabled={sending}
-              >
-                <Send className='mr-2 size-4' />
-                Send
-                {/* {sending ? "Sending..." : "Send"} */}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+              </CardHeader>
+              <CardContent>
+                <form
+                  onSubmit={handleSendEmail}
+                  className='flex flex-col gap-3 sm:flex-row sm:items-end'
+                >
+                  <div className='flex-1'>
+                    <label
+                      htmlFor='recipient-email'
+                      className='text-muted-foreground mb-1.5 block text-sm font-medium'
+                    >
+                      Recipient email
+                    </label>
+                    <Input
+                      id='recipient-email'
+                      type='email'
+                      placeholder='recipient@example.com'
+                      value={recipientEmail}
+                      onChange={(e) => setRecipientEmail(e.target.value)}
+                      className='w-full'
+                      required
+                    />
+                  </div>
+                  <Button type='submit' disabled={sendEmailMutation.isPending}>
+                    <Send className='mr-2 size-4' />
+                    {sendEmailMutation.isPending ? 'Sending...' : 'Send'}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
     </div>
   )

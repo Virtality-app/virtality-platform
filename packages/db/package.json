@@ -15,6 +15,7 @@
   "scripts": {
     "generate": "prisma generate --config ./console/prisma.config.ts",
     "build": "pnpm generate && rimraf ./dist && tsc",
+    "reset": "prisma migrate reset --config ./console/prisma.config.ts",
     "migrate:dev": "prisma migrate dev --config ./console/prisma.config.ts",
     "migrate:deploy": "prisma migrate deploy --config ./console/prisma.config.ts",
     "studio": "prisma studio --config ./console/prisma.config.ts"

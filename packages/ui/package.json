@@ -7,6 +7,14 @@
     "./components/*": {
       "types": "./src/components/*.tsx",
       "default": "./dist/components/*.js"
+    },
+    "./components/email/template-registry": {
+      "types": "./src/components/email/template-registry.ts",
+      "default": "./dist/components/email/template-registry.js"
+    },
+    "./components/email/react-to-html": {
+      "types": "./src/lib/react-to-html.ts",
+      "default": "./dist/lib/react-to-html.js"
     }
   },
   "scripts": {
@@ -16,6 +24,7 @@
   },
   "dependencies": {
     "@react-email/components": "0.0.41",
+    "@react-email/render": "2.0.0",
     "react": "19.2.3"
   },
   "devDependencies": {

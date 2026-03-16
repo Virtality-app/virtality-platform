@@ -1,7 +1,6 @@
 import DeleteUserEmail from '@virtality/ui/components/email/delete-user-email'
+import { reactToHTML, toPlainText } from '@virtality/ui/components/email/react-to-html'
 import { nodemailer } from '../init.js'
-import { reactToHTML } from '../utils/react-to-html.js'
-import { toPlainText } from '@react-email/render'
 import type { EmailData } from '../types/auth.js'
 
 export const sendDeleteAccountVerification = async (data: EmailData) => {

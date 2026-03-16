@@ -95,3 +95,9 @@ export { useCreateWaitlist } from './hooks/mutations/waitlist/use-create-waitlis
 
 // Email mutations
 export { useSendThankYouEmail } from './hooks/mutations/email/useSendThankYouEmail.js'
+export {
+  useEmailTemplates,
+  useEmailTemplate,
+  useEmailTemplatePreview,
+} from './hooks/queries/email/use-email-templates.js'
+export { useSendEmailTemplate } from './hooks/mutations/email/use-send-email-template.js'

@@ -1,8 +1,7 @@
 import EmailVerification from '@virtality/ui/components/email/email-verification'
-import { toPlainText } from '@react-email/render'
+import { reactToHTML, toPlainText } from '@virtality/ui/components/email/react-to-html'
 import { nodemailer } from '../init.js'
 import type { EmailData } from '../types/auth.js'
-import { reactToHTML } from '../utils/react-to-html.js'
 
 export async function sendVerificationEmail(data: EmailData) {
   const {

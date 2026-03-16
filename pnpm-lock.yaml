@@ -103,6 +103,12 @@ importers:
       '@virtality/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@virtality/orpc':
+        specifier: workspace:*
+        version: link:../../packages/orpc
+      '@virtality/react-query':
+        specifier: workspace:*
+        version: link:../../packages/react-query
       '@virtality/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -786,24 +792,15 @@ importers:
 
   packages/nodemailer:
     dependencies:
-      '@react-email/render':
-        specifier: 2.0.0
-        version: 2.0.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@virtality/db':
         specifier: workspace:*
         version: link:../db
-      '@virtality/shared':
-        specifier: workspace:*
-        version: link:../shared
       '@virtality/ui':
         specifier: workspace:*
         version: link:../ui
       nodemailer:
         specifier: 8.0.1
         version: 8.0.1
-      react:
-        specifier: 19.2.3
-        version: 19.2.3
     devDependencies:
       '@types/node':
         specifier: 25.3.3
@@ -811,9 +808,6 @@ importers:
       '@types/nodemailer':
         specifier: 7.0.11
         version: 7.0.11
-      '@types/react':
-        specifier: 19.2.14
-        version: 19.2.14
       '@virtality/typescript-config':
         specifier: workspace:*
         version: link:../../tooling/typescript-config
@@ -847,6 +841,9 @@ importers:
       '@virtality/shared':
         specifier: workspace:*
         version: link:../shared
+      '@virtality/ui':
+        specifier: workspace:*
+        version: link:../ui
       superjson:
         specifier: 2.2.6
         version: 2.2.6
@@ -928,6 +925,9 @@ importers:
       '@react-email/components':
         specifier: 0.0.41
         version: 0.0.41(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@react-email/render':
+        specifier: 2.0.0
+        version: 2.0.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       react:
         specifier: 19.2.3
         version: 19.2.3

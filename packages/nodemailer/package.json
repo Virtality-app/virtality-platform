@@ -16,16 +16,12 @@
   },
   "dependencies": {
     "nodemailer": "8.0.1",
-    "@react-email/render": "2.0.0",
-    "react": "19.2.3",
     "@virtality/ui": "workspace:*",
-    "@virtality/shared": "workspace:*",
     "@virtality/db": "workspace:*"
   },
   "devDependencies": {
     "@virtality/typescript-config": "workspace:*",
     "@types/node": "25.3.3",
-    "@types/react": "19.2.14",
     "@types/nodemailer": "7.0.11",
     "typescript": "5.9.3"
   }

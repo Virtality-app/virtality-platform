@@ -54,7 +54,9 @@
     "zod": "4.3.6",
     "@virtality/db": "workspace:*",
     "@virtality/auth": "workspace:*",
-    "@virtality/shared": "workspace:*"
+    "@virtality/orpc": "workspace:*",
+    "@virtality/shared": "workspace:*",
+    "@virtality/react-query": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "19.2.14",
