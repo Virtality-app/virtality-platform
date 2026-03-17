@@ -2,41 +2,78 @@
 import { SiGoogle, SiGoogleHex } from '@icons-pack/react-simple-icons'
 import { authClient } from '@/auth-client'
 import { Button } from '@/components/ui/button'
-import { useEffect, useState } from 'react'
+import {
+  CONSOLE_URL,
+  CONSOLE_URL_LOCAL,
+  CONSOLE_URL_STAGING,
+} from '@virtality/shared/types'
+import { useCallback, useState } from 'react'
+import useTimeout from '@/hooks/use-timeout'
+import { Spinner } from '@/components/ui/spinner'
 
 interface SocialSignInButtonProps {
   referralCode?: string
 }
 
+const env = process.env.NEXT_PUBLIC_ENV || 'development'
+
+const callbackURL =
+  env === 'production'
+    ? CONSOLE_URL
+    : env === 'preview'
+      ? CONSOLE_URL_STAGING
+      : CONSOLE_URL_LOCAL
+
 const SocialSignInButton = ({ referralCode }: SocialSignInButtonProps) => {
-  const [callbackURL, setCallbackURL] = useState('')
+  const [isRunning, setIsRunning] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const domain = window.location.origin
+  const handleTimeout = useCallback(() => {
+    if (!isRunning) return
+    setIsRunning(false)
+  }, [isRunning])
 
-    if (domain) setCallbackURL(domain)
-  }, [])
+  useTimeout(handleTimeout, isRunning ? 5000 : null)
 
-  const handleSignIn = () =>
+  const handleSignIn = () => {
+    setIsRunning(true)
     authClient.signIn.social({
       provider: 'google',
-
       callbackURL,
       ...(referralCode && {
         additionalData: { referralCode },
       }),
+      fetchOptions: {
+        onSuccess: () => {
+          setIsRunning(false)
+        },
+        onError(context) {
+          setError(context.error.message)
+        },
+      },
     })
+  }
 
   return (
-    <Button
-      variant='outline'
-      size='lg'
-      className='w-full'
-      onClick={handleSignIn}
-    >
-      <SiGoogle color={SiGoogleHex} />
-      <span>{'Sign-in with Google'}</span>
-    </Button>
+    <div>
+      <Button
+        variant='outline'
+        size='lg'
+        className='w-full'
+        disabled={isRunning}
+        onClick={handleSignIn}
+      >
+        {isRunning ? (
+          <Spinner />
+        ) : (
+          <>
+            <SiGoogle color={SiGoogleHex} />
+            <span>{'Sign-in with Google'}</span>
+          </>
+        )}
+      </Button>
+      {error && <div className='text-red-500'>{error}</div>}
+    </div>
   )
 }
 
