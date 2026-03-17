@@ -6,6 +6,11 @@ import { connectionHandler } from './sockets/prod-server'
 // Initialize Socket.IO
 const app = express()
 
+// Keepalive endpoint for cron (e.g. GitHub Actions) to prevent free tier sleep
+app.get('/line', (_req, res) => {
+  res.status(200).send('ok')
+})
+
 const httpServer = createServer(app)
 
 console.log('env: ', process.env.ENV)

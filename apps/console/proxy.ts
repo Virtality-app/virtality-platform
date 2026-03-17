@@ -122,7 +122,12 @@ const sessionHandler = async (request: NextRequest) => {
           as.stripeCustomerId === stripeCustomerId && as.status === 'active',
       )
 
-      if (!hasSubscription) return NextResponse.redirect(waitlistURL)
+      if (!hasSubscription) {
+        await auth.api.signOut({
+          headers: await headers(),
+        })
+        return NextResponse.redirect(waitlistURL)
+      }
     } catch (error) {
       console.error('Error checking subscription:', error)
     }

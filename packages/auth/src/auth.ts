@@ -152,7 +152,12 @@ export const auth = betterAuth({
   },
   hooks: {
     after: createAuthMiddleware(async (ctx) => {
-      if (ctx.path.startsWith('/sign-up')) {
+      const {
+        path,
+        context: { newSession },
+      } = ctx
+
+      if (path.startsWith('/sign-up')) {
         const newSession = ctx.context.newSession
         const re = ctx.body?.re
 
@@ -160,6 +165,21 @@ export const auth = betterAuth({
           const isValid = await validateAndConsumeReferralCode(
             re,
             newSession.user.id,
+          )
+
+          if (isValid) {
+            await updateUserRole(newSession.user.id, 'tester')
+          }
+        }
+      }
+
+      if (path.startsWith('/callback/:id')) {
+        const additionalData = await getOAuthState()
+
+        if (newSession?.user?.id && additionalData?.referralCode) {
+          const isValid = await validateAndConsumeReferralCode(
+            additionalData?.referralCode,
+            newSession?.user?.id,
           )
 
           if (isValid) {
