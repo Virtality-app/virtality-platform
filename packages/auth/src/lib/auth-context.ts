@@ -1,4 +1,4 @@
-import { auth } from '../server.ts'
+import { auth } from '../auth.ts'
 
 export type AuthContext = {
   user: typeof auth.$Infer.Session.user | null

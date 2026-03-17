@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
-import { auth } from '@virtality/auth/adminboard'
+import { auth } from '@virtality/auth'
 
 const { enabled } = process.env
 
@@ -10,9 +10,12 @@ export async function proxy(request: NextRequest) {
   if (url.pathname === '/userCreation' && (enabled === 'false' || true)) {
     return NextResponse.redirect(new URL('/', request.url))
   }
+
   const data = await auth.api.getSession({
     headers: await headers(),
   })
+
+  console.log('proxy: ', data)
 
   if (!data) {
     return NextResponse.redirect(new URL('/log-in', request.url))

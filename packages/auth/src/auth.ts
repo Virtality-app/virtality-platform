@@ -1,9 +1,18 @@
-import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { betterAuth } from 'better-auth'
+import {
+  EmailData,
+  sendDeleteAccountVerification,
+  sendResetPassword,
+  sendVerificationEmail,
+} from '@virtality/nodemailer'
+import { createAuthMiddleware, getOAuthState } from 'better-auth/api'
+import validateAndConsumeReferralCode from './lib/referral-code.ts'
+import { updateUserRole } from './data/user.ts'
+import { prisma } from '@virtality/db'
+import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { admin, organization, phoneNumber } from 'better-auth/plugins'
 import { stripe } from '@better-auth/stripe'
 import Stripe from 'stripe'
-import { prisma } from '@virtality/db'
 import { ac, roles } from './permissions.ts'
 import {
   SERVER_URL,
@@ -24,12 +33,26 @@ const baseURL =
       ? SERVER_URL_STAGING
       : SERVER_URL_LOCAL
 
-export const core_auth = {
+export const auth = betterAuth({
   appName: 'virtality',
   baseURL,
   basePath: '/api/v1/auth',
   database: prismaAdapter(prisma, { provider: 'postgresql' }),
   account: { accountLinking: { enabled: true } },
+  user: {
+    deleteUser: {
+      enabled: true,
+      sendDeleteAccountVerification,
+    },
+  },
+  emailAndPassword: {
+    enabled: true,
+    requireEmailVerification: true,
+    sendResetPassword,
+  },
+  emailVerification: {
+    sendVerificationEmail,
+  },
   socialProviders: {
     google: {
       prompt: 'select_account',
@@ -94,6 +117,58 @@ export const core_auth = {
     'http://localhost:3002',
     'https://*.virtality.app',
   ],
-} satisfies Parameters<typeof betterAuth>[0]
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user, ctx) => {
+          if (ctx?.path === '/sign-up/email') {
+            const referralCode = ctx.body?.referralCode
 
-export type CoreAuth = typeof core_auth
+            const isValid = await validateAndConsumeReferralCode(
+              referralCode,
+              user.id,
+            )
+
+            if (isValid) {
+              await updateUserRole(user.id, 'tester')
+            }
+          }
+
+          if (ctx?.path === '/callback/:id') {
+            const additionalData = await getOAuthState()
+
+            const isValid = await validateAndConsumeReferralCode(
+              additionalData?.referralCode,
+              user.id,
+            )
+
+            if (isValid) {
+              await updateUserRole(user.id, 'tester')
+            }
+          }
+        },
+      },
+    },
+  },
+  hooks: {
+    after: createAuthMiddleware(async (ctx) => {
+      if (ctx.path.startsWith('/sign-up')) {
+        const newSession = ctx.context.newSession
+        const re = ctx.body?.re
+
+        if (newSession?.user && re && typeof re === 'string') {
+          const isValid = await validateAndConsumeReferralCode(
+            re,
+            newSession.user.id,
+          )
+
+          if (isValid) {
+            await updateUserRole(newSession.user.id, 'tester')
+          }
+        }
+      }
+    }),
+  },
+})
+
+export type { AuthContext } from './lib/auth-context.ts'

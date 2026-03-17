@@ -4,26 +4,18 @@
   "description": "Authentication for the Virtality platform",
   "type": "module",
   "exports": {
-    "./console": {
-      "types": "./src/console.ts",
-      "default": "./dist/console.js"
-    },
-    "./adminboard": {
-      "types": "./src/adminboard.ts",
-      "default": "./dist/adminboard.js"
-    },
-    "./server": {
-      "types": "./src/server.ts",
-      "default": "./dist/server.js"
+    ".": {
+      "types": "./src/auth.ts",
+      "default": "./dist/auth.js"
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "rimraf dist && tsc",
     "dev": "tsc --watch",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@better-auth/stripe": "1.4.18",
+    "@better-auth/stripe": "1.5.5",
     "@prisma/adapter-pg": "7.2.0",
     "@prisma/client": "7.2.0",
     "@virtality/db": "workspace:*",
@@ -31,7 +23,7 @@
     "@virtality/nodemailer": "workspace:*",
     "@virtality/shared": "workspace:*",
     "stripe": "18.5.0",
-    "better-auth": "1.4.18"
+    "better-auth": "1.5.5"
   },
   "devDependencies": {
     "@virtality/typescript-config": "workspace:*",
