@@ -1,21 +1,22 @@
 import { z } from 'zod/v4'
 import { authed } from '../middleware/auth.ts'
-
-const ExerciseListInputSchema = z
-  .object({
-    includeDisabled: z.boolean().optional(),
-  })
-  .optional()
+import { ExerciseFindManyZodSchema } from '@virtality/db/definitions'
 
 const listExercise = authed
   .route({ path: '/exercise/list', method: 'GET' })
-  .input(ExerciseListInputSchema)
+  .input(
+    ExerciseFindManyZodSchema.extend({
+      includeDisabled: z.boolean().optional(),
+    }),
+  )
   .handler(async ({ context, input }) => {
     const { prisma } = context
-    const includeDisabled = input?.includeDisabled === true
+
+    const { includeDisabled, orderBy, where } = input
+
     return prisma.exercise.findMany({
-      where: includeDisabled ? undefined : { enabled: true },
-      orderBy: { id: 'asc' },
+      where: { ...where, ...(!includeDisabled && { enabled: true }) },
+      orderBy,
     })
   })
 

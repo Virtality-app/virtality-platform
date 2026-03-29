@@ -6,7 +6,7 @@ export type { ORPCProviderProps } from './orpc-context.js'
 export { getQueryClient, QueryProvider } from './provider.js'
 export type { QueryProviderProps } from './provider.js'
 
-// Query hooks
+// ----------------------- Query hooks -----------------------
 
 // User queries
 export { useUserName } from './hooks/queries/user/use-user-name.js'
@@ -60,7 +60,10 @@ export { useReferralCodes } from './hooks/queries/referral/use-referral-codes.js
 // Bucket queries
 export { useBucket } from './hooks/queries/bucket/use-bucket.js'
 
-// Mutation hooks
+// Favorite exercise queries
+export { useFavoriteExercise } from './hooks/queries/favorite-exercise/use-favorite-exercise.js'
+
+// ----------------------- Mutation hooks -----------------------
 
 // Program mutations
 export { useCreateProgram } from './hooks/mutations/program/use-create-program.js'
@@ -112,3 +115,7 @@ export {
   useEmailTemplatePreview,
 } from './hooks/queries/email/use-email-templates.js'
 export { useSendEmailTemplate } from './hooks/mutations/email/use-send-email-template.js'
+
+// Favorite exercise mutations
+export { useAddFavoriteExercise } from './hooks/mutations/favorite-exercise/use-add-favorite-exercise.js'
+export { useRemoveFavoriteExercise } from './hooks/mutations/favorite-exercise/use-remove-favorite-exercise.js'

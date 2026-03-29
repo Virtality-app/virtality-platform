@@ -4,16 +4,30 @@ import { useEffect, useRef, useState, MouseEvent } from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
-import { Info, Pause, Play, RotateCcw } from 'lucide-react'
+import { Ellipsis, Info, Pause, Play, RotateCcw, Star } from 'lucide-react'
 import { cn, getDisplayName } from '@/lib/utils'
 import { Separator } from './separator'
 import { P } from './typography'
 import { Exercise } from '@virtality/db'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from './dropdown-menu'
+import {
+  getQueryClient,
+  useAddFavoriteExercise,
+  useORPC,
+  useRemoveFavoriteExercise,
+} from '@virtality/react-query'
 
 interface FlipCardProps {
   exercise: Exercise
   className?: string
   isSelected: boolean
+  toggledFavorites: boolean
+  favoriteExerciseId?: string | null
   onSelect: (e: MouseEvent) => void
 }
 
@@ -21,6 +35,8 @@ const FlipCard = ({
   exercise,
   className,
   isSelected,
+  toggledFavorites,
+  favoriteExerciseId,
   onSelect,
 }: FlipCardProps) => {
   const [isFlipped, setIsFlipped] = useState(false)
@@ -84,6 +100,8 @@ const FlipCard = ({
           isTouchDevice={isTouchDevice}
           videoRef={videoRef}
           isFlipped={isFlipped}
+          favoriteExerciseId={favoriteExerciseId}
+          toggledFavorites={toggledFavorites}
           handleFlip={handleFlip}
           handlePreviewToggle={handlePreviewToggle}
         />
@@ -106,6 +124,8 @@ interface CardFrontProps {
   isPreviewPlaying: boolean
   isTouchDevice: boolean
   isFlipped: boolean
+  favoriteExerciseId?: string | null
+  toggledFavorites: boolean
   handleFlip: (e: MouseEvent) => void
   handlePreviewToggle: (e: MouseEvent) => void
   videoRef: React.RefObject<HTMLVideoElement | null>
@@ -117,6 +137,8 @@ function CardFront({
   isPreviewPlaying,
   isTouchDevice,
   isFlipped,
+  favoriteExerciseId,
+  toggledFavorites,
   videoRef,
   handleFlip,
   handlePreviewToggle,
@@ -168,21 +190,20 @@ function CardFront({
         )}
         {!isFlipped && (
           <>
-            <Button
-              size='icon-sm'
-              variant='ghost'
-              onClick={handleFlip}
-              className='absolute top-2 left-2 z-20 bg-black/45 text-white hover:bg-black/65 hover:text-white'
-            >
-              <Info />
-            </Button>
+            <CardActions
+              exercise={exercise}
+              favoriteExerciseId={favoriteExerciseId}
+              toggledFavorites={toggledFavorites}
+              handleFlip={handleFlip}
+            />
             <Button
               type='button'
               onClick={handlePreviewToggle}
               aria-label={
                 isPreviewPlaying ? 'Pause preview video' : 'Play preview video'
               }
-              className='absolute top-2 right-2 z-10 rounded-full bg-black/65 p-2 text-white shadow-md transition hover:scale-105 hover:bg-black/80 focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black focus-visible:outline-none'
+              size='icon'
+              className='absolute top-2 left-2 z-10 rounded-full bg-black/65 p-2 text-white shadow-md transition hover:scale-105 hover:bg-black/80 focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black focus-visible:outline-none'
             >
               {isPreviewPlaying ? (
                 <Pause className='size-4 fill-current' />
@@ -229,5 +250,79 @@ function CardBack({ exercise, isSelected, handleFlip }: CardBackProps) {
         </Button>
       </CardFooter>
     </Card>
+  )
+}
+
+interface CardActionsProps {
+  exercise: Exercise
+  favoriteExerciseId?: string | null
+  toggledFavorites: boolean
+  handleFlip: (e: MouseEvent) => void
+}
+
+function CardActions({
+  exercise,
+  favoriteExerciseId,
+  toggledFavorites,
+  handleFlip,
+}: CardActionsProps) {
+  const queryClient = getQueryClient()
+  const orpc = useORPC()
+
+  const { mutate: addFavoriteExercise } = useAddFavoriteExercise({
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: orpc.favoriteExercise.list.key(),
+      })
+    },
+  })
+  const { mutate: removeFavoriteExercise } = useRemoveFavoriteExercise({
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: orpc.favoriteExercise.list.key(),
+      })
+    },
+  })
+  const hadleFavoriteMutation = (e: MouseEvent) => {
+    e.stopPropagation()
+
+    if (toggledFavorites) {
+      if (!favoriteExerciseId) return
+      removeFavoriteExercise({ id: favoriteExerciseId })
+    } else {
+      addFavoriteExercise({ exerciseId: exercise.id })
+    }
+  }
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          size='icon-sm'
+          variant='ghost'
+          className='absolute top-2 right-2 z-20 bg-black/45 text-white hover:bg-black/65 hover:text-white'
+        >
+          <Ellipsis />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className='z-9999'>
+        <DropdownMenuItem onClick={hadleFavoriteMutation}>
+          {favoriteExerciseId ? (
+            <>
+              <Star fill='yellow' />
+              Remove from Favorites
+            </>
+          ) : (
+            <>
+              <Star />
+              Add to Favorites
+            </>
+          )}
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleFlip}>
+          <Info />
+          Information
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

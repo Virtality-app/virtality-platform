@@ -127,11 +127,18 @@
       "outputs": ["console/prisma/generated/**"]
     },
     "@virtality/db#migrate:dev": {
-      "outputs": ["console/prisma/generated/**"]
+      "outputs": ["console/prisma/generated/**"],
+      "cache": false,
+      "persistent": true
     },
     "@virtality/db#migrate:deploy": {
-      "outputs": ["console/prisma/generated/**"]
+      "outputs": ["console/prisma/generated/**"],
+      "cache": false,
+      "persistent": true
     },
-    "@virtality/db#studio": {}
+    "@virtality/db#studio": {
+      "cache": false,
+      "persistent": true
+    }
   }
 }

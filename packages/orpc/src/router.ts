@@ -18,6 +18,7 @@ import { waitlist } from './procedures/waitlist.ts'
 import { email } from './procedures/email.ts'
 import { referral } from './procedures/referral.ts'
 import { bucket } from './procedures/bucket.ts'
+import { favoriteExercise } from './procedures/favorite-exercise.ts'
 
 export const router = {
   me,
@@ -40,6 +41,7 @@ export const router = {
   email,
   referral,
   bucket,
+  favoriteExercise,
 }
 
 export type Router = typeof router

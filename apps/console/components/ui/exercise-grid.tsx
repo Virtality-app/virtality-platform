@@ -1,4 +1,4 @@
-import { getDisplayName, getUUID } from '@/lib/utils'
+import { cn, getDisplayName, getUUID } from '@/lib/utils'
 import { Star, X } from 'lucide-react'
 import FlipCard from '@/components//ui/flip-card'
 import { Input } from '@/components/ui/input'
@@ -7,14 +7,23 @@ import { Button } from './button'
 import { ChangeEvent, MouseEvent, useMemo, useState } from 'react'
 import sortedUniq from 'lodash.sorteduniq'
 import { useExerciseLibrary } from '@/context/exercise-library-context'
-import { useExercise } from '@virtality/react-query'
+import { useExercise, useFavoriteExercise } from '@virtality/react-query'
 import { withRom } from '@/lib/with-rom'
 import { useFeatureFlagResult } from 'posthog-js/react'
+import { Exercise } from '@virtality/db'
+import { Skeleton } from './skeleton'
 
 const ExerciseGrid = () => {
   const [searchTerm, setSearchTerm] = useState('')
 
-  const { data: exercises } = useExercise()
+  const [toggledFavorites, setToggledFavorites] = useState(false)
+  const [direction, setDirection] = useState<Exercise['direction'] | undefined>(
+    undefined,
+  )
+
+  const { data: exercises, isLoading } = useExercise({
+    input: { where: { direction: direction ?? undefined } },
+  })
 
   const { state, handler } = useExerciseLibrary()
   const { isSelected } = state
@@ -69,6 +78,20 @@ const ExerciseGrid = () => {
     setSearchTerm('')
   }
 
+  const toggleFavorites = () => {
+    setToggledFavorites((prev) => !prev)
+  }
+
+  const selectDirection = (direction: Exercise['direction'] | undefined) => {
+    setDirection(direction)
+  }
+
+  const { data: favorites } = useFavoriteExercise(toggledFavorites)
+
+  const displayedExercises = toggledFavorites
+    ? exercises?.filter((e) => favorites?.some((f) => f.exerciseId === e.id))
+    : exercises
+
   return (
     <Tabs
       defaultValue={categories[0]}
@@ -107,7 +130,15 @@ const ExerciseGrid = () => {
             )}
             {filtersFlag?.enabled && filtersFlag.payload === false ? null : (
               <div className='flex w-full items-center gap-2 rounded-md'>
-                <Button size='sm' variant='default'>
+                <Button
+                  size='sm'
+                  variant='default'
+                  onClick={toggleFavorites}
+                  className={cn(
+                    toggledFavorites &&
+                      'from-vital-blue-500/40 to-vital-blue-500/10 bg-linear-to-br',
+                  )}
+                >
                   <Star fill='yellow' />
                   Favorites
                 </Button>
@@ -115,14 +146,32 @@ const ExerciseGrid = () => {
                   <Button
                     size='sm'
                     variant='default'
-                    className='rounded-r-none'
+                    className={cn(
+                      'rounded-r-none',
+                      direction === 'Left' &&
+                        'from-vital-blue-500/40 to-vital-blue-500/10 bg-linear-to-br',
+                    )}
+                    onClick={() => selectDirection('Left')}
                   >
                     Left
                   </Button>
                   <Button
                     size='sm'
                     variant='default'
-                    className='rounded-l-none'
+                    className='rounded-none'
+                    onClick={() => selectDirection(undefined)}
+                  >
+                    All
+                  </Button>
+                  <Button
+                    size='sm'
+                    variant='default'
+                    className={cn(
+                      'rounded-l-none',
+                      direction === 'Right' &&
+                        'from-vital-blue-500/40 to-vital-blue-500/10 bg-linear-to-br',
+                    )}
+                    onClick={() => selectDirection('Right')}
                   >
                     Right
                   </Button>
@@ -132,26 +181,53 @@ const ExerciseGrid = () => {
           </div>
 
           <div className='grid justify-items-center gap-4 sm:grid-cols-3 2xl:grid-cols-5'>
-            {exercises
-              ?.filter((ex) => ex.category === category)
-              .filter((ex) =>
-                getDisplayName(ex)
-                  ?.toLowerCase()
-                  .includes(searchTerm.toLowerCase()),
-              )
-              .sort((a, b) => a.name.localeCompare(b.name))
-              .map((exercise) => (
-                <FlipCard
-                  key={exercise.id}
-                  exercise={exercise}
-                  isSelected={isSelected?.[exercise.id] ?? false}
-                  onSelect={
-                    isSelected?.[exercise.id]
-                      ? _removeExercise
-                      : _selectExercise
-                  }
-                />
-              ))}
+            {isLoading ? (
+              <>
+                <Skeleton className='aspect-4/5 w-full sm:max-w-[200px] md:max-w-[220px] lg:max-w-[240px] xl:max-w-[260px]' />
+                <Skeleton className='aspect-4/5 w-full sm:max-w-[200px] md:max-w-[220px] lg:max-w-[240px] xl:max-w-[260px]' />
+                <Skeleton className='aspect-4/5 w-full sm:max-w-[200px] md:max-w-[220px] lg:max-w-[240px] xl:max-w-[260px]' />
+                <Skeleton className='aspect-4/5 w-full sm:max-w-[200px] md:max-w-[220px] lg:max-w-[240px] xl:max-w-[260px]' />
+                <Skeleton className='aspect-4/5 w-full sm:max-w-[200px] md:max-w-[220px] lg:max-w-[240px] xl:max-w-[260px]' />
+
+                <Skeleton className='aspect-4/5 w-full sm:max-w-[200px] md:max-w-[220px] lg:max-w-[240px] xl:max-w-[260px]' />
+                <Skeleton className='aspect-4/5 w-full sm:max-w-[200px] md:max-w-[220px] lg:max-w-[240px] xl:max-w-[260px]' />
+                <Skeleton className='aspect-4/5 w-full sm:max-w-[200px] md:max-w-[220px] lg:max-w-[240px] xl:max-w-[260px]' />
+                <Skeleton className='aspect-4/5 w-full sm:max-w-[200px] md:max-w-[220px] lg:max-w-[240px] xl:max-w-[260px]' />
+                <Skeleton className='aspect-4/5 w-full sm:max-w-[200px] md:max-w-[220px] lg:max-w-[240px] xl:max-w-[260px]' />
+
+                <Skeleton className='aspect-4/5 w-full sm:max-w-[200px] md:max-w-[220px] lg:max-w-[240px] xl:max-w-[260px]' />
+                <Skeleton className='aspect-4/5 w-full sm:max-w-[200px] md:max-w-[220px] lg:max-w-[240px] xl:max-w-[260px]' />
+                <Skeleton className='aspect-4/5 w-full sm:max-w-[200px] md:max-w-[220px] lg:max-w-[240px] xl:max-w-[260px]' />
+                <Skeleton className='aspect-4/5 w-full sm:max-w-[200px] md:max-w-[220px] lg:max-w-[240px] xl:max-w-[260px]' />
+                <Skeleton className='aspect-4/5 w-full sm:max-w-[200px] md:max-w-[220px] lg:max-w-[240px] xl:max-w-[260px]' />
+              </>
+            ) : (
+              displayedExercises
+                ?.filter((ex) => ex.category === category)
+                .filter((ex) =>
+                  getDisplayName(ex)
+                    ?.toLowerCase()
+                    .includes(searchTerm.toLowerCase()),
+                )
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map((exercise) => (
+                  <FlipCard
+                    key={exercise.id}
+                    exercise={exercise}
+                    isSelected={isSelected?.[exercise.id] ?? false}
+                    toggledFavorites={toggledFavorites}
+                    favoriteExerciseId={
+                      favorites?.find((f) => f.exerciseId === exercise.id)
+                        ?.id ?? null
+                    }
+                    onSelect={
+                      isSelected?.[exercise.id]
+                        ? _removeExercise
+                        : _selectExercise
+                    }
+                  />
+                ))
+            )}
           </div>
         </TabsContent>
       ))}
