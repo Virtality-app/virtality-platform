@@ -15,8 +15,6 @@ export async function proxy(request: NextRequest) {
     headers: await headers(),
   })
 
-  console.log('proxy: ', data)
-
   if (!data) {
     return NextResponse.redirect(new URL('/log-in', request.url))
   }

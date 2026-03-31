@@ -63,6 +63,8 @@ const getTemplatePreviewProcedure = authed
     return { html, subject: template.meta.subject }
   })
 
+const MAX_TEMPLATE_RECIPIENTS = 20
+
 const sendTemplateProcedure = authed
   .route({ path: '/email/templates/send', method: 'POST' })
   .input(
@@ -70,15 +72,14 @@ const sendTemplateProcedure = authed
       templateId: z.string(),
       recipientEmail: z.string().refine(
         (value) => {
-          const recipients = parseRecipientEmails(value)
+          const recipients = [...new Set(parseRecipientEmails(value))]
           return (
-            recipients.length > 0 &&
+            recipients.length <= MAX_TEMPLATE_RECIPIENTS &&
             recipients.every((email) => emailSchema.safeParse(email).success)
           )
         },
         {
-          message:
-            'recipientEmail must be a valid email or comma-separated list of valid emails',
+          message: `recipientEmail must be a valid email or comma-separated list of valid emails (max ${MAX_TEMPLATE_RECIPIENTS} recipients)`,
         },
       ),
     }),
@@ -95,7 +96,7 @@ const sendTemplateProcedure = authed
     html = await reactToHTML(template.render(template.sampleProps))
     subject = template.meta.subject
 
-    const recipients = parseRecipientEmails(input.recipientEmail)
+    const recipients = [...new Set(parseRecipientEmails(input.recipientEmail))]
 
     await sendEmail({
       to: recipients.join(', '),

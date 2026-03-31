@@ -173,6 +173,10 @@
   transform: rotateY(180deg);
 }
 
+@utility ring-cyan-highlight {
+  @apply border-2 border-cyan-400! ring-2 ring-cyan-300/35! dark:border-cyan-500! dark:ring-cyan-500/35!
+}
+
 /*
   ---break---
 */

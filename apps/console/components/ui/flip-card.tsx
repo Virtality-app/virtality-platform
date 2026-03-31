@@ -35,7 +35,6 @@ const FlipCard = ({
   exercise,
   className,
   isSelected,
-  toggledFavorites,
   favoriteExerciseId,
   onSelect,
 }: FlipCardProps) => {
@@ -101,7 +100,6 @@ const FlipCard = ({
           videoRef={videoRef}
           isFlipped={isFlipped}
           favoriteExerciseId={favoriteExerciseId}
-          toggledFavorites={toggledFavorites}
           handleFlip={handleFlip}
           handlePreviewToggle={handlePreviewToggle}
         />
@@ -125,7 +123,6 @@ interface CardFrontProps {
   isTouchDevice: boolean
   isFlipped: boolean
   favoriteExerciseId?: string | null
-  toggledFavorites: boolean
   handleFlip: (e: MouseEvent) => void
   handlePreviewToggle: (e: MouseEvent) => void
   videoRef: React.RefObject<HTMLVideoElement | null>
@@ -138,7 +135,6 @@ function CardFront({
   isTouchDevice,
   isFlipped,
   favoriteExerciseId,
-  toggledFavorites,
   videoRef,
   handleFlip,
   handlePreviewToggle,
@@ -147,8 +143,7 @@ function CardFront({
     <Card
       className={cn(
         'absolute inset-0 flex flex-col gap-0 overflow-hidden rounded-lg p-0 transition-all backface-hidden',
-        isSelected &&
-          'border-2 border-cyan-400 ring-2 ring-cyan-300/35 dark:border-cyan-500 dark:ring-cyan-500/35',
+        isSelected && 'ring-cyan-highlight',
       )}
     >
       <div className='relative flex w-full flex-1 items-center overflow-hidden'>
@@ -193,7 +188,6 @@ function CardFront({
             <CardActions
               exercise={exercise}
               favoriteExerciseId={favoriteExerciseId}
-              toggledFavorites={toggledFavorites}
               handleFlip={handleFlip}
             />
             <Button
@@ -256,14 +250,12 @@ function CardBack({ exercise, isSelected, handleFlip }: CardBackProps) {
 interface CardActionsProps {
   exercise: Exercise
   favoriteExerciseId?: string | null
-  toggledFavorites: boolean
   handleFlip: (e: MouseEvent) => void
 }
 
 function CardActions({
   exercise,
   favoriteExerciseId,
-  toggledFavorites,
   handleFlip,
 }: CardActionsProps) {
   const queryClient = getQueryClient()
@@ -283,11 +275,10 @@ function CardActions({
       })
     },
   })
-  const hadleFavoriteMutation = (e: MouseEvent) => {
+  const handleFavoriteMutation = (e: MouseEvent) => {
     e.stopPropagation()
 
-    if (toggledFavorites) {
-      if (!favoriteExerciseId) return
+    if (favoriteExerciseId) {
       removeFavoriteExercise({ id: favoriteExerciseId })
     } else {
       addFavoriteExercise({ exerciseId: exercise.id })
@@ -305,7 +296,7 @@ function CardActions({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className='z-9999'>
-        <DropdownMenuItem onClick={hadleFavoriteMutation}>
+        <DropdownMenuItem onClick={handleFavoriteMutation}>
           {favoriteExerciseId ? (
             <>
               <Star fill='yellow' />

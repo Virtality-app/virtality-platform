@@ -134,10 +134,7 @@ const ExerciseGrid = () => {
                   size='sm'
                   variant='default'
                   onClick={toggleFavorites}
-                  className={cn(
-                    toggledFavorites &&
-                      'from-vital-blue-500/40 to-vital-blue-500/10 bg-linear-to-br',
-                  )}
+                  className={cn(toggledFavorites && 'ring-cyan-highlight')}
                 >
                   <Star fill='yellow' />
                   Favorites
@@ -148,8 +145,7 @@ const ExerciseGrid = () => {
                     variant='default'
                     className={cn(
                       'rounded-r-none',
-                      direction === 'Left' &&
-                        'from-vital-blue-500/40 to-vital-blue-500/10 bg-linear-to-br',
+                      direction === 'Left' && 'ring-cyan-highlight',
                     )}
                     onClick={() => selectDirection('Left')}
                   >
@@ -158,7 +154,10 @@ const ExerciseGrid = () => {
                   <Button
                     size='sm'
                     variant='default'
-                    className='rounded-none'
+                    className={cn(
+                      'rounded-none',
+                      direction === undefined && 'ring-cyan-highlight',
+                    )}
                     onClick={() => selectDirection(undefined)}
                   >
                     All
@@ -168,8 +167,7 @@ const ExerciseGrid = () => {
                     variant='default'
                     className={cn(
                       'rounded-l-none',
-                      direction === 'Right' &&
-                        'from-vital-blue-500/40 to-vital-blue-500/10 bg-linear-to-br',
+                      direction === 'Right' && 'ring-cyan-highlight',
                     )}
                     onClick={() => selectDirection('Right')}
                   >

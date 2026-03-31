@@ -16,7 +16,7 @@ const listExercise = authed
 
     return prisma.exercise.findMany({
       where: { ...where, ...(!includeDisabled && { enabled: true }) },
-      orderBy,
+      orderBy: orderBy ?? { id: 'asc' },
     })
   })
 
