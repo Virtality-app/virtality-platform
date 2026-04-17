@@ -6,7 +6,16 @@
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["dist/**", ".next/**"],
-      "env": ["REDIS_SECRET", "CONSOLE_DATABASE_URL", "SENTRY_AUTH_TOKEN"]
+      "env": [
+        "REDIS_SECRET",
+        "CONSOLE_DATABASE_URL",
+        "SENTRY_AUTH_TOKEN",
+        "OTEL_DEPLOYMENT_ENVIRONMENT",
+        "OTEL_EXPORTER_OTLP_ENDPOINT",
+        "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT",
+        "OTEL_LOG_LEVEL",
+        "OTEL_LOGS_ENABLED"
+      ]
     },
     "@virtality/website#build": {
       "dependsOn": ["^build"],
@@ -19,20 +28,42 @@
         "X_URL",
         "LINKEDIN_URL",
         "FACEBOOK_URL",
-        "INSTAGRAM_URL"
+        "INSTAGRAM_URL",
+        "OTEL_DEPLOYMENT_ENVIRONMENT",
+        "OTEL_EXPORTER_OTLP_ENDPOINT",
+        "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT",
+        "OTEL_LOG_LEVEL",
+        "OTEL_LOGS_ENABLED"
       ]
     },
     "@virtality/adminboard#build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**"],
-      "env": ["ENV", "NEXT_PUBLIC_ENV", "CONSOLE_DATABASE_URL"]
+      "env": [
+        "ENV",
+        "NEXT_PUBLIC_ENV",
+        "CONSOLE_DATABASE_URL",
+        "OTEL_DEPLOYMENT_ENVIRONMENT",
+        "OTEL_EXPORTER_OTLP_ENDPOINT",
+        "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT",
+        "OTEL_LOG_LEVEL",
+        "OTEL_LOGS_ENABLED"
+      ]
     },
     "@virtality/console#build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**"],
-      "env": ["REDIS_SECRET", "ENV"]
+      "env": [
+        "REDIS_SECRET",
+        "ENV",
+        "OTEL_DEPLOYMENT_ENVIRONMENT",
+        "OTEL_EXPORTER_OTLP_ENDPOINT",
+        "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT",
+        "OTEL_LOG_LEVEL",
+        "OTEL_LOGS_ENABLED"
+      ]
     },
     "@virtality/server#build": {
       "dependsOn": ["^build"],
@@ -42,13 +73,26 @@
         "CONSOLE_DATABASE_URL",
         "SENTRY_AUTH_TOKEN",
         "NEXT_PUBLIC_ENV",
-        "ENV"
+        "ENV",
+        "OTEL_DEPLOYMENT_ENVIRONMENT",
+        "OTEL_EXPORTER_OTLP_ENDPOINT",
+        "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT",
+        "OTEL_LOG_LEVEL",
+        "OTEL_LOGS_ENABLED"
       ]
     },
     "@virtality/socket": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"],
-      "env": ["PORT", "ENV"]
+      "env": [
+        "PORT",
+        "ENV",
+        "OTEL_DEPLOYMENT_ENVIRONMENT",
+        "OTEL_EXPORTER_OTLP_ENDPOINT",
+        "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT",
+        "OTEL_LOG_LEVEL",
+        "OTEL_LOGS_ENABLED"
+      ]
     },
     "@virtality/db#build": {
       "dependsOn": ["^build"],
@@ -78,7 +122,14 @@
     "dev": {
       "cache": false,
       "persistent": true,
-      "interactive": true
+      "interactive": true,
+      "env": [
+        "OTEL_DEPLOYMENT_ENVIRONMENT",
+        "OTEL_EXPORTER_OTLP_ENDPOINT",
+        "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT",
+        "OTEL_LOG_LEVEL",
+        "OTEL_LOGS_ENABLED"
+      ]
     },
     "dev:apps": {
       "with": [
@@ -89,7 +140,14 @@
       ],
       "cache": false,
       "persistent": true,
-      "interactive": true
+      "interactive": true,
+      "env": [
+        "OTEL_DEPLOYMENT_ENVIRONMENT",
+        "OTEL_EXPORTER_OTLP_ENDPOINT",
+        "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT",
+        "OTEL_LOG_LEVEL",
+        "OTEL_LOGS_ENABLED"
+      ]
     },
     "dev:console": {
       "with": [
@@ -99,23 +157,51 @@
       ],
       "cache": false,
       "persistent": true,
-      "interactive": true
+      "interactive": true,
+      "env": [
+        "OTEL_DEPLOYMENT_ENVIRONMENT",
+        "OTEL_EXPORTER_OTLP_ENDPOINT",
+        "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT",
+        "OTEL_LOG_LEVEL",
+        "OTEL_LOGS_ENABLED"
+      ]
     },
     "dev:adminboard": {
       "with": ["@virtality/adminboard#dev", "@virtality/server#dev"],
       "cache": false,
       "persistent": true,
-      "interactive": true
+      "interactive": true,
+      "env": [
+        "OTEL_DEPLOYMENT_ENVIRONMENT",
+        "OTEL_EXPORTER_OTLP_ENDPOINT",
+        "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT",
+        "OTEL_LOG_LEVEL",
+        "OTEL_LOGS_ENABLED"
+      ]
     },
     "dev:website": {
       "with": ["@virtality/website#dev", "@virtality/server#dev"],
       "cache": false,
       "persistent": true,
-      "interactive": true
+      "interactive": true,
+      "env": [
+        "OTEL_DEPLOYMENT_ENVIRONMENT",
+        "OTEL_EXPORTER_OTLP_ENDPOINT",
+        "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT",
+        "OTEL_LOG_LEVEL",
+        "OTEL_LOGS_ENABLED"
+      ]
     },
     "start": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "env": [
+        "OTEL_DEPLOYMENT_ENVIRONMENT",
+        "OTEL_EXPORTER_OTLP_ENDPOINT",
+        "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT",
+        "OTEL_LOG_LEVEL",
+        "OTEL_LOGS_ENABLED"
+      ]
     },
     "lint": {
       "dependsOn": ["^lint"]

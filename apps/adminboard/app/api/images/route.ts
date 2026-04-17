@@ -3,7 +3,11 @@ import s3 from '@/S3'
 import { GetObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { NextResponse } from 'next/server'
+import { serverLogger } from '@/lib/server-logger'
 const AwsS3Bucket = process.env.AWS_S3_BUCKET
+const logger = serverLogger.child({
+  component: 'adminboard-api-images',
+})
 
 export async function GET(req: Request) {
   const url = new URL(req.url)
@@ -31,7 +35,14 @@ export async function GET(req: Request) {
 
     return new NextResponse(s3Res.body, { status: 200, headers })
   } catch (e) {
-    console.error('Proxy error', e)
+    logger.error(
+      'adminboard.image_proxy.failed',
+      {
+        key,
+        error: e,
+      },
+      'Failed to proxy image from S3',
+    )
     return new NextResponse('Error proxying image', { status: 500 })
   }
 }

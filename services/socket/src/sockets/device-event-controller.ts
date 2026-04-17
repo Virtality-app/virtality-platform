@@ -13,9 +13,16 @@ import {
   type RoomCompletePayload,
   type MemberLeftPayload,
 } from '@virtality/shared/types'
+import { createAppLogger } from '@virtality/shared/observability'
 import vrCommSim from './vrCommsTesting'
 
 const activeRooms: Map<string, Room> = new Map()
+const logger = createAppLogger({
+  serviceName: 'socket',
+  defaultAttributes: {
+    component: 'device-event-controller',
+  },
+})
 
 // ── Relay registration ─────────────────────────────────────────────────────
 
@@ -27,10 +34,14 @@ function registerRelayEvents(
   for (const key in eventMap) {
     const entry = eventMap[key]
     socket.on(entry.name, (payload: unknown) => {
-      console.log(
-        `[EMIT] Event: ${entry.name} by ${socket.handshake.query?.agent} to room: ${roomCode}`,
-      )
-      if (payload !== undefined) console.log(`[PAYLOAD]`, payload)
+      logger.info('socket.relay.emit', {
+        eventName: entry.name,
+        agent: socket.handshake.query?.agent ?? 'unknown',
+        roomCode,
+        socketId: socket.id,
+        hasPayload: payload !== undefined,
+        payload,
+      })
       socket
         .to(roomCode)
         .emit(entry.name, entry.payload ? payload : undefined)
@@ -60,11 +71,18 @@ function registerRoomEvents(
       roomCode,
       timestamp: Date.now(),
     } satisfies RoomCompletePayload)
-    console.log('room complete')
+    logger.info('socket.room.complete', {
+      roomCode,
+      socketId: socket.id,
+      members: room.members,
+    })
   }
 
   socket.on(CONNECTION_EVENT.DISCONNECTION, () => {
-    console.log('Disconnected:', socket.id)
+    logger.info('socket.connection.closed', {
+      roomCode,
+      socketId: socket.id,
+    })
     if (!activeRooms.has(roomCode)) return
     const current = activeRooms.get(roomCode)!
     current.members -= 1
@@ -74,12 +92,20 @@ function registerRoomEvents(
 
     if (current.members <= 0) {
       activeRooms.delete(roomCode)
+      logger.info('socket.room.deleted', {
+        roomCode,
+      })
     } else {
       activeRooms.set(roomCode, current)
       socket.to(roomCode).emit(ROOM_EVENT.MemberLeft, {
         memberId: socket.id,
         timestamp: Date.now(),
       } satisfies MemberLeftPayload)
+      logger.info('socket.room.member_left', {
+        roomCode,
+        socketId: socket.id,
+        members: current.members,
+      })
     }
   })
 }
@@ -107,18 +133,23 @@ function registerConnectionEvents(roomCode: string, socket: Socket) {
 export function connectionHandler(socket: Socket) {
   const isSim = process.env.SIM === 'true'
 
-  console.log(`[CONNECTION] Event: New connection ${socket.id}`)
-
   const roomCode = socket.handshake.query.roomCode as string
+  const agent = socket.handshake.query?.agent ?? 'unknown'
 
-  console.log(
-    '[CONNECTION] Event: room code ',
-    roomCode ? true : false,
-    'from',
-    socket.id,
-  )
+  logger.info('socket.connection.open', {
+    socketId: socket.id,
+    roomCode: roomCode || 'missing',
+    hasRoomCode: Boolean(roomCode),
+    agent,
+    simulationEnabled: isSim,
+  })
 
   if (!roomCode) {
+    logger.warn('socket.connection.rejected', {
+      socketId: socket.id,
+      reason: 'missing_room_code',
+      agent,
+    })
     socket.emit(CONNECTION_EVENT.ERROR, { message: 'Room code was not received.' })
     socket.disconnect()
     return
@@ -137,7 +168,11 @@ export function connectionHandler(socket: Socket) {
   const room = activeRooms.get(roomCode)!
 
   if (room.members >= 2) {
-    console.log('id: ', socket.id, 'options: ', socket.handshake.query, 'Room is full')
+    logger.warn('socket.room.full', {
+      socketId: socket.id,
+      roomCode,
+      handshakeQuery: socket.handshake.query,
+    })
     socket.emit(CONNECTION_EVENT.ERROR, { message: 'Room is full' })
     socket.disconnect()
     return
@@ -150,6 +185,12 @@ export function connectionHandler(socket: Socket) {
   } else {
     activeRooms.set(roomCode, { ...room, secondMemberId: socket.id })
   }
+
+  logger.info('socket.room.joined', {
+    socketId: socket.id,
+    roomCode,
+    members: activeRooms.get(roomCode)?.members ?? room.members,
+  })
 
   registerRoomEvents(roomCode, activeRooms.get(roomCode)!, socket)
   registerConnectionEvents(roomCode, socket)
@@ -172,10 +213,18 @@ setInterval(() => {
   activeRooms.forEach((room, code) => {
     if (now - room.createdAt > 5 * 60 * 60 * 1000 || room.members === 0) {
       activeRooms.delete(code)
+      logger.info('socket.room.cleaned', {
+        roomCode: code,
+        ageMs: now - room.createdAt,
+        members: room.members,
+      })
     }
   })
 }, 30 * 60 * 1000)
 
 setInterval(() => {
-  console.log(activeRooms)
+  logger.debug('socket.rooms.snapshot', {
+    activeRoomCount: activeRooms.size,
+    rooms: [...activeRooms.entries()],
+  })
 }, 0.5 * 60 * 1000)

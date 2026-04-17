@@ -9,8 +9,12 @@ import {
   SERVER_URL,
   SERVER_URL_STAGING,
 } from '@virtality/shared/types'
+import { serverLogger } from './server-logger'
 
 const env = process.env.ENV || 'development'
+const logger = serverLogger.child({
+  component: 'console-auth-actions',
+})
 
 const baseURL =
   env === 'production'
@@ -50,7 +54,14 @@ const fetchUserSession = async () => {
     if (!data?.session || !data?.user) return null
     return data
   } catch (error) {
-    console.log(error)
+    logger.error(
+      'console.auth.fetch_session.failed',
+      {
+        error,
+        baseURL,
+      },
+      'Failed to fetch user session',
+    )
   }
 }
 
@@ -60,7 +71,13 @@ export const getUser = async () => {
 
     return data?.user
   } catch (error) {
-    console.log(error)
+    logger.error(
+      'console.auth.get_user.failed',
+      {
+        error,
+      },
+      'Failed to load user',
+    )
   }
 }
 
@@ -70,7 +87,13 @@ export const getUserAndSession = async () => {
 
     return data
   } catch (error) {
-    console.log(error)
+    logger.error(
+      'console.auth.get_user_and_session.failed',
+      {
+        error,
+      },
+      'Failed to load user and session',
+    )
     throw Error('[Better Auth] Problem with getting User and Session!')
   }
 }

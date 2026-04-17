@@ -1,6 +1,11 @@
 import { getUserAndSession } from '@/lib/actions/authActions'
 import { getPatient } from '@/data/server/patient'
 import { NextRequest, NextResponse } from 'next/server'
+import { serverLogger } from '@/lib/server-logger'
+
+const logger = serverLogger.child({
+  component: 'adminboard-api-patient-detail',
+})
 
 export async function GET(
   req: NextRequest,
@@ -10,10 +15,19 @@ export async function GET(
 
   const data = await getUserAndSession()
 
-  if (!data)
+  if (!data) {
+    logger.warn('adminboard.patient_detail.unauthorized', {
+      patientId: id,
+    })
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
   const patient = await getPatient(id)
+
+  logger.info('adminboard.patient_detail.completed', {
+    patientId: id,
+    found: Boolean(patient),
+  })
 
   return NextResponse.json({ patient })
 }

@@ -1,9 +1,13 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { logger } from 'hono/logger'
 import { serve } from '@hono/node-server'
 import { auth } from '@virtality/auth'
 import type { AuthContext } from '@virtality/auth'
+import {
+  createAppLogger,
+  createRequestId,
+  shutdownObservability,
+} from '@virtality/shared/observability'
 
 import { authMiddleware } from './middleware/auth.ts'
 import { orpcMiddleware } from './middleware/orpc.ts'
@@ -11,8 +15,49 @@ import { findDeviceByDeviceId } from './data/device.ts'
 import { ORPC_PREFIX } from '@virtality/shared/types'
 
 const app = new Hono<AppContext>()
+const logger = createAppLogger({
+  serviceName: 'server',
+  defaultAttributes: {
+    runtime: 'hono',
+  },
+})
+const httpLogger = logger.child({
+  component: 'http',
+})
 
-app.use(logger())
+app.use('*', async (c, next) => {
+  const startedAt = Date.now()
+  const requestId = c.req.header('x-request-id') ?? createRequestId()
+
+  c.set('requestId', requestId)
+  c.header('x-request-id', requestId)
+
+  try {
+    await next()
+
+    httpLogger.info('http.request.completed', {
+      requestId,
+      method: c.req.method,
+      path: c.req.path,
+      statusCode: c.res.status,
+      durationMs: Date.now() - startedAt,
+      userAgent: c.req.header('user-agent') ?? 'unknown',
+    })
+  } catch (error) {
+    httpLogger.error(
+      'http.request.failed',
+      {
+        requestId,
+        method: c.req.method,
+        path: c.req.path,
+        durationMs: Date.now() - startedAt,
+        error,
+      },
+      'Unhandled request error',
+    )
+    throw error
+  }
+})
 
 app.use(
   cors({
@@ -56,9 +101,31 @@ app.use('/api/v1/devices/:deviceId', async (c) => {
 app.use(`${ORPC_PREFIX}/*`, authMiddleware, orpcMiddleware)
 
 if (process.env.NODE_ENV !== 'production') {
+  logger.info('service.start', {
+    host: '0.0.0.0',
+    port: 8080,
+    mode: 'node-server',
+  })
   serve({ fetch: app.fetch, port: 8080, hostname: '0.0.0.0' })
 }
 
 export default app
 
-export type AppContext = { Variables: AuthContext }
+for (const signal of ['SIGINT', 'SIGTERM'] as const) {
+  process.once(signal, () => {
+    logger.info('service.shutdown', {
+      signal,
+      service: 'server',
+    })
+
+    void shutdownObservability().finally(() => {
+      process.exit(0)
+    })
+  })
+}
+
+export type AppContext = {
+  Variables: AuthContext & {
+    requestId: string
+  }
+}

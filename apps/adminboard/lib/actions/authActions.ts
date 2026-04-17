@@ -7,8 +7,12 @@ import {
   SERVER_URL_LOCAL,
   SERVER_URL_STAGING,
 } from '@virtality/shared/types'
+import { serverLogger } from '@/lib/server-logger'
 
 const env = process.env.ENV || 'development'
+const logger = serverLogger.child({
+  component: 'adminboard-auth-actions',
+})
 
 const baseURL =
   env === 'production'
@@ -48,7 +52,14 @@ const fetchUserSession = async () => {
     if (!data?.session || !data?.user) return null
     return data
   } catch (error) {
-    console.log(error)
+    logger.error(
+      'adminboard.auth.fetch_session.failed',
+      {
+        error,
+        baseURL,
+      },
+      'Failed to fetch adminboard session',
+    )
   }
 }
 
@@ -58,7 +69,13 @@ export const getUserAndSession = async () => {
 
     return data
   } catch (error) {
-    console.log(error)
+    logger.error(
+      'adminboard.auth.get_user_and_session.failed',
+      {
+        error,
+      },
+      'Failed to load adminboard user and session',
+    )
     throw Error('[Better Auth] Problem with getting User and Session!')
   }
 }

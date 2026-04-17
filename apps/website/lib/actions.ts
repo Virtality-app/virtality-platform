@@ -2,6 +2,11 @@
 import { ContactForm, SlackMessage } from '@/types/models'
 
 import { sendSlackMessage } from './server-utils'
+import { serverLogger } from './server-logger'
+
+const logger = serverLogger.child({
+  component: 'website-actions',
+})
 
 export const submitContactMsg = async (
   state: ContactForm,
@@ -12,12 +17,24 @@ export const submitContactMsg = async (
   const slackWebhookUrl = process.env.SLACK_MESSAGE_WEBHOOK_URL
 
   if (!slackWebhookUrl) {
-    console.error('SLACK_MESSAGE_WEBHOOK_URL environment variable is not set')
+    logger.error(
+      'website.contact_submit.webhook_missing',
+      {
+        action: 'submitContactMsg',
+      },
+      'Slack webhook is not configured',
+    )
     throw new Error('Slack webhook URL is not configured')
   }
 
   const entries = Object.fromEntries(formData) as ContactForm
   const { firstName, lastName, email, phone, message } = entries
+
+  logger.info('website.contact_submit.requested', {
+    email,
+    hasPhone: Boolean(phone),
+    messageLength: message.length,
+  })
 
   const slackMessage: SlackMessage = {
     text: 'New Appointment Booking',

@@ -4,8 +4,12 @@ import {
   WEBSITE_URL_LOCAL,
   WEBSITE_URL_STAGING,
 } from '@virtality/shared/types'
+import { serverLogger } from '@/lib/server-logger'
 
 const env = process.env.ENV || 'development'
+const logger = serverLogger.child({
+  component: 'website-shortlink-route',
+})
 
 const websiteURL =
   env === 'production'
@@ -15,5 +19,10 @@ const websiteURL =
       : WEBSITE_URL_LOCAL
 
 export function GET() {
+  logger.info('website.shortlink.redirect', {
+    sourcePath: '/01fdfe95',
+    targetPath: '/waitlist',
+    environment: env,
+  })
   return NextResponse.redirect(`${websiteURL}/waitlist`)
 }

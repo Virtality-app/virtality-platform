@@ -13,6 +13,10 @@
     "./types": {
       "types": "./src/types/index.ts",
       "default": "./dist/types/index.js"
+    },
+    "./observability": {
+      "types": "./src/observability/index.ts",
+      "default": "./dist/observability/index.js"
     }
   },
   "scripts": {
@@ -21,12 +25,18 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "zod": "4.3.6",
-    "uuid": "11.1.0"
+    "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/api-logs": "^0.214.0",
+    "@opentelemetry/exporter-logs-otlp-http": "^0.214.0",
+    "@opentelemetry/resources": "^2.6.1",
+    "@opentelemetry/sdk-logs": "^0.214.0",
+    "@opentelemetry/semantic-conventions": "^1.40.0",
+    "uuid": "11.1.0",
+    "zod": "4.3.6"
   },
   "devDependencies": {
-    "@virtality/typescript-config": "workspace:*",
     "@types/node": "20.11.17",
+    "@virtality/typescript-config": "workspace:*",
     "typescript": "5.9.3"
   }
 }

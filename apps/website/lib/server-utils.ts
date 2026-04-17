@@ -1,6 +1,11 @@
 'use server'
 
 import { SlackMessage } from '@/types/models'
+import { serverLogger } from './server-logger'
+
+const logger = serverLogger.child({
+  component: 'website-server-utils',
+})
 
 export const sendSlackMessage = async (
   webhook: string,
@@ -21,7 +26,14 @@ export const sendSlackMessage = async (
       throw new Error(`Slack API error: ${response.status}`)
     }
   } catch (error) {
-    console.error('Error sending to Slack:', error)
+    logger.error(
+      'website.slack_send.failed',
+      {
+        template,
+        error,
+      },
+      'Failed to send Slack message',
+    )
     throw new Error(errorMsg)
   }
 }

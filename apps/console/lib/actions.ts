@@ -14,6 +14,11 @@ import { BugReport, BugReportImage } from '@virtality/db'
 import { getUser, getUserAndSession } from './authActions'
 import { getUUID, randomImageName } from './utils'
 import { uploadFile } from '@/S3'
+import { serverLogger } from './server-logger'
+
+const logger = serverLogger.child({
+  component: 'console-actions',
+})
 
 // GENERAL ACTIONS
 
@@ -21,7 +26,10 @@ import { uploadFile } from '@/S3'
 export const createBugReport = async (
   values: BugReportForm & { image: File[] },
 ) => {
-  console.log(values)
+  logger.info('console.bug_report.create.requested', {
+    platform: values.platform,
+    imageCount: Array.isArray(values.image) ? values.image.length : 0,
+  })
 
   const { title, description, platform, image } = values
 
@@ -39,7 +47,15 @@ export const createBugReport = async (
     await prisma.bugReport.create({ data: newBugReport })
     await notifyDiscord(newBugReport)
   } catch (error) {
-    console.log('Error creating BugReport: ', error)
+    logger.error(
+      'console.bug_report.create.failed',
+      {
+        bugReportId: newBugReport.id,
+        platform: newBugReport.platform,
+        error,
+      },
+      'Failed to create bug report',
+    )
   }
 
   const bugReportImages: BugReportImage[] = []
@@ -84,7 +100,7 @@ export const notifyDiscord = async (bugReport: BugReport) => {
   const webhookUrl = process.env.DISCORD_WEBHOOK_URL
 
   if (!webhookUrl) {
-    console.error('Missing Discord webhook URL')
+    logger.warn('console.bug_report.discord_webhook_missing')
     return
   }
 
@@ -124,7 +140,14 @@ export const notifyDiscord = async (bugReport: BugReport) => {
       body: JSON.stringify(message),
     })
   } catch (err) {
-    console.error('Failed to send Discord webhook:', err)
+    logger.error(
+      'console.bug_report.discord_notify_failed',
+      {
+        bugReportId: bugReport.id,
+        error: err,
+      },
+      'Failed to send Discord webhook',
+    )
   }
 }
 
@@ -198,7 +221,15 @@ export const createOrganizationAction = async (
       // if (data?.id) redirectId = data.id;
       // return success state
     } catch (error) {
-      console.log(error)
+      logger.error(
+        'console.organization.create.failed',
+        {
+          name: validatedData.data.name,
+          slug: validatedData.data.slug,
+          error,
+        },
+        'Failed to create organization',
+      )
       return {
         data: null,
       }

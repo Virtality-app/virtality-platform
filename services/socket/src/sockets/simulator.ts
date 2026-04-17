@@ -1,5 +1,6 @@
 import { Socket } from 'socket.io'
 import { PROGRAM_EVENT } from '@virtality/shared/types'
+import { createAppLogger } from '@virtality/shared/observability'
 
 type Exercise = {
   id: string
@@ -19,9 +20,19 @@ export default class Simulation {
   currentRep = 0
   simulationInterval = 750
   activeInterval?: NodeJS.Timeout
+  logger = createAppLogger({
+    serviceName: 'socket',
+    defaultAttributes: {
+      component: 'simulation',
+    },
+  })
 
   start(socket: Socket) {
     this.status = 'started'
+    this.logger.info('socket.simulation.started', {
+      socketId: socket.id,
+      exerciseCount: this.exercises.length,
+    })
 
     this.activeInterval = setInterval(() => {
       const isLastRep =
@@ -32,14 +43,12 @@ export default class Simulation {
 
       const isLastExercise = this.currentExercise !== this.exercises.length - 1
 
-      console.log(
-        'currentExercise: ',
-        this.currentExercise,
-        'currentSet: ',
-        this.currentSet,
-        'currentRep: ',
-        this.currentRep,
-      )
+      this.logger.debug('socket.simulation.tick', {
+        socketId: socket.id,
+        currentExercise: this.currentExercise,
+        currentSet: this.currentSet,
+        currentRep: this.currentRep,
+      })
 
       socket.emit(
         PROGRAM_EVENT.RepEnd,
@@ -68,7 +77,9 @@ export default class Simulation {
             this.currentRep = 0
             this.currentSet = 0
           } else {
-            console.log('programEnded')
+            this.logger.info('socket.simulation.program_ended', {
+              socketId: socket.id,
+            })
             socket.emit(PROGRAM_EVENT.End)
             this.end()
           }
@@ -84,7 +95,13 @@ export default class Simulation {
       clearInterval(this.activeInterval)
       this.activeInterval = undefined
       this.status = 'paused'
+      this.logger.info('socket.simulation.paused', {
+        socketId: socket.id,
+      })
     } else {
+      this.logger.info('socket.simulation.resumed', {
+        socketId: socket.id,
+      })
       this.start(socket)
     }
   }
@@ -95,11 +112,18 @@ export default class Simulation {
     this.currentRep = 0
     this.currentSet = 0
     this.currentExercise = 0
+    this.status = 'ready'
+    this.logger.info('socket.simulation.reset')
   }
 
   changeExercise(socket: Socket, id: string) {
     this.end()
     this.currentExercise = this.exercises.findIndex((ex) => ex.id === id)
+    this.logger.info('socket.simulation.change_exercise', {
+      socketId: socket.id,
+      exerciseId: id,
+      index: this.currentExercise,
+    })
     if (this.status === 'started') this.start(socket)
   }
 }

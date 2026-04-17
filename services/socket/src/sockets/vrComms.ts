@@ -1,4 +1,12 @@
 import { Socket } from 'socket.io'
+import { createAppLogger } from '@virtality/shared/observability'
+
+const logger = createAppLogger({
+  serviceName: 'socket',
+  defaultAttributes: {
+    component: 'vr-comms',
+  },
+})
 
 export const createEventHandler = (
   key: string,
@@ -7,11 +15,15 @@ export const createEventHandler = (
   socket: Socket,
 ) => {
   socket.on(event[key].name, (payload: any) => {
-    // console.log(`[RECEIVE] Event: ${event[key].name}`)
-    console.log(
-      `[EMIT] Event: ${event[key].name} by ${socket.handshake.query?.agent} to room: ${roomCode}`,
-    )
-    if (payload !== undefined) console.log(`[PAYLOAD]`, payload)
+    logger.info('socket.relay.emit', {
+      relayKey: key,
+      eventName: event[key].name,
+      agent: socket.handshake.query?.agent ?? 'unknown',
+      roomCode,
+      socketId: socket.id,
+      hasPayload: payload !== undefined,
+      payload,
+    })
 
     socket
       .to(roomCode)

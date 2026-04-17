@@ -5,6 +5,11 @@ import { randomImageName } from '@/lib/utils'
 import { prisma } from '@virtality/db'
 import { getUserAndSession } from './authActions'
 import { CDN_URL } from '@virtality/shared/types'
+import { serverLogger } from '@/lib/server-logger'
+
+const logger = serverLogger.child({
+  component: 'adminboard-general-actions',
+})
 
 export const uploadFileAction = async (
   state: {
@@ -160,7 +165,14 @@ export const createImage = async (
     }
     return generatedURL
   } catch (error) {
-    console.log('Error uploading to S3: ', error)
+    logger.error(
+      'adminboard.s3_upload.failed',
+      {
+        error,
+        resource: opt?.resource ?? 'unknown',
+      },
+      'Failed to upload file to S3',
+    )
     return null
   }
 }

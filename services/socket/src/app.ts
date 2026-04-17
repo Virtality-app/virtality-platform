@@ -2,20 +2,35 @@ import { Server, ServerOptions } from 'socket.io'
 import express from 'express'
 import { createServer } from 'http'
 import { CONNECTION_EVENT } from '@virtality/shared/types'
+import {
+  createAppLogger,
+  shutdownObservability,
+} from '@virtality/shared/observability'
 import { connectionHandler } from './sockets/device-event-controller'
 // Initialize Socket.IO
 const app = express()
+const logger = createAppLogger({
+  serviceName: 'socket',
+  defaultAttributes: {
+    runtime: 'socket.io',
+  },
+})
 
 // Keepalive endpoint for cron (e.g. GitHub Actions) to prevent free tier sleep
 app.get('/line', (_req, res) => {
+  logger.debug('http.keepalive.ok', {
+    route: '/line',
+  })
   res.status(200).send('ok')
 })
 
 const httpServer = createServer(app)
 
-console.log('env: ', process.env.ENV)
-console.log('node env: ', process.env.NODE_ENV)
-console.log('sim: ', process.env.SIM)
+logger.info('service.bootstrap', {
+  env: process.env.ENV ?? 'development',
+  nodeEnv: process.env.NODE_ENV ?? 'development',
+  simulationEnabled: process.env.SIM === 'true',
+})
 
 const socketOptions = {
   cors: {
@@ -41,5 +56,23 @@ const httpServerOptions =
     : { port: PORT }
 
 httpServer.listen(httpServerOptions, () => {
-  console.log(`Server listening on port ${PORT}`)
+  logger.info('service.start', {
+    port: PORT,
+    host: process.env.NODE_ENV !== 'production' ? '0.0.0.0' : 'default',
+  })
 })
+
+for (const signal of ['SIGINT', 'SIGTERM'] as const) {
+  process.once(signal, () => {
+    logger.info('service.shutdown', {
+      signal,
+      service: 'socket',
+    })
+
+    io.close(() => {
+      void shutdownObservability().finally(() => {
+        process.exit(0)
+      })
+    })
+  })
+}
