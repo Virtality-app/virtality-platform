@@ -50,7 +50,7 @@ declare global {
 const LOG_LEVELS: LogLevel[] = ['debug', 'info', 'warn', 'error']
 
 const DEFAULT_SERVICE_NAMESPACE = 'virtality'
-const DEFAULT_LOG_LEVEL: LogLevel = 'info'
+const DEFAULT_LOG_LEVEL: LogLevel = 'debug'
 
 function getRuntimeRegistry() {
   globalThis.__virtalityObservabilityRuntime__ ??= new Map()

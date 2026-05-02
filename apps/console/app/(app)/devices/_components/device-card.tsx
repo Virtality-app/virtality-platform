@@ -63,6 +63,7 @@ const DeviceCard = ({ device }: DeviceProps) => {
   const { mutate: setDeviceId } = useSetDeviceId({
     onSuccess: () => {
       device?.events.device.SendDeviceIdAck()
+      console.debug('setDeviceId success')
       setTimeout(() => device?.socket.disconnect(), 1000)
       return queryClient.invalidateQueries({ queryKey: orpc.device.list.key() })
     },
@@ -83,6 +84,7 @@ const DeviceCard = ({ device }: DeviceProps) => {
     if (!device) return
 
     const handleSendDeviceId = async (payload: string) => {
+      console.debug('handleSendDeviceId', payload, status)
       if (payload && status === 'pairing') {
         setDeviceId({ id: device.data.id, deviceId: payload })
 

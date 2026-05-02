@@ -12,6 +12,7 @@ import {
   type MemberJoinedPayload,
   type RoomCompletePayload,
   type MemberLeftPayload,
+  DEVICE_RELAY,
 } from '@virtality/shared/types'
 import { createAppLogger } from '@virtality/shared/observability'
 import vrCommSim from './vrCommsTesting'
@@ -33,6 +34,11 @@ function registerRelayEvents(
 ) {
   for (const key in eventMap) {
     const entry = eventMap[key]
+    logger.debug('registerRelayEvents', {
+      eventName: entry.name,
+      roomCode,
+      socketId: socket.id,
+    })
     socket.on(entry.name, (payload: unknown) => {
       logger.info('socket.relay.emit', {
         eventName: entry.name,
@@ -42,20 +48,14 @@ function registerRelayEvents(
         hasPayload: payload !== undefined,
         payload,
       })
-      socket
-        .to(roomCode)
-        .emit(entry.name, entry.payload ? payload : undefined)
+      socket.to(roomCode).emit(entry.name, entry.payload ? payload : undefined)
     })
   }
 }
 
 // ── Room lifecycle ─────────────────────────────────────────────────────────
 
-function registerRoomEvents(
-  roomCode: string,
-  room: Room,
-  socket: Socket,
-) {
+function registerRoomEvents(roomCode: string, room: Room, socket: Socket) {
   socket.emit(ROOM_EVENT.RoomJoined, {
     roomCode,
     memberId: socket.id,
@@ -115,10 +115,7 @@ function registerRoomEvents(
 function registerConnectionEvents(roomCode: string, socket: Socket) {
   socket.on(
     CONNECTION_EVENT.DEVICE_STATUS,
-    (
-      _payload: unknown,
-      ack?: (res: DeviceStatusResponse) => void,
-    ) => {
+    (_payload: unknown, ack?: (res: DeviceStatusResponse) => void) => {
       const currentRoom = activeRooms.get(roomCode)
       const isOtherMemberPresent = !!currentRoom && currentRoom.members === 2
       if (typeof ack === 'function') {
@@ -150,7 +147,9 @@ export function connectionHandler(socket: Socket) {
       reason: 'missing_room_code',
       agent,
     })
-    socket.emit(CONNECTION_EVENT.ERROR, { message: 'Room code was not received.' })
+    socket.emit(CONNECTION_EVENT.ERROR, {
+      message: 'Room code was not received.',
+    })
     socket.disconnect()
     return
   }
@@ -201,30 +200,37 @@ export function connectionHandler(socket: Socket) {
     }
   } else {
     registerRelayEvents(PROGRAM_RELAY, roomCode, socket)
-    registerRelayEvents(GAME_RELAY, roomCode, socket)
+    // registerRelayEvents(GAME_RELAY, roomCode, socket)
     registerRelayEvents(CASTING_RELAY, roomCode, socket)
+    registerRelayEvents(DEVICE_RELAY, roomCode, socket)
   }
 }
 
 // ── Stale room cleanup ────────────────────────────────────────────────────
 
-setInterval(() => {
-  const now = Date.now()
-  activeRooms.forEach((room, code) => {
-    if (now - room.createdAt > 5 * 60 * 60 * 1000 || room.members === 0) {
-      activeRooms.delete(code)
-      logger.info('socket.room.cleaned', {
-        roomCode: code,
-        ageMs: now - room.createdAt,
-        members: room.members,
-      })
-    }
-  })
-}, 30 * 60 * 1000)
+setInterval(
+  () => {
+    const now = Date.now()
+    activeRooms.forEach((room, code) => {
+      if (now - room.createdAt > 5 * 60 * 60 * 1000 || room.members === 0) {
+        activeRooms.delete(code)
+        logger.info('socket.room.cleaned', {
+          roomCode: code,
+          ageMs: now - room.createdAt,
+          members: room.members,
+        })
+      }
+    })
+  },
+  30 * 60 * 1000,
+)
 
-setInterval(() => {
-  logger.debug('socket.rooms.snapshot', {
-    activeRoomCount: activeRooms.size,
-    rooms: [...activeRooms.entries()],
-  })
-}, 0.5 * 60 * 1000)
+setInterval(
+  () => {
+    logger.debug('socket.rooms.snapshot', {
+      activeRoomCount: activeRooms.size,
+      rooms: [...activeRooms.entries()],
+    })
+  },
+  0.5 * 60 * 1000,
+)
