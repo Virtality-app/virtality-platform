@@ -64,6 +64,13 @@ export { useBucket } from './hooks/queries/bucket/use-bucket.js'
 // Favorite exercise queries
 export { useFavoriteExercise } from './hooks/queries/favorite-exercise/use-favorite-exercise.js'
 
+// Adminboard dashboard queries
+export { useTotalUniquePatients } from './hooks/queries/adminboard/dashboard/use-total-unique-patients.js'
+export { useUniquePatientsPerPhysio } from './hooks/queries/adminboard/dashboard/use-unique-patients-per-physio.js'
+export { useSessionsPerPatient } from './hooks/queries/adminboard/dashboard/use-sessions-per-patient.js'
+export { useTotalPatientSessions } from './hooks/queries/adminboard/dashboard/use-total-patient-sessions.js'
+export { usePatientSessionsPerDatePerUser } from './hooks/queries/adminboard/dashboard/use-sessions-per-date-per-user.js'
+
 // ----------------------- Mutation hooks -----------------------
 
 // Program mutations

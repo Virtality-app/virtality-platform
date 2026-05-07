@@ -1,29 +1,42 @@
-import {
-  getPatientSessionsPerWeekPerUser,
-  getSessionsPerPatient,
-  getTotalPatientSession,
-  getTotalUniquePatients,
-  getUniquePatientsPerDoc,
-} from '@/data/server/dashboard'
+'use client'
+
 import { StatCard } from '@/components/dashboard/stat-card'
 import { PatientsPerDocChart } from '@/components/dashboard/patients-per-doc-chart'
 import { SessionsPerPatientChart } from '@/components/dashboard/sessions-per-patient-chart'
 import { SessionsPerWeekChart } from '@/components/dashboard/sessions-per-week-chart'
+import {
+  usePatientSessionsPerDatePerUser,
+  useTotalPatientSessions,
+  useUniquePatientsPerPhysio,
+  useSessionsPerPatient,
+  useTotalUniquePatients,
+} from '@virtality/react-query'
 
-const StartPage = async () => {
-  const [
-    totalPatients,
-    patientsPerDoc,
-    sessionsPerPatient,
-    totalPatientSessions,
-    patientSessionsPerWeekPerUser,
-  ] = await Promise.all([
-    getTotalUniquePatients(),
-    getUniquePatientsPerDoc(),
-    getSessionsPerPatient(),
-    getTotalPatientSession(),
-    getPatientSessionsPerWeekPerUser(),
-  ])
+const StartPage = () => {
+  const { data: totalPatients, isLoading: isLoadingTotalPatients } =
+    useTotalUniquePatients()
+  const {
+    data: totalPatientSessions,
+    isLoading: isLoadingTotalPatientSessions,
+  } = useTotalPatientSessions()
+  const { data: patientsPerDoc, isLoading: isLoadingPatientsPerDoc } =
+    useUniquePatientsPerPhysio()
+  const { data: sessionsPerPatient, isLoading: isLoadingSessionsPerPatient } =
+    useSessionsPerPatient()
+  const {
+    data: patientSessionsPerWeekPerUser,
+    isLoading: isLoadingPatientSessionsPerWeekPerUser,
+  } = usePatientSessionsPerDatePerUser()
+
+  if (
+    isLoadingTotalPatients ||
+    isLoadingTotalPatientSessions ||
+    isLoadingPatientsPerDoc ||
+    isLoadingSessionsPerPatient ||
+    isLoadingPatientSessionsPerWeekPerUser
+  ) {
+    return <div>Loading...</div>
+  }
 
   return (
     <div className='min-h-screen-with-header mx-auto flex max-w-7xl flex-col gap-8 px-4 py-6 md:px-6 md:py-8'>
@@ -42,13 +55,13 @@ const StartPage = async () => {
       <div className='grid gap-4 md:grid-cols-2'>
         <StatCard
           title='Total Unique Patients'
-          value={totalPatients}
+          value={totalPatients ?? 0}
           description='Total number of unique patients in the system'
           tone='blue'
         />
         <StatCard
           title='Total Patient Sessions'
-          value={totalPatientSessions}
+          value={totalPatientSessions ?? 0}
           description='Total number of patient sessions recorded'
           tone='teal'
         />
@@ -56,13 +69,13 @@ const StartPage = async () => {
 
       <div className='grid gap-6'>
         {/* Patients per Doctor Chart */}
-        <PatientsPerDocChart data={patientsPerDoc} />
+        <PatientsPerDocChart data={patientsPerDoc ?? []} />
 
         {/* Sessions Distribution Chart */}
-        <SessionsPerPatientChart data={sessionsPerPatient} />
+        <SessionsPerPatientChart data={sessionsPerPatient ?? []} />
 
         {/* Sessions per Week Chart */}
-        <SessionsPerWeekChart data={patientSessionsPerWeekPerUser} />
+        <SessionsPerWeekChart data={patientSessionsPerWeekPerUser ?? []} />
       </div>
     </div>
   )

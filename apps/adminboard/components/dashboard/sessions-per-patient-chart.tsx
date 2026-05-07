@@ -19,7 +19,11 @@ import {
 } from '@/components/ui/card'
 
 interface SessionsPerPatientChartProps {
-  data: Array<{ patientId: string | null; _count: { _all: number } }>
+  data: Array<{
+    patientId: string | null
+    name: string
+    totalSessions: number
+  } | null>
 }
 
 export function SessionsPerPatientChart({
@@ -27,10 +31,12 @@ export function SessionsPerPatientChart({
 }: SessionsPerPatientChartProps) {
   // Sort by session count descending and prepare chart data
   const chartData = data
+    .filter((item) => item !== null)
     .map((item) => ({
+      name: item.name,
+      sessions: item.totalSessions,
       patientId: item.patientId?.substring(0, 8) + '...', // Truncate for display
       fullPatientId: item.patientId,
-      sessions: item._count._all,
     }))
     .sort((a, b) => b.sessions - a.sessions)
 
@@ -67,7 +73,7 @@ export function SessionsPerPatientChart({
             />
             <YAxis
               type='category'
-              dataKey='patientId'
+              dataKey='name'
               width={90}
               tick={{ fontSize: 10, fill: 'var(--muted-foreground)' }}
               axisLine={{ stroke: 'var(--border)' }}
@@ -76,8 +82,8 @@ export function SessionsPerPatientChart({
             <Tooltip
               formatter={(value: number) => [value, 'Sessions']}
               labelFormatter={(label, payload) => {
-                const fullId = payload?.[0]?.payload?.fullPatientId || label
-                return `Patient ID: ${fullId}`
+                const shortId = payload?.[0]?.payload?.patientId || label
+                return `Patient ID: ${shortId}`
               }}
               cursor={{
                 fill: 'color-mix(in oklab, var(--accent) 35%, transparent)',

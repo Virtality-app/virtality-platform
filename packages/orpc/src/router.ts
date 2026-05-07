@@ -19,6 +19,7 @@ import { email } from './procedures/email.ts'
 import { referral } from './procedures/referral.ts'
 import { bucket } from './procedures/bucket.ts'
 import { favoriteExercise } from './procedures/favorite-exercise.ts'
+import { dashboard } from './procedures/adminboard/dashboard.ts'
 
 export const router = {
   me,
@@ -42,6 +43,7 @@ export const router = {
   referral,
   bucket,
   favoriteExercise,
+  dashboard,
 }
 
 export type Router = typeof router
