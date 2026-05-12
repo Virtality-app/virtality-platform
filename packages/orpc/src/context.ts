@@ -9,6 +9,7 @@ import type { VirtalityS3Client } from './s3/index.ts'
  */
 export type InitialContext = {
   headers: Headers
+  request: Request
   user: AuthContext['user']
   session: AuthContext['session']
   prisma: PrismaClient

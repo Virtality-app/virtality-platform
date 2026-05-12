@@ -6,10 +6,10 @@ export const generateImageFile = async ({
   image,
   resource,
 }: {
-  image: File
+  image?: File | string | null
   resource: string
 }) => {
-  if (!image) return null
+  if (!image || typeof image === 'string') return null
   const generator = createRandomStringGenerator('a-z', 'A-Z', '0-9')
 
   const ContentType = image.type as ImageType

@@ -3,5 +3,5 @@ import { useORPC } from '../../../orpc-context.js'
 
 export function useUserName() {
   const orpc = useORPC()
-  return useQuery(orpc.user.findUserName.queryOptions())
+  return useQuery(orpc.user.findUsername.queryOptions())
 }

@@ -2,22 +2,41 @@
 import Image from 'next/image'
 import placeholder from '@/public/placeholder.svg'
 import { Input } from '@/components/ui/input'
-import { ChangeEvent, useActionState, useEffect, useRef, useState } from 'react'
-import {
-  // handlePhoneVerification,
-  // handleSendOTP,
-  updateUserAction,
-} from '@/lib/actions'
+import { ChangeEvent, Fragment, useCallback, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import SuccessToasty from '@/components/ui/SuccessToasty'
-import { authClient, type User } from '@/auth-client'
-import { useClientT } from '@/i18n/use-client-t'
+import { toast } from 'react-toastify'
+import { authClient } from '@/auth-client'
 import {
   CONSOLE_URL,
   CONSOLE_URL_LOCAL,
   CONSOLE_URL_STAGING,
+  FieldMeta,
 } from '@virtality/shared/types'
 import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
+import { ControllerRenderProps, useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Card, CardContent, CardFooter } from '@/components/ui/card'
+import { Field, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
+import { Separator } from '@/components/ui/separator'
+import { UserSchema } from '@virtality/db/definitions'
+import {
+  useListAccounts,
+  useORPC,
+  useUpdateUserInfo,
+} from '@virtality/react-query'
+import z from 'zod/v4'
+import { Trash2, UserIcon, X } from 'lucide-react'
+import { SOCIAL_PROVIDERS } from '@/data/static/providers'
+import { Badge } from '@/components/ui/badge'
+import { useQueryClient } from '@tanstack/react-query'
+import { ControllerField } from '@/components/ui/controller'
+import { Account } from 'better-auth'
+import {
+  Tooltip,
+  TooltipArrow,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 const env = process.env.NEXT_PUBLIC_ENV || 'development'
 
@@ -28,183 +47,245 @@ const baseURL =
       ? CONSOLE_URL_STAGING
       : CONSOLE_URL_LOCAL
 
-const initialState = {
-  data: null,
+type UserForm = Pick<z.infer<typeof UserSchema>, 'name' | 'phoneNumber'> & {
+  image?: File | string | null
 }
 
+const BasicInfoFormSchema = UserSchema.extend({
+  image: z.instanceof(File).or(z.string()).optional().nullable(),
+  phoneNumber: z.string().nullable(),
+}).pick({ name: true, phoneNumber: true, image: true })
+
+type EmailForm = Pick<z.infer<typeof UserSchema>, 'email'>
+
+const EmailFormSchema = UserSchema.pick({ email: true })
+
+const basicInfoFormFields = {
+  image: {
+    label: 'Image',
+    description: 'Click on the photo to upload a custom one.',
+    hint: 'The image will be used as your profile picture.',
+  },
+  name: {
+    label: 'Name',
+    placeholder: 'John Doe',
+    description: 'Please enter your full name.',
+    hint: 'Please use 32 characters at maximum.',
+  },
+  phoneNumber: {
+    label: 'Phone Number',
+    placeholder: '+1234567890',
+    description: 'Please enter your phone number.',
+    hint: 'A code will be sent to verify.',
+  },
+} satisfies Record<keyof UserForm, FieldMeta<UserForm>>
+
+const emailFormField = {
+  email: {
+    label: 'Email',
+    placeholder: 'example@domain.com',
+    description:
+      'Your primary email will be used for account-related notifications.',
+    hint: 'Emails must be verified to be used as primary email.',
+  },
+} satisfies Record<keyof EmailForm, FieldMeta<EmailForm>>
+
+type SessionUser = NonNullable<
+  ReturnType<typeof authClient.useSession>['data']
+>['user']
+
+const toFormValues = (user: SessionUser | undefined): UserForm => ({
+  name: user?.name ?? '',
+  phoneNumber: user?.phoneNumber ?? '',
+  image: user?.image ?? null,
+})
+
 interface ProfileInfoProps {
-  user: User
+  user: SessionUser
 }
 
 const ProfileInfo = ({ user }: ProfileInfoProps) => {
+  const { refetch: refetchSession } = authClient.useSession()
+
   usePageViewTracking({
     props: { route_group: 'user', tab_view: 'user-profile' },
   })
-  const { i18n } = useClientT()
-  const [formState, formAction, pending] = useActionState(
-    updateUserAction,
-    initialState,
-  )
-  const [userFormData, setUserFormData] = useState<User>(user)
-  const [isPending, setPending] = useState(false)
 
-  const initialUserData = useRef<User>(user)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isUpdatingEmail, setIsUpdatingEmail] = useState(false)
 
-  const handleOnChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { value, name } = event.target
+  const basicInfoForm = useForm<UserForm>({
+    resolver: zodResolver(BasicInfoFormSchema),
+    defaultValues: toFormValues(user),
+  })
 
-    setUserFormData((prevState) => {
-      return { ...prevState, [name]: value }
+  const emailForm = useForm<EmailForm>({
+    resolver: zodResolver(EmailFormSchema),
+    defaultValues: { email: user?.email ?? '' },
+  })
+
+  const syncFormFromSession = useCallback(async () => {
+    await refetchSession({ query: { disableCookieCache: true } })
+
+    const { data: freshSession } = await authClient.getSession({
+      query: { disableCookieCache: true },
+    })
+
+    const freshUser = freshSession?.user
+    if (!freshUser) return
+
+    basicInfoForm.reset(toFormValues(freshUser), { keepDirty: false })
+  }, [basicInfoForm, refetchSession])
+
+  const { mutate: updateUserInfo, isPending: isUpdatingUser } =
+    useUpdateUserInfo({
+      onSuccess: async () => {
+        toast.success('Profile updated successfully')
+        await syncFormFromSession()
+      },
+      onError: (error) => {
+        console.error(error)
+        toast.error('Failed to update profile')
+      },
+    })
+
+  const onSubmitBasicInfo = (data: UserForm) => {
+    updateUserInfo({
+      name: data.name,
+      phoneNumber: data.phoneNumber ?? null,
+      image: data.image ?? undefined,
     })
   }
 
-  useEffect(() => {
-    if (formState?.data) {
-      initialUserData.current = {
-        ...initialUserData.current,
-        ...formState.data,
-      }
-      setUserFormData(initialUserData.current)
-      SuccessToasty('Profile updated successfully!')
-    }
-  }, [formState])
+  const onSubmitEmail = async (data: EmailForm) => {
+    if (data.email === user.email) return
+
+    setIsUpdatingEmail(true)
+
+    await authClient.changeEmail({
+      newEmail: data.email,
+      callbackURL: `${baseURL}/user/${user.id}/profile`,
+      fetchOptions: {
+        onSuccess: () =>
+          void toast.success(
+            'Please check your new email for a verification link.',
+          ),
+        onError: (error) => {
+          console.error(error)
+          toast.error('Failed to update email')
+        },
+      },
+    })
+
+    setIsUpdatingEmail(false)
+
+    emailForm.reset({ email: user.email ?? '' }, { keepDirty: false })
+  }
 
   const handleDeleteUser = async () => {
-    setPending(true)
+    setIsDeleting(true)
     await authClient.deleteUser({
       callbackURL: baseURL + '/goodbye',
     })
-    setPending(false)
+    setIsDeleting(false)
   }
 
   return (
     <div className='flex flex-col gap-6 rounded-lg'>
-      {/* Photo card */}
-      <div className='relative flex flex-col rounded-lg border shadow-md dark:border-zinc-600 dark:bg-zinc-950 dark:text-zinc-200'>
-        <form action={formAction}>
-          <div className='p-4'>
-            <h2 className='text-xl font-bold'>Photo</h2>
-            <div className='my-4'>
-              <p>{`This is your photo.`}</p>
-              <p>{`Click on the photo to upload a custom one from your files.`}</p>
-            </div>
-          </div>
-          <footer className='flex items-center border-t p-4 text-sm dark:border-zinc-600'>
-            <div className='text-sm text-zinc-400'>
-              A photo is optional but strongly recommended.
-            </div>
-          </footer>
-          <div className='absolute top-4 right-4 overflow-hidden rounded-full'>
-            <Image
-              src={userFormData.image ? userFormData.image : placeholder}
-              alt='Profile'
-              width={96}
-              height={96}
-            />
-          </div>
-        </form>
-      </div>
+      <Card>
+        <form onSubmit={basicInfoForm.handleSubmit(onSubmitBasicInfo)}>
+          <CardContent>
+            <FieldGroup className='mb-6'>
+              <ControllerField
+                name='image'
+                control={basicInfoForm.control}
+                meta={basicInfoFormFields['image']}
+              >
+                {({ field }) => <ImageField field={field} user={user} />}
+              </ControllerField>
 
-      <div className='relative flex flex-col rounded-lg border shadow-md dark:border-zinc-600 dark:bg-zinc-950 dark:text-zinc-200'>
-        <form action={formAction}>
-          <div className='p-4'>
-            <h2 className='text-xl font-bold'>Name</h2>
-            <div className='my-4'>
-              <p>{`Please enter your full name.`}</p>
-            </div>
-            <Input
-              type='text'
-              name='name'
-              id='name'
-              maxLength={32}
-              value={userFormData.name ?? ''}
-              onChange={handleOnChange}
-              className='mb-4 w-[300px] px-4'
-            />
-          </div>
-          <footer className='flex items-center border-t p-4 text-sm text-zinc-400 dark:border-zinc-600'>
-            <div className='flex-1'>Please use 32 characters at maximum.</div>
+              {(['name', 'phoneNumber'] as const).map((name) => (
+                <Fragment key={name}>
+                  <Separator />
+                  <ControllerField
+                    name={name}
+                    meta={basicInfoFormFields[name]}
+                    control={basicInfoForm.control}
+                  >
+                    {({ field, fieldState }) => (
+                      <Input
+                        {...field}
+                        id={field.name}
+                        aria-invalid={fieldState.invalid}
+                        placeholder={basicInfoFormFields[name].placeholder}
+                        value={(field.value ?? '') as string}
+                      />
+                    )}
+                  </ControllerField>
+                </Fragment>
+              ))}
+
+              <Separator />
+
+              <SignInMethods />
+            </FieldGroup>
+          </CardContent>
+          <CardFooter className='border-t'>
+            <Button
+              type='button'
+              variant='outline'
+              onClick={() => {
+                basicInfoForm.reset(toFormValues(user), { keepDirty: false })
+              }}
+              disabled={!basicInfoForm.formState.isDirty || isUpdatingUser}
+            >
+              Clear Changes
+            </Button>
             <Button
               type='submit'
-              disabled={
-                pending ||
-                userFormData.name === '' ||
-                initialUserData.current['name'] === userFormData.name
-              }
+              className='ml-auto'
+              disabled={!basicInfoForm.formState.isDirty || isUpdatingUser}
             >
-              Save
+              {isUpdatingUser ? 'Saving...' : 'Save'}
             </Button>
-          </footer>
+          </CardFooter>
         </form>
-      </div>
+      </Card>
 
-      <div className='relative flex flex-col rounded-lg border shadow-md dark:border-zinc-600 dark:bg-zinc-950 dark:text-zinc-200'>
-        <form action={formAction}>
-          <div className='p-4'>
-            <h2 className='text-xl font-bold'>Email</h2>
-            <div className='my-4'>
-              <p>{`Your primary email will be used for account-related notifications.`}</p>
-            </div>
-            <Input
-              type='email'
-              name='email'
-              id='email'
-              value={userFormData.email ?? ''}
-              onChange={handleOnChange}
-              className='mb-4 w-[300px] px-4'
-            />
-          </div>
-          <footer className='flex items-center border-t p-4 text-sm text-zinc-400 dark:border-zinc-600'>
-            <div className='flex-1'>
-              Emails must be verified to be used as primary email.
-            </div>
+      <Card>
+        <form onSubmit={emailForm.handleSubmit(onSubmitEmail)}>
+          <CardContent>
+            <FieldGroup className='mb-6'>
+              <ControllerField
+                name='email'
+                control={emailForm.control}
+                meta={emailFormField['email']}
+              >
+                {({ field, fieldState }) => (
+                  <Input
+                    {...field}
+                    id={field.name}
+                    type='email'
+                    name={field.name}
+                    aria-invalid={fieldState.invalid}
+                    placeholder={emailFormField['email'].placeholder}
+                    value={(field.value ?? '') as string}
+                  />
+                )}
+              </ControllerField>
+            </FieldGroup>
+          </CardContent>
+          <CardFooter className='border-t'>
             <Button
               type='submit'
-              variant='default'
-              disabled={
-                pending ||
-                userFormData.email === '' ||
-                initialUserData.current['email'] === userFormData.email
-              }
+              className='ml-auto'
+              disabled={!emailForm.formState.isDirty || isUpdatingEmail}
             >
-              Save
+              {isUpdatingEmail ? 'Saving...' : 'Change'}
             </Button>
-          </footer>
+          </CardFooter>
         </form>
-      </div>
-
-      <div className='relative flex flex-col rounded-lg border shadow-md dark:border-zinc-600 dark:bg-zinc-950 dark:text-zinc-200'>
-        <form action={formAction}>
-          <div className='p-4'>
-            <h2 className='text-xl font-bold'>Phone Number</h2>
-            <div className='my-4'>
-              <p>{`Enter a phone number to receive important service updates by SMS.`}</p>
-            </div>
-            <Input
-              type='phoneNumber'
-              name='phoneNumber'
-              id='phoneNumber'
-              value={userFormData.phoneNumber ?? ''}
-              onChange={handleOnChange}
-              className='mb-4 w-[300px] px-4'
-            />
-          </div>
-          <footer className='flex items-center border-t p-4 text-sm text-zinc-400 dark:border-zinc-600'>
-            <div className='flex-1'>A code will be sent to verify.</div>
-            <Button
-              type='submit'
-              disabled={
-                pending ||
-                userFormData.phoneNumber === '' ||
-                initialUserData.current['phoneNumber'] ===
-                  userFormData.phoneNumber
-              }
-            >
-              Save
-            </Button>
-          </footer>
-        </form>
-      </div>
+      </Card>
 
       <div className='relative flex flex-col rounded-lg border shadow-md dark:border-zinc-600 dark:bg-zinc-950 dark:text-zinc-200'>
         <div className='p-4'>
@@ -222,10 +303,10 @@ const ProfileInfo = ({ user }: ProfileInfoProps) => {
             type='submit'
             variant='destructive'
             onClick={handleDeleteUser}
-            disabled={isPending}
+            disabled={isDeleting}
             className='ml-auto'
           >
-            {isPending ? 'Deleting...' : 'Delete account'}
+            {isDeleting ? 'Deleting...' : 'Delete account'}
           </Button>
         </footer>
       </div>
@@ -234,3 +315,179 @@ const ProfileInfo = ({ user }: ProfileInfoProps) => {
 }
 
 export default ProfileInfo
+
+const SignInMethods = () => {
+  const orpc = useORPC()
+  const queryClient = useQueryClient()
+  const { data: accounts } = useListAccounts()
+
+  const handleUnlinkAccount = async (account: Account) => {
+    await authClient.unlinkAccount({
+      providerId: account.providerId,
+      fetchOptions: {
+        onSuccess: () => {
+          toast.success('Account unlinked successfully')
+
+          queryClient.invalidateQueries({
+            queryKey: orpc.account.list.key(),
+          })
+        },
+        onError: (error) => {
+          console.error(error)
+          toast.error('Failed to unlink account')
+        },
+      },
+    })
+  }
+
+  return (
+    <Field>
+      <FieldSet>
+        <div className='text-xl font-bold'>Sign-in methods</div>
+        {accounts?.map((account) => {
+          const provider = SOCIAL_PROVIDERS.find(
+            (provider) => provider.name === account.providerId,
+          )
+
+          if (account.providerId === 'credential') return
+
+          return (
+            <Badge key={account.id} variant='outline' className='gap-2 p-2'>
+              <span className='text-sm' style={{ color: provider?.color }}>
+                {provider?.icon}
+              </span>
+              <span className='text-sm capitalize'>{provider?.name}</span>
+              <div className='border-l pl-2'>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type='button'
+                      variant='ghost'
+                      size='icon'
+                      onClick={() => handleUnlinkAccount(account)}
+                    >
+                      <X />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side='bottom'>
+                    Unlink
+                    <TooltipArrow className='dark:fill-white' />
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </Badge>
+          )
+        })}
+      </FieldSet>
+    </Field>
+  )
+}
+
+type AvatarState = {
+  previewUrl: string | null
+  hasImage: boolean
+  isImageHovered: boolean
+}
+
+interface ImageFieldProps {
+  field: ControllerRenderProps<UserForm, 'image'>
+  user: SessionUser
+  previewReset?: () => void
+}
+
+const ImageField = ({ field, user }: ImageFieldProps) => {
+  const [avatarState, setAvatarState] = useState<AvatarState>({
+    previewUrl: null,
+    hasImage: user?.image ? true : false,
+    isImageHovered: false,
+  })
+
+  const handleMouseEnter = () => {
+    if (!avatarState.hasImage) return
+    setAvatarState({ ...avatarState, isImageHovered: true })
+  }
+
+  const handleMouseLeave = () => {
+    if (!avatarState.hasImage) return
+    setAvatarState({ ...avatarState, isImageHovered: false })
+  }
+
+  const removeImage = () => {
+    setAvatarState({ previewUrl: null, hasImage: false, isImageHovered: false })
+    field.onChange(null)
+  }
+
+  const handlePhotoUpload = (
+    event: ChangeEvent<HTMLInputElement>,
+    field: ControllerRenderProps<UserForm, 'image'>,
+  ) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      field.onChange(file)
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        setAvatarState({
+          ...avatarState,
+          previewUrl: e.target?.result as string,
+          hasImage: true,
+          isImageHovered: false,
+        })
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  return (
+    <FieldLabel
+      htmlFor={field.name}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className='border-vital-blue-700 relative ml-auto size-24! cursor-pointer overflow-hidden rounded-full border-2 bg-slate-100 shadow-lg'
+    >
+      {avatarState.isImageHovered && avatarState.hasImage && (
+        <Button
+          type='button'
+          size='icon'
+          variant='ghost'
+          onClick={removeImage}
+          className='absolute z-10 size-full rounded-full text-red-500 hover:bg-zinc-500/50 hover:text-red-500'
+        >
+          <Trash2 className='size-6' />
+        </Button>
+      )}
+      {avatarState.hasImage ? (
+        <Image
+          height={200}
+          width={200}
+          alt='Patient'
+          src={
+            avatarState.previewUrl
+              ? avatarState.previewUrl
+              : user?.image
+                ? user.image
+                : placeholder
+          }
+          className='size-full object-cover'
+        />
+      ) : (
+        <div className='flex size-full items-center justify-center bg-linear-to-br from-slate-200 to-slate-300'>
+          <UserIcon className='size-12 text-zinc-400' />
+        </div>
+      )}
+
+      <Input
+        type='file'
+        accept='image/*'
+        name={field.name}
+        id={field.name}
+        hidden
+        onChange={(e) => {
+          handlePhotoUpload(
+            e,
+            field as ControllerRenderProps<UserForm, 'image'>,
+          )
+        }}
+      />
+    </FieldLabel>
+  )
+}

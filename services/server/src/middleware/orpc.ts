@@ -11,6 +11,7 @@ export const orpcMiddleware = createMiddleware<AppContext>(async (c, next) => {
     context: {
       prisma,
       headers: c.req.raw.headers,
+      request: c.req.raw,
       user: c.var.user,
       session: c.var.session,
       s3: virtalityS3,

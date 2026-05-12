@@ -13,13 +13,14 @@ import { preset } from './procedures/preset.ts'
 import { presetExercise } from './procedures/preset-exercise.ts'
 import { patientSessionData } from './procedures/patient-session-data.ts'
 import { patientSessionExercise } from './procedures/patient-session-exercise.ts'
-import { user } from './procedures/user.ts'
+import { user } from './procedures/user/index.ts'
 import { waitlist } from './procedures/waitlist.ts'
 import { email } from './procedures/email.ts'
 import { referral } from './procedures/referral.ts'
 import { bucket } from './procedures/bucket.ts'
 import { favoriteExercise } from './procedures/favorite-exercise.ts'
 import { dashboard } from './procedures/adminboard/dashboard.ts'
+import { account } from './procedures/account/index.ts'
 
 export const router = {
   me,
@@ -44,6 +45,7 @@ export const router = {
   bucket,
   favoriteExercise,
   dashboard,
+  account,
 }
 
 export type Router = typeof router

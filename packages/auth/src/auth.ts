@@ -4,6 +4,7 @@ import {
   sendDeleteAccountVerification,
   sendResetPassword,
   sendVerificationEmail,
+  sendChangeEmailConfirmation,
 } from '@virtality/nodemailer'
 import { createAuthMiddleware, getOAuthState } from 'better-auth/api'
 import validateAndConsumeReferralCode from './lib/referral-code.ts'
@@ -38,8 +39,11 @@ export const auth = betterAuth({
   baseURL,
   basePath: '/api/v1/auth',
   database: prismaAdapter(prisma, { provider: 'postgresql' }),
-  account: { accountLinking: { enabled: true } },
+  account: { accountLinking: { enabled: true, allowDifferentEmails: true } },
   user: {
+    changeEmail: {
+      enabled: true,
+    },
     deleteUser: {
       enabled: true,
       sendDeleteAccountVerification,

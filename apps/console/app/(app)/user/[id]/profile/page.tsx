@@ -1,21 +1,27 @@
-import { redirect } from 'next/navigation'
-import { getUserAndSession } from '@/lib/authActions'
 import { authClient } from '@/auth-client'
-import { headers } from 'next/headers'
+import { headers as getHeaders } from 'next/headers'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Building, Key, UserIcon } from 'lucide-react'
 import SessionsTab from './_components/sessions-tab'
 import ProfileInfo from './_components/profile-info'
+import { redirect } from 'next/navigation'
 
 const ProfilePage = async () => {
-  const data = await getUserAndSession()
-  if (!data) redirect('/')
+  const headers = await getHeaders()
 
-  const sessionList = await authClient.listSessions({
-    fetchOptions: { headers: await headers() },
-  })
+  const { data: sessionData, error: sessionError } =
+    await authClient.getSession({
+      fetchOptions: { headers },
+    })
 
-  const { user, session } = data
+  if (!sessionData) redirect('/sign-in')
+
+  const { data: sessionList, error: sessionListError } =
+    await authClient.listSessions({
+      fetchOptions: { headers },
+    })
+
+  const { user, session } = sessionData
 
   return (
     <div className='h-full dark:bg-zinc-950'>
@@ -24,12 +30,14 @@ const ProfilePage = async () => {
           <TabsList className='w-full gap-2'>
             <TabsTrigger value='info'>
               <UserIcon />
+              Info
             </TabsTrigger>
             <TabsTrigger value='organizations'>
               <Building />
             </TabsTrigger>
             <TabsTrigger value='sessions'>
               <Key />
+              Sessions
             </TabsTrigger>
           </TabsList>
           <TabsContent value='info'>
@@ -38,7 +46,7 @@ const ProfilePage = async () => {
           <TabsContent value='organizations'>Organizations</TabsContent>
           <TabsContent value='sessions'>
             <SessionsTab
-              sessions={sessionList.data ?? []}
+              sessions={sessionList ?? []}
               currentSessionToken={session.token}
             />
           </TabsContent>
