@@ -30,7 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
-import { PatientForm } from '@/types/models'
+import { PatientForm } from '@/lib/definitions'
 import { Patient } from '@virtality/db'
 import { CalendarIcon, Trash2, Upload, User } from 'lucide-react'
 import Image from 'next/image'

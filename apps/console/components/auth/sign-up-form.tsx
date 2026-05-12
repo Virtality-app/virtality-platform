@@ -8,7 +8,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { SignUpForm } from '@/types/models'
+import { SignUpForm } from '@/lib/definitions'
 import { UseFormReturn } from 'react-hook-form'
 import { User } from '@/auth-client'
 

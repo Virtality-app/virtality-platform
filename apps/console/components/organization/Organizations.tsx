@@ -1,6 +1,6 @@
 'use client'
 import { createOrganizationAction } from '@/lib/actions'
-import { Organization } from '@/types/models'
+import { type Organization } from '@/lib/definitions'
 import { PlusSquare, X } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'

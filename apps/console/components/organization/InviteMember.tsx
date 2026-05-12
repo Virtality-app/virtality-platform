@@ -1,5 +1,5 @@
 'use client'
-import { OrganizationWithMembers } from '@/types/models'
+import { type OrganizationWithMembers } from '@/lib/definitions'
 import { ChangeEvent, useActionState, useEffect, useState } from 'react'
 import { createInvitationAction } from '@/lib/actions'
 import { Input } from '../ui/input'

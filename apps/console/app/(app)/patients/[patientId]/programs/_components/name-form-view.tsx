@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { Input } from '@/components/ui/input'
-import { PatientProgramForm } from '@/types/models'
+import { PatientProgramForm } from '@/lib/definitions'
 import {
   Form,
   FormControl,

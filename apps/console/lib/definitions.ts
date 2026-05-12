@@ -1,31 +1,11 @@
+import type { User } from '@/auth-client'
+import type { Member } from '@virtality/db'
 import { z } from 'zod/v4'
 import { isValidNumber, isValidPassword } from './utils'
 
 export const RoleEnum = z.enum(['admin', 'owner', 'user', 'employee'])
 
-export const OrganizationSchema = z.object({
-  id: z.string().default(''),
-  name: z.string(),
-  slug: z.string(),
-  logo: z.optional(z.optional(z.string().nullable())),
-  metadata: z.optional(
-    z
-      .union([
-        z.record(z.string(), z.string()),
-        z.string().transform((val) => val),
-      ])
-      .nullable(),
-  ),
-  createdAt: z.date(),
-})
-
-export const OrganizationMemberSchema = z.object({
-  id: z.string().optional(),
-  name: z.string().nullable().optional(),
-  role: z.string(),
-  image: z.string().nullable(),
-  createdAt: z.date().optional(),
-})
+export type Role = z.infer<typeof RoleEnum>
 
 export const UserSchema = z.object({
   id: z.string(),
@@ -41,6 +21,13 @@ export const UserSchema = z.object({
     .nullable(),
 })
 
+export const SignInSchema = z.object({
+  email: z.email({ message: '• Provide valid email example@domain.com' }),
+  password: z.string().min(1, { message: '• Password cannot be empty' }),
+})
+
+export type SignInForm = z.infer<typeof SignInSchema>
+
 export const SignUpSchema = z.object({
   name: z
     .string()
@@ -51,9 +38,13 @@ export const SignUpSchema = z.object({
   password: z.string().check(isValidPassword),
 })
 
+export type SignUpForm = z.infer<typeof SignUpSchema>
+
 export const PatientProgramFormSchema = z.object({
   name: z.string(),
 })
+
+export type PatientProgramForm = z.infer<typeof PatientProgramFormSchema>
 
 export const ExerciseSchema = z.object({
   id: z.string(),
@@ -138,6 +129,8 @@ export const PatientFormSchema = z.object({
   nprs: z.string().nullable(),
 })
 
+export type PatientForm = z.infer<typeof PatientFormSchema>
+
 export const DeviceSchema = z.object({
   id: z.string(),
   deviceId: z.string().nullable(),
@@ -157,6 +150,8 @@ export const ProgressDataSchema = z.object({
   progress: z.number(),
 })
 
+export type ProgressData = z.infer<typeof ProgressDataSchema>
+
 export const PresetFormSchema = z.object({
   presetName: z.string().nonempty('Name cannot be empty.'),
   pathology: z.string().nonempty('Pathology cannot be empty.'),
@@ -169,6 +164,8 @@ export const PresetFormSchema = z.object({
   description: z.string().nullable(),
 })
 
+export type PresetForm = z.infer<typeof PresetFormSchema>
+
 export const BugReportFormSchema = z.object({
   title: z.string().min(2, { message: 'Title must be at least 2 characters.' }),
   platform: z.enum(['web', 'vr'], { message: 'Please select a platform.' }),
@@ -178,3 +175,39 @@ export const BugReportFormSchema = z.object({
     .max(500, { message: 'Description must not exceed 500 characters.' }),
   image: z.array(z.instanceof(File)).or(z.string()).optional().nullable(),
 })
+
+export type BugReportForm = z.infer<typeof BugReportFormSchema>
+
+export const OrganizationSchema = z.object({
+  id: z.string().default(''),
+  name: z.string(),
+  slug: z.string(),
+  logo: z.optional(z.optional(z.string().nullable())),
+  metadata: z.optional(
+    z
+      .union([
+        z.record(z.string(), z.string()),
+        z.string().transform((val) => val),
+      ])
+      .nullable(),
+  ),
+  createdAt: z.date(),
+})
+
+export interface Organization extends z.infer<typeof OrganizationSchema> {
+  isFrozen: boolean | null
+}
+
+export const OrganizationMemberSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().nullable().optional(),
+  role: z.string(),
+  image: z.string().nullable(),
+  createdAt: z.date().optional(),
+})
+
+export type OrganizationMember = z.infer<typeof OrganizationMemberSchema>
+
+export type OrganizationWithMembers = Organization & {
+  members: (Member & { user: User })[]
+}

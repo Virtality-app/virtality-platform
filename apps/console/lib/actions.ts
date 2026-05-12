@@ -1,11 +1,7 @@
 'use server'
 import { OrganizationSchema, UserSchema } from './definitions'
-import {
-  BugReportForm,
-  IMAGE_TYPE,
-  ImageType,
-  Organization,
-} from '@/types/models'
+import { IMAGE_TYPE, ImageType } from '@/types/models'
+import { BugReportForm, Organization } from '@/lib/definitions'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { User } from '@/auth-client'

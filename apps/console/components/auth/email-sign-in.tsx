@@ -2,18 +2,27 @@
 import { authClient } from '@/auth-client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { SignInForm, SignInSchema } from '@/lib/definitions'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { ChangeEvent, useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { Field, FieldError, FieldLabel } from '../ui/field'
+
+type SignInDataType = {
+  email: string
+  password: string
+}
 
 const EmailSignIn = () => {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
-  const [signInData, setSignInData] = useState<
-    { [name: string]: string } | undefined
-  >()
+  const [signInData, setSignInData] = useState<SignInDataType>({
+    email: '',
+    password: '',
+  })
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const target = e.target
@@ -21,55 +30,80 @@ const EmailSignIn = () => {
     setSignInData({ ...signInData, [name]: value })
   }
 
-  const handleSignIn = async () => {
+  const form = useForm<SignInForm>({
+    resolver: zodResolver(SignInSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  })
+
+  const onSubmit = async (values: SignInForm) => {
     if (signInData) {
       setLoading(true)
-      const { error } = await authClient.signIn.email({
-        ...(signInData as { email: string; password: string }),
-        fetchOptions: {
-          onSuccess: () => {
-            router.push('/')
+      try {
+        await authClient.signIn.email({
+          ...values,
+          fetchOptions: {
+            onSuccess: () => {
+              router.push('/')
+            },
+            onError: (ctx) => {
+              setLoading(false)
+              setAuthError(ctx.error.message)
+            },
           },
-        },
-      })
-      if (error?.message) {
+        })
+      } catch (error) {
+        console.error('Error signing in: ', error)
         setLoading(false)
-        setAuthError(error.message)
+        setAuthError('Unexpected error occurred. Please contact support.')
       }
     }
   }
 
   return (
-    <div className='flex flex-col gap-2'>
+    <form onSubmit={form.handleSubmit(onSubmit)}>
       <div className='flex flex-col gap-2'>
-        <Label htmlFor='email' className='text-sm font-medium'>
-          Email
-        </Label>
-        <Input
-          type='email'
-          id='email'
+        <Controller
           name='email'
-          required
-          onChange={handleInputChange}
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={field.name}>Email *</FieldLabel>
+              <Input
+                {...field}
+                id={field.name}
+                aria-invalid={fieldState.invalid}
+                type='email'
+              />
+
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
         />
-      </div>
-      <div className='flex flex-col gap-2'>
-        <Label htmlFor='password' className='text-sm font-medium'>
-          Password
-        </Label>
-        <Input
-          type='password'
-          id='password'
+        <Controller
           name='password'
-          required
-          onChange={handleInputChange}
+          control={form.control}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={fieldState.invalid}>
+              <FieldLabel htmlFor={field.name}>Password *</FieldLabel>
+              <Input
+                {...field}
+                id={field.name}
+                aria-invalid={fieldState.invalid}
+                type='password'
+              />
+              {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+            </Field>
+          )}
         />
+        <Button type='submit' size='lg' disabled={loading}>
+          {loading ? <Loader2 className='animate-spin' /> : 'Sign In'}
+        </Button>
+        {authError && <div className='text-red-500'>{authError}</div>}
       </div>
-      <Button type='submit' size='lg' onClick={handleSignIn}>
-        {loading ? <Loader2 className='animate-spin' /> : 'Sign In'}
-      </Button>
-      {authError && <div className='text-red-500'>{authError}</div>}
-    </div>
+    </form>
   )
 }
 

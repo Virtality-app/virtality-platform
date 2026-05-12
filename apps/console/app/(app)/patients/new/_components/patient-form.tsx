@@ -4,10 +4,13 @@ import { AlertCircle, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { useForm } from 'react-hook-form'
-import { PatientFormSchema } from '@/lib/definitions'
+import {
+  PatientFormSchema,
+  PatientForm as PatientFormType,
+} from '@/lib/definitions'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form } from '@/components/ui/form'
-import { BodyAreas, PatientForm as PatientFormType } from '@/types/models'
+import { BodyAreas } from '@/types/models'
 import Link from 'next/link'
 import { getUUID } from '@/lib/utils'
 import useNavigationGuard from '@/hooks/use-navigation-guard'

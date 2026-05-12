@@ -2,7 +2,8 @@ import { usePathname, useRouter } from 'next/navigation'
 import { authClient } from '@/auth-client'
 import { useEffect } from 'react'
 
-const PUBLIC_PATHS = [
+/** Routes that may render without a session (must include `/error` — it lives under `(app)` and still mounts Navbar → useIsAuthed). */
+export const PUBLIC_PATHS = [
   '/sign-in',
   '/sign-up',
   '/verify-email',
@@ -10,6 +11,7 @@ const PUBLIC_PATHS = [
   '/reset-password',
   '/goodbye',
   '/auth',
+  '/error',
 ]
 
 const useIsAuthed = () => {

@@ -1,6 +1,6 @@
 'use client'
 
-import { Organization } from '@/types/models'
+import { type Organization } from '@/lib/definitions'
 import { X } from 'lucide-react'
 import { Session } from 'better-auth'
 import { ChangeEvent, useRef, useState } from 'react'

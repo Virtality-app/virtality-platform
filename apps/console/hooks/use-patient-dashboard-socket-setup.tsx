@@ -1,7 +1,6 @@
 import {
   PatientLocalData,
   ProgramStatus,
-  ProgressData,
   ProgressDataPoint,
 } from '@/types/models'
 import { subscribe } from '@/lib/device-event-controller'
@@ -15,7 +14,7 @@ import { Store } from 'tinybase'
 import useDashboardState from './use-patient-dashboard-state'
 import SuccessToasty from '../components/ui/SuccessToasty'
 import NotifyDoctorToasty from '../components/ui/NotifyDoctorToasty'
-import { ProgressDataSchema } from '@/lib/definitions'
+import { ProgressDataSchema, ProgressData } from '@/lib/definitions'
 import { getDisplayName, getUUID } from '@/lib/utils'
 import usePlotData from './use-plot-data'
 import { PatientSession } from '@virtality/db'

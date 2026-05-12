@@ -11,7 +11,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { OrganizationWithMembers } from '@/types/models'
+import { type OrganizationWithMembers } from '@/lib/definitions'
 
 interface OrganizationProfileProps {
   session: Session
