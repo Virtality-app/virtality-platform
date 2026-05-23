@@ -198,22 +198,12 @@ function writeStdoutLog(
     'deployment.environment.name': runtime.deploymentEnvironment,
   }
 
-  const line = JSON.stringify(payload, null, 2)
+  const line =
+    runtime.deploymentEnvironment === 'development'
+      ? JSON.stringify(payload, null, 2)
+      : JSON.stringify(payload)
 
-  switch (level) {
-    case 'debug':
-      console.debug(line)
-      break
-    case 'info':
-      console.info(line)
-      break
-    case 'warn':
-      console.warn(line)
-      break
-    case 'error':
-      console.error(line)
-      break
-  }
+  console.log(line)
 }
 
 function emitOtelLog(
