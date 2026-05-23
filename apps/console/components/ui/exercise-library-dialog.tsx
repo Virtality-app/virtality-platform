@@ -17,7 +17,7 @@ const ExerciseLibraryDialog = () => {
 
   return (
     <Dialog open={isLibraryOpen} onOpenChange={setLibraryOpen}>
-      <DialogContent className='z-1000 h-full max-h-[calc(100svh-40px)] max-w-[calc(100svw-40px)]! grid-rows-[auto_auto_1fr]'>
+      <DialogContent className='z-1000 grid h-full max-h-[calc(100svh-40px)] max-w-[calc(100svw-40px)]! min-h-0 grid-rows-[auto_minmax(0,1fr)_auto]'>
         <DialogHeader>
           <DialogTitle>Exercise Library</DialogTitle>
         </DialogHeader>

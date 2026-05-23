@@ -1,10 +1,11 @@
 import { cn, getDisplayName, getUUID } from '@/lib/utils'
+import { bodyGroupIconSrcForCategory } from '@/lib/body-group-icon'
+import { filterExercisesByBodyParts } from '@/lib/filter-exercises-by-body-parts'
 import { Star, X } from 'lucide-react'
-import FlipCard from '@/components//ui/flip-card'
+import FlipCard from '@/components/ui/flip-card'
 import { Input } from '@/components/ui/input'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from './button'
-import { ChangeEvent, MouseEvent, useEffect, useState } from 'react'
+import { ChangeEvent, MouseEvent, useMemo, useState } from 'react'
 import { useExerciseLibrary } from '@/context/exercise-library-context'
 import {
   useExercise,
@@ -12,22 +13,14 @@ import {
   useFavoriteExercise,
 } from '@virtality/react-query'
 import { withRom } from '@/lib/with-rom'
-import { useFeatureFlagResult } from 'posthog-js/react'
-import { Exercise } from '@virtality/db'
 import { Skeleton } from './skeleton'
 
 const ExerciseGrid = () => {
   const [searchTerm, setSearchTerm] = useState('')
-
   const [toggledFavorites, setToggledFavorites] = useState(false)
-  const [direction, setDirection] = useState<Exercise['direction'] | undefined>(
-    undefined,
-  )
-  const [activeTab, setActiveTab] = useState<string | undefined>(undefined)
+  const [selectedBodyParts, setSelectedBodyParts] = useState<string[]>([])
 
-  const { data: exercises, isLoading } = useExercise({
-    input: { where: { direction: direction ?? undefined } },
-  })
+  const { data: exercises, isLoading } = useExercise()
 
   const { data: categories } = useExerciseCategories()
 
@@ -37,23 +30,33 @@ const ExerciseGrid = () => {
   const { isSelected } = state
   const { selectExercise, removeExercise } = handler
 
-  const filtersFlag = useFeatureFlagResult('exercise_filters')
+  const toggleBodyPart = (category: string) => {
+    setSelectedBodyParts((prev) =>
+      prev.includes(category)
+        ? prev.filter((c) => c !== category)
+        : [...prev, category],
+    )
+  }
 
-  const displayedExercises = toggledFavorites
-    ? exercises?.filter((e) => favorites?.some((f) => f.exerciseId === e.id))
-    : exercises
-
-  useEffect(() => {
-    if (categories?.[0] && !activeTab) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setActiveTab(categories[0])
-    }
-  }, [categories, activeTab])
+  const displayedExercises = useMemo(() => {
+    if (!exercises) return undefined
+    const byBody = filterExercisesByBodyParts(exercises, selectedBodyParts)
+    const byFav = toggledFavorites
+      ? byBody.filter((e) => favorites?.some((f) => f.exerciseId === e.id))
+      : byBody
+    return byFav
+      .filter((ex) =>
+        getDisplayName(ex)
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()),
+      )
+      .sort((a, b) => a.name.localeCompare(b.name))
+  }, [exercises, selectedBodyParts, toggledFavorites, favorites, searchTerm])
 
   const _selectExercise = (e: MouseEvent) => {
     const { id } = e.currentTarget
     if (!id) return
-    const exerciseToAdd = exercises?.find((e) => e.id === id)
+    const exerciseToAdd = exercises?.find((ex) => ex.id === id)
     if (exerciseToAdd && !isSelected?.[exerciseToAdd.id]) {
       const preppedExercise = {
         exerciseId: exerciseToAdd.id,
@@ -72,7 +75,7 @@ const ExerciseGrid = () => {
   const _removeExercise = (e: MouseEvent) => {
     const { id } = e.currentTarget as HTMLElement
     if (!id) return
-    const exerciseToRemove = exercises?.find((e) => e.id === id)
+    const exerciseToRemove = exercises?.find((ex) => ex.id === id)
 
     if (!exerciseToRemove) return
     removeExercise(exerciseToRemove.id)
@@ -91,138 +94,107 @@ const ExerciseGrid = () => {
     setToggledFavorites((prev) => !prev)
   }
 
-  const selectDirection = (direction: Exercise['direction'] | undefined) => {
-    setDirection(direction)
-  }
-
   return (
-    <Tabs
-      value={activeTab}
-      onValueChange={setActiveTab}
-      className='overflow-hidden rounded-lg border p-2'
-    >
-      <TabsList className='flex h-fit flex-wrap gap-2'>
-        {categories?.map((category, index) => (
-          <TabsTrigger key={index} value={category} className='size-fit'>
-            {category}
-          </TabsTrigger>
-        ))}
-      </TabsList>
-      {categories?.map((category, index) => (
-        <TabsContent key={index} value={category} className='overflow-auto p-2'>
-          {/* Search bar */}
-          <div className='sticky top-0 z-10 m-2 w-[calc(100%-16px)] space-y-2'>
-            <Input
-              id='searchTerm'
-              name='searchTerm'
-              type='text'
-              placeholder='Search...'
-              value={searchTerm}
-              onChange={changeSearchInput}
-              className='bg-zinc-100 dark:bg-zinc-950!'
-            />
-            {searchTerm !== '' && (
-              <Button
-                type='button'
-                size='icon'
-                variant='ghost'
-                className='absolute top-1.5 right-2 size-6'
-                onClick={clearSearchTerm}
-              >
-                <X />
-              </Button>
-            )}
-            {filtersFlag?.enabled && filtersFlag.payload === false ? null : (
-              <div className='flex w-full items-center gap-2 rounded-md'>
-                <Button
-                  size='sm'
-                  variant='default'
-                  onClick={toggleFavorites}
-                  className={cn(toggledFavorites && 'ring-cyan-highlight')}
-                >
-                  <Star fill='yellow' />
-                  Favorites
-                </Button>
-                <div>
-                  <Button
-                    size='sm'
-                    variant='default'
-                    className={cn(
-                      'rounded-r-none',
-                      direction === 'Left' && 'ring-cyan-highlight',
-                    )}
-                    onClick={() => selectDirection('Left')}
-                  >
-                    Left
-                  </Button>
-                  <Button
-                    size='sm'
-                    variant='default'
-                    className={cn(
-                      'rounded-none',
-                      direction === undefined && 'ring-cyan-highlight',
-                    )}
-                    onClick={() => selectDirection(undefined)}
-                  >
-                    All
-                  </Button>
-                  <Button
-                    size='sm'
-                    variant='default'
-                    className={cn(
-                      'rounded-l-none',
-                      direction === 'Right' && 'ring-cyan-highlight',
-                    )}
-                    onClick={() => selectDirection('Right')}
-                  >
-                    Right
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
+    <div className='flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overflow-x-hidden rounded-lg border p-2'>
+      <div className='mb-3 flex flex-wrap gap-2'>
+        {categories?.map((category) => {
+          const selected = selectedBodyParts.includes(category)
+          const iconSrc = bodyGroupIconSrcForCategory(category)
+          return (
+            <Button
+              key={category}
+              type='button'
+              size='sm'
+              variant='outline'
+              aria-pressed={selected}
+              onClick={() => toggleBodyPart(category)}
+              className={cn(
+                'h-auto gap-2 py-1.5',
+                selected && 'ring-2 ring-cyan-highlight',
+              )}
+            >
+              {iconSrc ? (
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element -- static body-group SVGs from /public */}
+                  <img
+                    src={iconSrc}
+                    alt=''
+                    width={24}
+                    height={24}
+                    className='size-6 shrink-0'
+                  />
+                </>
+              ) : null}
+              <span>{category}</span>
+            </Button>
+          )
+        })}
+      </div>
 
-          <div className='grid justify-items-center gap-4 sm:grid-cols-3 2xl:grid-cols-5'>
-            {isLoading ? (
-              <>
-                {Array.from({ length: 15 }).map((_, i) => (
-                  <Skeleton
-                    key={i}
-                    className='aspect-4/5 w-full sm:max-w-[200px] md:max-w-[220px] lg:max-w-[240px] xl:max-w-[260px]'
-                  />
-                ))}
-              </>
-            ) : (
-              displayedExercises
-                ?.filter((ex) => ex.category === category)
-                .filter((ex) =>
-                  getDisplayName(ex)
-                    ?.toLowerCase()
-                    .includes(searchTerm.toLowerCase()),
-                )
-                .sort((a, b) => a.name.localeCompare(b.name))
-                .map((exercise) => (
-                  <FlipCard
-                    key={exercise.id}
-                    exercise={exercise}
-                    isSelected={isSelected?.[exercise.id] ?? false}
-                    toggledFavorites={toggledFavorites}
-                    favoriteExerciseId={
-                      favorites?.find((f) => f.exerciseId === exercise.id)
-                        ?.id ?? null
-                    }
-                    onSelect={
-                      isSelected?.[exercise.id]
-                        ? _removeExercise
-                        : _selectExercise
-                    }
-                  />
-                ))
-            )}
-          </div>
-        </TabsContent>
-      ))}
-    </Tabs>
+      <div className='relative mb-3 w-full max-w-md space-y-2'>
+        <Input
+          id='searchTerm'
+          name='searchTerm'
+          type='text'
+          placeholder='Search...'
+          value={searchTerm}
+          onChange={changeSearchInput}
+          className='bg-zinc-100 pr-8 dark:bg-zinc-950!'
+        />
+        {searchTerm !== '' && (
+          <Button
+            type='button'
+            size='icon'
+            variant='ghost'
+            className='absolute top-1.5 right-2 size-6'
+            onClick={clearSearchTerm}
+          >
+            <X />
+          </Button>
+        )}
+        <div className='flex items-center gap-2'>
+          <Button
+            type='button'
+            size='sm'
+            variant='default'
+            onClick={toggleFavorites}
+            className={cn(toggledFavorites && 'ring-cyan-highlight')}
+          >
+            <Star fill='yellow' />
+            Favorites
+          </Button>
+        </div>
+      </div>
+
+      <div className='grid justify-items-center gap-4 sm:grid-cols-3 2xl:grid-cols-5'>
+        {isLoading ? (
+          <>
+            {Array.from({ length: 15 }).map((_, i) => (
+              <Skeleton
+                key={i}
+                className='aspect-4/5 w-full sm:max-w-[200px] md:max-w-[220px] lg:max-w-[240px] xl:max-w-[260px]'
+              />
+            ))}
+          </>
+        ) : (
+          displayedExercises?.map((exercise) => (
+            <FlipCard
+              key={exercise.id}
+              exercise={exercise}
+              isSelected={isSelected?.[exercise.id] ?? false}
+              toggledFavorites={toggledFavorites}
+              favoriteExerciseId={
+                favorites?.find((f) => f.exerciseId === exercise.id)?.id ??
+                null
+              }
+              onSelect={
+                isSelected?.[exercise.id] ? _removeExercise : _selectExercise
+              }
+            />
+          ))
+        )}
+      </div>
+    </div>
   )
 }
 
