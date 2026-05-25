@@ -29,9 +29,11 @@
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "sandcastle": "pnpx tsx .sandcastle/main.mts"
   },
   "devDependencies": {
+    "@ai-hero/sandcastle": "file:~/Projects/virtality/toolbox/ai-hero-sandcastle-0.5.10.tgz",
     "prettier": "3.8.1",
     "prettier-plugin-tailwindcss": "0.7.2",
     "rimraf": "6.1.2",
