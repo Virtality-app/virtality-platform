@@ -19,46 +19,89 @@
 // Or add to package.json:
 //   "scripts": { "sandcastle": "npx tsx .sandcastle/main.mts" }
 
-import * as sandcastle from "@ai-hero/sandcastle";
-import { docker } from "@ai-hero/sandcastle/sandboxes/docker";
+import * as sandcastle from '@ai-hero/sandcastle'
+import { docker } from '@ai-hero/sandcastle/sandboxes/docker'
+import { basename, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 // ---------------------------------------------------------------------------
 // Configuration
 // ---------------------------------------------------------------------------
 
+// Anchor to the git repo root (parent of .sandcastle/), not process.cwd().
+// pnpm runs this file with cwd=.sandcastle; sandcastle's default Docker image
+// tag is derived from cwd and would become the invalid tag "sandcastle:.sandcastle".
+const REPO_ROOT = dirname(dirname(fileURLToPath(import.meta.url)))
+const DOCKER_IMAGE = `sandcastle:${basename(REPO_ROOT)
+  .toLowerCase()
+  .replace(/[^a-z0-9_.-]/g, '-')}`
+
+// Cursor model for agent CLI. Override when composer-2 hits resource_exhausted (capacity).
+// Examples: auto, composer-1, claude-sonnet-4-6, gpt-5.3-codex
+const CURSOR_MODEL = process.env.SANDCASTLE_CURSOR_MODEL ?? 'composer-2'
+const cursorAgent = () => sandcastle.cursor(CURSOR_MODEL)
+
+const isResourceExhausted = (error: unknown) =>
+  String(error).includes('resource_exhausted')
+
+/** Retry Cursor agent calls when the API returns transient capacity errors. */
+async function runWithCursorRetries<T>(
+  label: string,
+  run: () => Promise<T>,
+): Promise<T | null> {
+  const maxAttempts = 3
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await run()
+    } catch (error) {
+      if (!isResourceExhausted(error) || attempt === maxAttempts) {
+        console.error(`[${label}] failed:`, error)
+        return null
+      }
+      const waitSec = 30 * attempt
+      console.warn(
+        `[${label}] Cursor resource_exhausted — retry ${attempt}/${maxAttempts - 1} in ${waitSec}s (model: ${CURSOR_MODEL})`,
+      )
+      await new Promise((resolve) => setTimeout(resolve, waitSec * 1000))
+    }
+  }
+  return null
+}
+
 // Maximum number of implement→review cycles to run before stopping.
 // Each cycle works on one issue. Raise this to process more issues per run.
-const MAX_ITERATIONS = 10;
+const MAX_ITERATIONS = 10
 
 // Hooks run inside the sandbox before the agent starts each iteration.
 // npm install ensures the sandbox always has fresh dependencies.
 const hooks = {
-  sandbox: { onSandboxReady: [{ command: "npm install" }] },
-};
+  sandbox: { onSandboxReady: [{ command: 'npm install' }] },
+}
 
 // Copy node_modules from the host into the worktree before each sandbox
 // starts. Avoids a full npm install from scratch; the hook above handles
 // platform-specific binaries and any packages added since the last copy.
-const copyToWorktree = ["node_modules"];
+const copyToWorktree = ['node_modules']
 
 // ---------------------------------------------------------------------------
 // Main loop
 // ---------------------------------------------------------------------------
 
 for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
-  console.log(`\n=== Iteration ${iteration}/${MAX_ITERATIONS} ===\n`);
+  console.log(`\n=== Iteration ${iteration}/${MAX_ITERATIONS} ===\n`)
 
   // Generate a unique branch name for this iteration.
-  const branch = `sandcastle/sequential-reviewer/${Date.now()}`;
+  const branch = `sandcastle/sequential-reviewer/${Date.now()}`
 
   // Create a single sandbox that both the implementer and reviewer share.
   // This gives both agents a real, named branch that persists across phases.
   const sandbox = await sandcastle.createSandbox({
     branch,
-    sandbox: docker(),
+    cwd: REPO_ROOT,
+    sandbox: docker({ imageName: DOCKER_IMAGE }),
     hooks,
     copyToWorktree,
-  });
+  })
 
   try {
     // -----------------------------------------------------------------------
@@ -70,20 +113,23 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     //
     // The agent signals completion via <promise>COMPLETE</promise> when done.
     // -----------------------------------------------------------------------
-    const implement = await sandbox.run({
-      name: "implementer",
-      maxIterations: 100,
-      agent: sandcastle.cursor("composer-2"),
-      promptFile: "./.sandcastle/implement-prompt.md",
-    });
+    const implement = await runWithCursorRetries('implementer', () =>
+      sandbox.run({
+        name: 'implementer',
+        maxIterations: 100,
+        agent: cursorAgent(),
+        promptFile: './implement-prompt.md',
+        completionSignal: '<promise>COMPLETE</promise>',
+      }),
+    )
 
-    if (!implement.commits.length) {
-      console.log("Implementation agent made no commits. Skipping review.");
-      continue;
+    if (!implement?.commits.length) {
+      console.log('Implementation agent made no commits. Skipping review.')
+      continue
     }
 
-    console.log(`\nImplementation complete on branch: ${branch}`);
-    console.log(`Commits: ${implement.commits.length}`);
+    console.log(`\nImplementation complete on branch: ${branch}`)
+    console.log(`Commits: ${implement.commits.length}`)
 
     // -----------------------------------------------------------------------
     // Phase 2: Review
@@ -92,20 +138,24 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     // Phase 1. It uses the {{BRANCH}} prompt argument to inspect the right
     // branch, and either approves or makes corrections directly on the branch.
     // -----------------------------------------------------------------------
-    await sandbox.run({
-      name: "reviewer",
-      maxIterations: 1,
-      agent: sandcastle.cursor("composer-2"),
-      promptFile: "./.sandcastle/review-prompt.md",
-      promptArgs: {
-        BRANCH: branch,
-      },
-    });
+    const review = await runWithCursorRetries('reviewer', () =>
+      sandbox.run({
+        name: 'reviewer',
+        maxIterations: 1,
+        agent: cursorAgent(),
+        promptFile: './review-prompt.md',
+        promptArgs: {
+          BRANCH: branch,
+        },
+      }),
+    )
 
-    console.log("\nReview complete.");
+    if (review) {
+      console.log('\nReview complete.')
+    }
   } finally {
-    await sandbox.close();
+    await sandbox.close()
   }
 }
 
-console.log("\nAll done.");
+console.log('\nAll done.')

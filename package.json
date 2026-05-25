@@ -32,10 +32,11 @@
     "test": "turbo run test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "sandcastle": "pnpx tsx .sandcastle/main.mts"
+    "sandcastle:install": "pnpm install --ignore-workspace --dir .sandcastle",
+    "sandcastle:docker:build": "PATH=\"$PWD/.sandcastle/node_modules/.bin:$PATH\" sandcastle docker build-image",
+    "sandcastle": "pnpm --dir .sandcastle exec tsx main.mts"
   },
   "devDependencies": {
-    "@ai-hero/sandcastle": "file:~/Projects/virtality/toolbox/ai-hero-sandcastle-0.5.10.tgz",
     "prettier": "3.8.1",
     "prettier-plugin-tailwindcss": "0.7.2",
     "pnpm": "10.23.0",
