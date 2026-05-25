@@ -22,6 +22,7 @@ export { useMap } from './use-map.js'
 // Exercise queries
 export { useExercise } from './use-exercise.js'
 export { useExerciseCategories } from './use-exercise-categories.js'
+export { useExerciseItems } from './use-exercise-items.js'
 
 // Medical history queries
 export { useMedicalHistory } from './use-medical-history.js'

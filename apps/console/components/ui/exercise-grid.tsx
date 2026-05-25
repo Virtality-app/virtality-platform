@@ -1,6 +1,10 @@
 import { cn, getDisplayName, getUUID } from '@/lib/utils'
 import { bodyGroupIconSrcForCategory } from '@/lib/body-group-icon'
 import { filterExercisesByBodyParts } from '@/lib/filter-exercises-by-body-parts'
+import {
+  filterExercisesByEquipment,
+  formatExerciseEquipmentChipLabel,
+} from '@/lib/filter-exercises-by-equipment'
 import { Star, X } from 'lucide-react'
 import FlipCard from '@/components/ui/flip-card'
 import { Input } from '@/components/ui/input'
@@ -10,6 +14,7 @@ import { useExerciseLibrary } from '@/context/exercise-library-context'
 import {
   useExercise,
   useExerciseCategories,
+  useExerciseItems,
   useFavoriteExercise,
 } from '@virtality/react-query'
 import { withRom } from '@/lib/with-rom'
@@ -19,10 +24,14 @@ const ExerciseGrid = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [toggledFavorites, setToggledFavorites] = useState(false)
   const [selectedBodyParts, setSelectedBodyParts] = useState<string[]>([])
+  const [selectedEquipmentKeys, setSelectedEquipmentKeys] = useState<
+    string[]
+  >([])
 
   const { data: exercises, isLoading } = useExercise()
 
   const { data: categories } = useExerciseCategories()
+  const { data: equipmentKeys } = useExerciseItems()
 
   const { data: favorites } = useFavoriteExercise()
 
@@ -38,12 +47,24 @@ const ExerciseGrid = () => {
     )
   }
 
+  const toggleEquipmentKey = (key: string) => {
+    setSelectedEquipmentKeys((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
+    )
+  }
+
   const displayedExercises = useMemo(() => {
     if (!exercises) return undefined
     const byBody = filterExercisesByBodyParts(exercises, selectedBodyParts)
+    const byEquipment = filterExercisesByEquipment(
+      byBody,
+      selectedEquipmentKeys,
+    )
     const byFav = toggledFavorites
-      ? byBody.filter((e) => favorites?.some((f) => f.exerciseId === e.id))
-      : byBody
+      ? byEquipment.filter((e) =>
+          favorites?.some((f) => f.exerciseId === e.id),
+        )
+      : byEquipment
     return byFav
       .filter((ex) =>
         getDisplayName(ex)
@@ -51,7 +72,14 @@ const ExerciseGrid = () => {
           .includes(searchTerm.toLowerCase()),
       )
       .sort((a, b) => a.name.localeCompare(b.name))
-  }, [exercises, selectedBodyParts, toggledFavorites, favorites, searchTerm])
+  }, [
+    exercises,
+    selectedBodyParts,
+    selectedEquipmentKeys,
+    toggledFavorites,
+    favorites,
+    searchTerm,
+  ])
 
   const _selectExercise = (e: MouseEvent) => {
     const { id } = e.currentTarget
@@ -126,6 +154,28 @@ const ExerciseGrid = () => {
                 </>
               ) : null}
               <span>{category}</span>
+            </Button>
+          )
+        })}
+      </div>
+
+      <div className='mb-3 flex flex-wrap gap-2'>
+        {equipmentKeys?.map((key) => {
+          const selected = selectedEquipmentKeys.includes(key)
+          return (
+            <Button
+              key={key}
+              type='button'
+              size='sm'
+              variant='outline'
+              aria-pressed={selected}
+              onClick={() => toggleEquipmentKey(key)}
+              className={cn(
+                'h-auto py-1.5',
+                selected && 'ring-2 ring-cyan-highlight',
+              )}
+            >
+              {formatExerciseEquipmentChipLabel(key)}
             </Button>
           )
         })}

@@ -209,6 +209,9 @@
     "type-check": {
       "dependsOn": ["^type-check"]
     },
+    "test": {
+      "outputs": []
+    },
     "@virtality/db#generate": {
       "outputs": ["console/prisma/generated/**"]
     },

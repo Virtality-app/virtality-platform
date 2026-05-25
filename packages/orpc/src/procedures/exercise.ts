@@ -1,4 +1,5 @@
 import { z } from 'zod/v4'
+import { exerciseEquipmentFilterKey } from '@virtality/shared/utils'
 import { authed } from '../middleware/auth.ts'
 import { ExerciseFindManyZodSchema } from '@virtality/db/definitions'
 
@@ -35,7 +36,26 @@ const listExerciseCategories = authed
     return rows.map((row) => row.category)
   })
 
+const listExerciseItems = authed
+  .route({ path: '/exercise/items', method: 'GET' })
+  .handler(async ({ context }) => {
+    const { prisma } = context
+
+    const rows = await prisma.exercise.findMany({
+      where: { enabled: true },
+      select: { item: true },
+    })
+
+    const keys = new Set<string>()
+    for (const row of rows) {
+      keys.add(exerciseEquipmentFilterKey(row.item))
+    }
+
+    return [...keys].sort((a, b) => a.localeCompare(b))
+  })
+
 export const exercise = {
   list: listExercise,
   listCategories: listExerciseCategories,
+  listItems: listExerciseItems,
 }
