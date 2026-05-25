@@ -16,6 +16,7 @@ import {
 import { withRom } from '@/lib/with-rom'
 import { Skeleton } from './skeleton'
 import Image from 'next/image'
+import { equipmentIconSrcForItem } from '@/lib/equipment-icon'
 
 function equipmentChipLabel(key: string): string {
   return key
@@ -145,9 +146,9 @@ const ExerciseGrid = () => {
     !isLoading && exercises && displayedExercises?.length === 0
 
   return (
-    <div className='flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto rounded-lg border p-2'>
+    <div className='flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto p-2'>
       <div className='flex flex-col gap-2'>
-        <h2>Select By Body Part</h2>
+        <h2 className='text-lg font-bold'>Select By Body Part</h2>
         <div className='mb-3 flex flex-wrap gap-2'>
           {categories?.map((category) => {
             const selected = selectedBodyParts.includes(category)
@@ -182,10 +183,12 @@ const ExerciseGrid = () => {
       </div>
 
       <div className='flex flex-col gap-2'>
-        <h2>Select By Equipment</h2>
+        <h2 className='text-lg font-bold'>Select By Equipment</h2>
         <div className='mb-3 flex flex-wrap gap-2'>
           {equipmentKeys?.map((key) => {
             const selected = selectedEquipmentKeys.includes(key)
+            const iconSrc = equipmentIconSrcForItem(key)
+
             return (
               <Button
                 key={key}
@@ -195,10 +198,19 @@ const ExerciseGrid = () => {
                 aria-pressed={selected}
                 onClick={() => toggleEquipment(key)}
                 className={cn(
-                  'h-auto py-1.5',
+                  'flex h-auto flex-col items-center gap-2 py-1.5',
                   selected && 'ring-cyan-highlight ring-2',
                 )}
               >
+                {iconSrc ? (
+                  <Image
+                    src={iconSrc}
+                    alt={key}
+                    width={400}
+                    height={400}
+                    className='size-18 shrink-0'
+                  />
+                ) : null}
                 {equipmentChipLabel(key)}
               </Button>
             )
