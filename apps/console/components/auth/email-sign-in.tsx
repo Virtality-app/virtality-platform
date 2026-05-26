@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation'
 import { ChangeEvent, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { Field, FieldError, FieldLabel } from '../ui/field'
+import { warmUpSocketServer } from '@/lib/warm-up-socket-server'
 
 type SignInDataType = {
   email: string
@@ -46,6 +47,7 @@ const EmailSignIn = () => {
           ...values,
           fetchOptions: {
             onSuccess: () => {
+              void warmUpSocketServer()
               router.push('/')
             },
             onError: (ctx) => {

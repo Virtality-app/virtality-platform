@@ -2,6 +2,7 @@ import { QueryProvider, ORPCProvider } from '@virtality/react-query'
 import { ThemeProvider } from 'next-themes'
 import TinyBaseProvider from '@/context/tinybase-context'
 import TourProvider from '@/context/tour-context'
+import SocketWarmUp from '@/components/auth/socket-warm-up'
 import CookieBanner from '@/components/layout/cookie-banner'
 import { ToastContainer } from 'react-toastify'
 import {
@@ -32,6 +33,7 @@ async function RootProvider({ children }: { children: React.ReactNode }) {
           <TinyBaseProvider>
             <TourProvider>
               <div id='root'>
+                <SocketWarmUp />
                 {children}
                 <ToastContainer
                   position='bottom-right'

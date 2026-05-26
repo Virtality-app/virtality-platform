@@ -10,6 +10,8 @@ import {
 import { useCallback, useState } from 'react'
 import useTimeout from '@/hooks/use-timeout'
 import { Spinner } from '@/components/ui/spinner'
+import { markPendingSocketWarmUp } from '@/hooks/use-warm-up-socket-on-sign-in'
+import { warmUpSocketServer } from '@/lib/warm-up-socket-server'
 
 interface SocialSignInButtonProps {
   referralCode?: string
@@ -37,6 +39,7 @@ const SocialSignInButton = ({ referralCode }: SocialSignInButtonProps) => {
 
   const handleSignIn = () => {
     setIsRunning(true)
+    markPendingSocketWarmUp()
     authClient.signIn.social({
       provider: 'google',
       callbackURL,
@@ -45,6 +48,7 @@ const SocialSignInButton = ({ referralCode }: SocialSignInButtonProps) => {
       }),
       fetchOptions: {
         onSuccess: () => {
+          void warmUpSocketServer()
           setIsRunning(false)
         },
         onError(context) {

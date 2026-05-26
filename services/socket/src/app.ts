@@ -48,6 +48,15 @@ const socketOptions = {
 } satisfies Partial<ServerOptions>
 
 const io = new Server(httpServer, socketOptions)
+
+app.get('/warmup', (_req, res) => {
+  void io.engine
+  logger.info('http.warmup.ok', {
+    route: '/warmup',
+  })
+  res.status(200).send('ok')
+})
+
 const DEFAULT_COLD_START_REJECT_ATTEMPTS = 4
 const isColdStartSimulationEnabled =
   process.env.SOCKET_SIM_COLD_START === 'true'
