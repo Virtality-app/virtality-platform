@@ -23,6 +23,7 @@ import {
   copyProgramExerciseFields,
   programExerciseFieldsDiverge,
 } from '@/lib/program-exercise-pair-fields'
+import { removalDiscardsDivergentBilateralWork } from '@/lib/program-list-removal-safety'
 import {
   segmentProgramExerciseRowsByAdjacentBilateralFamilies,
   type ProgramExerciseListSegment,
@@ -137,8 +138,21 @@ const ExerciseLibraryList = ({ className }: ExerciseLibraryListProps) => {
   }
 
   const deleteSelected = () => {
-    const exercisesToUpdate = selectedExercises.filter((ex) =>
-      selectedItems.every((exToRemove) => exToRemove !== ex.id),
+    const idsToRemove = new Set(selectedItems)
+    if (
+      removalDiscardsDivergentBilateralWork(
+        selectedExercises,
+        segments,
+        idsToRemove,
+      )
+    ) {
+      const ok = window.confirm(
+        'Remove the selected exercises? Side-specific settings for a Left/Right pair will be discarded.',
+      )
+      if (!ok) return
+    }
+    const exercisesToUpdate = selectedExercises.filter(
+      (ex) => !idsToRemove.has(ex.id),
     )
     updateExercises(exercisesToUpdate)
     updateFormState({ globalCheck: false, selectedItems: [] })
