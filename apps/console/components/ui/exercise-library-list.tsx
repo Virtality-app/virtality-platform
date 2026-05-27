@@ -1,4 +1,4 @@
-import { MouseEvent } from 'react'
+import { MouseEvent, useMemo } from 'react'
 import {
   ChevronDown,
   ChevronUp,
@@ -11,15 +11,42 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
 import { cn, getDisplayName } from '@/lib/utils'
 import ExerciseSettings from '@/components/ui/exercise-settings'
-import { ExerciseWithSettings } from '@/types/models'
+import { CompleteExercise, ExerciseWithSettings } from '@/types/models'
 import ExerciseLibraryDialog from '@/components/ui/exercise-library-dialog'
 import { P } from './typography'
 import { useExerciseLibrary } from '@/context/exercise-library-context'
 import { motion } from 'motion/react'
 import { useExercise } from '@virtality/react-query'
+import {
+  segmentProgramExerciseRowsByAdjacentBilateralFamilies,
+  type ProgramExerciseListSegment,
+} from '@virtality/shared/utils'
 
 interface ExerciseLibraryListProps {
   className?: string
+}
+
+function segmentRowKey(ex: CompleteExercise): {
+  displayName: string
+  direction: string
+} {
+  return {
+    displayName: ex.exercise?.displayName ?? '',
+    direction: ex.exercise?.direction ?? '',
+  }
+}
+
+function membersForSegment(
+  selectedExercises: CompleteExercise[],
+  seg: ProgramExerciseListSegment,
+): CompleteExercise[] {
+  if (seg.kind === 'single') {
+    return [selectedExercises[seg.startIndex]!]
+  }
+  return [
+    selectedExercises[seg.startIndex]!,
+    selectedExercises[seg.startIndex + 1]!,
+  ]
 }
 
 const ExerciseLibraryList = ({ className }: ExerciseLibraryListProps) => {
@@ -34,6 +61,14 @@ const ExerciseLibraryList = ({ className }: ExerciseLibraryListProps) => {
     updateExercises,
     updateFormState,
   } = handler
+
+  const segments = useMemo(
+    () =>
+      segmentProgramExerciseRowsByAdjacentBilateralFamilies(
+        selectedExercises.map(segmentRowKey),
+      ),
+    [selectedExercises],
+  )
 
   const toggleSettings = (e: MouseEvent) => {
     const { id } = e.currentTarget
@@ -63,6 +98,26 @@ const ExerciseLibraryList = ({ className }: ExerciseLibraryListProps) => {
     }
   }
 
+  const pairCheckboxChange = (memberIds: readonly string[]) => {
+    const allIn = memberIds.every((id) => selectedItems.includes(id))
+    if (allIn) {
+      const newSelectedItems = selectedItems.filter(
+        (id) => !memberIds.includes(id),
+      )
+      updateFormState({
+        selectedItems: newSelectedItems,
+        globalCheck: newSelectedItems.length === selectedExercises.length,
+      })
+    } else {
+      const next = new Set([...selectedItems, ...memberIds])
+      const arr = [...next]
+      updateFormState({
+        selectedItems: arr,
+        globalCheck: arr.length === selectedExercises.length,
+      })
+    }
+  }
+
   const checkAll = (checked: boolean) => {
     const newSelectedItems = checked ? selectedExercises.map((e) => e.id) : []
     updateFormState({
@@ -79,28 +134,18 @@ const ExerciseLibraryList = ({ className }: ExerciseLibraryListProps) => {
     updateFormState({ globalCheck: false, selectedItems: [] })
   }
 
-  const moveExerciseUp = (index: number) => {
-    if (index === 0 || !selectedExercises) return
-
-    const newExercises = [...selectedExercises]
-    ;[newExercises[index - 1], newExercises[index]] = [
-      newExercises[index],
-      newExercises[index - 1],
+  const reorderSegmentGroups = (groupIndex: number, delta: -1 | 1) => {
+    const j = groupIndex + delta
+    if (j < 0 || j >= segments.length) return
+    const groups = segments.map((s) =>
+      membersForSegment(selectedExercises, s),
+    )
+    const reordered = [...groups]
+    ;[reordered[groupIndex], reordered[j]] = [
+      reordered[j]!,
+      reordered[groupIndex]!,
     ]
-
-    updateExercises(newExercises)
-  }
-
-  const moveExerciseDown = (index: number) => {
-    if (index === selectedExercises.length - 1 || !selectedExercises) return
-
-    const newExercises = [...selectedExercises]
-    ;[newExercises[index], newExercises[index + 1]] = [
-      newExercises[index + 1],
-      newExercises[index],
-    ]
-
-    updateExercises(newExercises)
+    updateExercises(reordered.flat())
   }
 
   const isListEmpty = selectedExercises.length === 0
@@ -146,13 +191,38 @@ const ExerciseLibraryList = ({ className }: ExerciseLibraryListProps) => {
 
       <ul className='flex max-h-full w-full flex-col gap-2 overflow-auto rounded-lg p-4 dark:text-zinc-200'>
         {!isListEmpty ? (
-          selectedExercises.map((e, i) => {
-            const exerciseInfo = defaultExercises?.find(
-              (de) => de.id === e.exerciseId,
+          segments.map((seg, groupIdx) => {
+            const members = membersForSegment(selectedExercises, seg)
+            const isPair = seg.kind === 'bilateral'
+            const primary = members[0]!
+            const secondary = members[1]
+            const primaryIndex = seg.startIndex
+            const secondaryIndex = isPair ? seg.startIndex + 1 : undefined
+
+            const memberIds = members.map((m) => m.id)
+            const allMembersSelected = memberIds.every((id) =>
+              selectedItems.includes(id),
+            )
+            const someMembersSelected = memberIds.some((id) =>
+              selectedItems.includes(id),
             )
 
+            const primaryCatalog = defaultExercises?.find(
+              (de) => de.id === primary.exerciseId,
+            )
+
+            const title = isPair
+              ? (primary.exercise?.displayName ??
+                primaryCatalog?.displayName ??
+                'Exercise')
+              : (getDisplayName(
+                  defaultExercises?.find((de) => de.id === primary.exerciseId),
+                ) ?? 'Exercise')
+
+            const listKey = isPair ? `${primary.id}:${secondary!.id}` : primary.id
+
             return (
-              <li key={e.id} className='space-y-2'>
+              <li key={listKey} className='space-y-2'>
                 <motion.div
                   layout
                   initial={{ opacity: 0, y: -20 }}
@@ -167,12 +237,29 @@ const ExerciseLibraryList = ({ className }: ExerciseLibraryListProps) => {
                 >
                   <div className='flex items-center gap-2'>
                     <Checkbox
-                      checked={selectedItems.includes(e.id)}
-                      onCheckedChange={() => checkboxChange(e)}
+                      checked={
+                        allMembersSelected
+                          ? true
+                          : someMembersSelected
+                            ? 'indeterminate'
+                            : false
+                      }
+                      onCheckedChange={() =>
+                        isPair
+                          ? pairCheckboxChange(memberIds)
+                          : checkboxChange(primary)
+                      }
                     />
-                    <p className='flex-1'>{getDisplayName(exerciseInfo)}</p>
+                    <div className='flex flex-1 flex-col'>
+                      <p>{title}</p>
+                      {isPair ? (
+                        <p className='text-muted-foreground text-xs'>
+                          Left &amp; Right
+                        </p>
+                      ) : null}
+                    </div>
                     <Button
-                      id={e.id}
+                      id={primary.id}
                       type='button'
                       size='icon'
                       variant='outline'
@@ -183,41 +270,40 @@ const ExerciseLibraryList = ({ className }: ExerciseLibraryListProps) => {
                   </div>
 
                   <div className='flex items-center gap-3'>
-                    {/* Re-Order */}
                     <div className='flex flex-col'>
                       <Button
                         size='icon-sm'
                         variant='ghost'
-                        onClick={() => moveExerciseUp(i)}
-                        disabled={i === 0}
+                        onClick={() => reorderSegmentGroups(groupIdx, -1)}
+                        disabled={groupIdx === 0}
                       >
                         <ChevronUp />
                       </Button>
                       <Button
                         size='icon-sm'
                         variant='ghost'
-                        onClick={() => moveExerciseDown(i)}
-                        disabled={i === selectedExercises.length - 1}
+                        onClick={() => reorderSegmentGroups(groupIdx, 1)}
+                        disabled={groupIdx === segments.length - 1}
                       >
                         <ChevronDown />
                       </Button>
                     </div>
-                    {/* Exercise Settings */}
                     <div className='flex-1'>
-                      {toggledSettings?.[e.id] && (
+                      {toggledSettings?.[primary.id] && (
                         <ExerciseSettings
-                          key={e.id}
-                          ex={e}
+                          key={primary.id}
+                          ex={primary}
                           exercises={selectedExercises}
                           selectedItems={selectedItems}
-                          index={i}
+                          index={primaryIndex}
+                          unifiedSiblingIndex={secondaryIndex}
                           setExercises={updateExercises}
                         />
                       )}
                     </div>
                   </div>
 
-                  {i === selectedExercises.length - 1 ? null : (
+                  {groupIdx === segments.length - 1 ? null : (
                     <Separator className='my-2' />
                   )}
                 </motion.div>

@@ -41,11 +41,27 @@ const applyUpdate = (
   )
 }
 
+const applyUnifiedPairUpdate = (
+  exercises: CompleteExercise[],
+  primaryIndex: number,
+  siblingIndex: number,
+  name: string,
+  value: string | number,
+) => {
+  return exercises.map((ex, index) =>
+    index === primaryIndex || index === siblingIndex
+      ? { ...ex, [name]: value }
+      : ex,
+  )
+}
+
 interface ExerciseSettingsProps {
   ex: CompleteExercise
   exercises: PatientDashboardValue['state']['exercises']
   setExercises: PatientDashboardValue['handler']['setExercises']
   index: number
+  /** When set, the same field update is applied to `index` and this sibling index (unified bilateral row). */
+  unifiedSiblingIndex?: number
   selectedItems?: string[]
   orientation?: 'horizontal' | 'vertical'
 }
@@ -55,6 +71,7 @@ const ExerciseSettings = ({
   exercises,
   setExercises,
   index,
+  unifiedSiblingIndex,
   selectedItems,
   orientation = 'horizontal',
 }: ExerciseSettingsProps) => {
@@ -78,6 +95,18 @@ const ExerciseSettings = ({
       ? selectedItems.length !== 0 && selectedItems.includes(currentExercise.id)
       : false
 
+    if (unifiedSiblingIndex != null) {
+      return setExercises(
+        applyUnifiedPairUpdate(
+          exercises,
+          +index,
+          unifiedSiblingIndex,
+          name,
+          parsedValue,
+        ),
+      )
+    }
+
     if (hasBulkUpdates) {
       return setExercises(
         applyBulkUpdate(exercises, selectedItems!, name, parsedValue),
@@ -98,6 +127,18 @@ const ExerciseSettings = ({
     const hasBulkUpdates = selectedItems
       ? selectedItems.length !== 0 && selectedItems.includes(currentExercise.id)
       : false
+
+    if (unifiedSiblingIndex != null) {
+      return setExercises(
+        applyUnifiedPairUpdate(
+          exercises,
+          +index,
+          unifiedSiblingIndex,
+          name,
+          value[0],
+        ),
+      )
+    }
 
     if (hasBulkUpdates) {
       return setExercises(
@@ -120,11 +161,24 @@ const ExerciseSettings = ({
       ? selectedItems.length !== 0 && selectedItems.includes(currentExercise.id)
       : false
 
+    if (unifiedSiblingIndex != null) {
+      return setExercises(
+        applyUnifiedPairUpdate(
+          exercises,
+          +index,
+          unifiedSiblingIndex,
+          name,
+          value ? 1 : 0,
+        ),
+      )
+    }
+
     if (hasBulkUpdates) {
       return setExercises(
         applyBulkUpdate(exercises, selectedItems!, name, value ? 1 : 0),
       )
     }
+
     setExercises(applyUpdate(exercises, +index, name, value ? 1 : 0))
   }
 
