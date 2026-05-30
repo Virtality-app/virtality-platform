@@ -54,6 +54,7 @@
     "@virtality/orpc": "workspace:*",
     "@virtality/react-query": "workspace:*",
     "@virtality/shared": "workspace:*",
+    "@virtality/ui": "workspace:*",
     "@virtality/auth": "workspace:*",
     "accept-language": "3.0.20",
     "better-auth": "1.5.5",

@@ -1,9 +1,22 @@
 {
   "name": "@virtality/ui",
   "version": "0.0.0",
-  "description": "UI components for the Virtality platform",
+  "private": true,
+  "description": "Shared UI Bucket and email templates for the Virtality platform",
   "type": "module",
   "exports": {
+    "./contract": {
+      "types": "./src/contract/index.ts",
+      "default": "./dist/contract/index.js"
+    },
+    "./lib/cn": {
+      "types": "./src/lib/cn.ts",
+      "default": "./dist/lib/cn.js"
+    },
+    "./lib/semantic-tokens": {
+      "types": "./src/lib/semantic-tokens.ts",
+      "default": "./dist/lib/semantic-tokens.js"
+    },
     "./components/*": {
       "types": "./src/components/*.tsx",
       "default": "./dist/components/*.js"
@@ -20,17 +33,24 @@
   "scripts": {
     "build": "rimraf dist && tsc",
     "dev": "tsc --watch",
+    "test": "vitest run",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@react-email/components": "0.0.41",
     "@react-email/render": "2.0.0",
-    "react": "19.2.3"
+    "clsx": "2.1.1",
+    "tailwind-merge": "3.3.0"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
   },
   "devDependencies": {
-    "@virtality/typescript-config": "workspace:*",
-    "@types/react": "19.2.14",
     "@types/node": "20.11.17",
-    "typescript": "5.9.3"
+    "@types/react": "19.2.14",
+    "@virtality/typescript-config": "workspace:*",
+    "react": "19.2.3",
+    "typescript": "5.9.3",
+    "vitest": "3.2.4"
   }
 }

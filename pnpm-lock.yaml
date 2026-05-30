@@ -115,6 +115,9 @@ importers:
       '@virtality/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@virtality/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       better-auth:
         specifier: 1.5.5
         version: 1.5.5(@prisma/client@7.2.0(prisma@7.2.0(@types/react@19.2.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(typescript@5.9.3))(@tanstack/react-start@1.159.14(crossws@0.4.4(srvx@0.11.4))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(vite@7.3.1(@types/node@25.6.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)))(mongodb@7.1.0)(mysql2@3.15.3)(next@16.1.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(pg@8.16.3)(prisma@7.2.0(@types/react@19.2.14)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(solid-js@1.9.11)(vitest@3.2.4(@types/debug@4.1.12)(@types/node@25.6.0)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2))
@@ -356,6 +359,9 @@ importers:
       '@virtality/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@virtality/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       accept-language:
         specifier: 3.0.20
         version: 3.0.20
@@ -597,6 +603,9 @@ importers:
       '@virtality/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@virtality/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       class-variance-authority:
         specifier: 0.7.1
         version: 0.7.1
@@ -961,9 +970,12 @@ importers:
       '@react-email/render':
         specifier: 2.0.0
         version: 2.0.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
-      react:
-        specifier: 19.2.3
-        version: 19.2.3
+      clsx:
+        specifier: 2.1.1
+        version: 2.1.1
+      tailwind-merge:
+        specifier: 3.3.0
+        version: 3.3.0
     devDependencies:
       '@types/node':
         specifier: 20.11.17
@@ -974,9 +986,15 @@ importers:
       '@virtality/typescript-config':
         specifier: workspace:*
         version: link:../../tooling/typescript-config
+      react:
+        specifier: 19.2.3
+        version: 19.2.3
       typescript:
         specifier: 5.9.3
         version: 5.9.3
+      vitest:
+        specifier: 3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@20.11.17)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
 
   services/server:
     dependencies:
