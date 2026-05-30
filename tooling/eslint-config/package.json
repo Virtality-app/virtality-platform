@@ -6,10 +6,12 @@
   "exports": {
     "./next": "./next.mjs",
     "./base": "./base.js",
-    "./react-internal": "./react-internal.js"
+    "./react-internal": "./react-internal.js",
+    "./shared-ui": "./shared-ui.js"
   },
   "dependencies": {
-    "@eslint/eslintrc": "^3.3.1"
+    "@eslint/eslintrc": "^3.3.1",
+    "@virtality/ui": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "9.39.2",

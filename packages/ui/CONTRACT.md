@@ -71,7 +71,7 @@ Breaking API convergence is allowed during phase 1 when needed for a single cano
 4. Append `<name>` to `PROMOTED_COMPONENTS`.
 5. Run full monorepo `npm run typecheck` and `npm run build`.
 
-Enforcement against new local duplication is added in GitHub #20 after promotions land.
+Enforcement (GitHub #20): ESLint `no-restricted-imports` in app configs (`@virtality/eslint-config/shared-ui`) plus contract tests in `packages/ui/src/contract/enforcement.test.ts` guard canonical imports and deprecated re-export-only shims.
 
 ## Implementer checklist
 

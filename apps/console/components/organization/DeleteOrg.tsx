@@ -5,7 +5,7 @@ import { X } from 'lucide-react'
 import { Session } from 'better-auth'
 import { ChangeEvent, useRef, useState } from 'react'
 import { Button } from '../ui/button'
-import { Input } from '../ui/input'
+import { Input } from '@virtality/ui/components/input'
 
 interface DeleteOrgProps {
   session: Session

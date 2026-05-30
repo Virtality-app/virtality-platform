@@ -2,7 +2,7 @@
 import { type OrganizationWithMembers } from '@/lib/definitions'
 import { ChangeEvent, useActionState, useEffect, useState } from 'react'
 import { createInvitationAction } from '@/lib/actions'
-import { Input } from '../ui/input'
+import { Input } from '@virtality/ui/components/input'
 import { Button } from '../ui/button'
 
 const initialState = { success: false, message: '' }
