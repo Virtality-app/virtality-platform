@@ -22,7 +22,12 @@ describe('shared UI contract', () => {
   })
 
   it('lists promoted phase-1 components after migration slices land', () => {
-    expect([...PROMOTED_COMPONENTS]).toEqual(['label', 'spinner'])
+    expect([...PROMOTED_COMPONENTS]).toEqual([
+      'label',
+      'spinner',
+      'input',
+      'textarea',
+    ])
   })
 
   it('builds canonical shared import paths', () => {

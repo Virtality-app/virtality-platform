@@ -1,8 +1,8 @@
 'use client'
 import { Mail, Send, MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@virtality/ui/components/input'
+import { Textarea } from '@virtality/ui/components/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 import {

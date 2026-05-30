@@ -24,6 +24,8 @@ export type Phase1Component = (typeof PHASE_1_COMPONENTS)[number]
 export const PROMOTED_COMPONENTS: readonly Phase1Component[] = [
   'label',
   'spinner',
+  'input',
+  'textarea',
 ]
 
 export type PromotedComponent = (typeof PROMOTED_COMPONENTS)[number]

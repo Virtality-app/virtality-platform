@@ -12,7 +12,7 @@ import {
 } from '@virtality/shared/utils'
 import { Star, X } from 'lucide-react'
 import FlipCard from '@/components/ui/flip-card'
-import { Input } from '@/components/ui/input'
+import { Input } from '@virtality/ui/components/input'
 import { Button } from './button'
 import { ChangeEvent, useMemo, useState } from 'react'
 import { useExerciseLibrary } from '@/context/exercise-library-context'

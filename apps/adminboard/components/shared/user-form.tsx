@@ -15,7 +15,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form-legacy'
-import { Input } from '@/components/ui/input'
+import { Input } from '@virtality/ui/components/input'
 import {
   Select,
   SelectContent,

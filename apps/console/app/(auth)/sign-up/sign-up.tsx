@@ -20,7 +20,7 @@ import { useClientT } from '@/i18n/use-client-t'
 import { Loader2 } from 'lucide-react'
 import SignupForm from '@/components/auth/sign-up-form'
 import { Label } from '@virtality/ui/components/label'
-import { Input } from '@/components/ui/input'
+import { Input } from '@virtality/ui/components/input'
 import {
   CONSOLE_URL,
   CONSOLE_URL_LOCAL,

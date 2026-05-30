@@ -9,7 +9,7 @@ import { Session } from 'better-auth'
 import capitalize from 'lodash.capitalize'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Input } from '@/components/ui/input'
+import { Input } from '@virtality/ui/components/input'
 import { Button } from '@/components/ui/button'
 import { type OrganizationWithMembers } from '@/lib/definitions'
 

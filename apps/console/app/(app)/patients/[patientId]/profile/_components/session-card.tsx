@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/card'
 import Chart from '@/components/ui/progress-chart'
 import { Separator } from '@/components/ui/separator'
-import { Textarea } from '@/components/ui/textarea'
+import { Textarea } from '@virtality/ui/components/textarea'
 
 import { getDisplayName } from '@/lib/utils'
 import {

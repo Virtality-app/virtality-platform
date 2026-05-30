@@ -1,7 +1,7 @@
 'use client'
 import { authClient } from '@/auth-client'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Input } from '@virtality/ui/components/input'
 import { SignInForm, SignInSchema } from '@/lib/definitions'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'

@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { Input } from '@/components/ui/input'
+import { Input } from '@virtality/ui/components/input'
 import { PatientProgramForm } from '@/lib/definitions'
 import {
   Form,

@@ -1,6 +1,6 @@
 import { ChangeEventHandler, MouseEventHandler } from 'react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Input } from '@virtality/ui/components/input'
 import { Minus, Plus } from 'lucide-react'
 
 interface ExerciseInputPillProps extends React.ComponentProps<'input'> {

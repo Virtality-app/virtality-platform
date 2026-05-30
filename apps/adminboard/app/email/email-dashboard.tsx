@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/card'
 import { Mail, Send } from 'lucide-react'
 import { useState } from 'react'
-import { Input } from '@/components/ui/input'
+import { Input } from '@virtality/ui/components/input'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'

@@ -8,7 +8,7 @@ import {
   PopoverContent,
 } from '@/components/ui/popover'
 import { Label } from '@virtality/ui/components/label'
-import { Input } from '@/components/ui/input'
+import { Input } from '@virtality/ui/components/input'
 import { ChangeEvent, useState } from 'react'
 import { authClient } from '@/auth-client'
 import useIsAuthed from '@/hooks/use-is-authed'

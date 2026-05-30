@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { Input } from '@/components/ui/input'
+import { Input } from '@virtality/ui/components/input'
 import { LoginForm } from '@/types/models'
 import { useForm } from 'react-hook-form'
 import { LoginFormSchema } from '@/types/definitions'

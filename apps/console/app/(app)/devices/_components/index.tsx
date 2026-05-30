@@ -1,5 +1,5 @@
 'use client'
-import { Input } from '@/components/ui/input'
+import { Input } from '@virtality/ui/components/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {

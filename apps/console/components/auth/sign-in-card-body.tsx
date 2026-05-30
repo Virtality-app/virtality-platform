@@ -1,6 +1,6 @@
 'use client'
 
-import { Input } from '@/components/ui/input'
+import { Input } from '@virtality/ui/components/input'
 import { Label } from '@virtality/ui/components/label'
 import { Separator } from '@/components/ui/separator'
 import Link from 'next/link'

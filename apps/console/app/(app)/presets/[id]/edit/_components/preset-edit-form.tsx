@@ -1,6 +1,6 @@
 'use client'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@virtality/ui/components/input'
+import { Textarea } from '@virtality/ui/components/textarea'
 import {
   Form,
   FormControl,

@@ -16,7 +16,7 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { Textarea } from '@/components/ui/textarea'
+import { Textarea } from '@virtality/ui/components/textarea'
 import {
   getQueryClient,
   useCreateSupplementalTherapyRelMutation,

@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { MouseEvent, ReactNode } from 'react'
-import { Input } from '@/components/ui/input'
+import { Input } from '@virtality/ui/components/input'
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,

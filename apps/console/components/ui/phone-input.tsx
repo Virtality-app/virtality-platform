@@ -1,4 +1,4 @@
-import { Input } from '@/components/ui/input'
+import { Input } from '@virtality/ui/components/input'
 import { memo, useMemo, useState, useEffect } from 'react'
 import Image from 'next/image'
 import en from 'react-phone-number-input/locale/en'

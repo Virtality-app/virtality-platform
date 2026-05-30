@@ -15,7 +15,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
+import { Input } from '@virtality/ui/components/input'
 import PhoneInput from '@/components/ui/phone-input'
 import {
   Popover,

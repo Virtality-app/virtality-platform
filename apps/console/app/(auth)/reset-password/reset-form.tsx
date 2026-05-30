@@ -13,7 +13,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import Link from 'next/link'
-import { Input } from '@/components/ui/input'
+import { Input } from '@virtality/ui/components/input'
 import {
   Form,
   FormControl,

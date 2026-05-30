@@ -17,7 +17,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
+import { Input } from '@virtality/ui/components/input'
 import LoadingScreen from '@/components/ui/loading-screen'
 import { useExerciseLibrary } from '@/context/exercise-library-context'
 import { useEffect } from 'react'

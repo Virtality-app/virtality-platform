@@ -16,7 +16,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import useDeviceCardState from '@/hooks/use-device-card-state'
-import { Input } from '@/components/ui/input'
+import { Input } from '@virtality/ui/components/input'
 import placeholder from '@/public/placeholder.svg'
 import MetaQuest3 from '@/public/meta_quest_3.webp'
 import MetaQuest3s from '@/public/meta_quest_3s.webp'

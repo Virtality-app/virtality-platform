@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Input } from '@virtality/ui/components/input'
 import { useForm } from 'react-hook-form'
 import { WaitlistFormType } from '@/types/models'
 import { zodResolver } from '@hookform/resolvers/zod'
