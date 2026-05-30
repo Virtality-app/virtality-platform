@@ -32,14 +32,13 @@
     "test": "turbo run test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "sandcastle:install": "pnpm install --ignore-workspace --dir .sandcastle",
-    "sandcastle:docker:build": "PATH=\"$PWD/.sandcastle/node_modules/.bin:$PATH\" sandcastle docker build-image",
-    "sandcastle": "pnpm --dir .sandcastle exec tsx main.mts"
+    "sandcastle": "npx tsx .sandcastle/main.mts"
   },
   "devDependencies": {
+    "@ai-hero/sandcastle": "^0.6.6",
+    "pnpm": "10.23.0",
     "prettier": "3.8.1",
     "prettier-plugin-tailwindcss": "0.7.2",
-    "pnpm": "10.23.0",
     "rimraf": "6.1.2",
     "turbo": "2.8.11"
   }

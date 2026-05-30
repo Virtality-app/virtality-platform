@@ -7,6 +7,7 @@ Multi-context layout for the Virtality Platform monorepo. Each context has its o
 | console | `apps/console/` | Clinician/practitioner web app — patients, programs, presets, devices, VR casting, organizations, clinical forms |
 | adminboard | `apps/adminboard/` | Internal admin dashboard — resource management (exercises, presets, maps, avatars, patients, users), referrals, email, S3 bucket |
 | website | `apps/website/` | Public marketing site — landing, pricing, blog, case studies, waitlist, contact |
+| ui-system | `packages/ui/` | Shared UI bucket for cross-app components and email templates consumed by multiple contexts |
 | server | `services/server/` | Platform API — Hono server with tRPC/oRPC, auth middleware, user/device data |
 | socket | `services/socket/` | Real-time communication — Socket.IO bridge between console frontend and VR headsets |
 
