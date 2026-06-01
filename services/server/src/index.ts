@@ -21,6 +21,16 @@ const ENV =
       ? 'preview'
       : 'development'
 
+const TOKEN_ID = process.env.CLOUDFLARE_TURN_TOKEN_ID
+const API_TOKEN = process.env.CLOUDFLARE_TURN_API_TOKEN
+const ttl = Number(process.env.CLOUDFLARE_TURN_TTL_SECONDS ?? 86400)
+
+if (!TOKEN_ID || !API_TOKEN) {
+  throw new Error(
+    'CLOUDFLARE_TURN_TOKEN_ID and CLOUDFLARE_TURN_API_TOKEN must be set',
+  )
+}
+
 const app = new Hono<AppContext>()
 const logger = createAppLogger({
   serviceName: 'server',
@@ -106,6 +116,55 @@ app.use('/api/v1/devices/:deviceId', async (c) => {
 })
 
 app.use(`${ORPC_PREFIX}/*`, authMiddleware, orpcMiddleware)
+
+app.use('/api/casting/ice-servers', authMiddleware, async (c) => {
+  try {
+    const response = await fetch(
+      `https://rtc.live.cloudflare.com/v1/turn/keys/${TOKEN_ID}/credentials/generate-ice-servers`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${API_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ttl }),
+        cache: 'no-store',
+      },
+    )
+
+    if (!response.ok) {
+      return c.json(
+        { error: 'Failed to generate casting ICE servers' },
+        { status: 502 },
+      )
+    }
+
+    const data = (await response.json()) as {
+      iceServers?: RTCIceServer[]
+    }
+
+    if (!Array.isArray(data.iceServers) || data.iceServers.length === 0) {
+      return c.json(
+        { error: 'Cloudflare returned no ICE servers' },
+        { status: 502 },
+      )
+    }
+
+    return c.json(
+      { iceServers: data.iceServers },
+      {
+        headers: {
+          'Cache-Control': 'no-store',
+        },
+      },
+    )
+  } catch {
+    return c.json(
+      { error: 'Failed to generate casting ICE servers' },
+      { status: 502 },
+    )
+  }
+})
 
 let server: ReturnType<typeof serve> | undefined
 

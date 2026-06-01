@@ -151,7 +151,7 @@ export const GAME_RELAY: RelayEventMap = {
 } as const
 
 export const CASTING_RELAY: RelayEventMap = {
-  RequestOffer: { name: CASTING_EVENT.RequestOffer, payload: false },
+  RequestOffer: { name: CASTING_EVENT.RequestOffer, payload: true },
   Offer: { name: CASTING_EVENT.Offer, payload: true },
   Answer: { name: CASTING_EVENT.Answer, payload: true },
   StopCasting: { name: CASTING_EVENT.StopCasting, payload: false },
@@ -268,7 +268,7 @@ export type GameEventPayloads = {
 }
 
 export type CastingEventPayloads = {
-  RequestOffer: []
+  RequestOffer: [payload: string]
   Offer: [offer: unknown]
   Answer: [answer: SDPDescription]
   StopCasting: []
