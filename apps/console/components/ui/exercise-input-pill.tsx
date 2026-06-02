@@ -72,6 +72,7 @@ const ExerciseInputPill = ({
         size='icon'
         variant='outline'
         onClick={handleDecrement}
+        disabled={props.disabled}
         className='rounded-tr-none rounded-br-none border-r-0'
       >
         <Minus />
@@ -89,6 +90,7 @@ const ExerciseInputPill = ({
         size='icon'
         variant='outline'
         onClick={handleIncrement}
+        disabled={props.disabled}
         className='rounded-tl-none rounded-bl-none border-l-0'
       >
         <Plus />

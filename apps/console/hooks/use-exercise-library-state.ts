@@ -1,6 +1,7 @@
 import { CompleteExercise } from '@/types/models'
 import { Exercise } from '@virtality/db'
 import { useReducer } from 'react'
+import { pruneDeferredRemovalIds } from '@/lib/program-list-deferred-removal'
 
 type State = {
   selectedExercises: CompleteExercise[]
@@ -9,6 +10,8 @@ type State = {
   selectedItems: string[]
   globalCheck: boolean
   isLibraryOpen: boolean
+  /** Selected-row ids (`CompleteExercise.id`) marked for deferred removal (#21). */
+  deferredRemovalIds: string[]
 }
 
 type Action =
@@ -48,6 +51,14 @@ type Action =
       type: 'updateFormState'
       payload: Partial<State>
     }
+  | {
+      type: 'markDeferredRemoval'
+      payload: string
+    }
+  | {
+      type: 'unmarkDeferredRemoval'
+      payload: string
+    }
 
 const getSelected = (exercises: State['selectedExercises']) =>
   exercises
@@ -66,6 +77,7 @@ const initialState: State = {
   selectedItems: [],
   globalCheck: false,
   isLibraryOpen: false,
+  deferredRemovalIds: [],
 }
 
 const stateReducer = (state: State, action: Action): State => {
@@ -80,16 +92,25 @@ const stateReducer = (state: State, action: Action): State => {
         selectedExercises: [...state.selectedExercises, { ...action.payload }],
         isSelected: { ...state.isSelected, [action.payload.exerciseId]: true },
       }
-    case 'updateExercises':
+    case 'updateExercises': {
+      const existingRowIds = new Set(action.payload.map((e) => e.id))
       return {
         ...state,
         selectedExercises: action.payload,
         isSelected: getSelected(action.payload),
         toggledSettings: getToggledSettings(action.payload),
+        deferredRemovalIds: pruneDeferredRemovalIds(
+          new Set(state.deferredRemovalIds),
+          existingRowIds,
+        ),
       }
+    }
     case 'updateExerciseSettings':
       return { ...state, selectedExercises: action.payload }
-    case 'removeExercise':
+    case 'removeExercise': {
+      const removedRow = state.selectedExercises.find(
+        (e) => e.exerciseId === action.payload,
+      )
       const removed = state.selectedExercises.filter(
         (e) => e.exerciseId !== action.payload,
       )
@@ -100,6 +121,24 @@ const stateReducer = (state: State, action: Action): State => {
           ...state.isSelected,
           [action.payload]: false,
         },
+        deferredRemovalIds: removedRow
+          ? state.deferredRemovalIds.filter((id) => id !== removedRow.id)
+          : state.deferredRemovalIds,
+      }
+    }
+    case 'markDeferredRemoval':
+      return state.deferredRemovalIds.includes(action.payload)
+        ? state
+        : {
+            ...state,
+            deferredRemovalIds: [...state.deferredRemovalIds, action.payload],
+          }
+    case 'unmarkDeferredRemoval':
+      return {
+        ...state,
+        deferredRemovalIds: state.deferredRemovalIds.filter(
+          (id) => id !== action.payload,
+        ),
       }
     case 'toggleSettings':
       return {
@@ -166,6 +205,14 @@ const useExerciseLibraryState = ({
     dispatch({ type: 'updateExercises', payload: exercises })
   }
 
+  const markDeferredRemoval = (rowId: string) => {
+    dispatch({ type: 'markDeferredRemoval', payload: rowId })
+  }
+
+  const unmarkDeferredRemoval = (rowId: string) => {
+    dispatch({ type: 'unmarkDeferredRemoval', payload: rowId })
+  }
+
   if (initialExercises) updateExercises(initialExercises)
 
   return {
@@ -179,6 +226,8 @@ const useExerciseLibraryState = ({
       setSelectedItems,
       setGlobalCheck,
       setLibraryOpen,
+      markDeferredRemoval,
+      unmarkDeferredRemoval,
     },
   }
 }

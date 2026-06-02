@@ -21,6 +21,15 @@ import {
   type ProgramExerciseListSegment,
 } from '@virtality/shared/utils'
 import type { Exercise } from '@virtality/db'
+import {
+  bulkSelectableRowIds,
+  enabledMemberIds,
+  isDeferredRemoval,
+  isGlobalCheckSatisfied,
+  segmentCheckboxChecked,
+  segmentMembersFullyDeferred,
+  toDeferredRemovalIdSet,
+} from '@/lib/program-list-deferred-removal'
 
 interface ExerciseLibraryListProps {
   className?: string
@@ -44,16 +53,6 @@ function membersForSegment(
     return [exerciseList[seg.startIndex]!]
   }
   return [exerciseList[seg.startIndex]!, exerciseList[seg.startIndex + 1]!]
-}
-
-/** Radix checkbox `checked` when a segment is all, partly, or not selected. */
-function segmentCheckboxChecked(
-  allMembersSelected: boolean,
-  someMembersSelected: boolean,
-): boolean | 'indeterminate' {
-  if (allMembersSelected) return true
-  if (someMembersSelected) return 'indeterminate'
-  return false
 }
 
 const NEAR_TERM_SIDES: NearTermDirection[] = ['Left', 'Right']
@@ -111,6 +110,7 @@ function segmentExpandedSettings({
   exerciseList,
   selectedItems,
   updateExercises,
+  deferredRemovalIds,
 }: {
   isPair: boolean
   primary: CompleteExercise
@@ -120,11 +120,18 @@ function segmentExpandedSettings({
   exerciseList: CompleteExercise[]
   selectedItems: string[]
   updateExercises: (exercises: CompleteExercise[]) => void
+  deferredRemovalIds: ReturnType<typeof toDeferredRemovalIdSet>
 }): ReactNode {
+  const primaryDeferred = isDeferredRemoval(deferredRemovalIds, primary.id)
+  const secondaryDeferred =
+    secondary != null && isDeferredRemoval(deferredRemovalIds, secondary.id)
+
   if (isPair && secondary != null && secondaryIndex != null) {
     return (
       <div className='flex w-full flex-col gap-4'>
-        <div className='space-y-1'>
+        <div
+          className={cn('space-y-1', primaryDeferred && 'opacity-50')}
+        >
           <p className='text-muted-foreground text-xs font-medium'>Left</p>
           <ExerciseSettings
             key={`${primary.id}-left`}
@@ -133,9 +140,12 @@ function segmentExpandedSettings({
             selectedItems={selectedItems}
             index={primaryIndex}
             setExercises={updateExercises}
+            readOnly={primaryDeferred}
           />
         </div>
-        <div className='space-y-1'>
+        <div
+          className={cn('space-y-1', secondaryDeferred && 'opacity-50')}
+        >
           <p className='text-muted-foreground text-xs font-medium'>Right</p>
           <ExerciseSettings
             key={`${secondary.id}-right`}
@@ -144,13 +154,14 @@ function segmentExpandedSettings({
             selectedItems={selectedItems}
             index={secondaryIndex}
             setExercises={updateExercises}
+            readOnly={secondaryDeferred}
           />
         </div>
       </div>
     )
   }
   return (
-    <div className='space-y-1'>
+    <div className={cn('space-y-1', primaryDeferred && 'opacity-50')}>
       <p className='text-muted-foreground text-xs font-medium'>
         {primary.exercise?.direction}
       </p>
@@ -163,6 +174,7 @@ function segmentExpandedSettings({
         index={primaryIndex}
         unifiedSiblingIndex={secondaryIndex}
         setExercises={updateExercises}
+        readOnly={primaryDeferred}
       />
     </div>
   )
@@ -171,10 +183,18 @@ function segmentExpandedSettings({
 const ExerciseLibraryList = ({ className }: ExerciseLibraryListProps) => {
   const { state, handler } = useExerciseLibrary()
   const { data: defaultExercises } = useExercise()
-  const { selectedExercises, globalCheck, selectedItems } = state
+  const { selectedExercises, globalCheck, selectedItems, deferredRemovalIds } =
+    state
 
-  const { setLibraryOpen, updateExercises, updateFormState, removeExercise } =
-    handler
+  const deferredRemoval = toDeferredRemovalIdSet(deferredRemovalIds)
+
+  const {
+    setLibraryOpen,
+    updateExercises,
+    updateFormState,
+    markDeferredRemoval,
+    unmarkDeferredRemoval,
+  } = handler
 
   const exerciseList = useMemo(() => {
     return selectedExercises.map((ex) => ({
@@ -186,7 +206,11 @@ const ExerciseLibraryList = ({ className }: ExerciseLibraryListProps) => {
   const commitSelectedItems = (nextSelectedItems: string[]) => {
     updateFormState({
       selectedItems: nextSelectedItems,
-      globalCheck: nextSelectedItems.length === exerciseList.length,
+      globalCheck: isGlobalCheckSatisfied(
+        exerciseList,
+        nextSelectedItems,
+        deferredRemoval,
+      ),
     })
   }
 
@@ -209,19 +233,23 @@ const ExerciseLibraryList = ({ className }: ExerciseLibraryListProps) => {
   }
 
   const pairCheckboxChange = (memberIds: readonly string[]) => {
-    const allIn = memberIds.every((id) => selectedItems.includes(id))
+    const selectableIds = enabledMemberIds(memberIds, deferredRemoval)
+    const allIn = selectableIds.every((id) => selectedItems.includes(id))
     if (allIn) {
-      commitSelectedItems(selectedItems.filter((id) => !memberIds.includes(id)))
+      commitSelectedItems(
+        selectedItems.filter((id) => !selectableIds.includes(id)),
+      )
     } else {
-      commitSelectedItems([...new Set([...selectedItems, ...memberIds])])
+      commitSelectedItems([...new Set([...selectedItems, ...selectableIds])])
     }
   }
 
   const checkAll = (checked: boolean) => {
-    const newSelectedItems = checked ? exerciseList.map((e) => e.id) : []
+    const selectableIds = bulkSelectableRowIds(exerciseList, deferredRemoval)
+    const newSelectedItems = checked ? selectableIds : []
     updateFormState({
       selectedItems: newSelectedItems,
-      globalCheck: checked,
+      globalCheck: checked && selectableIds.length > 0,
     })
   }
 
@@ -255,7 +283,11 @@ const ExerciseLibraryList = ({ className }: ExerciseLibraryListProps) => {
   }: ProgramDirectionToggleParams) => {
     const inProgram = programMemberForDirection(members, side)
     if (inProgram) {
-      removeExercise(inProgram.exerciseId)
+      if (isDeferredRemoval(deferredRemoval, inProgram.id)) {
+        unmarkDeferredRemoval(inProgram.id)
+      } else {
+        markDeferredRemoval(inProgram.id)
+      }
       return
     }
     const catalogEx = catalogVariantForDirection(
@@ -331,11 +363,13 @@ const ExerciseLibraryList = ({ className }: ExerciseLibraryListProps) => {
             const secondaryIndex = isPair ? seg.startIndex + 1 : undefined
 
             const memberIds = members.map((m) => m.id)
-            const allMembersSelected = memberIds.every((id) =>
-              selectedItems.includes(id),
+            const selectableMemberIds = enabledMemberIds(
+              memberIds,
+              deferredRemoval,
             )
-            const someMembersSelected = memberIds.some((id) =>
-              selectedItems.includes(id),
+            const fullyDeferred = segmentMembersFullyDeferred(
+              memberIds,
+              deferredRemoval,
             )
 
             const primaryCatalog = defaultExercises?.find(
@@ -364,6 +398,7 @@ const ExerciseLibraryList = ({ className }: ExerciseLibraryListProps) => {
               exerciseList,
               selectedItems,
               updateExercises,
+              deferredRemovalIds: deferredRemoval,
             })
 
             return (
@@ -378,14 +413,16 @@ const ExerciseLibraryList = ({ className }: ExerciseLibraryListProps) => {
                     opacity: { duration: 0.2 },
                     y: { duration: 0.2 },
                   }}
-                  className='flex flex-col'
+                  className={cn('flex flex-col', fullyDeferred && 'opacity-50')}
                 >
                   <div className='flex items-center gap-2'>
                     <Checkbox
                       checked={segmentCheckboxChecked(
-                        allMembersSelected,
-                        someMembersSelected,
+                        memberIds,
+                        selectedItems,
+                        deferredRemoval,
                       )}
+                      disabled={selectableMemberIds.length === 0}
                       onCheckedChange={() =>
                         isPair
                           ? pairCheckboxChange(memberIds)
@@ -397,18 +434,21 @@ const ExerciseLibraryList = ({ className }: ExerciseLibraryListProps) => {
                       {showDirectionToggles ? (
                         <div className='mt-0.5 flex flex-wrap gap-1'>
                           {NEAR_TERM_SIDES.map((side) => {
-                            const inProgram = Boolean(
-                              programMemberForDirection(members, side),
-                            )
+                            const member = programMemberForDirection(members, side)
+                            const inProgram = Boolean(member)
+                            const isEnabled =
+                              inProgram &&
+                              member != null &&
+                              !isDeferredRemoval(deferredRemoval, member.id)
                             return (
                               <button
                                 key={side}
                                 type='button'
-                                aria-pressed={inProgram}
-                                aria-label={`${inProgram ? 'Remove' : 'Add'} ${side} variant`}
+                                aria-pressed={isEnabled}
+                                aria-label={`${isEnabled ? 'Remove' : inProgram ? 'Restore' : 'Add'} ${side} variant`}
                                 className={cn(
                                   'text-muted-foreground rounded-full border px-2 py-0.5 text-xs font-medium',
-                                  inProgram &&
+                                  isEnabled &&
                                     'text-foreground animate-pulse border-cyan-500/60 bg-cyan-500/20',
                                 )}
                                 onClick={() =>
@@ -438,7 +478,7 @@ const ExerciseLibraryList = ({ className }: ExerciseLibraryListProps) => {
                         size='icon-sm'
                         variant='ghost'
                         onClick={() => reorderSegmentGroups(groupIdx, -1)}
-                        disabled={groupIdx === 0}
+                        disabled={fullyDeferred || groupIdx === 0}
                       >
                         <ChevronUp />
                       </Button>
@@ -446,7 +486,9 @@ const ExerciseLibraryList = ({ className }: ExerciseLibraryListProps) => {
                         size='icon-sm'
                         variant='ghost'
                         onClick={() => reorderSegmentGroups(groupIdx, 1)}
-                        disabled={groupIdx === segments.length - 1}
+                        disabled={
+                          fullyDeferred || groupIdx === segments.length - 1
+                        }
                       >
                         <ChevronDown />
                       </Button>

@@ -118,6 +118,8 @@ interface ExerciseSettingsProps {
   unifiedSiblingIndex?: number
   selectedItems?: string[]
   orientation?: 'horizontal' | 'vertical'
+  /** Deferred-removal variants stay visible but cannot be edited (#21). */
+  readOnly?: boolean
 }
 
 const ExerciseSettings = ({
@@ -128,6 +130,7 @@ const ExerciseSettings = ({
   unifiedSiblingIndex,
   selectedItems,
   orientation = 'horizontal',
+  readOnly = false,
 }: ExerciseSettingsProps) => {
   const sliderRef = useRef<HTMLSpanElement | null>(null)
   const romRef = useRef<HTMLButtonElement | null>(null)
@@ -139,7 +142,7 @@ const ExerciseSettings = ({
     value: string
     id: string
   }) => {
-    if (!exercises) return
+    if (!exercises || readOnly) return
     const { id, value } = target
     const numericalInput = ['sets', 'reps', 'restTime', 'holdTime', 'speed']
     const [fieldName] = id.split(',')
@@ -157,7 +160,7 @@ const ExerciseSettings = ({
 
   const sliderChangeHandler = (value: number[]) => {
     const target = sliderRef.current
-    if (!target || !exercises) return
+    if (!target || !exercises || readOnly) return
 
     const { id } = target
 
@@ -171,7 +174,7 @@ const ExerciseSettings = ({
 
   const romModeChangeHandler = (value: boolean) => {
     const target = romRef.current
-    if (!target || !exercises) return
+    if (!target || !exercises || readOnly) return
 
     const { id } = target
 
@@ -198,6 +201,7 @@ const ExerciseSettings = ({
           min={1}
           value={String(ex.reps)}
           onSetValue={settingsChange}
+          disabled={readOnly}
         />
       </div>
       <div className='flex items-center gap-2'>
@@ -208,6 +212,7 @@ const ExerciseSettings = ({
           min={1}
           value={String(ex.sets)}
           onSetValue={settingsChange}
+          disabled={readOnly}
         />
       </div>
       <div className='flex items-center gap-2'>
@@ -223,6 +228,7 @@ const ExerciseSettings = ({
           max={60 * 60}
           onSetValue={settingsChange}
           className='w-16 border dark:border-zinc-600'
+          disabled={readOnly}
         />
       </div>
       <div className='flex items-center gap-2'>
@@ -237,6 +243,7 @@ const ExerciseSettings = ({
           value={ex.holdTime}
           onSetValue={settingsChange}
           className='w-16 border dark:border-zinc-600'
+          disabled={readOnly}
         />
       </div>
       {(romEnabled?.enabled && romEnabled.payload === true) ||
@@ -249,6 +256,7 @@ const ExerciseSettings = ({
               id={'romMode,' + index}
               checked={ex.romMode === 1}
               onCheckedChange={romModeChangeHandler}
+              disabled={readOnly}
             />
           </div>
         ))}
@@ -263,6 +271,7 @@ const ExerciseSettings = ({
           onValueChange={sliderChangeHandler}
           value={[ex.speed]}
           className='min-w-32'
+          disabled={readOnly}
         />
         <div>{ex.speed}</div>
       </div>
