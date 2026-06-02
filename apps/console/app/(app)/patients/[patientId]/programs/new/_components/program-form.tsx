@@ -47,6 +47,11 @@ import {
 import { withRom } from '@/lib/with-rom'
 import { trackAnalyticsEvent } from '@/lib/analytics-contract'
 import useNow from '@/hooks/use-now'
+import { toast } from 'react-toastify'
+import {
+  enabledVariantsForSubmit,
+  ZERO_ENABLED_VARIANTS_MESSAGE,
+} from '@/lib/program-submit-enabled-variants'
 
 // Types
 interface ProgramFormProps {
@@ -59,7 +64,7 @@ const ProgramForm = ({ patientId }: ProgramFormProps) => {
   const router = useRouter()
   const { state, handler } = useExerciseLibrary()
 
-  const { selectedExercises } = state
+  const { selectedExercises, deferredRemovalIds } = state
   const { updateExercises } = handler
 
   const [currentStep, setCurrentStep] = useState(0)
@@ -98,13 +103,21 @@ const ProgramForm = ({ patientId }: ProgramFormProps) => {
   })
 
   const onSubmit = async (values: PatientProgramForm) => {
+    const enabledVariants = enabledVariantsForSubmit(
+      selectedExercises,
+      deferredRemovalIds,
+    )
+    if (enabledVariants.length === 0) {
+      return toast.error(ZERO_ENABLED_VARIANTS_MESSAGE)
+    }
+
     const { name } = values
 
     const data = { patientId, name }
 
     const program = await createProgram(data)
 
-    const exercises = selectedExercises.map((ex) => ({
+    const exercises = enabledVariants.map((ex) => ({
       id: generateUUID(),
       programId: program.id,
       exerciseId: ex.exerciseId,

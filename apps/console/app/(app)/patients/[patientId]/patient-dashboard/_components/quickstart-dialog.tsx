@@ -35,6 +35,10 @@ import {
   useORPC,
 } from '@virtality/react-query'
 import { withRom } from '@/lib/with-rom'
+import {
+  enabledVariantsForSubmit,
+  ZERO_ENABLED_VARIANTS_MESSAGE,
+} from '@/lib/program-submit-enabled-variants'
 
 const applyExercises = (
   exerciseInfo: Exercise[],
@@ -65,7 +69,7 @@ const QuickStartDialog = () => {
   } = usePatientDashboard()
 
   const {
-    state: { selectedExercises },
+    state: { selectedExercises, deferredRemovalIds },
     handler: { updateExercises },
   } = useExerciseLibrary()
 
@@ -126,6 +130,15 @@ const QuickStartDialog = () => {
 
   const saveAsHandler = async (values: PatientProgramForm) => {
     if (!exerciseInfo || !values) return
+
+    const enabledVariants = enabledVariantsForSubmit(
+      selectedExercises,
+      deferredRemovalIds,
+    )
+    if (enabledVariants.length === 0) {
+      return ErrorToasty(ZERO_ENABLED_VARIANTS_MESSAGE)
+    }
+
     posthog.capture('quickstart_program_created')
 
     const { name } = values
@@ -134,7 +147,7 @@ const QuickStartDialog = () => {
 
     const program = await createProgram(data)
 
-    const formattedExercises = applyExercises(exerciseInfo, selectedExercises)
+    const formattedExercises = applyExercises(exerciseInfo, enabledVariants)
 
     const exercises = formattedExercises.map((ex) => ({
       id: generateUUID(),
