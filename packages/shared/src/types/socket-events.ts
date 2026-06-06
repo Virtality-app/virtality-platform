@@ -158,6 +158,7 @@ export const CASTING_RELAY: RelayEventMap = {
   Offer: { name: CASTING_EVENT.Offer, payload: true },
   Answer: { name: CASTING_EVENT.Answer, payload: true },
   StopCasting: { name: CASTING_EVENT.StopCasting, payload: false },
+  Candidate: { name: CASTING_EVENT.Candidate, payload: true },
 } as const
 
 // ── Payload types (wire‑format, dependency‑free) ───────────────────────────
