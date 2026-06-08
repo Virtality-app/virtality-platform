@@ -1,0 +1,3 @@
+# Bucket Manager Architecture
+
+Adminboard bucket management treats folders as S3 key prefixes, not independent directory records, and uses the shared oRPC bucket procedures as the canonical backend. Admin-created object keys are strict URL-safe paths with readable filename stems and unique suffixes, and content replacement creates a new object key instead of overwriting an existing CDN URL so CDN caches cannot serve stale bytes. Bucket operations are storage-first: referenced objects are warned about when known database references can be detected, but bucket mutations do not silently update unrelated platform resources.
