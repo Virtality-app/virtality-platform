@@ -80,6 +80,17 @@ export type BucketDeleteOutcome = {
   objectKey: string
 }
 
+export type BucketReplaceS3Client = BucketUploadS3Client & BucketDeleteS3Client
+
+export type BucketReplaceOutcome = {
+  oldObjectKey: string
+  newObjectKey: string
+  newCdnUrl: string
+  contentType: string
+  size: number
+  oldObjectDeleted: boolean
+}
+
 export type S3ListPrefixResult = {
   CommonPrefixes?: { Prefix?: string }[]
   Contents?: {
@@ -379,6 +390,61 @@ export function buildRenameDestinationObjectKey(
   }
 
   return destinationObjectKey
+}
+
+export async function replaceBucketObject({
+  s3,
+  sourceObjectKey,
+  file,
+  deleteOldObject = false,
+  createSuffix = () => createRandomStringGenerator('a-z', '0-9')(8),
+}: {
+  s3: BucketReplaceS3Client
+  sourceObjectKey: string
+  file: BucketUploadFileInput
+  deleteOldObject?: boolean
+  createSuffix?: () => string
+}): Promise<BucketReplaceOutcome> {
+  const trimmedSource = sourceObjectKey.trim()
+  const sourceError = validateBucketObjectKey(trimmedSource)
+
+  if (sourceError) {
+    throw new Error(sourceError)
+  }
+
+  const targetPrefix = getBucketObjectParentPrefix(trimmedSource).replace(/\/$/, '')
+  const outcome = await uploadBucketObjects({
+    s3,
+    targetPrefix,
+    files: [file],
+    createSuffix,
+  })
+
+  if (outcome.uploads.length === 0) {
+    throw new Error(
+      outcome.failures[0]?.error ?? 'Replacement upload failed',
+    )
+  }
+
+  const upload = outcome.uploads[0]!
+  if (upload.objectKey === trimmedSource) {
+    throw new Error('Replacement must not overwrite the existing object key')
+  }
+
+  let oldObjectDeleted = false
+  if (deleteOldObject) {
+    const deleteResult = await s3.deleteFile({ Key: trimmedSource })
+    oldObjectDeleted = deleteResult !== null
+  }
+
+  return {
+    oldObjectKey: trimmedSource,
+    newObjectKey: upload.objectKey,
+    newCdnUrl: upload.cdnUrl,
+    contentType: upload.contentType,
+    size: upload.size,
+    oldObjectDeleted,
+  }
 }
 
 export async function deleteBucketObject({

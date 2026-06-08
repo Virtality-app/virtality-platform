@@ -5,6 +5,7 @@ import {
   formatBucketListPage,
   moveBucketObject,
   normalizeBucketPrefix,
+  replaceBucketObject,
   uploadBucketObjects,
 } from '@virtality/shared/utils'
 import { Buffer } from 'node:buffer'
@@ -35,6 +36,12 @@ const BucketMoveInput = z.object({
 
 const BucketDeleteInput = z.object({
   objectKey: z.string().min(1),
+})
+
+const BucketReplaceInput = z.object({
+  sourceObjectKey: z.string().min(1),
+  file: z.instanceof(File),
+  deleteOldObject: z.boolean().optional().default(false),
 })
 
 const listBucketPrefix = authed
@@ -162,9 +169,52 @@ const deleteBucket = authed
     }
   })
 
+const replaceBucket = authed
+  .route({ path: '/bucket/replace', method: 'POST' })
+  .input(BucketReplaceInput)
+  .handler(async ({ context, input }) => {
+    const { s3, user } = context
+    const fileInput = {
+      name: input.file.name,
+      contentType: input.file.type,
+      body: Buffer.from(await input.file.arrayBuffer()),
+    }
+
+    try {
+      const outcome = await replaceBucketObject({
+        s3,
+        sourceObjectKey: input.sourceObjectKey,
+        file: fileInput,
+        deleteOldObject: input.deleteOldObject,
+      })
+
+      bucketLogger.info('bucket.replace.completed', {
+        actorId: user.id,
+        oldObjectKey: outcome.oldObjectKey,
+        newObjectKey: outcome.newObjectKey,
+        oldObjectDeleted: outcome.oldObjectDeleted,
+      })
+
+      return outcome
+    } catch (error) {
+      bucketLogger.warn('bucket.replace.failed', {
+        actorId: user.id,
+        sourceObjectKey: input.sourceObjectKey,
+        deleteOldObject: input.deleteOldObject,
+        error,
+      })
+
+      throw new ORPCError('BAD_REQUEST', {
+        message:
+          error instanceof Error ? error.message : 'Bucket replace failed',
+      })
+    }
+  })
+
 export const bucket = {
   list: listBucketPrefix,
   upload: uploadBucket,
   move: moveBucket,
   delete: deleteBucket,
+  replace: replaceBucket,
 }

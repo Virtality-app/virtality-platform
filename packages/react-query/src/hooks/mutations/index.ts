@@ -58,3 +58,4 @@ export { useRemoveFavoriteExercise } from './favorite-exercise/use-remove-favori
 export { useUploadBucketObjects } from './bucket/use-upload-bucket-objects.js'
 export { useMoveBucketObject } from './bucket/use-move-bucket-object.js'
 export { useDeleteBucketObject } from './bucket/use-delete-bucket-object.js'
+export { useReplaceBucketObject } from './bucket/use-replace-bucket-object.js'

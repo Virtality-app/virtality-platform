@@ -9,6 +9,7 @@ import {
   getBucketBreadcrumbs,
   inferContentTypeFromObjectKey,
   moveBucketObject,
+  replaceBucketObject,
   sanitizeBucketFilenameStem,
   uploadBucketObjects,
   validateBucketObjectKey,
@@ -329,6 +330,112 @@ describe('deleteBucketObject', () => {
         objectKey: 'images/photo.jpg',
       }),
     ).rejects.toThrow(/failed to delete/i)
+  })
+})
+
+describe('replaceBucketObject', () => {
+  it('uploads replacement content to a new unique key without overwriting the old key', async () => {
+    const uploadedKeys: string[] = []
+    const s3 = {
+      uploadFile: vi.fn(async (input) => {
+        uploadedKeys.push(input.Key)
+        return {}
+      }),
+      deleteFile: vi.fn(),
+    }
+
+    const outcome = await replaceBucketObject({
+      s3,
+      sourceObjectKey: 'images/photo-abc123.jpg',
+      file: {
+        name: 'Updated Photo.JPG',
+        contentType: 'image/jpeg',
+        body: Buffer.from('new-bytes'),
+      },
+      createSuffix: () => 'newsuffix1',
+    })
+
+    expect(uploadedKeys).toEqual(['images/updated-photo-newsuffix1.jpg'])
+    expect(uploadedKeys).not.toContain('images/photo-abc123.jpg')
+    expect(outcome).toMatchObject({
+      oldObjectKey: 'images/photo-abc123.jpg',
+      newObjectKey: 'images/updated-photo-newsuffix1.jpg',
+      newCdnUrl:
+        'https://cdn.virtality.app/images/updated-photo-newsuffix1.jpg',
+      contentType: 'image/jpeg',
+      size: 9,
+      oldObjectDeleted: false,
+    })
+    expect(s3.deleteFile).not.toHaveBeenCalled()
+  })
+
+  it('deletes the old object only after a successful replacement upload', async () => {
+    const s3 = {
+      uploadFile: vi.fn(async () => ({})),
+      deleteFile: vi.fn(async () => ({})),
+    }
+
+    const outcome = await replaceBucketObject({
+      s3,
+      sourceObjectKey: 'images/photo-abc123.jpg',
+      file: {
+        name: 'updated.jpg',
+        contentType: 'image/jpeg',
+        body: Buffer.from('new'),
+      },
+      deleteOldObject: true,
+      createSuffix: () => 'newsuffix',
+    })
+
+    expect(outcome.oldObjectDeleted).toBe(true)
+    expect(s3.uploadFile).toHaveBeenCalledBefore(s3.deleteFile)
+    expect(s3.deleteFile).toHaveBeenCalledWith({
+      Key: 'images/photo-abc123.jpg',
+    })
+  })
+
+  it('leaves the old object untouched when replacement upload fails', async () => {
+    const s3 = {
+      uploadFile: vi.fn(async () => null),
+      deleteFile: vi.fn(),
+    }
+
+    await expect(
+      replaceBucketObject({
+        s3,
+        sourceObjectKey: 'images/photo-abc123.jpg',
+        file: {
+          name: 'updated.jpg',
+          contentType: 'image/jpeg',
+          body: Buffer.from('new'),
+        },
+        deleteOldObject: true,
+        createSuffix: () => 'newsuffix',
+      }),
+    ).rejects.toThrow(/upload failed/i)
+
+    expect(s3.deleteFile).not.toHaveBeenCalled()
+  })
+
+  it('keeps the old object when cleanup is not requested', async () => {
+    const s3 = {
+      uploadFile: vi.fn(async () => ({})),
+      deleteFile: vi.fn(),
+    }
+
+    await replaceBucketObject({
+      s3,
+      sourceObjectKey: 'images/photo-abc123.jpg',
+      file: {
+        name: 'updated.jpg',
+        contentType: 'image/jpeg',
+        body: Buffer.from('new'),
+      },
+      deleteOldObject: false,
+      createSuffix: () => 'newsuffix',
+    })
+
+    expect(s3.deleteFile).not.toHaveBeenCalled()
   })
 })
 
