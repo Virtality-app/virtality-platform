@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useDropdownMenuAction } from '@/hooks/use-dropdown-menu-action'
 import useMounted from '@/hooks/use-mounted'
 import {
   type BucketFolderRow,
@@ -48,7 +49,6 @@ import { BucketObjectReplaceDialog } from './bucket-object-replace-dialog'
 import { BucketObjectMoveDialog } from './bucket-object-move-dialog'
 import { BucketObjectRenameDialog } from './bucket-object-rename-dialog'
 import { BucketUploadDialog } from './bucket-upload-dialog'
-import { scheduleAfterDropdownClose } from '@/lib/schedule-after-dropdown-close'
 import Image from 'next/image'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -123,17 +123,10 @@ function FolderActions({
   onMove: (folder: BucketFolderRow) => void
   onDelete: (folder: BucketFolderRow) => void
 }) {
-  const [menuOpen, setMenuOpen] = useState(false)
-
-  const openDialogAction = (action: (folder: BucketFolderRow) => void) => () => {
-    scheduleAfterDropdownClose(
-      () => setMenuOpen(false),
-      () => action(folder),
-    )
-  }
+  const { open, setOpen, openDialogAction } = useDropdownMenuAction(folder)
 
   return (
-    <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen} modal={false}>
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
           size='icon'
@@ -180,14 +173,7 @@ function ObjectActions({
   onReplace: (object: BucketObjectRow) => void
   onDelete: (object: BucketObjectRow) => void
 }) {
-  const [menuOpen, setMenuOpen] = useState(false)
-
-  const openDialogAction = (action: (object: BucketObjectRow) => void) => () => {
-    scheduleAfterDropdownClose(
-      () => setMenuOpen(false),
-      () => action(object),
-    )
-  }
+  const { open, setOpen, openDialogAction } = useDropdownMenuAction(object)
 
   const copyCdnUrl = () => {
     void navigator.clipboard.writeText(object.cdnUrl)
@@ -198,7 +184,7 @@ function ObjectActions({
   }
 
   return (
-    <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen} modal={false}>
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger asChild>
         <Button size='icon' variant='ghost' className='size-8'>
           <Ellipsis />
