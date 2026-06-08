@@ -32,8 +32,12 @@ import {
   FileIcon,
   Film,
   Folder,
+  FolderInput,
+  Pencil,
   Upload,
 } from 'lucide-react'
+import { BucketObjectMoveDialog } from './bucket-object-move-dialog'
+import { BucketObjectRenameDialog } from './bucket-object-rename-dialog'
 import { BucketUploadDialog } from './bucket-upload-dialog'
 import Image from 'next/image'
 import { useEffect, useMemo, useState } from 'react'
@@ -98,7 +102,15 @@ function ObjectPreview({ object }: { object: BucketObjectRow }) {
   return <FileIcon className='size-12 text-zinc-400' aria-hidden='true' />
 }
 
-function ObjectActions({ object }: { object: BucketObjectRow }) {
+function ObjectActions({
+  object,
+  onRename,
+  onMove,
+}: {
+  object: BucketObjectRow
+  onRename: (object: BucketObjectRow) => void
+  onMove: (object: BucketObjectRow) => void
+}) {
   const copyCdnUrl = () => {
     void navigator.clipboard.writeText(object.cdnUrl)
   }
@@ -123,6 +135,14 @@ function ObjectActions({ object }: { object: BucketObjectRow }) {
           <Copy />
           Copy object key
         </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onRename(object)}>
+          <Pencil />
+          Rename
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => onMove(object)}>
+          <FolderInput />
+          Move
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
@@ -135,6 +155,8 @@ const BucketBrowser = () => {
   const [search, setSearch] = useState('')
   const [rows, setRows] = useState<BucketRowsState>(emptyRows)
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false)
+  const [renameObject, setRenameObject] = useState<BucketObjectRow | null>(null)
+  const [moveObject, setMoveObject] = useState<BucketObjectRow | null>(null)
 
   const { data, isLoading, isFetching, error } = useBucket({
     prefix,
@@ -198,6 +220,11 @@ const BucketBrowser = () => {
       folder.name.toLowerCase().includes(query),
     )
   }, [rows.folders, search])
+
+  const refreshCurrentFolder = () => {
+    setContinuationToken(undefined)
+    setRows(emptyRows)
+  }
 
   const filteredObjects = useMemo(() => {
     const query = search.trim().toLowerCase()
@@ -336,7 +363,11 @@ const BucketBrowser = () => {
                   {object.objectKey}
                 </TableCell>
                 <TableCell className='text-right'>
-                  <ObjectActions object={object} />
+                  <ObjectActions
+                    object={object}
+                    onRename={setRenameObject}
+                    onMove={setMoveObject}
+                  />
                 </TableCell>
               </TableRow>
             ))}
@@ -348,6 +379,28 @@ const BucketBrowser = () => {
         open={isUploadDialogOpen}
         onOpenChange={setIsUploadDialogOpen}
         currentPrefix={prefix}
+      />
+
+      <BucketObjectRenameDialog
+        open={renameObject !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setRenameObject(null)
+          }
+        }}
+        object={renameObject}
+        onRenamed={refreshCurrentFolder}
+      />
+
+      <BucketObjectMoveDialog
+        open={moveObject !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setMoveObject(null)
+          }
+        }}
+        object={moveObject}
+        onMoved={refreshCurrentFolder}
       />
 
       {rows.nextContinuationToken ? (

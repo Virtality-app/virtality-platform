@@ -56,3 +56,4 @@ export { useRemoveFavoriteExercise } from './favorite-exercise/use-remove-favori
 
 // Bucket mutations
 export { useUploadBucketObjects } from './bucket/use-upload-bucket-objects.js'
+export { useMoveBucketObject } from './bucket/use-move-bucket-object.js'

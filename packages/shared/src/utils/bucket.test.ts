@@ -3,9 +3,11 @@ import { describe, expect, it, vi } from 'vitest'
 import {
   bucketCdnUrl,
   buildBucketObjectKey,
+  buildRenameDestinationObjectKey,
   formatBucketListPage,
   getBucketBreadcrumbs,
   inferContentTypeFromObjectKey,
+  moveBucketObject,
   sanitizeBucketFilenameStem,
   uploadBucketObjects,
   validateBucketObjectKey,
@@ -265,5 +267,107 @@ describe('getBucketBreadcrumbs', () => {
       { label: 'images', prefix: 'images/' },
       { label: 'thumbs', prefix: 'images/thumbs/' },
     ])
+  })
+})
+
+describe('buildRenameDestinationObjectKey', () => {
+  it('builds a destination key in the same folder as the source object', () => {
+    expect(
+      buildRenameDestinationObjectKey(
+        'images/photo-abc123.jpg',
+        'photo-renamed.jpg',
+      ),
+    ).toBe('images/photo-renamed.jpg')
+  })
+
+  it('rejects invalid rename filenames', () => {
+    expect(() =>
+      buildRenameDestinationObjectKey('images/photo.jpg', 'my photo.jpg'),
+    ).toThrow(/invalid/)
+  })
+})
+
+describe('moveBucketObject', () => {
+  it('rejects invalid destination object keys', async () => {
+    const s3 = {
+      objectExists: vi.fn(),
+      copyObject: vi.fn(),
+      deleteFile: vi.fn(),
+    }
+
+    await expect(
+      moveBucketObject({
+        s3,
+        sourceObjectKey: 'images/photo.jpg',
+        destinationObjectKey: 'images/photo.jpg/',
+      }),
+    ).rejects.toThrow(/slash/)
+
+    expect(s3.objectExists).not.toHaveBeenCalled()
+    expect(s3.copyObject).not.toHaveBeenCalled()
+    expect(s3.deleteFile).not.toHaveBeenCalled()
+  })
+
+  it('blocks moves when the destination object key already exists', async () => {
+    const s3 = {
+      objectExists: vi.fn(async () => true),
+      copyObject: vi.fn(),
+      deleteFile: vi.fn(),
+    }
+
+    await expect(
+      moveBucketObject({
+        s3,
+        sourceObjectKey: 'images/photo.jpg',
+        destinationObjectKey: 'images/photo-copy.jpg',
+      }),
+    ).rejects.toThrow(/already exists/)
+
+    expect(s3.copyObject).not.toHaveBeenCalled()
+    expect(s3.deleteFile).not.toHaveBeenCalled()
+  })
+
+  it('copies before deleting and leaves the source when copy fails', async () => {
+    const s3 = {
+      objectExists: vi.fn(async () => false),
+      copyObject: vi.fn(async () => false),
+      deleteFile: vi.fn(),
+    }
+
+    await expect(
+      moveBucketObject({
+        s3,
+        sourceObjectKey: 'images/photo.jpg',
+        destinationObjectKey: 'videos/photo.jpg',
+      }),
+    ).rejects.toThrow(/copy/)
+
+    expect(s3.copyObject).toHaveBeenCalledWith({
+      sourceKey: 'images/photo.jpg',
+      destinationKey: 'videos/photo.jpg',
+    })
+    expect(s3.deleteFile).not.toHaveBeenCalled()
+  })
+
+  it('moves an object by copying then deleting the source', async () => {
+    const s3 = {
+      objectExists: vi.fn(async () => false),
+      copyObject: vi.fn(async () => true),
+      deleteFile: vi.fn(async () => ({})),
+    }
+
+    const outcome = await moveBucketObject({
+      s3,
+      sourceObjectKey: 'images/photo.jpg',
+      destinationObjectKey: 'videos/photo.jpg',
+    })
+
+    expect(outcome).toEqual({
+      sourceObjectKey: 'images/photo.jpg',
+      destinationObjectKey: 'videos/photo.jpg',
+      cdnUrl: 'https://cdn.virtality.app/videos/photo.jpg',
+    })
+    expect(s3.copyObject).toHaveBeenCalledBefore(s3.deleteFile)
+    expect(s3.deleteFile).toHaveBeenCalledWith({ Key: 'images/photo.jpg' })
   })
 })

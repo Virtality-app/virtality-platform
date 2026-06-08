@@ -57,6 +57,21 @@ export type BucketUploadS3Client = {
   }) => Promise<unknown | null>
 }
 
+export type BucketMoveS3Client = {
+  objectExists: (input: { Key: string }) => Promise<boolean>
+  copyObject: (input: {
+    sourceKey: string
+    destinationKey: string
+  }) => Promise<boolean>
+  deleteFile: (input: { Key: string }) => Promise<unknown | null>
+}
+
+export type BucketMoveOutcome = {
+  sourceObjectKey: string
+  destinationObjectKey: string
+  cdnUrl: string
+}
+
 export type S3ListPrefixResult = {
   CommonPrefixes?: { Prefix?: string }[]
   Contents?: {
@@ -332,6 +347,76 @@ export function getObjectDisplayName(
     : objectKey
 
   return relativeKey
+}
+
+export function getBucketObjectParentPrefix(objectKey: string): string {
+  const lastSlash = objectKey.lastIndexOf('/')
+  if (lastSlash === -1) {
+    return ''
+  }
+
+  return objectKey.slice(0, lastSlash + 1)
+}
+
+export function buildRenameDestinationObjectKey(
+  sourceObjectKey: string,
+  newFilename: string,
+): string {
+  const parentPrefix = getBucketObjectParentPrefix(sourceObjectKey)
+  const destinationObjectKey = `${parentPrefix}${newFilename.trim()}`
+  const destinationError = validateBucketObjectKey(destinationObjectKey)
+
+  if (destinationError) {
+    throw new Error(destinationError)
+  }
+
+  return destinationObjectKey
+}
+
+export async function moveBucketObject({
+  s3,
+  sourceObjectKey,
+  destinationObjectKey,
+}: {
+  s3: BucketMoveS3Client
+  sourceObjectKey: string
+  destinationObjectKey: string
+}): Promise<BucketMoveOutcome> {
+  const trimmedSource = sourceObjectKey.trim()
+  const trimmedDestination = destinationObjectKey.trim()
+  const destinationError = validateBucketObjectKey(trimmedDestination)
+
+  if (destinationError) {
+    throw new Error(destinationError)
+  }
+
+  if (trimmedSource === trimmedDestination) {
+    throw new Error('Source and destination object keys are the same')
+  }
+
+  if (await s3.objectExists({ Key: trimmedDestination })) {
+    throw new Error('Destination object key already exists')
+  }
+
+  const copySucceeded = await s3.copyObject({
+    sourceKey: trimmedSource,
+    destinationKey: trimmedDestination,
+  })
+
+  if (!copySucceeded) {
+    throw new Error('Failed to copy bucket object')
+  }
+
+  const deleteResult = await s3.deleteFile({ Key: trimmedSource })
+  if (deleteResult === null) {
+    throw new Error('Copied bucket object but failed to delete the original')
+  }
+
+  return {
+    sourceObjectKey: trimmedSource,
+    destinationObjectKey: trimmedDestination,
+    cdnUrl: bucketCdnUrl(trimmedDestination),
+  }
 }
 
 export function getBucketBreadcrumbs(

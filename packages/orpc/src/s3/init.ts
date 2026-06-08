@@ -1,10 +1,12 @@
 import {
-  S3Client,
+  CopyObjectCommand,
   DeleteObjectCommand,
   DeleteObjectCommandInput,
+  HeadObjectCommand,
   ListObjectsV2Command,
   PutObjectCommand,
   PutObjectCommandInput,
+  S3Client,
 } from '@aws-sdk/client-s3'
 
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID
@@ -102,6 +104,37 @@ class VirtalityS3 extends S3Client {
     } catch (error) {
       console.log(error)
       return null
+    }
+  }
+
+  objectExists = async ({ Key }: { Key: string }) => {
+    try {
+      await this.send(new HeadObjectCommand({ Bucket, Key }))
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  copyObject = async ({
+    sourceKey,
+    destinationKey,
+  }: {
+    sourceKey: string
+    destinationKey: string
+  }) => {
+    try {
+      await this.send(
+        new CopyObjectCommand({
+          Bucket,
+          CopySource: `${Bucket}/${sourceKey}`,
+          Key: destinationKey,
+        }),
+      )
+      return true
+    } catch (error) {
+      console.log(error)
+      return false
     }
   }
 }

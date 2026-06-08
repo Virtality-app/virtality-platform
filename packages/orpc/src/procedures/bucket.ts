@@ -2,6 +2,7 @@ import { ORPCError } from '@orpc/server'
 import { createAppLogger } from '@virtality/shared/observability'
 import {
   formatBucketListPage,
+  moveBucketObject,
   normalizeBucketPrefix,
   uploadBucketObjects,
 } from '@virtality/shared/utils'
@@ -24,6 +25,11 @@ const BucketListInput = z.object({
 const BucketUploadInput = z.object({
   targetPrefix: z.string().optional().default(''),
   files: z.array(z.instanceof(File)).min(1),
+})
+
+const BucketMoveInput = z.object({
+  sourceObjectKey: z.string().min(1),
+  destinationObjectKey: z.string().min(1),
 })
 
 const listBucketPrefix = authed
@@ -84,7 +90,43 @@ const uploadBucket = authed
     return outcome
   })
 
+const moveBucket = authed
+  .route({ path: '/bucket/move', method: 'POST' })
+  .input(BucketMoveInput)
+  .handler(async ({ context, input }) => {
+    const { s3, user } = context
+
+    try {
+      const outcome = await moveBucketObject({
+        s3,
+        sourceObjectKey: input.sourceObjectKey,
+        destinationObjectKey: input.destinationObjectKey,
+      })
+
+      bucketLogger.info('bucket.move.completed', {
+        actorId: user.id,
+        sourceObjectKey: outcome.sourceObjectKey,
+        destinationObjectKey: outcome.destinationObjectKey,
+      })
+
+      return outcome
+    } catch (error) {
+      bucketLogger.warn('bucket.move.failed', {
+        actorId: user.id,
+        sourceObjectKey: input.sourceObjectKey,
+        destinationObjectKey: input.destinationObjectKey,
+        error,
+      })
+
+      throw new ORPCError('BAD_REQUEST', {
+        message:
+          error instanceof Error ? error.message : 'Bucket move failed',
+      })
+    }
+  })
+
 export const bucket = {
   list: listBucketPrefix,
   upload: uploadBucket,
+  move: moveBucket,
 }
