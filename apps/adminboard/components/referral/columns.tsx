@@ -10,7 +10,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { getQueryClient, useDeleteReferralCode, useORPC } from '@virtality/react-query'
+import {
+  getQueryClient,
+  useDeleteReferralCode,
+  useORPC,
+} from '@virtality/react-query'
 import { ReferralCode } from '@virtality/db'
 import { ColumnDef } from '@tanstack/react-table'
 import startCase from 'lodash.startcase'

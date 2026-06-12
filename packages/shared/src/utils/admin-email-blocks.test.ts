@@ -142,10 +142,7 @@ describe('validateEmailBodyBlocks', () => {
 
   it('reports the first invalid block', () => {
     expect(
-      validateEmailBodyBlocks([
-        paragraph('Hello'),
-        paragraph(''),
-      ]),
+      validateEmailBodyBlocks([paragraph('Hello'), paragraph('')]),
     ).toMatch(/paragraph text/)
   })
 })
@@ -173,12 +170,11 @@ describe('validateEmailRecipientList', () => {
   it('rejects empty, duplicate, invalid, or oversized lists', () => {
     expect(validateEmailRecipientList([])).toMatch(/recipient/)
     expect(
-      validateEmailRecipientList([
-        'user@example.com',
-        'user@example.com',
-      ]),
+      validateEmailRecipientList(['user@example.com', 'user@example.com']),
     ).toMatch(/duplicate/)
-    expect(validateEmailRecipientList(['not-an-email'])).toMatch(/invalid email/)
+    expect(validateEmailRecipientList(['not-an-email'])).toMatch(
+      /invalid email/,
+    )
     expect(
       validateEmailRecipientList(
         Array.from({ length: 51 }, (_, index) => `user${index}@example.com`),

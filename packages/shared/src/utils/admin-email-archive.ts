@@ -12,14 +12,20 @@ export const partitionDraftsByArchiveStatus = <T extends DraftArchiveRecord>(
   archived: drafts.filter((draft) => isDraftArchived(draft)),
 })
 
-export const buildArchiveDraftData = (archivedById: string, archivedAt = new Date()) => ({
+export const buildArchiveDraftData = (
+  archivedById: string,
+  archivedAt = new Date(),
+) => ({
   archivedAt,
   archivedById,
   restoredAt: null,
   restoredById: null,
 })
 
-export const buildRestoreDraftData = (restoredById: string, restoredAt = new Date()) => ({
+export const buildRestoreDraftData = (
+  restoredById: string,
+  restoredAt = new Date(),
+) => ({
   archivedAt: null,
   archivedById: null,
   restoredAt,

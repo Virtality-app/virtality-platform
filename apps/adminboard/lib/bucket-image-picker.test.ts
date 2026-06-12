@@ -46,7 +46,9 @@ describe('filterBucketImagePickerFolders', () => {
   })
 
   it('filters folders by name or prefix', () => {
-    expect(filterBucketImagePickerFolders(folders, 'logo')).toEqual([folders[1]])
+    expect(filterBucketImagePickerFolders(folders, 'logo')).toEqual([
+      folders[1],
+    ])
     expect(filterBucketImagePickerFolders(folders, 'campaigns/')).toEqual([
       folders[0],
     ])

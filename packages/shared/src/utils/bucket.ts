@@ -458,7 +458,10 @@ export async function replaceBucketObject({
     throw new Error(sourceError)
   }
 
-  const targetPrefix = getBucketObjectParentPrefix(trimmedSource).replace(/\/$/, '')
+  const targetPrefix = getBucketObjectParentPrefix(trimmedSource).replace(
+    /\/$/,
+    '',
+  )
   const outcome = await uploadBucketObjects({
     s3,
     targetPrefix,
@@ -467,9 +470,7 @@ export async function replaceBucketObject({
   })
 
   if (outcome.uploads.length === 0) {
-    throw new Error(
-      outcome.failures[0]?.error ?? 'Replacement upload failed',
-    )
+    throw new Error(outcome.failures[0]?.error ?? 'Replacement upload failed')
   }
 
   const upload = outcome.uploads[0]!
@@ -652,7 +653,8 @@ export async function collectObjectKeysUnderPrefix(
 
     objectKeys.push(
       ...page.objectKeys.filter(
-        (objectKey) => objectKey !== normalizedPrefix && !objectKey.endsWith('/'),
+        (objectKey) =>
+          objectKey !== normalizedPrefix && !objectKey.endsWith('/'),
       ),
     )
     continuationToken = page.nextContinuationToken ?? undefined

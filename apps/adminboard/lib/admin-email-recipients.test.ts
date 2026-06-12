@@ -19,9 +19,9 @@ describe('parseRecipientsFromInput', () => {
   })
 
   it('trims whitespace and ignores empty lines', () => {
-    expect(parseRecipientsFromInput('  a@example.com \n\n  b@example.com  ')).toEqual(
-      ['a@example.com', 'b@example.com'],
-    )
+    expect(
+      parseRecipientsFromInput('  a@example.com \n\n  b@example.com  '),
+    ).toEqual(['a@example.com', 'b@example.com'])
   })
 })
 

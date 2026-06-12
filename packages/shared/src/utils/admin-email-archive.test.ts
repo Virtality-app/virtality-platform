@@ -8,9 +8,9 @@ import {
 
 describe('isDraftArchived', () => {
   it('treats drafts with archivedAt as archived', () => {
-    expect(isDraftArchived({ archivedAt: new Date('2026-06-01T12:00:00Z') })).toBe(
-      true,
-    )
+    expect(
+      isDraftArchived({ archivedAt: new Date('2026-06-01T12:00:00Z') }),
+    ).toBe(true)
     expect(isDraftArchived({ archivedAt: null })).toBe(false)
   })
 })

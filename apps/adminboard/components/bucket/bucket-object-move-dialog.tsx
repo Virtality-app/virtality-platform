@@ -107,7 +107,9 @@ export function BucketObjectMoveDialog({
           <div className='flex flex-col gap-4'>
             <div className='flex flex-col gap-1'>
               <p className='text-sm font-medium'>Source object key</p>
-              <p className='font-mono text-xs text-zinc-500'>{object.objectKey}</p>
+              <p className='font-mono text-xs text-zinc-500'>
+                {object.objectKey}
+              </p>
             </div>
 
             <div className='flex flex-col gap-2'>
@@ -117,7 +119,9 @@ export function BucketObjectMoveDialog({
               <Input
                 id='bucket-move-destination'
                 value={destinationObjectKey}
-                onChange={(event) => setDestinationObjectKey(event.target.value)}
+                onChange={(event) =>
+                  setDestinationObjectKey(event.target.value)
+                }
                 disabled={moveMutation.isPending || Boolean(successMessage)}
               />
               <p className='text-xs text-zinc-500'>

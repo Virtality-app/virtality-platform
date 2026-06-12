@@ -65,9 +65,8 @@ export function BucketObjectReplaceDialog({
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [deleteOldObject, setDeleteOldObject] = useState(false)
   const [validationError, setValidationError] = useState<string | null>(null)
-  const [replaceOutcome, setReplaceOutcome] = useState<BucketReplaceOutcome | null>(
-    null,
-  )
+  const [replaceOutcome, setReplaceOutcome] =
+    useState<BucketReplaceOutcome | null>(null)
 
   const referencesQuery = useBucketObjectReferences(
     open && object ? object.objectKey : null,
@@ -142,7 +141,9 @@ export function BucketObjectReplaceDialog({
 
             <div className='flex flex-col gap-1'>
               <p className='text-sm font-medium'>{object.name}</p>
-              <p className='font-mono text-xs text-zinc-500'>{object.objectKey}</p>
+              <p className='font-mono text-xs text-zinc-500'>
+                {object.objectKey}
+              </p>
             </div>
 
             <div className='flex flex-col gap-2'>

@@ -3,12 +3,7 @@
 import { createTanstackQueryUtils } from '@orpc/tanstack-query'
 import { createORPCClient } from '@virtality/orpc/client'
 import type { ORPCClientLink } from '@virtality/orpc/client'
-import {
-  createContext,
-  type ReactNode,
-  useContext,
-  useMemo,
-} from 'react'
+import { createContext, type ReactNode, useContext, useMemo } from 'react'
 import { configureORPC } from './orpc.js'
 import type { ORPCUtils } from './orpc.js'
 

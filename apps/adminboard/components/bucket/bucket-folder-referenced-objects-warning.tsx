@@ -57,7 +57,9 @@ export function BucketFolderReferencedObjectsWarning({
       <ul className='list-disc pl-5 text-sm'>
         {referencedObjects.map((referencedObject) => (
           <li key={referencedObject.objectKey}>
-            <span className='font-mono text-xs'>{referencedObject.objectKey}</span>
+            <span className='font-mono text-xs'>
+              {referencedObject.objectKey}
+            </span>
             <ul className='list-disc pl-5'>
               {referencedObject.references.map((reference) => (
                 <li

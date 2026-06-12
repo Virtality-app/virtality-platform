@@ -32,9 +32,9 @@ export function BucketFolderDeleteDialog({
   onDeleted,
 }: BucketFolderDeleteDialogProps) {
   const [validationError, setValidationError] = useState<string | null>(null)
-  const [operationOutcome, setOperationOutcome] = useState<
-    Awaited<ReturnType<ReturnType<typeof useDeleteBucketFolder>['mutateAsync']>> | null
-  >(null)
+  const [operationOutcome, setOperationOutcome] = useState<Awaited<
+    ReturnType<ReturnType<typeof useDeleteBucketFolder>['mutateAsync']>
+  > | null>(null)
 
   const previewQuery = useBucketFolderPreview(
     open && folder ? folder.prefix : null,
@@ -130,9 +130,7 @@ export function BucketFolderDeleteDialog({
               variant='destructive'
               onClick={handleDelete}
               disabled={
-                !folder ||
-                deleteMutation.isPending ||
-                previewQuery.isLoading
+                !folder || deleteMutation.isPending || previewQuery.isLoading
               }
             >
               {deleteMutation.isPending ? <Spinner /> : 'Delete permanently'}

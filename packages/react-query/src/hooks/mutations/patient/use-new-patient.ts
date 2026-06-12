@@ -5,7 +5,9 @@ import { useORPC } from '../../../orpc-context.js'
 type CreatePatientMutationOptions = ReturnType<
   ORPCUtils['patient']['create']['mutationOptions']
 >
-type NewPatientOnSuccess = NonNullable<CreatePatientMutationOptions['onSuccess']>
+type NewPatientOnSuccess = NonNullable<
+  CreatePatientMutationOptions['onSuccess']
+>
 
 interface UseNewPatientProps {
   onSuccess?: NewPatientOnSuccess

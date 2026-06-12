@@ -21,7 +21,11 @@ function libRow(
   }
 }
 
-function programRow(exerciseId: string, displayName: string, direction: string) {
+function programRow(
+  exerciseId: string,
+  displayName: string,
+  direction: string,
+) {
   return {
     id: `row-${exerciseId}`,
     exerciseId,
@@ -58,7 +62,10 @@ describe('family-first authoring integration', () => {
     const selectable = familyMembersForLibrarySelection(fam!)
     expect(selectable.map((m) => m.id).sort()).toEqual(['pl', 'pr'])
 
-    const programList = [programRow('pl', 'Press', 'Left'), programRow('pr', 'Press', 'Right')]
+    const programList = [
+      programRow('pl', 'Press', 'Left'),
+      programRow('pr', 'Press', 'Right'),
+    ]
     const segs = segmentProgramExerciseRowsByAdjacentBilateralFamilies(
       programList.map((p) => ({
         displayName: p.exercise?.displayName ?? '',
@@ -89,10 +96,10 @@ describe('family-first authoring integration', () => {
     const leftOnly = familyMemberForNearTermDirection(fam!, 'Left')!
     expect(leftOnly.id).toBe('pl')
     expect(
-      libraryFamilySelectionState(
-        familyMembersForLibrarySelection(fam!),
-        { pl: true, pr: false },
-      ),
+      libraryFamilySelectionState(familyMembersForLibrarySelection(fam!), {
+        pl: true,
+        pr: false,
+      }),
     ).toBe('partial')
   })
 })

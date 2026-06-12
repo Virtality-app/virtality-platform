@@ -26,12 +26,12 @@ function createReader(
 
 describe('buildBucketReferenceLookupValues', () => {
   it('includes both object key and CDN URL lookup values', () => {
-    expect(
-      buildBucketReferenceLookupValues('images/photo-abc123.jpg'),
-    ).toEqual([
-      'images/photo-abc123.jpg',
-      'https://cdn.virtality.app/images/photo-abc123.jpg',
-    ])
+    expect(buildBucketReferenceLookupValues('images/photo-abc123.jpg')).toEqual(
+      [
+        'images/photo-abc123.jpg',
+        'https://cdn.virtality.app/images/photo-abc123.jpg',
+      ],
+    )
   })
 })
 
@@ -140,9 +140,9 @@ describe('findKnownBucketObjectReferences', () => {
       objectKey: 'shared/asset.png',
     })
 
-    expect(outcome.references.map((reference) => reference.resourceType)).toEqual(
-      ['avatar', 'map'],
-    )
+    expect(
+      outcome.references.map((reference) => reference.resourceType),
+    ).toEqual(['avatar', 'map'])
   })
 })
 

@@ -30,16 +30,16 @@ Local defaults already used in this repository:
 
 Every emitted log record MUST include these fields.
 
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `ts` | string (ISO-8601 UTC) | yes | Event timestamp, for example `2026-04-25T18:58:00.000Z`. |
-| `level` | enum | yes | One of `debug`, `info`, `warn`, `error`. |
-| `event` | string | yes | Stable event identifier (see naming rules). |
-| `message` | string | yes | Human-readable short message; defaults to `event` if not provided. |
-| `service.name` | string | yes | Logical producer name (for example `server`, `socket`, `adminboard`, `website`, `console`, `unity-client`). |
-| `service.namespace` | string | yes | Namespace, default `virtality`. |
-| `service.version` | string | yes | Producer version (application build or package version). |
-| `deployment.environment.name` | string | yes | Environment label, for example `development`, `preview`, `production`. |
+| Field                         | Type                  | Required | Description                                                                                                 |
+| ----------------------------- | --------------------- | -------- | ----------------------------------------------------------------------------------------------------------- |
+| `ts`                          | string (ISO-8601 UTC) | yes      | Event timestamp, for example `2026-04-25T18:58:00.000Z`.                                                    |
+| `level`                       | enum                  | yes      | One of `debug`, `info`, `warn`, `error`.                                                                    |
+| `event`                       | string                | yes      | Stable event identifier (see naming rules).                                                                 |
+| `message`                     | string                | yes      | Human-readable short message; defaults to `event` if not provided.                                          |
+| `service.name`                | string                | yes      | Logical producer name (for example `server`, `socket`, `adminboard`, `website`, `console`, `unity-client`). |
+| `service.namespace`           | string                | yes      | Namespace, default `virtality`.                                                                             |
+| `service.version`             | string                | yes      | Producer version (application build or package version).                                                    |
+| `deployment.environment.name` | string                | yes      | Environment label, for example `development`, `preview`, `production`.                                      |
 
 Additional fields are strongly recommended when relevant:
 

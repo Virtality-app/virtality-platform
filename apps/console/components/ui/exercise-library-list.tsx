@@ -140,9 +140,7 @@ function segmentExpandedSettings({
   if (isPair && secondary != null && secondaryIndex != null) {
     return (
       <div className='flex w-full flex-col gap-4'>
-        <div
-          className={cn('space-y-1', primaryDeferred && 'opacity-50')}
-        >
+        <div className={cn('space-y-1', primaryDeferred && 'opacity-50')}>
           <p className='text-muted-foreground text-xs font-medium'>Left</p>
           <ExerciseSettings
             key={`${primary.id}-left`}
@@ -154,9 +152,7 @@ function segmentExpandedSettings({
             readOnly={primaryDeferred}
           />
         </div>
-        <div
-          className={cn('space-y-1', secondaryDeferred && 'opacity-50')}
-        >
+        <div className={cn('space-y-1', secondaryDeferred && 'opacity-50')}>
           <p className='text-muted-foreground text-xs font-medium'>Right</p>
           <ExerciseSettings
             key={`${secondary.id}-right`}
@@ -445,7 +441,10 @@ const ExerciseLibraryList = ({ className }: ExerciseLibraryListProps) => {
                       {showDirectionToggles ? (
                         <div className='mt-0.5 flex flex-wrap gap-1'>
                           {NEAR_TERM_SIDES.map((side) => {
-                            const member = programMemberForDirection(members, side)
+                            const member = programMemberForDirection(
+                              members,
+                              side,
+                            )
                             const inProgram = member != null
                             const isEnabled =
                               inProgram &&

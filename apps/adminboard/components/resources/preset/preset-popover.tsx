@@ -14,7 +14,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { Card, CardFooter, CardHeader, CardTitle } from '@virtality/ui/components/card'
+import {
+  Card,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@virtality/ui/components/card'
 
 export default function PresetPopover() {
   const queryClient = getQueryClient()

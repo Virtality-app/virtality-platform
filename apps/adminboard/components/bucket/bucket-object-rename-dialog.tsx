@@ -87,7 +87,9 @@ export function BucketObjectRenameDialog({
     }
   }, [newFilename, object])
 
-  const parentPrefix = object ? getBucketObjectParentPrefix(object.objectKey) : ''
+  const parentPrefix = object
+    ? getBucketObjectParentPrefix(object.objectKey)
+    : ''
 
   const canSubmit =
     Boolean(object) &&

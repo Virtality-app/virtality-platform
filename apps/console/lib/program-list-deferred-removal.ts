@@ -5,7 +5,9 @@
 
 export type DeferredRemovalIdSet = ReadonlySet<string>
 
-export function toDeferredRemovalIdSet(ids: readonly string[]): DeferredRemovalIdSet {
+export function toDeferredRemovalIdSet(
+  ids: readonly string[],
+): DeferredRemovalIdSet {
   return new Set(ids)
 }
 

@@ -38,9 +38,9 @@ export function BucketFolderRenameDialog({
 }: BucketFolderRenameDialogProps) {
   const [newFolderName, setNewFolderName] = useState('')
   const [validationError, setValidationError] = useState<string | null>(null)
-  const [operationOutcome, setOperationOutcome] = useState<
-    Awaited<ReturnType<ReturnType<typeof useMoveBucketFolder>['mutateAsync']>> | null
-  >(null)
+  const [operationOutcome, setOperationOutcome] = useState<Awaited<
+    ReturnType<ReturnType<typeof useMoveBucketFolder>['mutateAsync']>
+  > | null>(null)
 
   const previewQuery = useBucketFolderPreview(
     open && folder ? folder.prefix : null,

@@ -51,12 +51,16 @@ export function BucketReferencedObjectWarning({
           external use. This bucket operation will not update or remove those
           records automatically.
         </p>
-        <p className='text-sm'>{getOperationMessage(operation, deleteOldObject)}</p>
+        <p className='text-sm'>
+          {getOperationMessage(operation, deleteOldObject)}
+        </p>
       </div>
 
       <ul className='list-disc pl-5 text-sm'>
         {references.map((reference) => (
-          <li key={`${reference.resourceType}-${reference.resourceId}-${reference.field}`}>
+          <li
+            key={`${reference.resourceType}-${reference.resourceId}-${reference.field}`}
+          >
             {formatReferenceLabel(reference)}
           </li>
         ))}

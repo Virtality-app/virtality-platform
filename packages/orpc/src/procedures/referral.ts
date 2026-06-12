@@ -38,7 +38,9 @@ const createReferralCode = authed
 
       while (await codeExists(code)) {
         if (attempts >= maxAttempts) {
-          throw new Error('Failed to generate unique code after maximum attempts')
+          throw new Error(
+            'Failed to generate unique code after maximum attempts',
+          )
         }
         code = generateCode()
         attempts++

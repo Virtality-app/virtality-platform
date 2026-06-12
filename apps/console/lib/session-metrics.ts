@@ -46,7 +46,10 @@ export function getRepScoresByExercise(
   for (const point of points) {
     const keys = getScoreKeys(point)
     if (keys.length === 0) {
-      out.push({ repIndex: (point as { rep?: number }).rep ?? out.length, score: 0 })
+      out.push({
+        repIndex: (point as { rep?: number }).rep ?? out.length,
+        score: 0,
+      })
       continue
     }
     for (const setKey of keys) {
@@ -67,7 +70,11 @@ export function getRepScoresByExercise(
 export function getExerciseQualityScore(
   session: ExtendedPatientSession,
 ): { sessionExerciseId: string; exerciseId: string; avgProgressPct: number }[] {
-  const result: { sessionExerciseId: string; exerciseId: string; avgProgressPct: number }[] = []
+  const result: {
+    sessionExerciseId: string
+    exerciseId: string
+    avgProgressPct: number
+  }[] = []
   for (const data of session.sessionData ?? []) {
     const points = parseSessionDataValue(data.value)
     if (points.length === 0) continue
@@ -79,7 +86,9 @@ export function getExerciseQualityScore(
       count += 1
     }
     if (count === 0) continue
-    const ex = session.sessionExercise?.find((e) => e.id === data.sessionExerciseId)
+    const ex = session.sessionExercise?.find(
+      (e) => e.id === data.sessionExerciseId,
+    )
     result.push({
       sessionExerciseId: data.sessionExerciseId ?? '',
       exerciseId: ex?.exerciseId ?? '',
@@ -90,7 +99,9 @@ export function getExerciseQualityScore(
 }
 
 /** Session-level average exercise quality (single number). */
-export function getSessionExerciseQualityAvg(session: ExtendedPatientSession): number {
+export function getSessionExerciseQualityAvg(
+  session: ExtendedPatientSession,
+): number {
   const perEx = getExerciseQualityScore(session)
   if (perEx.length === 0) return 0
   return perEx.reduce((a, b) => a + b.avgProgressPct, 0) / perEx.length
@@ -98,16 +109,26 @@ export function getSessionExerciseQualityAvg(session: ExtendedPatientSession): n
 
 /** Peak capability: best rep score per exercise and for session. */
 export function getPeakCapability(session: ExtendedPatientSession): {
-  perExercise: { sessionExerciseId: string; exerciseId: string; bestPct: number }[]
+  perExercise: {
+    sessionExerciseId: string
+    exerciseId: string
+    bestPct: number
+  }[]
   sessionBest: number
 } {
-  const perExercise: { sessionExerciseId: string; exerciseId: string; bestPct: number }[] = []
+  const perExercise: {
+    sessionExerciseId: string
+    exerciseId: string
+    bestPct: number
+  }[] = []
   let sessionBest = 0
   for (const data of session.sessionData ?? []) {
     const scores = getRepScoresByExercise(data.value).map((r) => r.score)
     if (scores.length === 0) continue
     const best = Math.max(...scores)
-    const ex = session.sessionExercise?.find((e) => e.id === data.sessionExerciseId)
+    const ex = session.sessionExercise?.find(
+      (e) => e.id === data.sessionExerciseId,
+    )
     perExercise.push({
       sessionExerciseId: data.sessionExerciseId ?? '',
       exerciseId: ex?.exerciseId ?? '',
@@ -141,15 +162,26 @@ export function getStabilityScore(
   session: ExtendedPatientSession,
   mode: StabilityMode,
 ): {
-  perExercise: { sessionExerciseId: string; exerciseId: string; value: number }[]
+  perExercise: {
+    sessionExerciseId: string
+    exerciseId: string
+    value: number
+  }[]
   sessionValue: number
 } {
-  const perExercise: { sessionExerciseId: string; exerciseId: string; value: number }[] = []
+  const perExercise: {
+    sessionExerciseId: string
+    exerciseId: string
+    value: number
+  }[] = []
   const allScores: number[] = []
   for (const data of session.sessionData ?? []) {
     const scores = getRepScoresByExercise(data.value).map((r) => r.score)
-    const value = mode === 'sd' ? stdDev(scores) : coefficientOfVariation(scores)
-    const ex = session.sessionExercise?.find((e) => e.id === data.sessionExerciseId)
+    const value =
+      mode === 'sd' ? stdDev(scores) : coefficientOfVariation(scores)
+    const ex = session.sessionExercise?.find(
+      (e) => e.id === data.sessionExerciseId,
+    )
     perExercise.push({
       sessionExerciseId: data.sessionExerciseId ?? '',
       exerciseId: ex?.exerciseId ?? '',
@@ -174,14 +206,24 @@ export function getFatigueIndex(
   session: ExtendedPatientSession,
   mode: FatigueMode,
 ): {
-  perExercise: { sessionExerciseId: string; exerciseId: string; dropOffPct: number }[]
+  perExercise: {
+    sessionExerciseId: string
+    exerciseId: string
+    dropOffPct: number
+  }[]
   sessionDropOffPct: number
 } {
-  const perExercise: { sessionExerciseId: string; exerciseId: string; dropOffPct: number }[] = []
+  const perExercise: {
+    sessionExerciseId: string
+    exerciseId: string
+    dropOffPct: number
+  }[] = []
 
   for (const data of session.sessionData ?? []) {
     const points = parseSessionDataValue(data.value)
-    const ex = session.sessionExercise?.find((e) => e.id === data.sessionExerciseId)
+    const ex = session.sessionExercise?.find(
+      (e) => e.id === data.sessionExerciseId,
+    )
 
     if (mode === 'within-set') {
       const setKeys = new Set<string>()
@@ -189,7 +231,10 @@ export function getFatigueIndex(
       const setDropOffs: number[] = []
       for (const setKey of setKeys) {
         const byRep = points
-          .map((p) => ({ rep: (p as { rep?: number }).rep ?? 0, v: (p as Record<string, number>)[setKey] as number }))
+          .map((p) => ({
+            rep: (p as { rep?: number }).rep ?? 0,
+            v: (p as Record<string, number>)[setKey] as number,
+          }))
           .filter((x) => typeof x.v === 'number')
           .sort((a, b) => a.rep - b.rep)
         const n = byRep.length
@@ -230,7 +275,8 @@ export function getFatigueIndex(
         scores.slice(0, firstCount).reduce((a, b) => a + b, 0) / firstCount
       const lastAvg =
         scores.slice(-lastCount).reduce((a, b) => a + b, 0) / lastCount
-      const dropOffPct = firstAvg > 0 ? ((firstAvg - lastAvg) / firstAvg) * 100 : 0
+      const dropOffPct =
+        firstAvg > 0 ? ((firstAvg - lastAvg) / firstAvg) * 100 : 0
       perExercise.push({
         sessionExerciseId: data.sessionExerciseId ?? '',
         exerciseId: ex?.exerciseId ?? '',
@@ -253,17 +299,27 @@ export function getFatigueIndex(
  * Positive = improving (warm-up/motor learning), negative = declining (fatigue).
  */
 export function getSetToSetAdaptation(session: ExtendedPatientSession): {
-  perExercise: { sessionExerciseId: string; exerciseId: string; pctChange: number }[]
+  perExercise: {
+    sessionExerciseId: string
+    exerciseId: string
+    pctChange: number
+  }[]
   sessionPctChange: number
 } {
-  const perExercise: { sessionExerciseId: string; exerciseId: string; pctChange: number }[] = []
+  const perExercise: {
+    sessionExerciseId: string
+    exerciseId: string
+    pctChange: number
+  }[] = []
   const setChanges: number[] = []
 
   for (const data of session.sessionData ?? []) {
     const points = parseSessionDataValue(data.value)
     const setKeys = getScoreKeys(points[0] ?? {})
     if (setKeys.length < 2) {
-      const ex = session.sessionExercise?.find((e) => e.id === data.sessionExerciseId)
+      const ex = session.sessionExercise?.find(
+        (e) => e.id === data.sessionExerciseId,
+      )
       perExercise.push({
         sessionExerciseId: data.sessionExerciseId ?? '',
         exerciseId: ex?.exerciseId ?? '',
@@ -288,7 +344,9 @@ export function getSetToSetAdaptation(session: ExtendedPatientSession): {
     const lastSet = setAvgs[setAvgs.length - 1]
     const pctChange =
       firstSet !== 0 ? ((lastSet - firstSet) / firstSet) * 100 : 0
-    const ex = session.sessionExercise?.find((e) => e.id === data.sessionExerciseId)
+    const ex = session.sessionExercise?.find(
+      (e) => e.id === data.sessionExerciseId,
+    )
     perExercise.push({
       sessionExerciseId: data.sessionExerciseId ?? '',
       exerciseId: ex?.exerciseId ?? '',
@@ -334,7 +392,9 @@ export function getDoseTrend(
 }
 
 /** Session duration in minutes (completedAt - createdAt). */
-export function getSessionDurationMinutes(session: ExtendedPatientSession): number | null {
+export function getSessionDurationMinutes(
+  session: ExtendedPatientSession,
+): number | null {
   if (!session.completedAt || !session.createdAt) return null
   const start = new Date(session.createdAt).getTime()
   const end = new Date(session.completedAt).getTime()
@@ -369,7 +429,12 @@ export function getVisitConsistency(
   gapThresholdDays: number,
 ): {
   avgDaysBetween: number | null
-  gaps: { prevCompletedAt: Date; nextCompletedAt: Date; daysBetween: number; nextSessionId: string }[]
+  gaps: {
+    prevCompletedAt: Date
+    nextCompletedAt: Date
+    daysBetween: number
+    nextSessionId: string
+  }[]
 } {
   const completed = sessions
     .filter((s) => s.completedAt != null)
@@ -390,7 +455,12 @@ export function getVisitConsistency(
   }
 
   let totalDays = 0
-  const gaps: { prevCompletedAt: Date; nextCompletedAt: Date; daysBetween: number; nextSessionId: string }[] = []
+  const gaps: {
+    prevCompletedAt: Date
+    nextCompletedAt: Date
+    daysBetween: number
+    nextSessionId: string
+  }[] = []
   for (let i = 1; i < uniqueDays.length; i++) {
     const prev = uniqueDays[i - 1].completedAt.getTime()
     const next = uniqueDays[i].completedAt.getTime()

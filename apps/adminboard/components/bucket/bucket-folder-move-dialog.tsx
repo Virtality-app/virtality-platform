@@ -39,9 +39,9 @@ export function BucketFolderMoveDialog({
 }: BucketFolderMoveDialogProps) {
   const [destinationPrefix, setDestinationPrefix] = useState('')
   const [validationError, setValidationError] = useState<string | null>(null)
-  const [operationOutcome, setOperationOutcome] = useState<
-    Awaited<ReturnType<ReturnType<typeof useMoveBucketFolder>['mutateAsync']>> | null
-  >(null)
+  const [operationOutcome, setOperationOutcome] = useState<Awaited<
+    ReturnType<ReturnType<typeof useMoveBucketFolder>['mutateAsync']>
+  > | null>(null)
 
   const previewQuery = useBucketFolderPreview(
     open && folder ? folder.prefix : null,
@@ -84,7 +84,9 @@ export function BucketFolderMoveDialog({
 
   const handleMove = async () => {
     if (!folder || destinationError) {
-      setValidationError(destinationError ?? 'Invalid destination folder prefix.')
+      setValidationError(
+        destinationError ?? 'Invalid destination folder prefix.',
+      )
       return
     }
 

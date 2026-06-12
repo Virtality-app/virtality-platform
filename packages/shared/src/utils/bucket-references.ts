@@ -32,9 +32,7 @@ export type BucketFolderPreviewOutcome = {
 }
 
 export type BucketReferenceReader = {
-  findExerciseReferences: (
-    lookupValues: string[],
-  ) => Promise<
+  findExerciseReferences: (lookupValues: string[]) => Promise<
     Array<{
       id: string
       displayName: string
@@ -42,36 +40,28 @@ export type BucketReferenceReader = {
       video: string | null
     }>
   >
-  findAvatarReferences: (
-    lookupValues: string[],
-  ) => Promise<
+  findAvatarReferences: (lookupValues: string[]) => Promise<
     Array<{
       id: string
       name: string
       image: string | null
     }>
   >
-  findMapReferences: (
-    lookupValues: string[],
-  ) => Promise<
+  findMapReferences: (lookupValues: string[]) => Promise<
     Array<{
       id: string
       name: string
       image: string | null
     }>
   >
-  findPatientReferences: (
-    lookupValues: string[],
-  ) => Promise<
+  findPatientReferences: (lookupValues: string[]) => Promise<
     Array<{
       id: string
       name: string
       image: string | null
     }>
   >
-  findUserReferences: (
-    lookupValues: string[],
-  ) => Promise<
+  findUserReferences: (lookupValues: string[]) => Promise<
     Array<{
       id: string
       name: string

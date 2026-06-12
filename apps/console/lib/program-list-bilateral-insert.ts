@@ -1,5 +1,8 @@
 import type { CompleteExercise } from '@/types/models'
-import { parseNearTermDirection, type NearTermDirection } from '@virtality/shared/utils'
+import {
+  parseNearTermDirection,
+  type NearTermDirection,
+} from '@virtality/shared/utils'
 
 /**
  * Insert a missing near-term sibling so Left/Right variants stay adjacent for

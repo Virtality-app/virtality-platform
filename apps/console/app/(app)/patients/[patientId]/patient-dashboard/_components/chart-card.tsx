@@ -1,4 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@virtality/ui/components/card'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@virtality/ui/components/card'
 import Chart from '@/components/ui/progress-chart'
 import { usePatientDashboard } from '@/context/patient-dashboard-context'
 import { useExercise } from '@virtality/react-query'

@@ -12,7 +12,10 @@ function row(direction: string, id = 'r1'): CompleteExercise {
     holdTime: 1,
     speed: 1,
     romMode: 0,
-    exercise: { displayName: 'Press', direction } as CompleteExercise['exercise'],
+    exercise: {
+      displayName: 'Press',
+      direction,
+    } as CompleteExercise['exercise'],
   }
 }
 

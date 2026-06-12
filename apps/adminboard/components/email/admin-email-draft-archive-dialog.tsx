@@ -28,7 +28,9 @@ export const AdminEmailDraftArchiveDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{ADMIN_EMAIL_DRAFT_ARCHIVE_DIALOG_COPY.title}</DialogTitle>
+          <DialogTitle>
+            {ADMIN_EMAIL_DRAFT_ARCHIVE_DIALOG_COPY.title}
+          </DialogTitle>
           <DialogDescription>
             {ADMIN_EMAIL_DRAFT_ARCHIVE_DIALOG_COPY.description}
           </DialogDescription>

@@ -23,7 +23,11 @@ interface SessionsTableProps {
   sessions?: ExtendedPatientSession[] | null
 }
 
-const SessionsTable = ({ patientId, onSessionSelect, sessions: sessionsProp }: SessionsTableProps) => {
+const SessionsTable = ({
+  patientId,
+  onSessionSelect,
+  sessions: sessionsProp,
+}: SessionsTableProps) => {
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState('')
   const [rowSelection, setRowSelection] = useState({})
@@ -38,7 +42,8 @@ const SessionsTable = ({ patientId, onSessionSelect, sessions: sessionsProp }: S
     },
   })
 
-  const tableData = sessionsProp !== undefined ? (sessionsProp ?? []) : (fetchedSessions ?? [])
+  const tableData =
+    sessionsProp !== undefined ? (sessionsProp ?? []) : (fetchedSessions ?? [])
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({

@@ -58,10 +58,10 @@ describe('familyMemberForNearTermDirection', () => {
 describe('libraryFamilySelectionState', () => {
   it('reports partial when only one bilateral variant is selected', () => {
     expect(
-      libraryFamilySelectionState(
-        [{ id: 'pl' }, { id: 'pr' }],
-        { pl: true, pr: false },
-      ),
+      libraryFamilySelectionState([{ id: 'pl' }, { id: 'pr' }], {
+        pl: true,
+        pr: false,
+      }),
     ).toBe('partial')
   })
 })

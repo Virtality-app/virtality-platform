@@ -89,7 +89,12 @@ export const AdminEmailDraftHeaderMenu = ({
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button type='button' variant='outline' size='icon' aria-label='Draft actions'>
+        <Button
+          type='button'
+          variant='outline'
+          size='icon'
+          aria-label='Draft actions'
+        >
           <MoreHorizontal className='size-4' />
         </Button>
       </DropdownMenuTrigger>

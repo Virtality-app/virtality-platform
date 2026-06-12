@@ -36,7 +36,9 @@ describe('admin email persistence helpers', () => {
   })
 
   it('rejects invalid email body block JSON', () => {
-    expect(() => parseEmailBodyBlocksJson('not-json')).toThrow(/invalid email body blocks json/i)
+    expect(() => parseEmailBodyBlocksJson('not-json')).toThrow(
+      /invalid email body blocks json/i,
+    )
     expect(() => parseEmailBodyBlocksJson('{"type":"heading"}')).toThrow(
       /invalid email body blocks json/i,
     )

@@ -15,7 +15,9 @@ const ExtendedUserSchema = UserSchema.extend({
 
 const stripCdnPrefix = (imageUrl: string) => {
   const cdnPrefix = `${CDN_URL}/`
-  return imageUrl.startsWith(cdnPrefix) ? imageUrl.slice(cdnPrefix.length) : imageUrl
+  return imageUrl.startsWith(cdnPrefix)
+    ? imageUrl.slice(cdnPrefix.length)
+    : imageUrl
 }
 
 export const updateUserInfo = authed

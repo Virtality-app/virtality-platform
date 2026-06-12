@@ -1,5 +1,8 @@
 import EmailVerification from '@virtality/ui/components/email/email-verification'
-import { reactToHTML, toPlainText } from '@virtality/ui/components/email/react-to-html'
+import {
+  reactToHTML,
+  toPlainText,
+} from '@virtality/ui/components/email/react-to-html'
 import { nodemailer } from '../init.js'
 import type { EmailData } from '../types/auth.js'
 

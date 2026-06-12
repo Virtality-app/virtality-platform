@@ -123,10 +123,7 @@
   ],
   "refresh": "10s",
   "schemaVersion": 41,
-  "tags": [
-    "logs",
-    "observability"
-  ],
+  "tags": ["logs", "observability"],
   "templating": {
     "list": []
   },

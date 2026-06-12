@@ -31,10 +31,10 @@ For row-scoped actions (bucket browser), use `useDropdownMenuAction(item)` which
 
 ## Where this is applied
 
-| Location | Hook / helper |
-| --- | --- |
-| `components/bucket/bucket-browser.tsx` | `useDropdownMenuAction` |
-| `components/email/admin-email-draft-header-menu.tsx` | `useDropdownMenu` |
+| Location                                             | Hook / helper           |
+| ---------------------------------------------------- | ----------------------- |
+| `components/bucket/bucket-browser.tsx`               | `useDropdownMenuAction` |
+| `components/email/admin-email-draft-header-menu.tsx` | `useDropdownMenu`       |
 
 ## Checklist for new dropdown + dialog UI
 

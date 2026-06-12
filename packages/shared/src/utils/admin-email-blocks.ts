@@ -44,7 +44,9 @@ export const validateEmailBodyBlock = (
       if (!hasText(parsed.data.label)) {
         return 'button label is required'
       }
-      return isHttpUrl(parsed.data.href) ? null : 'button href must be a valid URL'
+      return isHttpUrl(parsed.data.href)
+        ? null
+        : 'button href must be a valid URL'
     case 'list': {
       const items = parsed.data.items.map((item) => item.trim()).filter(Boolean)
       return items.length > 0 ? null : 'at least one list item is required'
@@ -141,7 +143,9 @@ export const hasMeaningfulEmailBodyContent = (
 export const validateEmailRecipientList = (
   recipients: string[],
 ): string | null => {
-  const normalized = recipients.map((recipient) => recipient.trim()).filter(Boolean)
+  const normalized = recipients
+    .map((recipient) => recipient.trim())
+    .filter(Boolean)
 
   if (normalized.length === 0) {
     return 'recipient list is required'

@@ -42,12 +42,10 @@ describe('program list deferred removal', () => {
 
   it('aggregates segment checkboxes from enabled members only', () => {
     const deferred = toDeferredRemovalIdSet(['left'])
-    expect(
-      segmentCheckboxChecked(['left', 'right'], ['right'], deferred),
-    ).toBe(true)
-    expect(
-      segmentCheckboxChecked(['left', 'right'], [], deferred),
-    ).toBe(false)
+    expect(segmentCheckboxChecked(['left', 'right'], ['right'], deferred)).toBe(
+      true,
+    )
+    expect(segmentCheckboxChecked(['left', 'right'], [], deferred)).toBe(false)
     expect(
       segmentCheckboxChecked(
         ['left', 'right'],
@@ -60,16 +58,17 @@ describe('program list deferred removal', () => {
 
   it('requires every selectable row for global check', () => {
     const deferred = toDeferredRemovalIdSet(['left'])
-    expect(
-      isGlobalCheckSatisfied(rows, ['right', 'solo'], deferred),
-    ).toBe(true)
+    expect(isGlobalCheckSatisfied(rows, ['right', 'solo'], deferred)).toBe(true)
     expect(isGlobalCheckSatisfied(rows, ['right'], deferred)).toBe(false)
   })
 
   it('prunes markers when rows are removed from the list', () => {
     const deferred = toDeferredRemovalIdSet(['left', 'gone'])
     expect(
-      pruneDeferredRemovalIds(deferred, toDeferredRemovalIdSet(['left', 'right'])),
+      pruneDeferredRemovalIds(
+        deferred,
+        toDeferredRemovalIdSet(['left', 'right']),
+      ),
     ).toEqual(['left'])
   })
 })

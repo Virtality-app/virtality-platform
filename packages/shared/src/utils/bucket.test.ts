@@ -555,7 +555,10 @@ describe('collectObjectKeysUnderPrefix', () => {
 
     const objectKeys = await collectObjectKeysUnderPrefix(s3, 'images/')
 
-    expect(objectKeys).toEqual(['images/photo.jpg', 'images/thumbs/preview.jpg'])
+    expect(objectKeys).toEqual([
+      'images/photo.jpg',
+      'images/thumbs/preview.jpg',
+    ])
     expect(s3.listAllUnderPrefix).toHaveBeenCalledTimes(2)
   })
 })
@@ -622,7 +625,9 @@ describe('moveFolderPrefix', () => {
       destinationKey: 'videos/new/one.jpg',
     })
     expect(s3.deleteFile).toHaveBeenCalledWith({ Key: 'images/old/one.jpg' })
-    expect(s3.deleteFile).not.toHaveBeenCalledWith({ Key: 'images/old/two.jpg' })
+    expect(s3.deleteFile).not.toHaveBeenCalledWith({
+      Key: 'images/old/two.jpg',
+    })
   })
 })
 

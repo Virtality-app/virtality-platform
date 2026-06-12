@@ -79,8 +79,8 @@ export const ProductUpdateV0109 = ({
         </Section>
 
         <Text style={{ ...paragraph, marginTop: '28px', marginBottom: '0' }}>
-          Thanks for building with us. We will keep shipping improvements to help
-          your team move faster.
+          Thanks for building with us. We will keep shipping improvements to
+          help your team move faster.
         </Text>
         <Text style={{ ...paragraph, marginTop: '8px', marginBottom: '0' }}>
           - The {companyName} team

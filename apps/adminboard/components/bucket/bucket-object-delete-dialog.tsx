@@ -86,7 +86,9 @@ export function BucketObjectDeleteDialog({
 
             <div className='flex flex-col gap-1'>
               <p className='text-sm font-medium'>{object.name}</p>
-              <p className='font-mono text-xs text-zinc-500'>{object.objectKey}</p>
+              <p className='font-mono text-xs text-zinc-500'>
+                {object.objectKey}
+              </p>
             </div>
 
             <BucketReferencedObjectWarning

@@ -62,13 +62,13 @@ function DetailRow({
 }) {
   return (
     <div className='flex flex-col gap-1'>
-      <dt className='text-xs font-medium uppercase tracking-wide text-zinc-500'>
+      <dt className='text-xs font-medium tracking-wide text-zinc-500 uppercase'>
         {label}
       </dt>
       <dd
         className={
           mono
-            ? 'break-all font-mono text-xs text-zinc-700 dark:text-zinc-200'
+            ? 'font-mono text-xs break-all text-zinc-700 dark:text-zinc-200'
             : 'text-sm text-zinc-900 dark:text-zinc-100'
         }
       >
@@ -98,7 +98,9 @@ export function BucketObjectDetailsDialog({
           <div className='flex flex-col gap-4'>
             <div className='flex flex-col gap-1'>
               <p className='text-sm font-medium'>{object.name}</p>
-              <p className='font-mono text-xs text-zinc-500'>{object.objectKey}</p>
+              <p className='font-mono text-xs text-zinc-500'>
+                {object.objectKey}
+              </p>
             </div>
 
             {detailsQuery.isLoading ? (
@@ -143,7 +145,11 @@ export function BucketObjectDetailsDialog({
                   value={formatDetailValue(detailsQuery.data.etag)}
                   mono
                 />
-                <DetailRow label='CDN URL' value={detailsQuery.data.cdnUrl} mono />
+                <DetailRow
+                  label='CDN URL'
+                  value={detailsQuery.data.cdnUrl}
+                  mono
+                />
               </dl>
             ) : null}
           </div>

@@ -45,7 +45,9 @@ export const AdminEmailSentRecordView = ({
     return (
       <Card>
         <CardContent className='py-12'>
-          <p className='text-muted-foreground text-center'>Loading sent record...</p>
+          <p className='text-muted-foreground text-center'>
+            Loading sent record...
+          </p>
         </CardContent>
       </Card>
     )
@@ -91,7 +93,11 @@ export const AdminEmailSentRecordView = ({
             </p>
           </div>
 
-          <Button type='button' variant='outline' onClick={() => void handleClone()}>
+          <Button
+            type='button'
+            variant='outline'
+            onClick={() => void handleClone()}
+          >
             <Copy className='mr-2 size-4' />
             Clone into new draft
           </Button>
@@ -122,7 +128,9 @@ export const AdminEmailSentRecordView = ({
       <Card>
         <CardHeader>
           <CardTitle>Delivery results</CardTitle>
-          <CardDescription>Per-recipient outcomes from final send.</CardDescription>
+          <CardDescription>
+            Per-recipient outcomes from final send.
+          </CardDescription>
         </CardHeader>
         <CardContent className='space-y-2'>
           {sentRecord.deliveryResults.map((result) => (
@@ -132,7 +140,9 @@ export const AdminEmailSentRecordView = ({
             >
               <span>{result.recipientEmail}</span>
               <div className='flex items-center gap-2'>
-                <Badge variant={result.status === 'sent' ? 'secondary' : 'outline'}>
+                <Badge
+                  variant={result.status === 'sent' ? 'secondary' : 'outline'}
+                >
                   {result.status}
                 </Badge>
                 {result.errorMessage ? (

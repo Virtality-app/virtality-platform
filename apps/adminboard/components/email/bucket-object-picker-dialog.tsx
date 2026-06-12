@@ -109,7 +109,9 @@ export const BucketObjectPickerDialog = ({
 
         <div className='max-h-[50vh] space-y-2 overflow-y-auto'>
           {isLoading ? (
-            <p className='text-muted-foreground text-sm'>Loading bucket objects...</p>
+            <p className='text-muted-foreground text-sm'>
+              Loading bucket objects...
+            </p>
           ) : !hasResults ? (
             <p className='text-muted-foreground text-sm'>
               No folders or image objects found in this location.

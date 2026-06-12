@@ -21,7 +21,7 @@ TanStack Query hooks and provider for the Virtality oRPC API. Use this package i
    export default function RootLayout({ children }) {
      return (
        <QueryProvider>
-         <ORPCProvider url={baseURL + ORPC_PREFIX} credentials="include">
+         <ORPCProvider url={baseURL + ORPC_PREFIX} credentials='include'>
            {children}
          </ORPCProvider>
        </QueryProvider>
@@ -32,7 +32,11 @@ TanStack Query hooks and provider for the Virtality oRPC API. Use this package i
 3. **Use the hooks** anywhere in your app (they read orpc from context):
 
    ```tsx
-   import { usePatients, usePatient, useCreatePatientSession } from '@virtality/react-query'
+   import {
+     usePatients,
+     usePatient,
+     useCreatePatientSession,
+   } from '@virtality/react-query'
    ```
 
 ## Alternative: client-only (configureORPC)

@@ -14,7 +14,5 @@ export function useDeletePatientSession({
   onSuccess,
 }: UseDeletePatientSessionProps = {}) {
   const orpc = useORPC()
-  return useMutation(
-    orpc.patientSession.delete.mutationOptions({ onSuccess }),
-  )
+  return useMutation(orpc.patientSession.delete.mutationOptions({ onSuccess }))
 }

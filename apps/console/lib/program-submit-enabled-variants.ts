@@ -13,9 +13,7 @@ export function enabledVariantsForSubmit<T extends { id: string }>(
 ): T[] {
   const deferred = toDeferredRemovalIdSet(deferredRemovalIds)
 
-  return variants.filter(
-    (variant) => !isDeferredRemoval(deferred, variant.id),
-  )
+  return variants.filter((variant) => !isDeferredRemoval(deferred, variant.id))
 }
 
 export function hasEnabledVariantsForSubmit<T extends { id: string }>(
@@ -31,8 +29,10 @@ export function programExercisesForEditSubmit<T extends { id: string }>(
   deferredRemovalIds: readonly string[],
   programId: string,
 ): Array<T & { programId: string }> {
-  return enabledVariantsForSubmit(variants, deferredRemovalIds).map((variant) => ({
-    ...variant,
-    programId,
-  }))
+  return enabledVariantsForSubmit(variants, deferredRemovalIds).map(
+    (variant) => ({
+      ...variant,
+      programId,
+    }),
+  )
 }

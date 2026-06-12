@@ -158,6 +158,10 @@ describe('filterExercisesForLibrary', () => {
       searchTerm: '',
       ...noFav,
     })
-    expect(r.map((e) => e.name)).toEqual(['band pull', 'curl', 'shoulder press'])
+    expect(r.map((e) => e.name)).toEqual([
+      'band pull',
+      'curl',
+      'shoulder press',
+    ])
   })
 })

@@ -72,7 +72,8 @@ export const validateDraftBodyBlocksInput = (
 const bodyBlocksEqual = (
   left: EmailBodyBlock[],
   right: EmailBodyBlock[],
-): boolean => serializeEmailBodyBlocksJson(left) === serializeEmailBodyBlocksJson(right)
+): boolean =>
+  serializeEmailBodyBlocksJson(left) === serializeEmailBodyBlocksJson(right)
 
 const recipientsEqual = (left: string[], right: string[]): boolean => {
   if (left.length !== right.length) {

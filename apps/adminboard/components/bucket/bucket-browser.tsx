@@ -137,7 +137,10 @@ function FolderActions({
           <Ellipsis />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align='end' onClick={(event) => event.stopPropagation()}>
+      <DropdownMenuContent
+        align='end'
+        onClick={(event) => event.stopPropagation()}
+      >
         <DropdownMenuItem onSelect={openDialogAction(onRename)}>
           <Pencil />
           Rename
@@ -230,15 +233,21 @@ function ObjectActions({
 const BucketBrowser = () => {
   const mounted = useMounted()
   const [prefix, setPrefix] = useState('')
-  const [continuationToken, setContinuationToken] = useState<string | undefined>()
+  const [continuationToken, setContinuationToken] = useState<
+    string | undefined
+  >()
   const [search, setSearch] = useState('')
   const [rows, setRows] = useState<BucketRowsState>(emptyRows)
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false)
   const [renameObject, setRenameObject] = useState<BucketObjectRow | null>(null)
   const [moveObject, setMoveObject] = useState<BucketObjectRow | null>(null)
-  const [replaceObject, setReplaceObject] = useState<BucketObjectRow | null>(null)
+  const [replaceObject, setReplaceObject] = useState<BucketObjectRow | null>(
+    null,
+  )
   const [deleteObject, setDeleteObject] = useState<BucketObjectRow | null>(null)
-  const [detailsObject, setDetailsObject] = useState<BucketObjectRow | null>(null)
+  const [detailsObject, setDetailsObject] = useState<BucketObjectRow | null>(
+    null,
+  )
   const [renameFolder, setRenameFolder] = useState<BucketFolderRow | null>(null)
   const [moveFolder, setMoveFolder] = useState<BucketFolderRow | null>(null)
   const [deleteFolder, setDeleteFolder] = useState<BucketFolderRow | null>(null)
@@ -347,7 +356,10 @@ const BucketBrowser = () => {
           return (
             <div key={crumb.prefix} className='flex items-center gap-1'>
               {index > 0 && (
-                <ChevronRight className='size-4 text-zinc-400' aria-hidden='true' />
+                <ChevronRight
+                  className='size-4 text-zinc-400'
+                  aria-hidden='true'
+                />
               )}
               <button
                 type='button'
@@ -397,7 +409,9 @@ const BucketBrowser = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {isLoading && rows.folders.length === 0 && rows.objects.length === 0 ? (
+            {isLoading &&
+            rows.folders.length === 0 &&
+            rows.objects.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className='py-10 text-center'>
                   <Spinner />
@@ -409,7 +423,10 @@ const BucketBrowser = () => {
             filteredFolders.length === 0 &&
             filteredObjects.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className='py-10 text-center text-zinc-500'>
+                <TableCell
+                  colSpan={7}
+                  className='py-10 text-center text-zinc-500'
+                >
                   No folders or bucket objects in this location.
                 </TableCell>
               </TableRow>
@@ -422,7 +439,10 @@ const BucketBrowser = () => {
                 onClick={() => setPrefix(folder.prefix)}
               >
                 <TableCell>
-                  <Folder className='size-8 text-amber-500' aria-hidden='true' />
+                  <Folder
+                    className='size-8 text-amber-500'
+                    aria-hidden='true'
+                  />
                 </TableCell>
                 <TableCell className='font-medium'>{folder.name}</TableCell>
                 <TableCell>Folder</TableCell>
@@ -568,7 +588,9 @@ const BucketBrowser = () => {
           <Button
             variant='outline'
             disabled={isFetching}
-            onClick={() => setContinuationToken(rows.nextContinuationToken ?? undefined)}
+            onClick={() =>
+              setContinuationToken(rows.nextContinuationToken ?? undefined)
+            }
           >
             {isFetching ? <Spinner /> : 'Load more'}
           </Button>

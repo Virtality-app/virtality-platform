@@ -8,16 +8,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@virtality/ui/components/input'
-import { BLOCK_TYPE_LABELS, createEmailBodyBlock } from '@/lib/admin-email-blocks'
+import {
+  BLOCK_TYPE_LABELS,
+  createEmailBodyBlock,
+} from '@/lib/admin-email-blocks'
 import type { EmailBodyBlock } from '@virtality/shared/types'
 import { bucketCdnUrl } from '@virtality/shared/utils'
-import {
-  ArrowDown,
-  ArrowUp,
-  ImageIcon,
-  Plus,
-  Trash2,
-} from 'lucide-react'
+import { ArrowDown, ArrowUp, ImageIcon, Plus, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import { useState } from 'react'
 import { BucketObjectPickerDialog } from './bucket-object-picker-dialog'
@@ -48,16 +45,20 @@ const updateBlock = (
   blocks: EmailBodyBlock[],
   index: number,
   block: EmailBodyBlock,
-): EmailBodyBlock[] => blocks.map((current, currentIndex) => (currentIndex === index ? block : current))
+): EmailBodyBlock[] =>
+  blocks.map((current, currentIndex) =>
+    currentIndex === index ? block : current,
+  )
 
 export const EmailBlockBuilder = ({
   blocks,
   onChange,
   disabled = false,
 }: EmailBlockBuilderProps) => {
-  const [pickerTarget, setPickerTarget] = useState<
-    { index: number; field: 'image' | 'cardImage' } | null
-  >(null)
+  const [pickerTarget, setPickerTarget] = useState<{
+    index: number
+    field: 'image' | 'cardImage'
+  } | null>(null)
 
   const addBlock = (type: EmailBodyBlock['type']) => {
     onChange([...blocks, createEmailBodyBlock(type)])
@@ -79,7 +80,9 @@ export const EmailBlockBuilder = ({
       {blocks.map((block, index) => (
         <div key={block.id} className='rounded-lg border p-4'>
           <div className='mb-3 flex items-center justify-between gap-2'>
-            <p className='text-sm font-medium'>{BLOCK_TYPE_LABELS[block.type]}</p>
+            <p className='text-sm font-medium'>
+              {BLOCK_TYPE_LABELS[block.type]}
+            </p>
             <div className='flex items-center gap-1'>
               <Button
                 type='button'
@@ -186,7 +189,9 @@ export const EmailBlockBuilder = ({
                 ) : null}
               </div>
               {block.objectKey ? (
-                <p className='font-mono text-xs text-zinc-500'>{block.objectKey}</p>
+                <p className='font-mono text-xs text-zinc-500'>
+                  {block.objectKey}
+                </p>
               ) : null}
               <Input
                 value={block.alt}

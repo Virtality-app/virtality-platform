@@ -14,7 +14,5 @@ export function useCreatePatientSession({
   onSuccess,
 }: UseCreatePatientSessionProps = {}) {
   const orpc = useORPC()
-  return useMutation(
-    orpc.patientSession.create.mutationOptions({ onSuccess }),
-  )
+  return useMutation(orpc.patientSession.create.mutationOptions({ onSuccess }))
 }

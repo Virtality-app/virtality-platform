@@ -159,8 +159,7 @@ const moveBucket = authed
       })
 
       throw new ORPCError('BAD_REQUEST', {
-        message:
-          error instanceof Error ? error.message : 'Bucket move failed',
+        message: error instanceof Error ? error.message : 'Bucket move failed',
       })
     }
   })
@@ -322,8 +321,7 @@ const moveBucketFolder = authed
       })
 
       throw new ORPCError('BAD_REQUEST', {
-        message:
-          error instanceof Error ? error.message : 'Folder move failed',
+        message: error instanceof Error ? error.message : 'Folder move failed',
       })
     }
   })

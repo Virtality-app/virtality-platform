@@ -31,7 +31,9 @@ export const SystemEmailsPanel = () => {
   const { data: preview } = useEmailTemplatePreview(selectedId)
   const sendEmailMutation = useSendEmailTemplate()
 
-  const selectedTemplate = templates?.find((template) => template.id === selectedId)
+  const selectedTemplate = templates?.find(
+    (template) => template.id === selectedId,
+  )
 
   const handleSelectTemplate = (id: string) => {
     setSelectedId(id)
@@ -137,7 +139,9 @@ export const SystemEmailsPanel = () => {
                     Subject
                   </label>
                   <p className='mt-1 text-lg font-medium'>
-                    {detailLoading ? '...' : (preview?.subject ?? templateDetail?.subject ?? '-')}
+                    {detailLoading
+                      ? '...'
+                      : (preview?.subject ?? templateDetail?.subject ?? '-')}
                   </p>
                 </div>
                 <div className='bg-muted/50 mt-2 min-h-[300px] flex-1 rounded-lg border p-4'>
@@ -150,7 +154,9 @@ export const SystemEmailsPanel = () => {
                       title='Email preview'
                     />
                   ) : (
-                    <p className='text-muted-foreground'>No preview available</p>
+                    <p className='text-muted-foreground'>
+                      No preview available
+                    </p>
                   )}
                 </div>
               </CardContent>
@@ -180,7 +186,9 @@ export const SystemEmailsPanel = () => {
                       type='text'
                       placeholder='recipient@example.com'
                       value={recipientEmail}
-                      onChange={(event) => setRecipientEmail(event.target.value)}
+                      onChange={(event) =>
+                        setRecipientEmail(event.target.value)
+                      }
                       className='w-full'
                       required
                     />

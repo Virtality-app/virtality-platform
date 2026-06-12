@@ -5,4 +5,3 @@ export const useSendEmailTemplate = () => {
   const orpc = useORPC()
   return useMutation(orpc.email.templates.send.mutationOptions())
 }
-

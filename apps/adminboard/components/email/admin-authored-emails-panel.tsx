@@ -35,7 +35,8 @@ export const AdminAuthoredEmailsPanel = () => {
   const { data: drafts, isLoading: draftsLoading } = useAdminEmailDrafts()
   const { data: archivedDrafts, isLoading: archivedDraftsLoading } =
     useAdminEmailArchivedDrafts()
-  const { data: sentRecords, isLoading: sentLoading } = useAdminEmailSentRecords()
+  const { data: sentRecords, isLoading: sentLoading } =
+    useAdminEmailSentRecords()
   const createDraftMutation = useCreateAdminEmailDraft()
   const restoreDraftMutation = useRestoreAdminEmailDraft()
 
@@ -61,7 +62,9 @@ export const AdminAuthoredEmailsPanel = () => {
       setSelection({ kind: 'draft', id: draft.id })
       toast.success('Draft created')
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to create draft')
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to create draft',
+      )
     }
   }
 
@@ -71,14 +74,18 @@ export const AdminAuthoredEmailsPanel = () => {
       setSelection({ kind: 'draft', id: restored.id })
       toast.success('Draft restored')
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to restore draft')
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to restore draft',
+      )
     }
   }
 
   if (draftsLoading || archivedDraftsLoading || sentLoading) {
     return (
       <div className='flex items-center justify-center py-12'>
-        <p className='text-muted-foreground'>Loading admin-authored emails...</p>
+        <p className='text-muted-foreground'>
+          Loading admin-authored emails...
+        </p>
       </div>
     )
   }
@@ -112,7 +119,9 @@ export const AdminAuthoredEmailsPanel = () => {
                   <button
                     key={draft.id}
                     type='button'
-                    onClick={() => setSelection({ kind: 'draft', id: draft.id })}
+                    onClick={() =>
+                      setSelection({ kind: 'draft', id: draft.id })
+                    }
                     className={cn(
                       'hover:bg-accent w-full rounded-lg border p-3 text-left transition-colors',
                       isDraftSelected(draft.id) ? 'bg-accent' : '',
@@ -125,7 +134,11 @@ export const AdminAuthoredEmailsPanel = () => {
                           {draft.subject.trim() || 'Untitled draft'}
                         </p>
                         <p className='text-muted-foreground text-xs'>
-                          Updated {format(new Date(draft.updatedAt), 'MMM d, yyyy HH:mm')}
+                          Updated{' '}
+                          {format(
+                            new Date(draft.updatedAt),
+                            'MMM d, yyyy HH:mm',
+                          )}
                         </p>
                         <div className='flex flex-wrap gap-1'>
                           {draft.isFinalSent ? (
@@ -160,7 +173,9 @@ export const AdminAuthoredEmailsPanel = () => {
                     >
                       <button
                         type='button'
-                        onClick={() => setSelection({ kind: 'draft', id: draft.id })}
+                        onClick={() =>
+                          setSelection({ kind: 'draft', id: draft.id })
+                        }
                         className='min-w-0 flex-1 space-y-1 text-left'
                       >
                         <p className='truncate font-medium'>
@@ -169,7 +184,10 @@ export const AdminAuthoredEmailsPanel = () => {
                         <p className='text-muted-foreground text-xs'>
                           Archived{' '}
                           {draft.archivedAt
-                            ? format(new Date(draft.archivedAt), 'MMM d, yyyy HH:mm')
+                            ? format(
+                                new Date(draft.archivedAt),
+                                'MMM d, yyyy HH:mm',
+                              )
                             : 'recently'}
                         </p>
                         {draft.isFinalSent ? (
@@ -198,12 +216,15 @@ export const AdminAuthoredEmailsPanel = () => {
           <CardHeader>
             <CardTitle>Sent records</CardTitle>
             <CardDescription>
-              Immutable audit trail with rendered snapshots and delivery results.
+              Immutable audit trail with rendered snapshots and delivery
+              results.
             </CardDescription>
           </CardHeader>
           <CardContent>
             {(sentRecords ?? []).length === 0 ? (
-              <p className='text-muted-foreground text-sm'>No sent records yet.</p>
+              <p className='text-muted-foreground text-sm'>
+                No sent records yet.
+              </p>
             ) : (
               <div className='space-y-2'>
                 {(sentRecords ?? []).map((sentRecord) => {
@@ -215,10 +236,13 @@ export const AdminAuthoredEmailsPanel = () => {
                     <button
                       key={sentRecord.id}
                       type='button'
-                      onClick={() => setSelection({ kind: 'sent', id: sentRecord.id })}
+                      onClick={() =>
+                        setSelection({ kind: 'sent', id: sentRecord.id })
+                      }
                       className={cn(
                         'hover:bg-accent w-full rounded-lg border p-3 text-left transition-colors',
-                        selection?.kind === 'sent' && selection.id === sentRecord.id
+                        selection?.kind === 'sent' &&
+                          selection.id === sentRecord.id
                           ? 'bg-accent'
                           : '',
                       )}
@@ -230,9 +254,15 @@ export const AdminAuthoredEmailsPanel = () => {
                             {sentRecord.subject || 'Untitled email'}
                           </p>
                           <p className='text-muted-foreground text-xs'>
-                            Sent {format(new Date(sentRecord.sentAt), 'MMM d, yyyy HH:mm')}
+                            Sent{' '}
+                            {format(
+                              new Date(sentRecord.sentAt),
+                              'MMM d, yyyy HH:mm',
+                            )}
                           </p>
-                          <Badge variant={failedCount > 0 ? 'outline' : 'secondary'}>
+                          <Badge
+                            variant={failedCount > 0 ? 'outline' : 'secondary'}
+                          >
                             {sentRecord.recipients.length} recipients
                             {failedCount > 0 ? `, ${failedCount} failed` : ''}
                           </Badge>
@@ -278,7 +308,9 @@ export const AdminAuthoredEmailsPanel = () => {
             }}
             onCloned={(draftId) => setSelection({ kind: 'draft', id: draftId })}
             onArchived={() => setSelection(null)}
-            onRestored={(draftId) => setSelection({ kind: 'draft', id: draftId })}
+            onRestored={(draftId) =>
+              setSelection({ kind: 'draft', id: draftId })
+            }
             onFinalSent={(sentRecordId) =>
               setSelection({ kind: 'sent', id: sentRecordId })
             }
@@ -286,7 +318,9 @@ export const AdminAuthoredEmailsPanel = () => {
         ) : (
           <Card>
             <CardContent className='py-12'>
-              <p className='text-muted-foreground text-center'>Draft not found.</p>
+              <p className='text-muted-foreground text-center'>
+                Draft not found.
+              </p>
             </CardContent>
           </Card>
         )}

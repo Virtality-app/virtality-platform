@@ -1,5 +1,8 @@
 import WaitingListEmail from '@virtality/ui/components/email/waitinglist-email'
-import { reactToHTML, toPlainText } from '@virtality/ui/components/email/react-to-html'
+import {
+  reactToHTML,
+  toPlainText,
+} from '@virtality/ui/components/email/react-to-html'
 import { nodemailer } from '../init.js'
 
 export const sendThankYouEmail = async (email: string) => {

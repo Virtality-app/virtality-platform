@@ -404,10 +404,7 @@ const finalSendDraft = authed
       })
     }
 
-    const confirmationError = validateFinalSendConfirmation(
-      draftRecord,
-      input,
-    )
+    const confirmationError = validateFinalSendConfirmation(draftRecord, input)
     if (confirmationError) {
       throw new ORPCError('BAD_REQUEST', { message: confirmationError })
     }

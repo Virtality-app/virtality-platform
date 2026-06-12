@@ -84,7 +84,12 @@ describe('getAdminEmailDraftCloneLabel', () => {
 
 describe('getAdminEmailDraftWorkspaceHeader', () => {
   it('describes archived drafts as read-only with restore guidance', () => {
-    expect(getAdminEmailDraftWorkspaceHeader({ isArchived: true, isFinalSent: false })).toEqual({
+    expect(
+      getAdminEmailDraftWorkspaceHeader({
+        isArchived: true,
+        isFinalSent: false,
+      }),
+    ).toEqual({
       title: 'Archived draft (read-only)',
       description:
         'Restore this draft to edit it again, or clone it into a new active draft.',
@@ -92,7 +97,12 @@ describe('getAdminEmailDraftWorkspaceHeader', () => {
   })
 
   it('describes final-sent drafts as read-only', () => {
-    expect(getAdminEmailDraftWorkspaceHeader({ isArchived: false, isFinalSent: true })).toEqual({
+    expect(
+      getAdminEmailDraftWorkspaceHeader({
+        isArchived: false,
+        isFinalSent: true,
+      }),
+    ).toEqual({
       title: 'Sent draft (read-only)',
       description:
         'Edit the subject and Email Body Blocks. The Email Brand Shell stays locked.',
@@ -100,7 +110,12 @@ describe('getAdminEmailDraftWorkspaceHeader', () => {
   })
 
   it('describes editable active drafts', () => {
-    expect(getAdminEmailDraftWorkspaceHeader({ isArchived: false, isFinalSent: false })).toEqual({
+    expect(
+      getAdminEmailDraftWorkspaceHeader({
+        isArchived: false,
+        isFinalSent: false,
+      }),
+    ).toEqual({
       title: 'Edit draft',
       description:
         'Edit the subject and Email Body Blocks. The Email Brand Shell stays locked.',
@@ -144,21 +159,21 @@ describe('getAdminEmailDraftHeaderMenuItems', () => {
 
 describe('isAdminEmailDraftReadOnly', () => {
   it('treats archived drafts as read-only', () => {
-    expect(isAdminEmailDraftReadOnly({ isArchived: true, isFinalSent: false })).toBe(
-      true,
-    )
+    expect(
+      isAdminEmailDraftReadOnly({ isArchived: true, isFinalSent: false }),
+    ).toBe(true)
   })
 
   it('treats final-sent drafts as read-only', () => {
-    expect(isAdminEmailDraftReadOnly({ isArchived: false, isFinalSent: true })).toBe(
-      true,
-    )
+    expect(
+      isAdminEmailDraftReadOnly({ isArchived: false, isFinalSent: true }),
+    ).toBe(true)
   })
 
   it('allows editing active drafts that are not final-sent', () => {
-    expect(isAdminEmailDraftReadOnly({ isArchived: false, isFinalSent: false })).toBe(
-      false,
-    )
+    expect(
+      isAdminEmailDraftReadOnly({ isArchived: false, isFinalSent: false }),
+    ).toBe(false)
   })
 })
 
@@ -199,6 +214,8 @@ describe('resolveSelectedAdminEmailDraft', () => {
 
 describe('ADMIN_EMAIL_DRAFT_ARCHIVE_DIALOG_COPY', () => {
   it('explains that archived drafts can be restored', () => {
-    expect(ADMIN_EMAIL_DRAFT_ARCHIVE_DIALOG_COPY.description).toContain('restore')
+    expect(ADMIN_EMAIL_DRAFT_ARCHIVE_DIALOG_COPY.description).toContain(
+      'restore',
+    )
   })
 })
