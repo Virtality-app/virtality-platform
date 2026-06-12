@@ -41,6 +41,8 @@ import { AdminEmailDraftHeaderMenu } from './admin-email-draft-header-menu'
 import { AdminEmailDraftPreviewDialog } from './admin-email-draft-preview-dialog'
 import { EmailBlockBuilder } from './email-block-builder'
 import { FinalSendDialog } from './final-send-dialog'
+import { Label } from '@virtality/ui/components/label'
+import { Textarea } from '@virtality/ui/components/textarea'
 
 type DraftWorkspaceData = {
   id: string
@@ -130,8 +132,11 @@ export const AdminEmailDraftWorkspace = ({
     draftId: draft.id,
   })
 
-  const { data: preview, refetch: refetchPreview, isFetching: isPreviewFetching } =
-    useAdminEmailDraftPreview(previewQueryDraftId)
+  const {
+    data: preview,
+    refetch: refetchPreview,
+    isFetching: isPreviewFetching,
+  } = useAdminEmailDraftPreview(previewQueryDraftId)
 
   const saveDraft = async () => {
     try {
@@ -145,7 +150,9 @@ export const AdminEmailDraftWorkspace = ({
       toast.success('Draft saved')
       return updated
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to save draft')
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to save draft',
+      )
       return null
     }
   }
@@ -213,7 +220,9 @@ export const AdminEmailDraftWorkspace = ({
       setConfirmedSubject('')
       onFinalSent(sentRecord.id)
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to send email')
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to send email',
+      )
     }
   }
 
@@ -223,7 +232,9 @@ export const AdminEmailDraftWorkspace = ({
       toast.success('Draft cloned')
       onCloned(cloned.id)
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to clone draft')
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to clone draft',
+      )
     }
   }
 
@@ -234,17 +245,23 @@ export const AdminEmailDraftWorkspace = ({
       setArchiveOpen(false)
       onArchived()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to archive draft')
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to archive draft',
+      )
     }
   }
 
   const handleRestore = async () => {
     try {
-      const restored = await restoreDraftMutation.mutateAsync({ draftId: draft.id })
+      const restored = await restoreDraftMutation.mutateAsync({
+        draftId: draft.id,
+      })
       toast.success('Draft restored')
       onRestored(restored.id)
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to restore draft')
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to restore draft',
+      )
     }
   }
 
@@ -261,10 +278,22 @@ export const AdminEmailDraftWorkspace = ({
     <div className='space-y-6'>
       <Card>
         <CardHeader>
-          <div className='flex flex-wrap items-start justify-between gap-3'>
-            <div>
-              <CardTitle>{workspaceHeader.title}</CardTitle>
-              <CardDescription>{workspaceHeader.description}</CardDescription>
+          <div className='flex flex-col items-start gap-3'>
+            <div className='flex w-full flex-wrap items-center justify-between gap-2'>
+              <div>
+                <CardTitle>{workspaceHeader.title}</CardTitle>
+                <CardDescription>{workspaceHeader.description}</CardDescription>
+              </div>
+              <AdminEmailDraftHeaderMenu
+                isFinalSent={draft.isFinalSent}
+                isArchived={isArchived}
+                onPreview={() => void handlePreview()}
+                onClone={() => void handleClone()}
+                onArchive={() => setArchiveOpen(true)}
+                onRestore={() => void handleRestore()}
+                isClonePending={cloneDraftMutation.isPending}
+                isRestorePending={restoreDraftMutation.isPending}
+              />
             </div>
             <div className='flex flex-wrap items-center gap-2'>
               {isArchived ? <Badge variant='outline'>Archived</Badge> : null}
@@ -285,39 +314,32 @@ export const AdminEmailDraftWorkspace = ({
               >
                 Unsaved changes
               </Badge>
-              <AdminEmailDraftHeaderMenu
-                isFinalSent={draft.isFinalSent}
-                isArchived={isArchived}
-                onPreview={() => void handlePreview()}
-                onClone={() => void handleClone()}
-                onArchive={() => setArchiveOpen(true)}
-                onRestore={() => void handleRestore()}
-                isClonePending={cloneDraftMutation.isPending}
-                isRestorePending={restoreDraftMutation.isPending}
-              />
             </div>
           </div>
         </CardHeader>
         <CardContent className='space-y-4'>
           <div>
-            <label className='text-muted-foreground text-sm font-medium'>
+            <Label className='text-muted-foreground text-sm font-medium'>
               Subject
-            </label>
+            </Label>
             <Input
               className='mt-1'
               value={form.subject}
               disabled={readOnly}
               onChange={(event) =>
-                setForm((current) => ({ ...current, subject: event.target.value }))
+                setForm((current) => ({
+                  ...current,
+                  subject: event.target.value,
+                }))
               }
               placeholder='Email subject'
             />
           </div>
 
           <div>
-            <label className='text-muted-foreground text-sm font-medium'>
+            <Label className='text-muted-foreground text-sm font-medium'>
               Preview text (optional)
-            </label>
+            </Label>
             <Input
               className='mt-1'
               value={form.previewText}
@@ -333,11 +355,11 @@ export const AdminEmailDraftWorkspace = ({
           </div>
 
           <div>
-            <label className='text-muted-foreground text-sm font-medium'>
+            <Label className='text-muted-foreground text-sm font-medium'>
               Recipients (max {MAX_EMAIL_RECIPIENTS})
-            </label>
-            <textarea
-              className='bg-background mt-1 min-h-28 w-full rounded-md border px-3 py-2 text-sm'
+            </Label>
+            <Textarea
+              className='mt-1 min-h-28'
               value={form.recipientsText}
               disabled={readOnly}
               onChange={(event) =>
@@ -390,13 +412,15 @@ export const AdminEmailDraftWorkspace = ({
                 className='flex flex-col gap-3 sm:flex-row sm:items-end'
               >
                 <div className='flex-1'>
-                  <label className='text-muted-foreground mb-1.5 block text-sm font-medium'>
+                  <Label className='text-muted-foreground mb-1.5 block text-sm font-medium'>
                     Test recipient
-                  </label>
+                  </Label>
                   <Input
                     type='email'
                     value={testRecipientEmail}
-                    onChange={(event) => setTestRecipientEmail(event.target.value)}
+                    onChange={(event) =>
+                      setTestRecipientEmail(event.target.value)
+                    }
                     placeholder='you@example.com'
                   />
                 </div>
@@ -436,7 +460,9 @@ export const AdminEmailDraftWorkspace = ({
                   setConfirmedSubject('')
                   setFinalSendOpen(true)
                 }}
-                disabled={!draft.sendReadiness.ready || finalSendMutation.isPending}
+                disabled={
+                  !draft.sendReadiness.ready || finalSendMutation.isPending
+                }
               >
                 <Send className='mr-2 size-4' />
                 Final send
