@@ -16,11 +16,16 @@ import { useReusablePrograms } from '@virtality/react-query'
 import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
 import { filterProgramsBySearch } from '@/lib/program-library'
 import { programLibraryColumns } from './columns'
+import { Button } from '@virtality/ui/components/button'
+import Link from 'next/link'
+import { PlusSquare } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 export default function ProgramLibraryTable() {
   usePageViewTracking({
     props: { route_group: 'program', tab_view: 'program-library' },
   })
+  const router = useRouter()
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState('')
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
@@ -58,10 +63,17 @@ export default function ProgramLibraryTable() {
         table={table}
         globalFilter={globalFilter}
         setGlobalFilter={setGlobalFilter}
-      />
+      >
+        <Button id='new-program' asChild variant='primary' className='ml-auto'>
+          <Link href='/programs/new'>
+            <PlusSquare /> New program
+          </Link>
+        </Button>
+      </DataTableHeader>
       <DataTableBody
         table={table}
         columns={programLibraryColumns}
+        rowNavigation={(id: string) => router.push(`/programs/${id}/edit`)}
         className='flex-1'
       />
       <DataTableFooter table={table} />

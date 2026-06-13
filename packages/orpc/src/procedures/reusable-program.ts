@@ -71,17 +71,28 @@ const findReusableProgram = authed
     return program
   })
 
+const requireProgramName = (name: string) => {
+  const trimmedName = name.trim()
+  if (trimmedName === '') {
+    throw new ORPCError('BAD_REQUEST', {
+      message: 'Program name is required',
+    })
+  }
+  return trimmedName
+}
+
 const createReusableProgram = authed
   .route({ path: '/reusable-program/create', method: 'POST' })
   .input(ReusableProgramSchema.pick({ name: true }))
   .handler(async ({ context, input }) => {
     const { prisma, user } = context
     const now = new Date()
+    const trimmedName = requireProgramName(input.name)
 
     return prisma.reusableProgram.create({
       data: {
         id: generateUUID(),
-        name: input.name.trim() === '' ? 'untitled' : input.name.trim(),
+        name: trimmedName,
         kind: 'CLINICIAN_OWNED',
         userId: user.id,
         createdAt: now,
@@ -113,7 +124,7 @@ const updateReusableProgram = authed
     return prisma.reusableProgram.update({
       where: { id: input.id },
       data: {
-        name: input.name.trim() === '' ? 'untitled' : input.name.trim(),
+        name: requireProgramName(input.name),
         updatedAt: new Date(),
       },
       include: programInclude,

@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { ColumnDef } from '@tanstack/react-table'
-import { Archive, Copy, Ellipsis } from 'lucide-react'
+import { Archive, Copy, Ellipsis, Pencil } from 'lucide-react'
 import { useState } from 'react'
 import ColumnHeader from '@/components/tables/header-cell'
 import DateCell from '@/components/tables/date-cell'
@@ -31,6 +31,7 @@ import {
   PROGRAM_RETIRE_CONFIRMATION,
   getProgramExerciseCount,
 } from '@/lib/program-library'
+import Link from 'next/link'
 
 export const programLibraryColumns: ColumnDef<CompleteReusableProgram>[] = [
   {
@@ -94,6 +95,12 @@ export const programLibraryColumns: ColumnDef<CompleteReusableProgram>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent id='actions'>
+            <DropdownMenuItem asChild>
+              <Link href={`/programs/${program.id}/edit`}>
+                <Pencil />
+                Edit
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={copyId}>
               <Copy />
               Copy ID
