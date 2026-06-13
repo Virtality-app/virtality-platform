@@ -20,7 +20,8 @@
   "scripts": {
     "build": "rimraf dist && tsc",
     "dev": "tsc --watch",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.943.0",
@@ -38,6 +39,7 @@
   "devDependencies": {
     "@virtality/typescript-config": "workspace:*",
     "rimraf": "6.1.2",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "3.2.4"
   }
 }

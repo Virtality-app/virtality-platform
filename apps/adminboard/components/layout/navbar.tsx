@@ -9,7 +9,14 @@ import {
 } from '@/components/ui/navigation-menu'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Check, LayoutDashboard, LinkIcon, Mail, Trash } from 'lucide-react'
+import {
+  Check,
+  LayoutDashboard,
+  LineChart,
+  LinkIcon,
+  Mail,
+  Trash,
+} from 'lucide-react'
 import Avatar from './avatar'
 import capitalize from 'lodash.capitalize'
 import { useState } from 'react'
@@ -53,6 +60,18 @@ const Navbar = () => {
               <Link href='/' className='flex flex-row items-center gap-2'>
                 <LayoutDashboard />
                 Dashboard
+              </Link>
+            </NavigationMenuLink>
+          </NavigationMenuItem>
+
+          <NavigationMenuItem>
+            <NavigationMenuLink asChild>
+              <Link
+                href='/effectiveness'
+                className='flex flex-row items-center gap-2'
+              >
+                <LineChart />
+                Effectiveness
               </Link>
             </NavigationMenuLink>
           </NavigationMenuItem>

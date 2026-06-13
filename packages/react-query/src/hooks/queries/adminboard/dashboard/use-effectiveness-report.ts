@@ -1,0 +1,48 @@
+import { skipToken, useQuery, type UseQueryResult } from '@tanstack/react-query'
+import { useORPC } from '../../../../orpc-context.js'
+
+export type EffectivenessReportInput =
+  | {
+      from: Date | string
+      to: Date | string
+    }
+  | undefined
+
+export type EffectivenessReportData = {
+  from: string
+  to: string
+  summary: {
+    totalPatients: number
+    activePatients: number
+    patientActivationRatePercent: number | null
+    completedSessions: number
+    averageSessionsPerActivePatient: number | null
+  }
+  byUser: Array<{
+    userId: string | null
+    userLabel: string
+    totalPatients: number
+    activePatients: number
+    patientActivationRatePercent: number | null
+    completedSessions: number
+    averageSessionsPerActivePatient: number | null
+  }>
+  hasSessionActivity: boolean
+}
+
+export function useEffectivenessReport(
+  input: EffectivenessReportInput,
+): UseQueryResult<EffectivenessReportData, Error> {
+  const orpc = useORPC()
+
+  return useQuery(
+    orpc.dashboard.getEffectivenessReport.queryOptions({
+      input: input
+        ? {
+            from: input.from,
+            to: input.to,
+          }
+        : skipToken,
+    }),
+  ) as UseQueryResult<EffectivenessReportData, Error>
+}

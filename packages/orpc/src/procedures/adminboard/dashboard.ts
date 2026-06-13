@@ -1,24 +1,12 @@
 import { authed } from '../../middleware/auth.ts'
 import { z } from 'zod'
-
-const FAKE_PATIENT = {
-  name: { contains: 'test' },
-}
-
-const INTERNAL_USERS = [
-  '5gCcsOn9Tz4IF9ommSp2DvoiJsTsphTw', //Tasos
-  '9ygYLzpviL1OapAKamGyLAqqByKsHsnG', //Tasos_Admin
-  'OuL7y4Xb2DU2PMIAFnOu4OHqHvMdPfrY', //Stelios
-  'PySE5EEdRduUMYaVRDFhIg32agudrY4K', //Stelios_Admin
-  'lb88hVACN6FxCPJcLQGzQng3iWg9jVsV', //Katerina
-  'UAql4zqL2KMRk1cjwwq5yirDq6pbIw4b', //Katerina_Admin
-  'Bhn4gUOtOZZcOh3qQ9VKPiEfAAXCbhx2', //TestUser_1
-  'rC5H7G9vjOhvGnM5gagD9bKkFU4JM5rJ', //TestUser_2
-  'mb1eDQAdr2sP08gEdggLfOTYbb0RoOug', //Jerry
-  'zCPmoGefgoVQfYiP5MZ7C9d8ml9PfljT', //Lefteris
-  '9RMfagtuXvlxXVgc0VpBOw2gPq5yISRQ', //Ξανθίππη Κοντογιάννη
-  '0glxtznlckihDNxjZAszARJQVLOOhrBp', // Nikos
-]
+import {
+  FAKE_PATIENT,
+  INTERNAL_USERS,
+  patientScopeFilter,
+  UNKNOWN_OWNER_ID,
+} from './analytics-filters.ts'
+import { buildEffectivenessReport } from './effectiveness-report-aggregation.ts'
 
 const MIN_WINDOW_DAYS = 3
 const ONE_DAY_MS = 24 * 60 * 60 * 1000
@@ -340,10 +328,123 @@ const getPatientSessionsPerDatePerUser = authed
     return result.sort((a, b) => a.userName.localeCompare(b.userName))
   })
 
+const EffectivenessReportInput = z
+  .object({
+    from: z.coerce.date(),
+    to: z.coerce.date(),
+  })
+  .superRefine((value, ctx) => {
+    const fromDay = getUTCDayStart(value.from)
+    const toDay = getUTCDayStart(value.to)
+
+    if (fromDay.getTime() > toDay.getTime()) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['to'],
+        message: '"to" must be on or after "from".',
+      })
+      return
+    }
+
+    const daysInWindow = getInclusiveDaysBetween(fromDay, toDay)
+
+    if (daysInWindow < MIN_WINDOW_DAYS) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['from'],
+        message: `Date window must be at least ${MIN_WINDOW_DAYS} days.`,
+      })
+    }
+  })
+
+const getDefaultEffectivenessWindowUTC = (): { from: Date; to: Date } => {
+  const to = getUTCDayStart(new Date())
+  const from = new Date(to)
+  from.setUTCDate(from.getUTCDate() - 29)
+  return { from, to }
+}
+
+const getEffectivenessReport = authed
+  .route({
+    path: '/dashboard/analytics/effectiveness-report',
+    method: 'GET',
+  })
+  .input(EffectivenessReportInput.optional())
+  .handler(async ({ context, input }) => {
+    const { prisma } = context
+
+    const defaultWindow = getDefaultEffectivenessWindowUTC()
+    const from = input ? getUTCDayStart(input.from) : defaultWindow.from
+    const to = input ? getUTCDayStart(input.to) : defaultWindow.to
+    const toExclusive = getUTCDayAfter(to)
+
+    const patients = await prisma.patient.findMany({
+      where: patientScopeFilter,
+      select: {
+        id: true,
+        userId: true,
+      },
+    })
+
+    const sessions = await prisma.patientSession.findMany({
+      where: {
+        deletedAt: null,
+        completedAt: {
+          not: null,
+          gte: from,
+          lt: toExclusive,
+        },
+        status: 'COMPLETED',
+        patient: patientScopeFilter,
+      },
+      select: {
+        patientId: true,
+      },
+    })
+
+    const userIds = [
+      ...new Set(
+        patients
+          .map((patient) => patient.userId)
+          .filter((userId): userId is string => Boolean(userId)),
+      ),
+    ]
+
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, name: true },
+    })
+
+    const userNamesById = users.reduce<Record<string, string | null>>(
+      (acc, user) => {
+        acc[user.id] = user.name
+        return acc
+      },
+      {},
+    )
+
+    const report = buildEffectivenessReport({
+      patients,
+      sessions,
+      userNamesById,
+    })
+
+    return {
+      from: toISODate(from),
+      to: toISODate(to),
+      ...report,
+      byUser: report.byUser.map((user) => ({
+        ...user,
+        userId: user.userId === UNKNOWN_OWNER_ID ? null : user.userId,
+      })),
+    }
+  })
+
 export const dashboard = {
   getTotalUniquePatients,
   getUniquePatientsPerPhysio,
   getSessionsPerPatient,
   getTotalPatientSessions,
   getPatientSessionsPerDatePerUser,
+  getEffectivenessReport,
 }

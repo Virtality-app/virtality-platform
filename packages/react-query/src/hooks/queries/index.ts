@@ -89,3 +89,4 @@ export { useUniquePatientsPerPhysio } from './adminboard/dashboard/use-unique-pa
 export { useSessionsPerPatient } from './adminboard/dashboard/use-sessions-per-patient.js'
 export { useTotalPatientSessions } from './adminboard/dashboard/use-total-patient-sessions.js'
 export { usePatientSessionsPerDatePerUser } from './adminboard/dashboard/use-sessions-per-date-per-user.js'
+export { useEffectivenessReport } from './adminboard/dashboard/use-effectiveness-report.js'

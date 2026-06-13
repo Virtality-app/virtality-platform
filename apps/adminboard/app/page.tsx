@@ -4,12 +4,15 @@ import { StatCard } from '@/components/dashboard/stat-card'
 import { PatientsPerDocChart } from '@/components/dashboard/patients-per-doc-chart'
 import { SessionsPerPatientChart } from '@/components/dashboard/sessions-per-patient-chart'
 import { SessionsPerWeekChart } from '@/components/dashboard/sessions-per-week-chart'
+import { Button } from '@/components/ui/button'
 import {
   useTotalPatientSessions,
   useUniquePatientsPerPhysio,
   useSessionsPerPatient,
   useTotalUniquePatients,
 } from '@virtality/react-query'
+import { LineChart } from 'lucide-react'
+import Link from 'next/link'
 
 const StartPage = () => {
   const { data: totalPatients, isLoading: isLoadingTotalPatients } =
@@ -42,6 +45,14 @@ const StartPage = () => {
           <p className='text-muted-foreground mt-2 text-sm'>
             Clear overview of patient volume and session activity.
           </p>
+        </div>
+        <div className='flex flex-wrap items-center gap-3'>
+          <Button asChild variant='outline'>
+            <Link href='/effectiveness' className='flex items-center gap-2'>
+              <LineChart className='size-4' />
+              Product Effectiveness
+            </Link>
+          </Button>
         </div>
       </div>
 
