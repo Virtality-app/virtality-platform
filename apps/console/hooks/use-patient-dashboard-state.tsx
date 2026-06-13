@@ -16,7 +16,7 @@ type State = {
   isSettingsOpen: { id: string; open: boolean } | null
   exercises: CompleteExercise[]
   isDialogOpen: boolean
-  programState: 'started' | 'paused' | 'ready'
+  programState: 'ready' | 'launching' | 'started' | 'paused'
   selectedDevice: VRDevice | null
   selectedProgram: CompleteReusableProgram | null
   selectedMode: 'main' | 'free'

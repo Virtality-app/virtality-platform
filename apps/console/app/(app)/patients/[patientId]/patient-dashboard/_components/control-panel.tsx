@@ -84,7 +84,12 @@ const ControlPanel = ({
     activeExerciseData,
   } = state
 
-  const { setSelectedMode, setSelectedDevice, setActiveExerciseData } = handler
+  const {
+    setSelectedMode,
+    setSelectedDevice,
+    setActiveExerciseData,
+    setProgramState,
+  } = handler
   // const { t } = getClientT(['patient-dashboard', 'common']);
 
   const { connected } = useSocketConnection({ device: selectedDevice })
@@ -148,6 +153,7 @@ const ControlPanel = ({
         totalSets: dispatchedData[0].sets,
       })
 
+      setProgramState('launching')
       selectedDevice?.events.program.Start(payload)
     } else {
       selectedDevice?.events.program.Pause()
@@ -214,6 +220,7 @@ const ControlPanel = ({
   const isProgramActive = programState === 'started'
   const isProgramInactive = programState === 'ready'
   const isProgramPaused = programState === 'paused'
+  const isProgramLaunching = programState === 'launching'
   const isMain = selectedMode === 'main'
 
   const { GuardDialog } = useNavigationGuard(connected, () => {
@@ -235,6 +242,7 @@ const ControlPanel = ({
           isProgramPaused={isProgramPaused}
           isProgramInactive={isProgramInactive}
           isProgramActive={isProgramActive}
+          isProgramLaunching={isProgramLaunching}
           programStart={programStart}
           programEnd={programEnd}
           handleWarmupStart={handleWarmupStart}
@@ -285,6 +293,7 @@ interface ControlsProps {
   isProgramPaused: boolean
   isProgramInactive: boolean
   isProgramActive: boolean
+  isProgramLaunching: boolean
   programStart: () => Id | undefined
   programEnd: () => void
   handleWarmupStart: () => Id | undefined
@@ -296,6 +305,7 @@ const Controls = ({
   isProgramPaused,
   isProgramInactive,
   isProgramActive,
+  isProgramLaunching,
   programStart,
   programEnd,
   handleWarmupStart,
@@ -328,7 +338,9 @@ const Controls = ({
       return (
         <>
           <Button
-            disabled={isProgramInactive || isProgramPaused}
+            disabled={
+              isProgramInactive || isProgramPaused || isProgramLaunching
+            }
             id='back'
             size='icon'
             variant='outline'
@@ -342,6 +354,7 @@ const Controls = ({
             variant='primary'
             size='icon'
             onClick={programStart}
+            disabled={isProgramLaunching}
           >
             {isProgramInactive || isProgramPaused ? (
               <PlayCircle className='size-6' />
@@ -357,7 +370,9 @@ const Controls = ({
           )}
 
           <Button
-            disabled={isProgramInactive || isProgramPaused} //Temporarily until the VR issue is fixed.
+            disabled={
+              isProgramInactive || isProgramPaused || isProgramLaunching
+            }
             id='forward'
             size='icon'
             variant='outline'

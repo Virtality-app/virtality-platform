@@ -14,3 +14,9 @@ enum ReusableProgramKind {
   CLINICIAN_OWNED
   STARTER_TEMPLATE
 }
+
+enum PatientSessionStatus {
+  ACTIVE
+  COMPLETED
+  INTERRUPTED
+}

@@ -17,15 +17,22 @@ import NotifyDoctorToasty from '../components/ui/NotifyDoctorToasty'
 import { ProgressDataSchema, ProgressData } from '@/lib/definitions'
 import { getDisplayName, getUUID } from '@/lib/utils'
 import usePlotData from './use-plot-data'
-import { PatientSession } from '@virtality/db'
 import { generateUUID } from '@virtality/shared/utils'
 import {
   getQueryClient,
   useCreatePatientSessionData,
-  useCreatePatientSessionExercises,
-  useCreatePatientSession,
+  useStartPatientSessionFromAck,
   useORPC,
 } from '@virtality/react-query'
+import {
+  buildSessionExerciseRowsFromWorkingCopy,
+  buildStartedSessionInput,
+  canPersistSessionProgress,
+  resolveSourceProgramContext,
+  shouldCreatePatientSessionOnStartAck,
+  type SessionExerciseRowInput,
+} from '@/lib/patient-dashboard-session-launch'
+import ErrorToasty from '../components/ui/ErrorToasty'
 
 type ProgressDataPerExercise = {
   [key: string]: ProgressDataPoint[]
@@ -59,6 +66,7 @@ const usePatientDashboardSocketSetup = ({
     exercises,
     selectedDevice,
     activeExerciseData,
+    inQuickStart,
   } = state
 
   const {
@@ -72,6 +80,7 @@ const usePatientDashboardSocketSetup = ({
   const progressData = useRef<ProgressDataPerExercise | null>(null)
   const realTimeData = useRef<ProgressDataPoint[]>([])
   const patientSessionId = useRef('')
+  const sessionExerciseRows = useRef<SessionExerciseRowInput[]>([])
   const currSet = useRef(0)
   const currRep = useRef(0)
   const stats = useRef({ highscore: 0, bestExercise: '' })
@@ -87,31 +96,30 @@ const usePatientDashboardSocketSetup = ({
     },
   )
 
-  const { mutateAsync: createPatientSessionExercises } =
-    useCreatePatientSessionExercises({})
-
-  const { mutate: createPatientSession } = useCreatePatientSession({})
-
-  const handleSessionDataCreation = async () => {
-    const sessionExercises = exercises!.map((ex) => ({
-      exerciseId: ex.exerciseId,
-      sets: ex.sets,
-      reps: ex.reps,
-      restTime: ex.restTime,
-      holdTime: ex.holdTime,
-      speed: ex.speed,
-      patientSessionId: patientSessionId.current,
-    }))
-
-    const sessionExerciseIds = await createPatientSessionExercises({
-      patientSessionId: patientSessionId.current,
-      exercises: sessionExercises,
+  const { mutateAsync: startPatientSessionFromAck } =
+    useStartPatientSessionFromAck({
+      onSuccess: async () =>
+        await queryClient.invalidateQueries({
+          queryKey: orpc.patientSession.list.queryKey({
+            input: { where: { patientId } },
+          }),
+        }),
     })
 
-    const data = sessionExercises.map((sessionExercise, index) => ({
+  const resetSessionState = () => {
+    patientSessionId.current = ''
+    sessionExerciseRows.current = []
+  }
+
+  const handleSessionDataCreation = async () => {
+    if (!patientSessionId.current || sessionExerciseRows.current.length === 0) {
+      return
+    }
+
+    const data = sessionExerciseRows.current.map((sessionExercise) => ({
       id: getUUID(),
       patientSessionId: patientSessionId.current,
-      sessionExerciseId: sessionExerciseIds[index],
+      sessionExerciseId: sessionExercise.id,
       value: JSON.stringify(
         progressData.current?.[sessionExercise.exerciseId] || [],
       ),
@@ -129,24 +137,47 @@ const usePatientDashboardSocketSetup = ({
     setPlotData(realTimeData.current)
   }
 
-  const handleStartAck = () => {
-    progressDataClear()
-    setProgramState(ProgramStatus.START)
+  const handlePersistenceFailureAfterStartAck = () => {
+    resetSessionState()
+    socket?.emit(PROGRAM_EVENT.End)
+    selectedDevice?.events.program.End()
+    ErrorToasty('Failed to start session. Please try again.')
+    setProgramState(ProgramStatus.END)
+  }
 
-    const newSession: PatientSession = {
-      id: generateUUID(),
-      patientId,
-      programId: null,
-      nprs: null,
-      notes: null,
-      createdAt: new Date(),
-      completedAt: null,
-      deletedAt: null,
+  const handleStartAck = async () => {
+    if (!shouldCreatePatientSessionOnStartAck(programState)) {
+      return
     }
 
-    createPatientSession(newSession)
+    if (!exercises?.length) {
+      handlePersistenceFailureAfterStartAck()
+      return
+    }
 
-    patientSessionId.current = newSession.id
+    progressDataClear()
+
+    const sessionId = generateUUID()
+    const source = resolveSourceProgramContext(inQuickStart, selectedProgram)
+    const rows = buildSessionExerciseRowsFromWorkingCopy(exercises, sessionId)
+
+    try {
+      await startPatientSessionFromAck({
+        session: buildStartedSessionInput({
+          sessionId,
+          patientId,
+          source,
+        }),
+        exercises: rows,
+      })
+
+      patientSessionId.current = sessionId
+      sessionExerciseRows.current = rows
+      setProgramState(ProgramStatus.START)
+    } catch (error) {
+      console.error(error)
+      handlePersistenceFailureAfterStartAck()
+    }
   }
 
   const handlePauseAck = () => {
@@ -163,6 +194,7 @@ const usePatientDashboardSocketSetup = ({
 
     await handleSessionDataCreation()
 
+    resetSessionState()
     updatePatientDashboardState({
       programState: ProgramStatus.END,
       isDialogOpen: !isDialogOpen,
@@ -181,6 +213,7 @@ const usePatientDashboardSocketSetup = ({
 
     await handleSessionDataCreation()
 
+    resetSessionState()
     updatePatientDashboardState({
       programState: ProgramStatus.END,
       isDialogOpen: !isDialogOpen,
@@ -219,6 +252,16 @@ const usePatientDashboardSocketSetup = ({
   }
 
   const handleRepEnd = (payload: string) => {
+    if (
+      !canPersistSessionProgress(
+        patientSessionId.current,
+        sessionExerciseRows.current,
+        currExercise.current,
+      )
+    ) {
+      return
+    }
+
     const parsedData = JSON.parse(payload) as ProgressData
 
     const validatedData = ProgressDataSchema.safeParse(parsedData)
@@ -275,8 +318,17 @@ const usePatientDashboardSocketSetup = ({
   }
 
   const handleSetEnd = (payload: string) => {
+    if (
+      !canPersistSessionProgress(
+        patientSessionId.current,
+        sessionExerciseRows.current,
+        currExercise.current,
+      )
+    ) {
+      return
+    }
+
     const parsedData = JSON.parse(payload) as { previousSet: number }
-    // currSet.current = Number(parsedData.previousSet) + 1;
 
     currSet.current = Number(parsedData.previousSet)
     const set = currSet.current
@@ -332,6 +384,7 @@ const usePatientDashboardSocketSetup = ({
       try {
         await handleSessionDataCreation()
 
+        resetSessionState()
         updatePatientDashboardState({
           programState: ProgramStatus.END,
           isDialogOpen: !isDialogOpen,

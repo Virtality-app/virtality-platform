@@ -46,6 +46,7 @@ export const ProgramStatus = {
   START: 'started',
   PAUSE: 'paused',
   END: 'ready',
+  LAUNCHING: 'launching',
 } as const
 
 export type ProgramStatus = (typeof ProgramStatus)[keyof typeof ProgramStatus]

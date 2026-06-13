@@ -38,6 +38,7 @@ export { useDeletePatient } from './patient/use-delete-patient.js'
 
 // Patient session mutations
 export { useCreatePatientSession } from './patient-session/use-create-patient-session.js'
+export { useStartPatientSessionFromAck } from './patient-session/use-start-patient-session-from-ack.js'
 export { useUpdatePatientSession } from './patient-session/use-update-patient-session.js'
 export { useDeletePatientSession } from './patient-session/use-delete-patient-session.js'
 export { useCompleteSession } from './patient-session/use-complete-session.js'

@@ -1,10 +1,20 @@
 import {
   PatientSessionFindFirstZodSchema,
   PatientSessionFindManyZodSchema,
-  PatientSessionInputSchema,
   PatientSessionSchema,
+  SessionExerciseSchema,
 } from '@virtality/db/definitions'
 import { authed } from '../middleware/auth.ts'
+import { z } from 'zod'
+
+const StartPatientSessionFromAckSchema = z.object({
+  session: PatientSessionSchema,
+  exercises: z.array(
+    SessionExerciseSchema.omit({ patientSessionId: true }).extend({
+      patientSessionId: z.string().optional(),
+    }),
+  ),
+})
 
 const listPatientSessions = authed
   .route({ path: '/patient-session/list', method: 'GET' })
@@ -82,6 +92,30 @@ const deletePatientSession = authed
     return patientSession
   })
 
+const startPatientSessionFromAck = authed
+  .route({ path: '/patient-session/start-from-ack', method: 'POST' })
+  .input(StartPatientSessionFromAckSchema)
+  .handler(async ({ context, input }) => {
+    const { prisma } = context
+
+    const created = await prisma.$transaction(async (tx) => {
+      const patientSession = await tx.patientSession.create({
+        data: input.session,
+      })
+
+      await tx.sessionExercise.createMany({
+        data: input.exercises.map((exercise) => ({
+          ...exercise,
+          patientSessionId: patientSession.id,
+        })),
+      })
+
+      return patientSession
+    })
+
+    return created
+  })
+
 const completePatientSession = authed
   .route({ path: '/patient-session/complete', method: 'POST' })
   .input(PatientSessionSchema.pick({ id: true }))
@@ -89,7 +123,10 @@ const completePatientSession = authed
     const { prisma } = context
     const patientSession = await prisma.patientSession.update({
       where: { id: input.id },
-      data: { completedAt: new Date() },
+      data: {
+        completedAt: new Date(),
+        status: 'COMPLETED',
+      },
     })
     return patientSession
   })
@@ -98,6 +135,7 @@ export const patientSession = {
   list: listPatientSessions,
   find: findPatientSession,
   create: createPatientSession,
+  startFromAck: startPatientSessionFromAck,
   update: updatePatientSession,
   delete: deletePatientSession,
   complete: completePatientSession,
