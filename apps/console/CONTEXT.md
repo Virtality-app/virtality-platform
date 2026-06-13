@@ -4,6 +4,62 @@ Clinician-facing web app for managing patients, building therapy plans, and runn
 
 ## Language
 
+**Reusable Program**:
+A clinician-owned therapy program template that can be used with any of that clinician's patients. It belongs to the clinician's library, not to a patient.
+_Avoid_: Global program, preset, patient program, assigned program, generic program
+
+**Session Exercise Snapshot**:
+The exercise list and settings of a patient session once the session is completed, including any live clinician changes made during the session.
+_Avoid_: Starting program copy, active program, program exercise history
+
+**Session Working Copy**:
+The persisted, mutable exercise list and settings used during an active patient session. Changes to it do not change the **Reusable Program** unless the clinician explicitly saves them back or saves them as a new **Reusable Program**.
+_Avoid_: Editing the program live, implicit program update
+
+**Session Completion Save Choice**:
+The end-of-session decision to either finish without changing the **Program Library**, update the source **Reusable Program**, or save the final **Session Working Copy** as a new **Reusable Program**.
+_Avoid_: Autosave to program, live save prompt
+
+**Quick Start**:
+An ad hoc treatment path that starts a patient session without choosing a **Reusable Program** first.
+_Avoid_: Blank program, temporary program
+
+**Session Launch Attempt**:
+The period after a clinician asks the VR to start treatment but before the VR confirms that treatment has started.
+_Avoid_: Patient session, started session
+
+**Started Session**:
+A patient session that begins only after the VR confirms the treatment start.
+_Avoid_: Button press, launch attempt
+
+**Interrupted Session**:
+A **Started Session** that ended unexpectedly before normal completion. It is not treated as completed clinical history.
+_Avoid_: Completed session, failed launch
+
+**Session Progress Record**:
+Exercise performance data captured during a **Started Session** and persisted incrementally as treatment progresses.
+_Avoid_: End-only session data, temporary progress
+
+**Program Exercise**:
+An exercise and settings entry that belongs to a **Reusable Program**. It represents reusable treatment intent, not patient history.
+_Avoid_: Preset exercise, session exercise, exercise settings row
+
+**Last Used Program**:
+The most recently selected **Reusable Program** for a patient, used only as a convenience default when returning to that patient's dashboard.
+_Avoid_: Current program, assigned program, patient program
+
+**Program Library**:
+The clinician's collection of **Reusable Programs** available for treatment workflows.
+_Avoid_: Presets page, template manager
+
+**Retired Program**:
+A **Reusable Program** that no longer appears for future treatment selection but remains available for historical session context.
+_Avoid_: Deleted program, removed program
+
+**Starter Template**:
+A system-provided starting point for creating a clinician-owned **Reusable Program**. It is not selected directly during treatment, and clinicians preview its included exercises before using it.
+_Avoid_: Preset, system program, Virtality program
+
 **Exercise Family**:
 The canonical movement concept independent of side-specific direction (for example, "Active Wrist Extension").
 _Avoid_: Base exercise, parent exercise, generic exercise

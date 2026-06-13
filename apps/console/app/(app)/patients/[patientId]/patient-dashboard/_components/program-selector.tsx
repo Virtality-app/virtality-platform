@@ -147,7 +147,7 @@ const ProgramSelector = ({ className }: { className?: string }) => {
               {orderedPrograms.map((program) => (
                 <CommandItem
                   key={program.id}
-                  value={program.name}
+                  value={program.name + ' - ' + program.id}
                   onSelect={() => programSelect(program.id)}
                 >
                   {program.name}
