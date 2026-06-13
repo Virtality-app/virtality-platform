@@ -18,13 +18,16 @@
     "reset": "prisma migrate reset --config ./console/prisma.config.ts",
     "migrate:dev": "prisma migrate dev --config ./console/prisma.config.ts",
     "migrate:deploy": "prisma migrate deploy --config ./console/prisma.config.ts",
-    "studio": "prisma studio --config ./console/prisma.config.ts"
+    "studio": "prisma studio --config ./console/prisma.config.ts",
+    "migrate:programs-presets": "tsx scripts/migrate-programs-and-presets.ts",
+    "migrate:programs-presets:dry-run": "tsx scripts/migrate-programs-and-presets.ts --dry-run"
   },
   "dependencies": {
     "@noble/hashes": "2.0.1",
     "@prisma/adapter-pg": "7.2.0",
     "@prisma/client": "7.2.0",
     "@prisma/client-runtime-utils": "7.2.0",
+    "@virtality/shared": "workspace:*",
     "dotenv": "17.2.3",
     "pg": "8.16.3",
     "zod": "4.3.6"
