@@ -11,6 +11,8 @@ import { program } from './procedures/program.ts'
 import { programExercise } from './procedures/program-exercise.ts'
 import { preset } from './procedures/preset.ts'
 import { presetExercise } from './procedures/preset-exercise.ts'
+import { reusableProgram } from './procedures/reusable-program.ts'
+import { reusableProgramExercise } from './procedures/reusable-program-exercise.ts'
 import { patientSessionData } from './procedures/patient-session-data.ts'
 import { patientSessionExercise } from './procedures/patient-session-exercise.ts'
 import { user } from './procedures/user/index.ts'
@@ -37,6 +39,8 @@ export const router = {
   programExercise,
   preset,
   presetExercise,
+  reusableProgram,
+  reusableProgramExercise,
   patientSessionData,
   patientSessionExercise,
   waitlist,

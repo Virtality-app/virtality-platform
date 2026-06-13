@@ -1,0 +1,33 @@
+// Reusable Program Domain
+
+model ReusableProgram {
+  id        String              @id
+  name      String
+  kind      ReusableProgramKind @default(CLINICIAN_OWNED)
+  userId    String?
+  createdAt DateTime            @default(now()) @db.Timestamp(6)
+  updatedAt DateTime            @default(now()) @db.Timestamp(6)
+  retiredAt DateTime?           @db.Timestamp(6)
+
+  user      User?                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercises ReusableProgramExercise[]
+
+  @@index([userId, kind, retiredAt])
+}
+
+model ReusableProgramExercise {
+  id                String @id
+  reusableProgramId String
+  exerciseId        String
+  position          Int
+  sets              Int    @default(3)
+  reps              Int    @default(10)
+  restTime          Int    @default(5)
+  holdTime          Int    @default(1)
+  speed             Float  @default(1)
+
+  reusableProgram ReusableProgram @relation(fields: [reusableProgramId], references: [id], onDelete: Cascade)
+  exercise        Exercise        @relation(fields: [exerciseId], references: [id])
+
+  @@unique([reusableProgramId, position])
+}

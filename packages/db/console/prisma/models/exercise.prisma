@@ -13,8 +13,9 @@ model Exercise {
   enabled     Boolean @default(false)
   isNew       Boolean @default(false)
 
-  programExercise  ProgramExercise[]
-  sessionExercise  SessionExercise[]
+  programExercise         ProgramExercise[]
+  reusableProgramExercise ReusableProgramExercise[]
+  sessionExercise         SessionExercise[]
   presetExercise   PresetExercise[]
   favoriteExercise FavoriteExercise[]
 }

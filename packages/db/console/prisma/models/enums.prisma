@@ -9,3 +9,8 @@ enum Platform {
   web
   vr
 }
+
+enum ReusableProgramKind {
+  CLINICIAN_OWNED
+  STARTER_TEMPLATE
+}

@@ -13,6 +13,11 @@ export { usePreset } from './preset/use-preset.js'
 export { usePresets } from './preset/use-presets.js'
 export { usePresetsByUser } from './preset/use-preset-by-user.js'
 
+// Reusable program queries
+export { useReusableProgram } from './reusable-program/use-reusable-program.js'
+export { useReusablePrograms } from './reusable-program/use-reusable-programs.js'
+export { useStarterTemplates } from './reusable-program/use-starter-templates.js'
+
 // Avatar queries
 export { useAvatar } from './use-avatar.js'
 

@@ -22,6 +22,15 @@ export { useDeletePreset } from './preset/use-delete-preset.js'
 export { useCreatePresetExercises } from './preset-exercise/use-create-preset-exercises.js'
 export { useUpdatePresetExercises } from './preset-exercise/use-update-preset-exercises.js'
 
+// Reusable program mutations
+export { useCreateReusableProgram } from './reusable-program/use-create-reusable-program.js'
+export { useUpdateReusableProgram } from './reusable-program/use-update-reusable-program.js'
+export { useRetireReusableProgram } from './reusable-program/use-retire-reusable-program.js'
+
+// Reusable program exercise mutations
+export { useCreateReusableProgramExercises } from './reusable-program-exercise/use-create-reusable-program-exercises.js'
+export { useUpdateReusableProgramExercises } from './reusable-program-exercise/use-update-reusable-program-exercises.js'
+
 // Patient mutations
 export { useNewPatient } from './patient/use-new-patient.js'
 export { useUpdatePatient } from './patient/use-update-patient.js'

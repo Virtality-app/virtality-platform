@@ -23,6 +23,7 @@ model User {
   invitations      Invitation[]
   members          Member[]
   patientProgram   PatientProgram[]
+  reusablePrograms ReusableProgram[]
   sessions         Session[]
   userPreset       Preset[]
   favoriteExercise FavoriteExercise[]
