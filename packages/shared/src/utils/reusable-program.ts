@@ -19,6 +19,22 @@ export type ReusableProgramExercisePositionInput = {
   position: number
 }
 
+export type ReusableProgramExerciseCopySource = {
+  id: string
+  exerciseId: string
+  position: number
+  sets: number
+  reps: number
+  restTime: number
+  holdTime: number
+  speed: number
+}
+
+export type ReusableProgramExerciseCopyTarget =
+  ReusableProgramExerciseCopySource & {
+    reusableProgramId: string
+  }
+
 export function buildClinicianOwnedProgramListWhere(userId: string) {
   return {
     userId,
@@ -84,4 +100,33 @@ export function buildRetireProgramData(now: Date = new Date()) {
     retiredAt: now,
     updatedAt: now,
   }
+}
+
+export function buildCopiedProgramName(originalName: string): string {
+  const trimmedName = originalName.trim()
+  if (trimmedName === '') {
+    return 'Untitled program (copy)'
+  }
+
+  return `${trimmedName} (copy)`
+}
+
+export function buildCopiedProgramExercises(
+  exercises: ReusableProgramExerciseCopySource[],
+  reusableProgramId: string,
+  createExerciseId: () => string,
+): ReusableProgramExerciseCopyTarget[] {
+  return [...exercises]
+    .sort((left, right) => left.position - right.position)
+    .map((exercise) => ({
+      id: createExerciseId(),
+      reusableProgramId,
+      exerciseId: exercise.exerciseId,
+      position: exercise.position,
+      sets: exercise.sets,
+      reps: exercise.reps,
+      restTime: exercise.restTime,
+      holdTime: exercise.holdTime,
+      speed: exercise.speed,
+    }))
 }

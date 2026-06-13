@@ -3,6 +3,8 @@ import {
   ReusableProgramKind,
   assertClinicianCanMutateProgram,
   buildClinicianOwnedProgramListWhere,
+  buildCopiedProgramExercises,
+  buildCopiedProgramName,
   buildRetireProgramData,
   buildStarterTemplateListWhere,
   isProgramAvailableForTreatment,
@@ -141,5 +143,68 @@ describe('reusable program retirement', () => {
       retiredAt: now,
       updatedAt: now,
     })
+  })
+})
+
+describe('reusable program copy', () => {
+  it('suggests a friendly copy name from the source program', () => {
+    expect(buildCopiedProgramName('Shoulder rehab')).toBe(
+      'Shoulder rehab (copy)',
+    )
+    expect(buildCopiedProgramName('  ')).toBe('Untitled program (copy)')
+  })
+
+  it('preserves exercise settings and position with new row identities', () => {
+    const copied = buildCopiedProgramExercises(
+      [
+        {
+          id: 'row-2',
+          exerciseId: 'exercise-b',
+          position: 1,
+          sets: 4,
+          reps: 8,
+          restTime: 10,
+          holdTime: 2,
+          speed: 1.5,
+        },
+        {
+          id: 'row-1',
+          exerciseId: 'exercise-a',
+          position: 0,
+          sets: 3,
+          reps: 10,
+          restTime: 5,
+          holdTime: 1,
+          speed: 1,
+        },
+      ],
+      'program-copy',
+      () => 'generated-id',
+    )
+
+    expect(copied).toEqual([
+      {
+        id: 'generated-id',
+        reusableProgramId: 'program-copy',
+        exerciseId: 'exercise-a',
+        position: 0,
+        sets: 3,
+        reps: 10,
+        restTime: 5,
+        holdTime: 1,
+        speed: 1,
+      },
+      {
+        id: 'generated-id',
+        reusableProgramId: 'program-copy',
+        exerciseId: 'exercise-b',
+        position: 1,
+        sets: 4,
+        reps: 8,
+        restTime: 10,
+        holdTime: 2,
+        speed: 1.5,
+      },
+    ])
   })
 })

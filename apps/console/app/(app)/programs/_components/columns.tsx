@@ -17,13 +17,15 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { ColumnDef } from '@tanstack/react-table'
-import { Archive, Copy, Ellipsis, Pencil } from 'lucide-react'
+import { Archive, Copy, Ellipsis, Files, Pencil } from 'lucide-react'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import ColumnHeader from '@/components/tables/header-cell'
 import DateCell from '@/components/tables/date-cell'
 import { CompleteReusableProgram } from '@/types/models'
 import {
   getQueryClient,
+  useCopyReusableProgram,
   useORPC,
   useRetireReusableProgram,
 } from '@virtality/react-query'
@@ -68,6 +70,7 @@ export const programLibraryColumns: ColumnDef<CompleteReusableProgram>[] = [
     id: 'actions',
     enableHiding: false,
     cell: function ActionCell({ row }) {
+      const router = useRouter()
       const queryClient = getQueryClient()
       const orpc = useORPC()
       const program = row.original
@@ -80,10 +83,21 @@ export const programLibraryColumns: ColumnDef<CompleteReusableProgram>[] = [
           setRetireOpen(false)
         },
       })
+      const { mutate: copyProgram, isPending: isCopyPending } =
+        useCopyReusableProgram({
+          onSuccess: (copiedProgram) => {
+            queryClient.invalidateQueries({
+              queryKey: orpc.reusableProgram.list.key(),
+            })
+            router.push(`/programs/${copiedProgram.id}/edit`)
+          },
+        })
 
       const copyId = () => {
         navigator.clipboard.writeText(program.id)
       }
+
+      const handleMakeCopy = () => copyProgram({ id: program.id })
 
       const handleRetire = () => retireProgram({ id: program.id })
 
@@ -100,6 +114,10 @@ export const programLibraryColumns: ColumnDef<CompleteReusableProgram>[] = [
                 <Pencil />
                 Edit
               </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem disabled={isCopyPending} onClick={handleMakeCopy}>
+              <Files />
+              Make a copy
             </DropdownMenuItem>
             <DropdownMenuItem onClick={copyId}>
               <Copy />

@@ -3,6 +3,8 @@ import { ReusableProgramSchema } from '@virtality/db/definitions'
 import {
   assertClinicianCanMutateProgram,
   buildClinicianOwnedProgramListWhere,
+  buildCopiedProgramExercises,
+  buildCopiedProgramName,
   buildRetireProgramData,
   buildStarterTemplateListWhere,
   generateUUID,
@@ -156,6 +158,59 @@ const retireReusableProgram = authed
     })
   })
 
+const copyReusableProgram = authed
+  .route({ path: '/reusable-program/copy', method: 'POST' })
+  .input(ReusableProgramSchema.pick({ id: true }))
+  .handler(async ({ context, input }) => {
+    const { prisma, user } = context
+
+    const source = await prisma.reusableProgram.findFirst({
+      where: { id: input.id },
+      include: programInclude,
+    })
+
+    try {
+      assertClinicianCanMutateProgram(source, user.id)
+    } catch (error) {
+      throw new ORPCError('FORBIDDEN', {
+        message: error instanceof Error ? error.message : 'Forbidden',
+      })
+    }
+
+    const newProgramId = generateUUID()
+    const now = new Date()
+    const copiedExercises = buildCopiedProgramExercises(
+      source.exercises,
+      newProgramId,
+      generateUUID,
+    )
+
+    return prisma.$transaction(async (tx) => {
+      await tx.reusableProgram.create({
+        data: {
+          id: newProgramId,
+          name: buildCopiedProgramName(source.name),
+          kind: 'CLINICIAN_OWNED',
+          userId: user.id,
+          createdAt: now,
+          updatedAt: now,
+          retiredAt: null,
+        },
+      })
+
+      if (copiedExercises.length > 0) {
+        await tx.reusableProgramExercise.createMany({
+          data: copiedExercises,
+        })
+      }
+
+      return tx.reusableProgram.findFirstOrThrow({
+        where: { id: newProgramId },
+        include: programInclude,
+      })
+    })
+  })
+
 export const reusableProgram = {
   list: listReusablePrograms,
   listStarterTemplates,
@@ -163,4 +218,5 @@ export const reusableProgram = {
   create: createReusableProgram,
   update: updateReusableProgram,
   retire: retireReusableProgram,
+  copy: copyReusableProgram,
 }

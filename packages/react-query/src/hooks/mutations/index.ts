@@ -26,6 +26,7 @@ export { useUpdatePresetExercises } from './preset-exercise/use-update-preset-ex
 export { useCreateReusableProgram } from './reusable-program/use-create-reusable-program.js'
 export { useUpdateReusableProgram } from './reusable-program/use-update-reusable-program.js'
 export { useRetireReusableProgram } from './reusable-program/use-retire-reusable-program.js'
+export { useCopyReusableProgram } from './reusable-program/use-copy-reusable-program.js'
 
 // Reusable program exercise mutations
 export { useCreateReusableProgramExercises } from './reusable-program-exercise/use-create-reusable-program-exercises.js'
