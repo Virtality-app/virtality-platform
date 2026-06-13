@@ -139,6 +139,7 @@ describe('buildEffectivenessReport', () => {
       averageSessionsPerActivePatient: null,
     })
     expect(report.byUser).toEqual([])
+    expect(report.ownerOptions).toEqual([])
     expect(report.hasSessionActivity).toBe(false)
     expect(report.progressQuality).toEqual({
       averageProgressQualityPercent: null,
@@ -280,5 +281,119 @@ describe('buildEffectivenessReport', () => {
     )
     expect(weekWithOneForty?.sessionsWithDose).toBe(1)
     expect(weekWithSeventyTwo?.sessionsWithDose).toBe(1)
+  })
+
+  it('builds owner options from all scoped patients with stable labels', () => {
+    const report = buildEffectivenessReport({
+      ...baseInput,
+      patients: [
+        { id: 'patient-1', userId: 'user-a' },
+        { id: 'patient-2', userId: null },
+      ],
+      sessions: [],
+      userNamesById: { 'user-a': 'Alice' },
+    })
+
+    expect(report.ownerOptions).toEqual([
+      { userId: 'user-a', userLabel: 'Alice' },
+      { userId: null, userLabel: UNKNOWN_OWNER_LABEL },
+    ])
+  })
+
+  it('filters summary, progress, and therapy metrics to a selected owner', () => {
+    const report = buildEffectivenessReport({
+      ...baseInput,
+      patients: [
+        { id: 'patient-1', userId: 'user-a' },
+        { id: 'patient-2', userId: 'user-b' },
+      ],
+      sessions: [
+        {
+          patientId: 'patient-1',
+          createdAt: '2026-06-10T09:30:00.000Z',
+          completedAt: '2026-06-10T10:00:00.000Z',
+          sessionData: [{ value: progressValue([80]) }],
+          sessionExercises: [{ sets: 2, reps: 10, holdTime: 5, speed: 1 }],
+        },
+        {
+          patientId: 'patient-2',
+          createdAt: '2026-06-11T09:00:00.000Z',
+          completedAt: '2026-06-11T10:00:00.000Z',
+          sessionData: [{ value: progressValue([40]) }],
+          sessionExercises: [{ sets: 1, reps: 5, holdTime: 4, speed: 2 }],
+        },
+      ],
+      userNamesById: {
+        'user-a': 'Alice',
+        'user-b': 'Bob',
+      },
+      ownerUserId: 'user-a',
+    })
+
+    expect(report.summary).toEqual({
+      totalPatients: 1,
+      activePatients: 1,
+      patientActivationRatePercent: 100,
+      completedSessions: 1,
+      averageSessionsPerActivePatient: 1,
+    })
+    expect(report.byUser).toEqual([
+      {
+        userId: 'user-a',
+        userLabel: 'Alice',
+        totalPatients: 1,
+        activePatients: 1,
+        patientActivationRatePercent: 100,
+        completedSessions: 1,
+        averageSessionsPerActivePatient: 1,
+      },
+    ])
+    expect(report.ownerOptions).toEqual([
+      { userId: 'user-a', userLabel: 'Alice' },
+      { userId: 'user-b', userLabel: 'Bob' },
+    ])
+    expect(report.progressQuality.averageProgressQualityPercent).toBe(80)
+    expect(report.therapyIntensity.totalTherapyDose).toBe(100)
+  })
+
+  it('filters to unknown owners using the stable unknown owner id', () => {
+    const report = buildEffectivenessReport({
+      ...baseInput,
+      patients: [
+        { id: 'patient-1', userId: null },
+        { id: 'patient-2', userId: 'user-a' },
+      ],
+      sessions: [
+        {
+          patientId: 'patient-1',
+          createdAt: '2026-06-10T09:30:00.000Z',
+          completedAt: '2026-06-10T10:00:00.000Z',
+          sessionData: [],
+          sessionExercises: [],
+        },
+        {
+          patientId: 'patient-2',
+          createdAt: '2026-06-11T09:00:00.000Z',
+          completedAt: '2026-06-11T10:00:00.000Z',
+          sessionData: [],
+          sessionExercises: [],
+        },
+      ],
+      userNamesById: { 'user-a': 'Alice' },
+      ownerUserId: UNKNOWN_OWNER_ID,
+    })
+
+    expect(report.summary.completedSessions).toBe(1)
+    expect(report.byUser).toEqual([
+      {
+        userId: UNKNOWN_OWNER_ID,
+        userLabel: UNKNOWN_OWNER_LABEL,
+        totalPatients: 1,
+        activePatients: 1,
+        patientActivationRatePercent: 100,
+        completedSessions: 1,
+        averageSessionsPerActivePatient: 1,
+      },
+    ])
   })
 })

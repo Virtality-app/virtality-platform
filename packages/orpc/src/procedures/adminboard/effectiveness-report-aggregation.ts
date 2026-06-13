@@ -71,9 +71,15 @@ export type EffectivenessReportSummary = {
   averageSessionsPerActivePatient: number | null
 }
 
+export type EffectivenessOwnerOption = {
+  userId: string | null
+  userLabel: string
+}
+
 export type EffectivenessReportResult = {
   summary: EffectivenessReportSummary
   byUser: EffectivenessUserMetrics[]
+  ownerOptions: EffectivenessOwnerOption[]
   hasSessionActivity: boolean
   progressQuality: EffectivenessProgressQuality
   therapyIntensity: EffectivenessTherapyIntensity
@@ -279,6 +285,28 @@ const resolveUserLabel = (
   return name
 }
 
+const buildOwnerOptions = (
+  patients: EffectivenessPatientRow[],
+  userNamesById: Record<string, string | null | undefined>,
+): EffectivenessOwnerOption[] => {
+  const ownerIds = new Set(
+    patients.map((patient) => normalizeOwnerId(patient.userId)),
+  )
+
+  return [...ownerIds]
+    .map((userId) => ({
+      userId: userId === UNKNOWN_OWNER_ID ? null : userId,
+      userLabel: resolveUserLabel(userId, userNamesById),
+    }))
+    .sort((left, right) => left.userLabel.localeCompare(right.userLabel))
+}
+
+const filterPatientsByOwner = (
+  patients: EffectivenessPatientRow[],
+  ownerUserId: string,
+): EffectivenessPatientRow[] =>
+  patients.filter((patient) => normalizeOwnerId(patient.userId) === ownerUserId)
+
 const buildUserMetrics = (
   userId: string,
   totalPatients: number,
@@ -308,11 +336,23 @@ export function buildEffectivenessReport(input: {
   userNamesById: Record<string, string | null | undefined>
   from: string
   to: string
+  ownerUserId?: string
 }): EffectivenessReportResult {
+  const ownerOptions = buildOwnerOptions(input.patients, input.userNamesById)
+
+  const scopedPatients = input.ownerUserId
+    ? filterPatientsByOwner(input.patients, input.ownerUserId)
+    : input.patients
+
+  const scopedPatientIds = new Set(scopedPatients.map((patient) => patient.id))
+  const scopedSessions = input.sessions.filter((session) =>
+    scopedPatientIds.has(session.patientId),
+  )
+
   const patientsByOwner = new Map<string, Set<string>>()
   const patientOwnerById = new Map<string, string>()
 
-  input.patients.forEach((patient) => {
+  scopedPatients.forEach((patient) => {
     const ownerId = normalizeOwnerId(patient.userId)
     patientOwnerById.set(patient.id, ownerId)
 
@@ -324,7 +364,7 @@ export function buildEffectivenessReport(input: {
   const activePatientsByOwner = new Map<string, Set<string>>()
   const completedSessionsByOwner = new Map<string, number>()
 
-  input.sessions.forEach((session) => {
+  scopedSessions.forEach((session) => {
     const ownerId = patientOwnerById.get(session.patientId)
     if (!ownerId) {
       return
@@ -387,14 +427,15 @@ export function buildEffectivenessReport(input: {
   return {
     summary,
     byUser,
+    ownerOptions,
     hasSessionActivity: summary.completedSessions > 0,
     progressQuality: buildProgressQualityMetrics({
-      sessions: input.sessions,
+      sessions: scopedSessions,
       from: input.from,
       to: input.to,
     }),
     therapyIntensity: buildTherapyIntensityMetrics({
-      sessions: input.sessions,
+      sessions: scopedSessions,
       from: input.from,
       to: input.to,
     }),

@@ -13,6 +13,13 @@ import {
   formatProgressQuality,
   formatTherapyDose,
 } from '@/components/dashboard/effectiveness-metric-card'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import {
@@ -28,6 +35,25 @@ import { useMemo, useState } from 'react'
 import { type DateRange } from 'react-day-picker'
 
 const MIN_WINDOW_DAYS = 3
+const ALL_OWNERS_VALUE = 'all'
+const UNKNOWN_OWNER_VALUE = '__unknown_owner__'
+
+const ownerSelectValue = (userId: string | null): string =>
+  userId === null ? UNKNOWN_OWNER_VALUE : userId
+
+const ownerFilterFromSelectValue = (
+  value: string,
+): string | null | undefined => {
+  if (value === ALL_OWNERS_VALUE) {
+    return undefined
+  }
+
+  if (value === UNKNOWN_OWNER_VALUE) {
+    return null
+  }
+
+  return value
+}
 
 const getDefaultRange = (): { from: Date; to: Date } => {
   const to = new Date()
@@ -51,24 +77,39 @@ const EffectivenessReportPage = () => {
     to: defaultTo,
   })
   const [popoverOpen, setPopoverOpen] = useState(false)
+  const [selectedOwner, setSelectedOwner] = useState(ALL_OWNERS_VALUE)
 
   const rangeFrom = appliedRange.from ?? defaultFrom
   const rangeTo = appliedRange.to ?? defaultTo
+  const ownerUserId = ownerFilterFromSelectValue(selectedOwner)
 
   const { data, isLoading, isError } = useEffectivenessReport({
     from: rangeFrom,
     to: rangeTo,
+    ownerUserId,
   })
 
   const comparisonRows = useMemo(() => {
-    if (!data?.byUser) {
+    if (!data?.byUser || selectedOwner !== ALL_OWNERS_VALUE) {
       return []
     }
 
     return data.byUser.filter(
       (row) => row.activePatients > 0 || row.completedSessions > 0,
     )
-  }, [data?.byUser])
+  }, [data?.byUser, selectedOwner])
+
+  const selectedOwnerLabel = useMemo(() => {
+    if (selectedOwner === ALL_OWNERS_VALUE) {
+      return 'All owners'
+    }
+
+    return (
+      data?.ownerOptions.find(
+        (option) => ownerSelectValue(option.userId) === selectedOwner,
+      )?.userLabel ?? 'Selected owner'
+    )
+  }, [data?.ownerOptions, selectedOwner])
 
   const applyPickerRange = () => {
     if (!pickerRange?.from || !pickerRange.to) {
@@ -155,49 +196,83 @@ const EffectivenessReportPage = () => {
           </p>
         </div>
 
-        <Popover
-          open={popoverOpen}
-          onOpenChange={(open) => {
-            setPopoverOpen(open)
-            if (open) {
-              setPickerRange(appliedRange)
-            }
-          }}
-        >
-          <PopoverTrigger asChild>
-            <Button variant='outline' className='min-w-[180px] justify-start'>
-              <CalendarIcon className='size-4' />
-              {formatDateRangeLabel(rangeFrom, rangeTo)}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className='w-[450px] p-0' align='end'>
-            <Calendar
-              mode='range'
-              defaultMonth={rangeFrom}
-              selected={pickerRange}
-              onSelect={setPickerRange}
-              min={MIN_WINDOW_DAYS - 1}
-              showOutsideDays={false}
-              numberOfMonths={2}
-              className='w-full'
-              disabled={(date) =>
-                date > new Date() || date < new Date('1900-01-01')
-              }
-            />
-            <div className='flex justify-end border-t p-3'>
-              <Button
-                size='sm'
-                onClick={applyPickerRange}
-                disabled={!pickerRange?.from || !pickerRange.to}
+        <div className='flex flex-col gap-2 sm:flex-row sm:items-end'>
+          <div className='flex flex-col gap-1.5'>
+            <label
+              htmlFor='owner-filter'
+              className='text-muted-foreground text-xs font-medium'
+            >
+              Patient owner
+            </label>
+            <Select value={selectedOwner} onValueChange={setSelectedOwner}>
+              <SelectTrigger
+                id='owner-filter'
+                className='min-w-[220px] justify-between'
               >
-                Apply
+                <SelectValue placeholder='All owners' />
+              </SelectTrigger>
+              <SelectContent align='end'>
+                <SelectItem value={ALL_OWNERS_VALUE}>All owners</SelectItem>
+                {(data?.ownerOptions ?? []).map((option) => (
+                  <SelectItem
+                    key={ownerSelectValue(option.userId)}
+                    value={ownerSelectValue(option.userId)}
+                  >
+                    {option.userLabel}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Popover
+            open={popoverOpen}
+            onOpenChange={(open) => {
+              setPopoverOpen(open)
+              if (open) {
+                setPickerRange(appliedRange)
+              }
+            }}
+          >
+            <PopoverTrigger asChild>
+              <Button variant='outline' className='min-w-[180px] justify-start'>
+                <CalendarIcon className='size-4' />
+                {formatDateRangeLabel(rangeFrom, rangeTo)}
               </Button>
-            </div>
-          </PopoverContent>
-        </Popover>
+            </PopoverTrigger>
+            <PopoverContent className='w-[450px] p-0' align='end'>
+              <Calendar
+                mode='range'
+                defaultMonth={rangeFrom}
+                selected={pickerRange}
+                onSelect={setPickerRange}
+                min={MIN_WINDOW_DAYS - 1}
+                showOutsideDays={false}
+                numberOfMonths={2}
+                className='w-full'
+                disabled={(date) =>
+                  date > new Date() || date < new Date('1900-01-01')
+                }
+              />
+              <div className='flex justify-end border-t p-3'>
+                <Button
+                  size='sm'
+                  onClick={applyPickerRange}
+                  disabled={!pickerRange?.from || !pickerRange.to}
+                >
+                  Apply
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
 
       <p className='text-muted-foreground text-sm'>
+        {selectedOwner !== ALL_OWNERS_VALUE
+          ? `Showing metrics for ${selectedOwnerLabel}.`
+          : null}
+        {selectedOwner !== ALL_OWNERS_VALUE ? ' ' : null}
         {data.hasSessionActivity
           ? `Between ${format(rangeFrom, 'dd MMM yyyy')} and ${format(rangeTo, 'dd MMM yyyy')}, ${formatCount(summary.activePatients)} of ${formatCount(summary.totalPatients)} scoped patients had at least one completed session.`
           : `No completed sessions were recorded between ${format(rangeFrom, 'dd MMM yyyy')} and ${format(rangeTo, 'dd MMM yyyy')}.`}
@@ -276,7 +351,9 @@ const EffectivenessReportPage = () => {
 
       <EffectivenessTherapyIntensityChart data={therapyIntensity.trend} />
 
-      <EffectivenessComparisonChart data={comparisonRows} />
+      {selectedOwner === ALL_OWNERS_VALUE ? (
+        <EffectivenessComparisonChart data={comparisonRows} />
+      ) : null}
 
       <p className='text-muted-foreground text-xs'>
         <Link href='/' className='underline underline-offset-2'>

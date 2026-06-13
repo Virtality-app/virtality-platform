@@ -332,6 +332,7 @@ const EffectivenessReportInput = z
   .object({
     from: z.coerce.date(),
     to: z.coerce.date(),
+    ownerUserId: z.string().nullable().optional(),
   })
   .superRefine((value, ctx) => {
     const fromDay = getUTCDayStart(value.from)
@@ -377,6 +378,12 @@ const getEffectivenessReport = authed
     const from = input ? getUTCDayStart(input.from) : defaultWindow.from
     const to = input ? getUTCDayStart(input.to) : defaultWindow.to
     const toExclusive = getUTCDayAfter(to)
+    const ownerUserId =
+      input?.ownerUserId === undefined
+        ? undefined
+        : input.ownerUserId === null
+          ? UNKNOWN_OWNER_ID
+          : input.ownerUserId
 
     const patients = await prisma.patient.findMany({
       where: patientScopeFilter,
@@ -450,6 +457,7 @@ const getEffectivenessReport = authed
       userNamesById,
       from: toISODate(from),
       to: toISODate(to),
+      ownerUserId,
     })
 
     return {
@@ -460,6 +468,7 @@ const getEffectivenessReport = authed
         ...user,
         userId: user.userId === UNKNOWN_OWNER_ID ? null : user.userId,
       })),
+      ownerOptions: report.ownerOptions,
     }
   })
 

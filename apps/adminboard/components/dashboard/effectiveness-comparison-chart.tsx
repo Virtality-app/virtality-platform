@@ -58,7 +58,10 @@ export function EffectivenessComparisonChart({
               </thead>
               <tbody>
                 {data.map((row) => (
-                  <tr key={row.userLabel} className='border-b last:border-b-0'>
+                  <tr
+                    key={`${row.userLabel}-${row.activePatients}-${row.completedSessions}`}
+                    className='border-b last:border-b-0'
+                  >
                     <td className='px-3 py-3 font-medium'>{row.userLabel}</td>
                     <td className='px-3 py-3'>{row.activePatients}</td>
                     <td className='px-3 py-3'>

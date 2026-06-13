@@ -5,6 +5,7 @@ export type EffectivenessReportInput =
   | {
       from: Date | string
       to: Date | string
+      ownerUserId?: string | null
     }
   | undefined
 
@@ -26,6 +27,10 @@ export type EffectivenessReportData = {
     patientActivationRatePercent: number | null
     completedSessions: number
     averageSessionsPerActivePatient: number | null
+  }>
+  ownerOptions: Array<{
+    userId: string | null
+    userLabel: string
   }>
   hasSessionActivity: boolean
   progressQuality: {
@@ -66,6 +71,9 @@ export function useEffectivenessReport(
         ? {
             from: input.from,
             to: input.to,
+            ...(input.ownerUserId !== undefined
+              ? { ownerUserId: input.ownerUserId }
+              : {}),
           }
         : skipToken,
     }),
