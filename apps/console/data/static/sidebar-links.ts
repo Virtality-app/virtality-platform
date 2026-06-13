@@ -24,8 +24,8 @@ const sidebarLinks: SidebarLink[] = [
     icon: User,
   },
   {
-    title: 'presets',
-    url: '/presets',
+    title: 'programs',
+    url: '/programs',
     icon: BookMarkedIcon,
   },
   {

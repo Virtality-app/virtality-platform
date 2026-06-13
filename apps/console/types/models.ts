@@ -9,6 +9,8 @@ import {
   Device,
   PresetExercise,
   Preset,
+  ReusableProgram,
+  ReusableProgramExercise,
   SessionData,
 } from '@virtality/db'
 import { Delta } from 'quill'
@@ -26,6 +28,10 @@ export interface CompleteExercise extends ExerciseWithSettings {
 
 export interface CompletePatientProgram extends PatientProgram {
   programExercise: ProgramExercise[]
+}
+
+export interface CompleteReusableProgram extends ReusableProgram {
+  exercises: ReusableProgramExercise[]
 }
 
 export type SessionDataComplete = PatientSession & {

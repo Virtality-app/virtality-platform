@@ -43,7 +43,7 @@ type AuthRole = 'admin' | 'tester' | 'clinician' | 'other'
 type NavItem =
   | 'devices'
   | 'patients'
-  | 'presets'
+  | 'programs'
   | 'guides'
   | 'forms'
   | 'landing_page'
@@ -54,7 +54,14 @@ type SessionEndReason = 'manual' | 'disconnect' | 'error'
 type ConnectionState = 'connected' | 'disconnected' | 'error'
 type SkipDirection = 'back' | 'forward'
 type SceneSetting = 'avatar' | 'map' | 'sitting'
-type RouteGroup = 'auth' | 'patient' | 'device' | 'preset' | 'user' | 'other'
+type RouteGroup =
+  | 'auth'
+  | 'patient'
+  | 'device'
+  | 'preset'
+  | 'program'
+  | 'user'
+  | 'other'
 type Source = 'button' | 'keyboard' | 'auto' | 'import' | 'unknown'
 type TabView =
   | 'virtality-presets'
@@ -67,6 +74,7 @@ type TabView =
   | 'patient-medical-history'
   | 'patient-programs'
   | 'patient-program'
+  | 'program-library'
 
 export type CommonEventProps = {
   user_id?: string
