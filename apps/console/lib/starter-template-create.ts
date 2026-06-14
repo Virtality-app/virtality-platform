@@ -40,10 +40,12 @@ export function sortStarterTemplateExercises<T extends { position: number }>(
   return [...exercises].sort((a, b) => a.position - b.position)
 }
 
-export function starterTemplateExercisesForPreview(
+function resolveStarterTemplateCatalogExercises<
+  T extends { id: string; enabled: boolean },
+>(
   templateExercises: readonly StarterTemplateExerciseRow[],
-  catalog: readonly StarterTemplatePreviewExercise[],
-): StarterTemplatePreviewExercise[] {
+  catalog: readonly T[],
+): T[] {
   const catalogById = new Map(
     catalog.map((exercise) => [exercise.id, exercise]),
   )
@@ -51,16 +53,22 @@ export function starterTemplateExercisesForPreview(
   return sortStarterTemplateExercises(templateExercises)
     .map((row) => catalogById.get(row.exerciseId))
     .filter(
-      (exercise): exercise is StarterTemplatePreviewExercise =>
-        exercise !== undefined && exercise.enabled,
+      (exercise): exercise is T => exercise !== undefined && exercise.enabled,
     )
+}
+
+export function starterTemplateExercisesForPreview(
+  templateExercises: readonly StarterTemplateExerciseRow[],
+  catalog: readonly StarterTemplatePreviewExercise[],
+): StarterTemplatePreviewExercise[] {
+  return resolveStarterTemplateCatalogExercises(templateExercises, catalog)
 }
 
 export function starterTemplateExerciseNamesForPreview(
   templateExercises: readonly StarterTemplateExerciseRow[],
   catalog: readonly ExerciseCatalogRow[],
 ): string[] {
-  return starterTemplateExercisesForPreview(templateExercises, catalog).map(
+  return resolveStarterTemplateCatalogExercises(templateExercises, catalog).map(
     (exercise) => exercise.displayName,
   )
 }

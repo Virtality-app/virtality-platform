@@ -57,27 +57,30 @@ async function main() {
     return
   }
 
-  await prisma.$transaction(async (tx) => {
-    for (const program of plan.reusablePrograms) {
-      await tx.reusableProgram.create({ data: program })
-    }
+  await prisma.$transaction(
+    async (tx) => {
+      for (const program of plan.reusablePrograms) {
+        await tx.reusableProgram.create({ data: program })
+      }
 
-    if (plan.reusableProgramExercises.length > 0) {
-      await tx.reusableProgramExercise.createMany({
-        data: plan.reusableProgramExercises,
-      })
-    }
+      if (plan.reusableProgramExercises.length > 0) {
+        await tx.reusableProgramExercise.createMany({
+          data: plan.reusableProgramExercises,
+        })
+      }
 
-    for (const update of plan.sessionUpdates) {
-      await tx.patientSession.update({
-        where: { id: update.id },
-        data: {
-          sourceReusableProgramId: update.sourceReusableProgramId,
-          sourceProgramName: update.sourceProgramName,
-        },
-      })
-    }
-  })
+      for (const update of plan.sessionUpdates) {
+        await tx.patientSession.update({
+          where: { id: update.id },
+          data: {
+            sourceReusableProgramId: update.sourceReusableProgramId,
+            sourceProgramName: update.sourceProgramName,
+          },
+        })
+      }
+    },
+    { timeout: 1_000_000 },
+  )
 
   console.log('Migration applied successfully.')
 }
