@@ -20,6 +20,7 @@ export const ROOM_EVENT = {
   MemberJoined: 'memberJoined',
   RoomComplete: 'roomComplete',
   MemberLeft: 'memberLeft',
+  ReplacementNotice: 'replacementNotice',
 } as const
 
 export type RoomEventKey = keyof typeof ROOM_EVENT
@@ -210,6 +211,13 @@ export type RoomCompletePayload = {
 
 export type MemberLeftPayload = {
   memberId: string
+  timestamp: number
+}
+
+export type ReplacementNoticePayload = {
+  roomCode: string
+  role: RoomPeerRole
+  replacedBySocketId: string
   timestamp: number
 }
 

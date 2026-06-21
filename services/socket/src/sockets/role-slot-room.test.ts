@@ -80,6 +80,26 @@ function waitForDisconnect(
   })
 }
 
+function expectNoEvent(
+  socket: ClientSocket,
+  event: string,
+  windowMs = 500,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const onEvent = () => {
+      clearTimeout(timer)
+      reject(new Error(`Unexpected event "${event}" received`))
+    }
+
+    const timer = setTimeout(() => {
+      socket.off(event, onEvent)
+      resolve()
+    }, windowMs)
+
+    socket.on(event, onEvent)
+  })
+}
+
 describe('role-slot room entry', () => {
   let httpServer: HttpServer
   let port: number
@@ -221,5 +241,163 @@ describe('role-slot room entry', () => {
     await disconnectPromise
     expect(secondConsole.connected).toBe(false)
     expect(firstConsole.connected).toBe(true)
+  })
+})
+
+describe('VR role peer replacement', () => {
+  let httpServer: HttpServer
+  let port: number
+  const clients: ClientSocket[] = []
+
+  beforeAll(async () => {
+    httpServer = createServer()
+    const io = new Server(httpServer, {
+      cors: { origin: '*' },
+    })
+    io.on(CONNECTION_EVENT.CONNECTION, connectionHandler)
+
+    await new Promise<void>((resolve) => {
+      httpServer.listen(0, '127.0.0.1', () => resolve())
+    })
+    port = (httpServer.address() as AddressInfo).port
+  })
+
+  afterAll(async () => {
+    for (const client of clients) {
+      client.disconnect()
+    }
+    await new Promise<void>((resolve, reject) => {
+      httpServer.close((error) => {
+        if (error) reject(error)
+        else resolve()
+      })
+    })
+  })
+
+  beforeEach(() => {
+    resetActiveRoomsForTests()
+  })
+
+  afterEach(() => {
+    while (clients.length > 0) {
+      clients.pop()?.disconnect()
+    }
+  })
+
+  function connectClient(query: TestQuery): ClientSocket {
+    const client = ioClient(`http://127.0.0.1:${port}`, {
+      query,
+      transports: ['websocket'],
+      forceNew: true,
+      reconnection: false,
+    })
+    clients.push(client)
+    return client
+  }
+
+  it('replaces the active VR peer instead of rejecting the room as full', async () => {
+    const roomCode = 'vr-replacement-room'
+    const consoleSocket = connectClient({
+      roomCode,
+      role: ROOM_PEER_ROLE.Console,
+    })
+    const firstVr = connectClient({
+      roomCode,
+      role: ROOM_PEER_ROLE.Vr,
+    })
+
+    await Promise.all([
+      waitForConnect(consoleSocket),
+      waitForEvent(consoleSocket, ROOM_EVENT.RoomJoined),
+      waitForConnect(firstVr),
+      waitForEvent(firstVr, ROOM_EVENT.RoomJoined),
+      waitForEvent(consoleSocket, ROOM_EVENT.RoomComplete),
+    ])
+
+    const secondVr = connectClient({
+      roomCode,
+      role: ROOM_PEER_ROLE.Vr,
+    })
+
+    const replacementNotice = waitForEvent<{
+      roomCode: string
+      role: string
+      replacedBySocketId: string
+    }>(firstVr, ROOM_EVENT.ReplacementNotice)
+    const secondVrJoined = waitForEvent(secondVr, ROOM_EVENT.RoomJoined)
+    const firstVrDisconnected = waitForDisconnect(firstVr)
+    const consoleMemberLeft = expectNoEvent(
+      consoleSocket,
+      ROOM_EVENT.MemberLeft,
+    )
+
+    await Promise.all([
+      waitForConnect(secondVr),
+      replacementNotice,
+      secondVrJoined,
+      firstVrDisconnected,
+      consoleMemberLeft,
+    ])
+
+    await expect(replacementNotice).resolves.toMatchObject({
+      roomCode,
+      role: ROOM_PEER_ROLE.Vr,
+      replacedBySocketId: secondVr.id,
+    })
+    expect(secondVr.connected).toBe(true)
+    expect(firstVr.connected).toBe(false)
+    expect(consoleSocket.connected).toBe(true)
+
+    const deviceStatus = await new Promise<{ status: string }>((resolve) => {
+      consoleSocket.emit(
+        CONNECTION_EVENT.DEVICE_STATUS,
+        undefined,
+        (response: { status: string }) => resolve(response),
+      )
+    })
+    expect(deviceStatus.status).toBe('active')
+  })
+
+  it('keeps the room complete for the console after VR replacement', async () => {
+    const roomCode = 'vr-replacement-complete-room'
+    const consoleSocket = connectClient({
+      roomCode,
+      role: ROOM_PEER_ROLE.Console,
+    })
+    const firstVr = connectClient({
+      roomCode,
+      role: ROOM_PEER_ROLE.Vr,
+    })
+
+    await Promise.all([
+      waitForConnect(consoleSocket),
+      waitForEvent(consoleSocket, ROOM_EVENT.RoomJoined),
+      waitForConnect(firstVr),
+      waitForEvent(firstVr, ROOM_EVENT.RoomJoined),
+      waitForEvent(consoleSocket, ROOM_EVENT.RoomComplete),
+    ])
+
+    const secondVr = connectClient({
+      roomCode,
+      role: ROOM_PEER_ROLE.Vr,
+    })
+
+    await Promise.all([
+      waitForConnect(secondVr),
+      waitForEvent(firstVr, ROOM_EVENT.ReplacementNotice),
+      waitForEvent(secondVr, ROOM_EVENT.RoomJoined),
+      waitForDisconnect(firstVr),
+    ])
+
+    const deviceStatus = await new Promise<{ status: string }>((resolve) => {
+      consoleSocket.emit(
+        CONNECTION_EVENT.DEVICE_STATUS,
+        undefined,
+        (response: { status: string }) => resolve(response),
+      )
+    })
+
+    expect(deviceStatus.status).toBe('active')
+    await expectNoEvent(consoleSocket, ROOM_EVENT.MemberLeft)
   })
 })
