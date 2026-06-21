@@ -223,6 +223,41 @@ function replaceVrRolePeer(
   })
 }
 
+function replaceConsoleRolePeer(
+  roomCode: string,
+  room: Room,
+  incomingSocket: SocketWithRole,
+) {
+  const roleSlot = room.roleSlots[ROOM_PEER_ROLE.Console]
+  const replacedSocketId = roleSlot.activePeerSocketId!
+  const replacedSocket = incomingSocket.nsp.sockets.get(replacedSocketId)
+
+  roleSlot.activePeerSocketId = incomingSocket.id
+  activeRooms.set(roomCode, room)
+  incomingSocket.join(roomCode)
+
+  logger.info('socket.room.console_role_peer_replaced', {
+    roomCode,
+    replacedSocketId,
+    activePeerSocketId: incomingSocket.id,
+    vrActivePeerSocketId: room.roleSlots[ROOM_PEER_ROLE.Vr].activePeerSocketId,
+  })
+
+  if (replacedSocket) {
+    replacedSocket.emit(ROOM_EVENT.ReplacementNotice, {
+      roomCode,
+      role: ROOM_PEER_ROLE.Console,
+      replacedBySocketId: incomingSocket.id,
+      timestamp: Date.now(),
+    } satisfies ReplacementNoticePayload)
+    replacedSocket.disconnect(true)
+  }
+
+  registerRoomEvents(roomCode, room, incomingSocket, ROOM_PEER_ROLE.Console, {
+    emitMemberJoined: false,
+  })
+}
+
 // ── Public API ─────────────────────────────────────────────────────────────
 
 export function connectionHandler(socket: Socket) {
@@ -281,6 +316,22 @@ export function connectionHandler(socket: Socket) {
   if (roleSlot.activePeerSocketId !== null) {
     if (roomPeerRole === ROOM_PEER_ROLE.Vr) {
       replaceVrRolePeer(roomCode, room, socketWithRole)
+      registerConnectionEvents(roomCode, socket)
+
+      if (isSim) {
+        for (const key in vrCommSim) {
+          vrCommSim[key as keyof typeof vrCommSim](roomCode, socket)
+        }
+      } else {
+        registerRelayEvents(PROGRAM_RELAY, roomCode, socket)
+        registerRelayEvents(CASTING_RELAY, roomCode, socket)
+        registerRelayEvents(DEVICE_RELAY, roomCode, socket)
+      }
+      return
+    }
+
+    if (roomPeerRole === ROOM_PEER_ROLE.Console) {
+      replaceConsoleRolePeer(roomCode, room, socketWithRole)
       registerConnectionEvents(roomCode, socket)
 
       if (isSim) {

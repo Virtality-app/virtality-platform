@@ -214,33 +214,207 @@ describe('role-slot room entry', () => {
     await disconnectPromise
     expect(socket.connected).toBe(false)
   })
+})
 
-  it('rejects a second peer for an occupied role slot', async () => {
-    const roomCode = 'occupied-role-slot'
+describe('Console role peer replacement', () => {
+  let httpServer: HttpServer
+  let port: number
+  const clients: ClientSocket[] = []
+
+  beforeAll(async () => {
+    httpServer = createServer()
+    const io = new Server(httpServer, {
+      cors: { origin: '*' },
+    })
+    io.on(CONNECTION_EVENT.CONNECTION, connectionHandler)
+
+    await new Promise<void>((resolve) => {
+      httpServer.listen(0, '127.0.0.1', () => resolve())
+    })
+    port = (httpServer.address() as AddressInfo).port
+  })
+
+  afterAll(async () => {
+    for (const client of clients) {
+      client.disconnect()
+    }
+    await new Promise<void>((resolve, reject) => {
+      httpServer.close((error) => {
+        if (error) reject(error)
+        else resolve()
+      })
+    })
+  })
+
+  beforeEach(() => {
+    resetActiveRoomsForTests()
+  })
+
+  afterEach(() => {
+    while (clients.length > 0) {
+      clients.pop()?.disconnect()
+    }
+  })
+
+  function connectClient(query: TestQuery): ClientSocket {
+    const client = ioClient(`http://127.0.0.1:${port}`, {
+      query,
+      transports: ['websocket'],
+      forceNew: true,
+      reconnection: false,
+    })
+    clients.push(client)
+    return client
+  }
+
+  it('replaces the active console peer instead of rejecting the room as full', async () => {
+    const roomCode = 'console-replacement-room'
+    const vrSocket = connectClient({
+      roomCode,
+      role: ROOM_PEER_ROLE.Vr,
+    })
     const firstConsole = connectClient({
       roomCode,
       role: ROOM_PEER_ROLE.Console,
     })
-    const firstJoined = waitForEvent(firstConsole, ROOM_EVENT.RoomJoined)
-    await Promise.all([waitForConnect(firstConsole), firstJoined])
+
+    await Promise.all([
+      waitForConnect(vrSocket),
+      waitForEvent(vrSocket, ROOM_EVENT.RoomJoined),
+      waitForConnect(firstConsole),
+      waitForEvent(firstConsole, ROOM_EVENT.RoomJoined),
+      waitForEvent(vrSocket, ROOM_EVENT.RoomComplete),
+    ])
 
     const secondConsole = connectClient({
       roomCode,
       role: ROOM_PEER_ROLE.Console,
     })
 
-    const errorPromise = waitForEvent<{ message: string }>(
+    const replacementNotice = waitForEvent<{
+      roomCode: string
+      role: string
+      replacedBySocketId: string
+    }>(firstConsole, ROOM_EVENT.ReplacementNotice)
+    const secondConsoleJoined = waitForEvent(
       secondConsole,
-      CONNECTION_EVENT.ERROR,
+      ROOM_EVENT.RoomJoined,
     )
-    const disconnectPromise = waitForDisconnect(secondConsole)
+    const firstConsoleDisconnected = waitForDisconnect(firstConsole)
+    const vrMemberLeft = expectNoEvent(vrSocket, ROOM_EVENT.MemberLeft)
 
-    await expect(errorPromise).resolves.toEqual({
-      message: 'Room is full',
+    await Promise.all([
+      waitForConnect(secondConsole),
+      replacementNotice,
+      secondConsoleJoined,
+      firstConsoleDisconnected,
+      vrMemberLeft,
+    ])
+
+    await expect(replacementNotice).resolves.toMatchObject({
+      roomCode,
+      role: ROOM_PEER_ROLE.Console,
+      replacedBySocketId: secondConsole.id,
     })
-    await disconnectPromise
-    expect(secondConsole.connected).toBe(false)
-    expect(firstConsole.connected).toBe(true)
+    expect(secondConsole.connected).toBe(true)
+    expect(firstConsole.connected).toBe(false)
+    expect(vrSocket.connected).toBe(true)
+
+    const deviceStatus = await new Promise<{ status: string }>((resolve) => {
+      vrSocket.emit(
+        CONNECTION_EVENT.DEVICE_STATUS,
+        undefined,
+        (response: { status: string }) => resolve(response),
+      )
+    })
+    expect(deviceStatus.status).toBe('active')
+  })
+
+  it('keeps the room complete for the VR after console replacement', async () => {
+    const roomCode = 'console-replacement-complete-room'
+    const vrSocket = connectClient({
+      roomCode,
+      role: ROOM_PEER_ROLE.Vr,
+    })
+    const firstConsole = connectClient({
+      roomCode,
+      role: ROOM_PEER_ROLE.Console,
+    })
+
+    await Promise.all([
+      waitForConnect(vrSocket),
+      waitForEvent(vrSocket, ROOM_EVENT.RoomJoined),
+      waitForConnect(firstConsole),
+      waitForEvent(firstConsole, ROOM_EVENT.RoomJoined),
+      waitForEvent(vrSocket, ROOM_EVENT.RoomComplete),
+    ])
+
+    const secondConsole = connectClient({
+      roomCode,
+      role: ROOM_PEER_ROLE.Console,
+    })
+
+    await Promise.all([
+      waitForConnect(secondConsole),
+      waitForEvent(firstConsole, ROOM_EVENT.ReplacementNotice),
+      waitForEvent(secondConsole, ROOM_EVENT.RoomJoined),
+      waitForDisconnect(firstConsole),
+    ])
+
+    const deviceStatus = await new Promise<{ status: string }>((resolve) => {
+      vrSocket.emit(
+        CONNECTION_EVENT.DEVICE_STATUS,
+        undefined,
+        (response: { status: string }) => resolve(response),
+      )
+    })
+
+    expect(deviceStatus.status).toBe('active')
+    await expectNoEvent(vrSocket, ROOM_EVENT.MemberLeft)
+  })
+
+  it('ignores a stale disconnect from the replaced console', async () => {
+    const roomCode = 'console-stale-disconnect-room'
+    const vrSocket = connectClient({
+      roomCode,
+      role: ROOM_PEER_ROLE.Vr,
+    })
+    const firstConsole = connectClient({
+      roomCode,
+      role: ROOM_PEER_ROLE.Console,
+    })
+
+    await Promise.all([
+      waitForConnect(vrSocket),
+      waitForEvent(vrSocket, ROOM_EVENT.RoomJoined),
+      waitForConnect(firstConsole),
+      waitForEvent(firstConsole, ROOM_EVENT.RoomJoined),
+      waitForEvent(vrSocket, ROOM_EVENT.RoomComplete),
+    ])
+
+    const secondConsole = connectClient({
+      roomCode,
+      role: ROOM_PEER_ROLE.Console,
+    })
+
+    await Promise.all([
+      waitForConnect(secondConsole),
+      waitForEvent(firstConsole, ROOM_EVENT.ReplacementNotice),
+      waitForEvent(secondConsole, ROOM_EVENT.RoomJoined),
+      waitForDisconnect(firstConsole),
+    ])
+
+    const deviceStatus = await new Promise<{ status: string }>((resolve) => {
+      vrSocket.emit(
+        CONNECTION_EVENT.DEVICE_STATUS,
+        undefined,
+        (response: { status: string }) => resolve(response),
+      )
+    })
+
+    expect(deviceStatus.status).toBe('active')
+    expect(secondConsole.connected).toBe(true)
+    await expectNoEvent(vrSocket, ROOM_EVENT.MemberLeft)
   })
 })
 
