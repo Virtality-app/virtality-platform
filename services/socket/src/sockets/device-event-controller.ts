@@ -41,6 +41,10 @@ export function resetActiveRoomsForTests() {
   activeRooms.clear()
 }
 
+export function hasActiveRoomForTests(roomCode: string): boolean {
+  return activeRooms.has(roomCode)
+}
+
 // ── Relay registration ─────────────────────────────────────────────────────
 
 function registerRelayEvents(
