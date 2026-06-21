@@ -4,7 +4,7 @@ import {
   buildSessionWorkingCopySyncPayload,
   serializeSessionWorkingCopy,
   shouldPersistSessionWorkingCopy,
-} from './session-working-copy-sync.ts'
+} from './session-working-copy-sync.js'
 
 const sampleExercises = [
   {

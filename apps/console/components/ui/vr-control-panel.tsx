@@ -9,13 +9,44 @@ import {
 } from './select'
 import { VRDevice } from '@/types/models'
 import { useEffect, useState, MouseEvent } from 'react'
-import useSocketConnection from '@/hooks/use-socket-connection'
+import useSocketConnection, {
+  type SocketConnectionState,
+} from '@/hooks/use-socket-connection'
 import { useStore } from 'tinybase/ui-react'
 import ErrorToasty from './ErrorToasty'
 import { cn } from '@/lib/utils'
 import { usePatientDashboard } from '@/context/patient-dashboard-context'
 import { subscribe, createDeviceEmitter } from '@/lib/device-event-controller'
 import { ROOM_EVENT } from '@virtality/shared/types'
+
+function getClientConnectionColorClass(
+  connectionState: SocketConnectionState,
+  connected: boolean,
+): string {
+  if (connectionState === 'connecting' || connectionState === 'reconnecting') {
+    return 'text-amber-500'
+  }
+
+  return connected ? 'text-green-500' : 'text-red-500'
+}
+
+function getClientConnectionLabel(
+  connectionState: SocketConnectionState,
+  reconnectAttempt: number,
+  connected: boolean,
+  connectionError: string | null,
+): string {
+  switch (connectionState) {
+    case 'connecting':
+      return 'Connecting...'
+    case 'reconnecting':
+      return `Reconnecting (${reconnectAttempt}/5)...`
+    case 'failed':
+      return connectionError ?? 'Connection failed'
+    default:
+      return connected ? 'Online' : 'Offline'
+  }
+}
 
 const VRControlPanel = ({ devices }: { devices: VRDevice[] }) => {
   const { state, handler, patientId } = usePatientDashboard()
@@ -91,24 +122,15 @@ const VRControlPanel = ({ devices }: { devices: VRDevice[] }) => {
         <h4>Client:</h4>
         <span
           className={cn(
-            connectionState === 'connecting'
-              ? 'text-amber-500'
-              : connectionState === 'reconnecting'
-                ? 'text-amber-500'
-                : connected
-                  ? 'text-green-500'
-                  : 'text-red-500',
+            getClientConnectionColorClass(connectionState, connected),
           )}
         >
-          {connectionState === 'connecting'
-            ? 'Connecting...'
-            : connectionState === 'reconnecting'
-              ? `Reconnecting (${reconnectAttempt}/5)...`
-              : connectionState === 'failed'
-                ? (connectionError ?? 'Connection failed')
-                : connected
-                  ? 'Online'
-                  : 'Offline'}
+          {getClientConnectionLabel(
+            connectionState,
+            reconnectAttempt,
+            connected,
+            connectionError,
+          )}
         </span>
       </div>
       <div className='flex gap-2'>

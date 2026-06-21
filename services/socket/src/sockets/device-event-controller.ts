@@ -221,12 +221,18 @@ function rejectConnection(
   socket.disconnect()
 }
 
-function replaceVrRolePeer(
+const ROLE_PEER_REPLACED_LOG_EVENT = {
+  [ROOM_PEER_ROLE.Vr]: 'socket.room.vr_role_peer_replaced',
+  [ROOM_PEER_ROLE.Console]: 'socket.room.console_role_peer_replaced',
+} as const satisfies Record<RoomPeerRole, string>
+
+function replaceRolePeer(
   roomCode: string,
   room: Room,
   incomingSocket: SocketWithRole,
+  roomPeerRole: RoomPeerRole,
 ) {
-  const roleSlot = room.roleSlots[ROOM_PEER_ROLE.Vr]
+  const roleSlot = room.roleSlots[roomPeerRole]
   const replacedSocketId = roleSlot.activePeerSocketId!
   const replacedSocket = incomingSocket.nsp.sockets.get(replacedSocketId)
 
@@ -234,62 +240,48 @@ function replaceVrRolePeer(
   activeRooms.set(roomCode, room)
   incomingSocket.join(roomCode)
 
-  logger.info('socket.room.vr_role_peer_replaced', {
+  logger.info(ROLE_PEER_REPLACED_LOG_EVENT[roomPeerRole], {
     roomCode,
     replacedSocketId,
     activePeerSocketId: incomingSocket.id,
+    role: roomPeerRole,
     consoleActivePeerSocketId:
       room.roleSlots[ROOM_PEER_ROLE.Console].activePeerSocketId,
-  })
-
-  if (replacedSocket) {
-    replacedSocket.emit(ROOM_EVENT.ReplacementNotice, {
-      roomCode,
-      role: ROOM_PEER_ROLE.Vr,
-      replacedBySocketId: incomingSocket.id,
-      timestamp: Date.now(),
-    } satisfies ReplacementNoticePayload)
-    replacedSocket.disconnect(true)
-  }
-
-  registerRoomEvents(roomCode, room, incomingSocket, ROOM_PEER_ROLE.Vr, {
-    emitMemberJoined: false,
-  })
-}
-
-function replaceConsoleRolePeer(
-  roomCode: string,
-  room: Room,
-  incomingSocket: SocketWithRole,
-) {
-  const roleSlot = room.roleSlots[ROOM_PEER_ROLE.Console]
-  const replacedSocketId = roleSlot.activePeerSocketId!
-  const replacedSocket = incomingSocket.nsp.sockets.get(replacedSocketId)
-
-  roleSlot.activePeerSocketId = incomingSocket.id
-  activeRooms.set(roomCode, room)
-  incomingSocket.join(roomCode)
-
-  logger.info('socket.room.console_role_peer_replaced', {
-    roomCode,
-    replacedSocketId,
-    activePeerSocketId: incomingSocket.id,
     vrActivePeerSocketId: room.roleSlots[ROOM_PEER_ROLE.Vr].activePeerSocketId,
   })
 
   if (replacedSocket) {
     replacedSocket.emit(ROOM_EVENT.ReplacementNotice, {
       roomCode,
-      role: ROOM_PEER_ROLE.Console,
+      role: roomPeerRole,
       replacedBySocketId: incomingSocket.id,
       timestamp: Date.now(),
     } satisfies ReplacementNoticePayload)
     replacedSocket.disconnect(true)
   }
 
-  registerRoomEvents(roomCode, room, incomingSocket, ROOM_PEER_ROLE.Console, {
+  registerRoomEvents(roomCode, room, incomingSocket, roomPeerRole, {
     emitMemberJoined: false,
   })
+}
+
+function registerSocketHandlers(
+  roomCode: string,
+  socket: SocketWithRole,
+  isSim: boolean,
+) {
+  registerConnectionEvents(roomCode, socket)
+
+  if (isSim) {
+    for (const key in vrCommSim) {
+      vrCommSim[key as keyof typeof vrCommSim](roomCode, socket)
+    }
+    return
+  }
+
+  registerRelayEvents(PROGRAM_RELAY, roomCode, socket)
+  registerRelayEvents(CASTING_RELAY, roomCode, socket)
+  registerRelayEvents(DEVICE_RELAY, roomCode, socket)
 }
 
 // ── Public API ─────────────────────────────────────────────────────────────
@@ -348,49 +340,8 @@ export function connectionHandler(socket: Socket) {
   const roleSlot = room.roleSlots[roomPeerRole]
 
   if (roleSlot.activePeerSocketId !== null) {
-    if (roomPeerRole === ROOM_PEER_ROLE.Vr) {
-      replaceVrRolePeer(roomCode, room, socketWithRole)
-      registerConnectionEvents(roomCode, socket)
-
-      if (isSim) {
-        for (const key in vrCommSim) {
-          vrCommSim[key as keyof typeof vrCommSim](roomCode, socket)
-        }
-      } else {
-        registerRelayEvents(PROGRAM_RELAY, roomCode, socket)
-        registerRelayEvents(CASTING_RELAY, roomCode, socket)
-        registerRelayEvents(DEVICE_RELAY, roomCode, socket)
-      }
-      return
-    }
-
-    if (roomPeerRole === ROOM_PEER_ROLE.Console) {
-      replaceConsoleRolePeer(roomCode, room, socketWithRole)
-      registerConnectionEvents(roomCode, socket)
-
-      if (isSim) {
-        for (const key in vrCommSim) {
-          vrCommSim[key as keyof typeof vrCommSim](roomCode, socket)
-        }
-      } else {
-        registerRelayEvents(PROGRAM_RELAY, roomCode, socket)
-        registerRelayEvents(CASTING_RELAY, roomCode, socket)
-        registerRelayEvents(DEVICE_RELAY, roomCode, socket)
-      }
-      return
-    }
-
-    logger.warn('socket.room.role_slot_occupied', {
-      socketId: socket.id,
-      roomCode,
-      role: roomPeerRole,
-      activePeerSocketId: roleSlot.activePeerSocketId,
-      handshakeQuery: socket.handshake.query,
-    })
-    rejectConnection(socket, 'role_slot_occupied', 'Room is full', {
-      roomCode,
-      role: roomPeerRole,
-    })
+    replaceRolePeer(roomCode, room, socketWithRole, roomPeerRole)
+    registerSocketHandlers(roomCode, socketWithRole, isSim)
     return
   }
 
@@ -408,17 +359,7 @@ export function connectionHandler(socket: Socket) {
   })
 
   registerRoomEvents(roomCode, room, socketWithRole, roomPeerRole)
-  registerConnectionEvents(roomCode, socket)
-
-  if (isSim) {
-    for (const key in vrCommSim) {
-      vrCommSim[key as keyof typeof vrCommSim](roomCode, socket)
-    }
-  } else {
-    registerRelayEvents(PROGRAM_RELAY, roomCode, socket)
-    registerRelayEvents(CASTING_RELAY, roomCode, socket)
-    registerRelayEvents(DEVICE_RELAY, roomCode, socket)
-  }
+  registerSocketHandlers(roomCode, socketWithRole, isSim)
 }
 
 // ── Stale room cleanup ────────────────────────────────────────────────────

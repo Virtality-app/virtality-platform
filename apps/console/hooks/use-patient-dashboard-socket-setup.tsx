@@ -183,6 +183,10 @@ const usePatientDashboardSocketSetup = ({
   }
 
   const handleStartAck = async () => {
+    if (!shouldCreatePatientSessionOnStartAck(programState)) {
+      return
+    }
+
     const persistenceInput = buildStartAckPersistenceInput({
       programState,
       exercises,
@@ -192,12 +196,7 @@ const usePatientDashboardSocketSetup = ({
     })
 
     if (!persistenceInput) {
-      if (
-        shouldCreatePatientSessionOnStartAck(programState) &&
-        !exercises?.length
-      ) {
-        handlePersistenceFailureAfterStartAck()
-      }
+      handlePersistenceFailureAfterStartAck()
       return
     }
 
