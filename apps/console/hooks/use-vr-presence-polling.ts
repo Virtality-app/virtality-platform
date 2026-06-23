@@ -5,6 +5,7 @@ import type { Device } from '@virtality/db'
 import {
   buildDevicePresenceById,
   createPresenceSocket,
+  ensurePresenceSocketConnected,
   getPairedDeviceRoomCodes,
   queryVrPresence,
   VR_PRESENCE_POLL_INTERVAL_MS,
@@ -39,62 +40,43 @@ export function useVrPresencePolling({
 
     const socket = createPresenceSocket()
     let cancelled = false
-    let intervalId: ReturnType<typeof setInterval> | undefined
+
+    const completePoll = (presence?: Record<string, boolean>) => {
+      if (cancelled) {
+        return
+      }
+
+      if (presence !== undefined) {
+        setPresenceByRoomCode(presence)
+      }
+
+      setHasPolled(true)
+    }
 
     const pollPresence = async () => {
       const roomCodes = getPairedDeviceRoomCodes(devicesRef.current)
       if (roomCodes.length === 0) {
-        if (!cancelled) {
-          setPresenceByRoomCode({})
-          setHasPolled(true)
-        }
+        completePoll({})
         return
       }
 
       try {
-        if (!socket.connected) {
-          await new Promise<void>((resolve, reject) => {
-            const onConnect = () => {
-              cleanup()
-              resolve()
-            }
-            const onConnectError = (error: Error) => {
-              cleanup()
-              reject(error)
-            }
-            const cleanup = () => {
-              socket.off('connect', onConnect)
-              socket.off('connect_error', onConnectError)
-            }
-
-            socket.on('connect', onConnect)
-            socket.on('connect_error', onConnectError)
-            socket.connect()
-          })
-        }
-
+        await ensurePresenceSocketConnected(socket)
         const response = await queryVrPresence(socket, roomCodes)
-        if (!cancelled) {
-          setPresenceByRoomCode(response.presence)
-          setHasPolled(true)
-        }
+        completePoll(response.presence)
       } catch {
-        if (!cancelled) {
-          setHasPolled(true)
-        }
+        completePoll()
       }
     }
 
     void pollPresence()
-    intervalId = setInterval(() => {
+    const intervalId = setInterval(() => {
       void pollPresence()
     }, VR_PRESENCE_POLL_INTERVAL_MS)
 
     return () => {
       cancelled = true
-      if (intervalId) {
-        clearInterval(intervalId)
-      }
+      clearInterval(intervalId)
       socket.disconnect()
     }
   }, [enabled])

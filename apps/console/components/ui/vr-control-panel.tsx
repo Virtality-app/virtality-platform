@@ -19,7 +19,7 @@ import { usePatientDashboard } from '@/context/patient-dashboard-context'
 import { subscribe, createDeviceEmitter } from '@/lib/device-event-controller'
 import { ROOM_EVENT } from '@virtality/shared/types'
 import { useVrPresencePolling } from '@/hooks/use-vr-presence-polling'
-import type { DeviceVrPresenceStatus } from '@/lib/vr-presence-status'
+import type { DeviceVrPresenceStatus } from '@/lib/vr-presence'
 
 function getClientConnectionColorClass(
   connectionState: SocketConnectionState,
@@ -50,13 +50,29 @@ function getClientConnectionLabel(
   }
 }
 
-const VRControlPanel = ({
-  devices,
-  isOpen,
-}: {
+type VRControlPanelProps = {
   devices: VRDevice[]
   isOpen: boolean
-}) => {
+}
+
+function DevicePresenceStatus({ status }: { status: DeviceVrPresenceStatus }) {
+  switch (status) {
+    case 'loading':
+      return <Loader2 className='text-muted-foreground size-4 animate-spin' />
+    case 'online':
+      return <span className='text-green-500'>Online</span>
+    case 'offline':
+      return <span className='text-red-500'>Offline</span>
+    case 'unpaired':
+      return <span className='text-muted-foreground'>Unpaired</span>
+    default: {
+      const unhandledStatus: never = status
+      return unhandledStatus
+    }
+  }
+}
+
+const VRControlPanel = ({ devices, isOpen }: VRControlPanelProps) => {
   const { state, handler, patientId } = usePatientDashboard()
   const { selectedDevice } = state
   const { setSelectedDevice } = handler
@@ -209,16 +225,3 @@ const VRControlPanel = ({
 }
 
 export default VRControlPanel
-
-function DevicePresenceStatus({ status }: { status: DeviceVrPresenceStatus }) {
-  switch (status) {
-    case 'loading':
-      return <Loader2 className='text-muted-foreground size-4 animate-spin' />
-    case 'online':
-      return <span className='text-green-500'>Online</span>
-    case 'offline':
-      return <span className='text-red-500'>Offline</span>
-    case 'unpaired':
-      return <span className='text-muted-foreground'>Unpaired</span>
-  }
-}
