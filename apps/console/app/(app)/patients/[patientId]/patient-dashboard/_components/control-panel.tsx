@@ -54,7 +54,10 @@ import { Switch } from '@/components/ui/switch'
 import { Label } from '@virtality/ui/components/label'
 import { useFeatureFlagResult } from 'posthog-js/react'
 import { resolveSavedHeadsetSelection } from '@/lib/patient-dashboard-device-selection'
-import { canLaunchTreatment } from '@/lib/patient-dashboard-treatment-launch'
+import {
+  canLaunchTreatment,
+  getTreatmentLaunchError,
+} from '@/lib/patient-dashboard-treatment-launch'
 import { useVrHeadsetPresence } from '@/hooks/use-vr-headset-presence'
 
 let wakeLock: WakeLockSentinel | null = null
@@ -125,10 +128,11 @@ const ControlPanel = ({
     if (!exercises?.length)
       return ErrorToasty('Please select program or use quick start!')
 
-    if (!connected) return ErrorToasty('Please connect with a device!')
-
-    if (!treatmentLaunchReady)
-      return ErrorToasty('Waiting for the VR headset to connect.')
+    const launchError = getTreatmentLaunchError({
+      consoleConnected: connected,
+      headsetPresent,
+    })
+    if (launchError) return ErrorToasty(launchError)
 
     if (!state.selectedAvatar || !state.selectedMap)
       return toast.error(
@@ -219,10 +223,11 @@ const ControlPanel = ({
         'You need to select both an avatar and map. Find them in Scene Settings.',
       )
 
-    if (!connected) return ErrorToasty('Please connect with a device!')
-
-    if (!treatmentLaunchReady)
-      return ErrorToasty('Waiting for the VR headset to connect.')
+    const launchError = getTreatmentLaunchError({
+      consoleConnected: connected,
+      headsetPresent,
+    })
+    if (launchError) return ErrorToasty(launchError)
 
     const payload = {
       settings: {
@@ -334,6 +339,10 @@ const Controls = ({
   skipExercise,
 }: ControlsProps) => {
   const StartProgramButton = useRef<HTMLButtonElement>(null)
+  const needsHeadsetForLaunch = isProgramInactive || isProgramPaused
+  const isStartDisabled =
+    isProgramLaunching || (needsHeadsetForLaunch && !treatmentLaunchReady)
+  const isWarmupStartDisabled = isProgramInactive && !treatmentLaunchReady
 
   useEffect(() => {
     const buttonRef = StartProgramButton.current
@@ -376,10 +385,7 @@ const Controls = ({
             variant='primary'
             size='icon'
             onClick={programStart}
-            disabled={
-              isProgramLaunching ||
-              ((isProgramInactive || isProgramPaused) && !treatmentLaunchReady)
-            }
+            disabled={isStartDisabled}
           >
             {isProgramInactive || isProgramPaused ? (
               <PlayCircle className='size-6' />
@@ -416,7 +422,7 @@ const Controls = ({
             variant={isProgramInactive ? 'primary' : 'destructive'}
             size='icon'
             onClick={handleWarmupStart}
-            disabled={isProgramInactive && !treatmentLaunchReady}
+            disabled={isWarmupStartDisabled}
           >
             {isProgramInactive ? (
               <PlayCircle className='size-6' />

@@ -53,11 +53,15 @@ describe('patient dashboard session launch seam', () => {
     const controlPanelSource = readConsoleFile(
       'app/(app)/patients/[patientId]/patient-dashboard/_components/control-panel.tsx',
     )
+    const treatmentLaunchSource = readConsoleFile(
+      'lib/patient-dashboard-treatment-launch.ts',
+    )
 
     expect(controlPanelSource).toMatch(/useVrHeadsetPresence/)
     expect(controlPanelSource).toMatch(/canLaunchTreatment/)
+    expect(controlPanelSource).toMatch(/getTreatmentLaunchError/)
     expect(controlPanelSource).toMatch(/treatmentLaunchReady/)
-    expect(controlPanelSource).toMatch(
+    expect(treatmentLaunchSource).toMatch(
       /Waiting for the VR headset to connect\./,
     )
   })

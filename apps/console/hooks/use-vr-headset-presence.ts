@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { ROOM_EVENT } from '@virtality/shared/types'
 import { createDeviceEmitter, subscribe } from '@/lib/device-event-controller'
-import { resolveHeadsetPresentFromDeviceStatus } from '@/lib/patient-dashboard-treatment-launch'
+import { resolveHeadsetPresentFromDeviceStatus } from '@/lib/vr-headset-presence'
 import type { VRDevice } from '@/types/models'
 
 export function useVrHeadsetPresence(device?: VRDevice | null) {
@@ -16,8 +16,10 @@ export function useVrHeadsetPresence(device?: VRDevice | null) {
       return
     }
 
+    const markAbsent = () => setHeadsetPresent(false)
+
     if (!socket.connected) {
-      setHeadsetPresent(false)
+      markAbsent()
     }
 
     const emitter = createDeviceEmitter(socket)
@@ -25,20 +27,16 @@ export function useVrHeadsetPresence(device?: VRDevice | null) {
       setHeadsetPresent(resolveHeadsetPresentFromDeviceStatus(response.status))
     })
 
-    const onDisconnect = () => {
-      setHeadsetPresent(false)
-    }
-
     const unsubscribeRoomEvents = subscribe(socket, ROOM_EVENT, {
       RoomComplete: () => setHeadsetPresent(true),
-      MemberLeft: () => setHeadsetPresent(false),
+      MemberLeft: markAbsent,
     })
 
-    socket.on('disconnect', onDisconnect)
+    socket.on('disconnect', markAbsent)
 
     return () => {
       unsubscribeRoomEvents()
-      socket.off('disconnect', onDisconnect)
+      socket.off('disconnect', markAbsent)
     }
   }, [device])
 

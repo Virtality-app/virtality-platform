@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   canLaunchTreatment,
-  resolveHeadsetPresentFromDeviceStatus,
+  getTreatmentLaunchError,
+  TREATMENT_LAUNCH_ERROR,
 } from './patient-dashboard-treatment-launch.js'
 
 describe('patient dashboard treatment launch gating', () => {
@@ -39,12 +40,31 @@ describe('patient dashboard treatment launch gating', () => {
   })
 })
 
-describe('resolveHeadsetPresentFromDeviceStatus', () => {
-  it('treats active device status as headset present', () => {
-    expect(resolveHeadsetPresentFromDeviceStatus('active')).toBe(true)
+describe('getTreatmentLaunchError', () => {
+  it('reports console disconnection before headset absence', () => {
+    expect(
+      getTreatmentLaunchError({
+        consoleConnected: false,
+        headsetPresent: false,
+      }),
+    ).toBe(TREATMENT_LAUNCH_ERROR.consoleDisconnected)
   })
 
-  it('treats inactive device status as headset absent', () => {
-    expect(resolveHeadsetPresentFromDeviceStatus('inactive')).toBe(false)
+  it('reports headset absence when the console is connected', () => {
+    expect(
+      getTreatmentLaunchError({
+        consoleConnected: true,
+        headsetPresent: false,
+      }),
+    ).toBe(TREATMENT_LAUNCH_ERROR.headsetAbsent)
+  })
+
+  it('returns null when launch is ready', () => {
+    expect(
+      getTreatmentLaunchError({
+        consoleConnected: true,
+        headsetPresent: true,
+      }),
+    ).toBeNull()
   })
 })

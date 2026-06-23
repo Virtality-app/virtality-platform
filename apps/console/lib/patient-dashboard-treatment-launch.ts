@@ -3,6 +3,11 @@ export type TreatmentLaunchReadiness = {
   headsetPresent: boolean
 }
 
+export const TREATMENT_LAUNCH_ERROR = {
+  consoleDisconnected: 'Please connect with a device!',
+  headsetAbsent: 'Waiting for the VR headset to connect.',
+} as const
+
 export function canLaunchTreatment({
   consoleConnected,
   headsetPresent,
@@ -10,8 +15,17 @@ export function canLaunchTreatment({
   return consoleConnected && headsetPresent
 }
 
-export function resolveHeadsetPresentFromDeviceStatus(
-  status: 'active' | 'inactive',
-): boolean {
-  return status === 'active'
+export function getTreatmentLaunchError({
+  consoleConnected,
+  headsetPresent,
+}: TreatmentLaunchReadiness): string | null {
+  if (!consoleConnected) {
+    return TREATMENT_LAUNCH_ERROR.consoleDisconnected
+  }
+
+  if (!headsetPresent) {
+    return TREATMENT_LAUNCH_ERROR.headsetAbsent
+  }
+
+  return null
 }
