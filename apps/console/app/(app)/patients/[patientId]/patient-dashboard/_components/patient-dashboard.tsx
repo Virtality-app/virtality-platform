@@ -7,20 +7,14 @@ import QuickStartDialog from './quickstart-dialog'
 import { ExerciseLibraryProvider } from '@/context/exercise-library-context'
 import SessionNotesCard from './session-notes-card'
 import useIsAuthed from '@/hooks/use-is-authed'
-import { Button } from '@virtality/ui/components/button'
 import { useCastingHandshake } from '@/hooks/use-casting-handshake'
 import { usePatientDashboard } from '@/context/patient-dashboard-context'
 import useSocketConnection from '@/hooks/use-socket-connection'
 import { useState } from 'react'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@virtality/ui/components/card'
 import { cn } from '@/lib/utils'
 import { trackAnalyticsEvent } from '@/lib/analytics-contract'
 import useNow from '@/hooks/use-now'
+import { CastingPanel } from '@/components/ui/casting-panel'
 
 const PatientDashboard = () => {
   useIsAuthed()
@@ -125,41 +119,13 @@ function CastingContent({ className }: { className?: string }) {
   }
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <CardTitle>Casting</CardTitle>
-      </CardHeader>
-      <CardContent className='flex h-full flex-col gap-4'>
-        <div className='flex flex-wrap items-center gap-4'>
-          <Button
-            onClick={handleStartCasting}
-            disabled={!connected || status !== 'idle'}
-          >
-            Start casting
-          </Button>
-          <Button
-            variant='outline'
-            onClick={handleStopCasting}
-            disabled={status === 'idle'}
-          >
-            Stop casting
-          </Button>
-          <span className='text-muted-foreground text-sm'>
-            Status: {status}
-          </span>
-        </div>
-
-        <div className='flex flex-1 justify-center'>
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            controls
-            className='aspect-video w-full max-w-4xl rounded-lg border bg-black object-contain'
-          />
-        </div>
-      </CardContent>
-    </Card>
+    <CastingPanel
+      className={className}
+      connected={connected}
+      status={status}
+      videoRef={videoRef}
+      onStartCasting={handleStartCasting}
+      onStopCasting={handleStopCasting}
+    />
   )
 }
