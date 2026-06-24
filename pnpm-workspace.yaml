@@ -4,6 +4,16 @@ packages:
   - packages/*
   - tooling/*
 
+allowBuilds:
+  '@prisma/engines': true
+  core-js: true
+  esbuild: true
+  prisma: true
+  prisma-zod-generator: true
+  protobufjs: true
+  sharp: true
+  unrs-resolver: true
+
 onlyBuiltDependencies:
   - '@prisma/client'
   - '@prisma/engines'
