@@ -14,7 +14,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+} from '@virtality/ui/components/table'
 import { useDropdownMenuAction } from '@/hooks/use-dropdown-menu-action'
 import useMounted from '@/hooks/use-mounted'
 import {

@@ -25,7 +25,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+} from '@virtality/ui/components/table'
 import { Button } from './button'
 import {
   ChangeEvent,
