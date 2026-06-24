@@ -18,22 +18,43 @@ function pathExists(relativePath: string): boolean {
   }
 }
 
+function expectSharedTableConfiguration(source: string) {
+  expect(
+    source.includes('@virtality/ui/lib/table-defaults') ||
+      source.includes('@virtality/ui/lib/use-resource-table') ||
+      source.includes('useResourceTable'),
+  ).toBe(true)
+}
+
 function expectSharedDataTableKit(source: string) {
   expect(source).toMatch(/@virtality\/ui\/components\/data-table/)
-  expect(source).toMatch(/@virtality\/ui\/lib\/table-defaults/)
+  expectSharedTableConfiguration(source)
   expect(source).not.toMatch(/@\/components\/tables\/data-table/)
   expect(source).not.toMatch(/@\/components\/tables\/tanstack-table/)
 }
 
+function expectFetchLoading(source: string) {
+  expect(source).toMatch(/isPending/)
+  expect(source).toMatch(/isLoading=\{isPending\}/)
+}
+
 describe('console table kit migration', () => {
+  it('migrates patients table to shared kit with fetch loading', () => {
+    const tableSource = readConsoleFile(
+      'app/(app)/patients/_components/patients-table.tsx',
+    )
+
+    expectSharedDataTableKit(tableSource)
+    expectFetchLoading(tableSource)
+  })
+
   it('migrates program library table to shared kit with fetch loading', () => {
     const tableSource = readConsoleFile(
       'app/(app)/programs/_components/program-library-table.tsx',
     )
 
     expectSharedDataTableKit(tableSource)
-    expect(tableSource).toMatch(/isPending/)
-    expect(tableSource).toMatch(/isLoading=\{isPending\}/)
+    expectFetchLoading(tableSource)
   })
 
   it('migrates sessions table to shared kit with parent-aware loading', () => {
