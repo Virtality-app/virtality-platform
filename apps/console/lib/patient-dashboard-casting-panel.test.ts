@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import {
+  CASTING_LOAD_TIMEOUT_MS,
   getCastingControlAction,
   getCastingControlLabel,
   getCastingControlLabelForAction,
   getCastingPlayerView,
   getCastingStatusLabel,
   isCastingControlDisabled,
+  isCastingLoadWindow,
+  shouldShowCastingTimeoutPrompt,
   shouldShowVideoControls,
   shouldShowVideoElement,
 } from './patient-dashboard-casting-panel.js'
@@ -65,6 +68,25 @@ describe('patient dashboard casting panel status label', () => {
     expect(getCastingStatusLabel('negotiating')).toBe('Connecting...')
     expect(getCastingStatusLabel('connected')).toBe('Live')
     expect(getCastingStatusLabel('error')).toBe('Connection failed')
+  })
+})
+
+describe('patient dashboard casting load timeout', () => {
+  it('uses a 30 second casting load window', () => {
+    expect(CASTING_LOAD_TIMEOUT_MS).toBe(30_000)
+  })
+
+  it('tracks the casting load window while requesting or negotiating', () => {
+    expect(isCastingLoadWindow('loading')).toBe(true)
+    expect(isCastingLoadWindow('idle')).toBe(false)
+    expect(isCastingLoadWindow('connected')).toBe(false)
+    expect(isCastingLoadWindow('error')).toBe(false)
+  })
+
+  it('shows the timeout prompt only after the load window expires', () => {
+    expect(shouldShowCastingTimeoutPrompt('loading', false)).toBe(false)
+    expect(shouldShowCastingTimeoutPrompt('loading', true)).toBe(true)
+    expect(shouldShowCastingTimeoutPrompt('connected', true)).toBe(false)
   })
 })
 
