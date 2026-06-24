@@ -34,7 +34,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+} from '@virtality/ui/components/table'
 import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
 
 type Questioner = { title: string; url: string }

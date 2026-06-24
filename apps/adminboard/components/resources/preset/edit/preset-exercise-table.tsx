@@ -3,7 +3,7 @@ import {
   DataTableBody,
   DataTableFooter,
   DataTableHeader,
-} from '@/components/tables/data-table'
+} from '@virtality/ui/components/data-table'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@virtality/ui/components/card'
 import {
@@ -22,15 +22,12 @@ import { getDisplayName, getUUID } from '@/lib/utils'
 import { PresetExercise } from '@virtality/db'
 import {
   ColumnDef,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
   RowData,
   SortingState,
   useReactTable,
   VisibilityState,
 } from '@tanstack/react-table'
+import { tableDefaults } from '@virtality/ui/lib/table-defaults'
 import uniq from 'lodash.uniq'
 import { Info, PlusCircle, PlusSquare } from 'lucide-react'
 import { Fragment, SetStateAction, useMemo, useState } from 'react'
@@ -64,11 +61,8 @@ const PresetExerciseTable = ({
   const table = useReactTable({
     data: data ?? [],
     columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    ...tableDefaults.models,
     onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     state: {
       sorting,
       globalFilter,

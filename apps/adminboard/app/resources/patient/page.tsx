@@ -1,9 +1,9 @@
-import PatientTableDAL from '@/components/resources/patients/patient-table'
+import PatientTable from '@/components/resources/patients/patient-table'
 
 export const dynamic = 'force-dynamic'
 
 const PatientPage = () => {
-  return <PatientTableDAL />
+  return <PatientTable />
 }
 
 export default PatientPage

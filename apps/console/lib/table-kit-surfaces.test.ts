@@ -1,0 +1,69 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { describe, expect, it } from 'vitest'
+
+const consoleRoot = fileURLToPath(new URL('..', import.meta.url))
+
+function readConsoleFile(relativePath: string): string {
+  return readFileSync(join(consoleRoot, relativePath), 'utf8')
+}
+
+function pathExists(relativePath: string): boolean {
+  try {
+    readFileSync(join(consoleRoot, relativePath))
+    return true
+  } catch {
+    return false
+  }
+}
+
+function expectSharedDataTableKit(source: string) {
+  expect(source).toMatch(/@virtality\/ui\/components\/data-table/)
+  expect(source).toMatch(/@virtality\/ui\/lib\/table-defaults/)
+  expect(source).not.toMatch(/@\/components\/tables\/data-table/)
+  expect(source).not.toMatch(/@\/components\/tables\/tanstack-table/)
+}
+
+describe('console table kit migration', () => {
+  it('migrates program library table to shared kit with fetch loading', () => {
+    const tableSource = readConsoleFile(
+      'app/(app)/programs/_components/program-library-table.tsx',
+    )
+
+    expectSharedDataTableKit(tableSource)
+    expect(tableSource).toMatch(/isPending/)
+    expect(tableSource).toMatch(/isLoading=\{isPending\}/)
+  })
+
+  it('migrates sessions table to shared kit with parent-aware loading', () => {
+    const tableSource = readConsoleFile(
+      'app/(app)/patients/[patientId]/profile/_components/sessions-table.tsx',
+    )
+
+    expectSharedDataTableKit(tableSource)
+    expect(tableSource).toMatch(/usesProvidedSessions/)
+    expect(tableSource).toMatch(
+      /isLoading=\{!usesProvidedSessions && isPending\}/,
+    )
+  })
+
+  it('removes programs route-level table skeleton', () => {
+    expect(pathExists('app/(app)/programs/loading.tsx')).toBe(false)
+    expect(pathExists('components/tables/data-table-skeleton.tsx')).toBe(false)
+  })
+
+  it('imports table primitives from the shared UI bucket on forms page', () => {
+    const formsSource = readConsoleFile('app/(app)/forms/page.tsx')
+
+    expect(formsSource).toMatch(/@virtality\/ui\/components\/table/)
+    expect(formsSource).not.toMatch(/@\/components\/ui\/table/)
+  })
+
+  it('removes console-local table kit copies', () => {
+    expect(pathExists('components/tables/data-table.tsx')).toBe(false)
+    expect(pathExists('components/tables/tanstack-table.ts')).toBe(false)
+    expect(pathExists('components/tables/data-table-template.tsx')).toBe(false)
+    expect(pathExists('components/ui/table.tsx')).toBe(false)
+  })
+})

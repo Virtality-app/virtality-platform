@@ -1,62 +1,22 @@
 'use client'
+
 import {
   DataTableBody,
   DataTableFooter,
   DataTableHeader,
-} from '@/components/tables/data-table'
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  useReactTable,
-  VisibilityState,
-} from '@tanstack/react-table'
-import { useState } from 'react'
-import { tableDefaults } from '@/tanstack-tables'
+} from '@virtality/ui/components/data-table'
 import { UserWithRole } from 'better-auth/plugins/admin'
 import { useUsers } from '@virtality/react-query'
+import { useResourceTable } from '@/hooks/use-resource-table'
 import { columns } from './columns'
 
-const UserTableDAL = () => {
-  const { data } = useUsers()
+const UserTable = () => {
+  const { data, isPending } = useUsers()
   const users = (data?.data?.users ?? []) as UserWithRole[]
-
-  return <UserTable data={users} columns={columns} />
-}
-
-export default UserTableDAL
-
-interface UserTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
-}
-
-const UserTable = <TData, TValue>({
-  data,
-  columns,
-}: UserTableProps<TData, TValue>) => {
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [globalFilter, setGlobalFilter] = useState('')
-  const [rowSelection, setRowSelection] = useState({})
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-
-  const table = useReactTable({
-    data,
+  const { table, globalFilter, setGlobalFilter } = useResourceTable({
+    data: users,
     columns,
-    ...tableDefaults.models,
-    state: {
-      sorting,
-      globalFilter,
-      columnFilters,
-      rowSelection,
-      columnVisibility,
-    },
-    onSortingChange: setSorting,
-    onRowSelectionChange: setRowSelection,
-    onGlobalFilterChange: setGlobalFilter,
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
+    enableColumnFilters: true,
   })
 
   return (
@@ -66,8 +26,10 @@ const UserTable = <TData, TValue>({
         globalFilter={globalFilter}
         setGlobalFilter={setGlobalFilter}
       />
-      <DataTableBody table={table} columns={columns} rowNavigation />
+      <DataTableBody table={table} columns={columns} isLoading={isPending} />
       <DataTableFooter table={table} />
     </div>
   )
 }
+
+export default UserTable

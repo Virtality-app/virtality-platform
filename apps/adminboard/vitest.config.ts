@@ -5,10 +5,20 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, '.'),
+      '@virtality/ui': path.resolve(__dirname, '../../packages/ui/src'),
+      '@virtality/react-query/legacy': path.resolve(
+        __dirname,
+        '../../packages/react-query/src/legacy/index.ts',
+      ),
+      '@virtality/react-query': path.resolve(
+        __dirname,
+        '../../packages/react-query/src/index.ts',
+      ),
     },
   },
   test: {
-    environment: 'node',
-    include: ['lib/**/*.test.ts'],
+    environment: 'jsdom',
+    include: ['lib/**/*.test.ts', 'components/**/*.test.tsx'],
+    setupFiles: ['./vitest.setup.ts'],
   },
 })

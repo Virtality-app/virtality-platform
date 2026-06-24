@@ -5,12 +5,12 @@ import {
   useReactTable,
   VisibilityState,
 } from '@tanstack/react-table'
-import { tableDefaults } from '@/components/tables/tanstack-table'
 import {
   DataTableBody,
   DataTableFooter,
   DataTableHeader,
-} from '@/components/tables/data-table'
+} from '@virtality/ui/components/data-table'
+import { tableDefaults } from '@virtality/ui/lib/table-defaults'
 import { useState } from 'react'
 import { usePatientSessions } from '@virtality/react-query'
 import { sessionsColumns } from './sessions-columns'
@@ -33,7 +33,7 @@ const SessionsTable = ({
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 
-  const { data: fetchedSessions } = usePatientSessions({
+  const { data: fetchedSessions, isPending } = usePatientSessions({
     input: {
       where: {
         patientId,
@@ -45,8 +45,9 @@ const SessionsTable = ({
     },
   })
 
+  const usesProvidedSessions = sessionsProp !== undefined
   const tableData =
-    sessionsProp !== undefined ? (sessionsProp ?? []) : (fetchedSessions ?? [])
+    (usesProvidedSessions ? sessionsProp : fetchedSessions) ?? []
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
@@ -65,10 +66,6 @@ const SessionsTable = ({
     onColumnVisibilityChange: setColumnVisibility,
   })
 
-  // const selectedRow = tableData?.filter((_, index) =>
-  //   Object.keys(rowSelection)?.includes(String(index)),
-  // )
-
   const rowNavigation = (id: string) => {
     onSessionSelect(id)
   }
@@ -85,6 +82,7 @@ const SessionsTable = ({
         columns={sessionsColumns}
         rowNavigation={rowNavigation}
         className='flex-1'
+        isLoading={!usesProvidedSessions && isPending}
       />
       <DataTableFooter table={table} />
     </div>

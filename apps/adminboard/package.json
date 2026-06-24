@@ -60,6 +60,8 @@
     "zod": "4.3.6"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "16.3.2",
     "@types/lodash.capitalize": "4.2.1",
     "@types/lodash.startcase": "4.4.0",
     "@types/lodash.uniq": "4.5.0",
@@ -71,6 +73,7 @@
     "autoprefixer": "10.4.21",
     "eslint": "9",
     "eslint-config-next": "16.1.6",
+    "jsdom": "29.1.1",
     "postcss": "8.5.3",
     "prettier": "3.8.1",
     "prettier-plugin-tailwindcss": "0.7.2",

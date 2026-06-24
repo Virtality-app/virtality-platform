@@ -1,32 +1,31 @@
 'use client'
+
 import {
   DataTableBody,
   DataTableFooter,
   DataTableHeader,
-} from '@/components/tables/data-table'
-import {
-  ColumnDef,
-  SortingState,
-  useReactTable,
-  VisibilityState,
-} from '@tanstack/react-table'
-import { useState } from 'react'
-import { columns } from '@/components/referral/columns'
-import { tableDefaults } from '@/tanstack-tables'
-import {
-  useReferralCodes,
-  useCreateReferralCode,
-  useORPC,
-} from '@virtality/react-query'
-import { Button } from '@/components/ui/button'
+} from '@virtality/ui/components/data-table'
 import { PlusSquare } from 'lucide-react'
 import { toast } from 'sonner'
+import {
+  useCreateReferralCode,
+  useORPC,
+  useReferralCodes,
+} from '@virtality/react-query'
+import { columns } from '@/components/referral/columns'
+import { Button } from '@/components/ui/button'
+import { useResourceTable } from '@/hooks/use-resource-table'
 import { getQueryClient } from '@/react-query'
 
-const ReferralTableDAL = () => {
+const ReferralTable = () => {
   const orpc = useORPC()
-  const { data, isLoading } = useReferralCodes()
-  const { mutate: createReferralCode, isPending } = useCreateReferralCode()
+  const { data, isPending } = useReferralCodes()
+  const { mutate: createReferralCode, isPending: isGenerating } =
+    useCreateReferralCode()
+  const { table, globalFilter, setGlobalFilter } = useResourceTable({
+    data: data ?? [],
+    columns,
+  })
 
   const handleGenerate = () => {
     createReferralCode(undefined, {
@@ -43,56 +42,6 @@ const ReferralTableDAL = () => {
     })
   }
 
-  if (isLoading) {
-    return <div className='p-8'>Loading...</div>
-  }
-
-  return (
-    <ReferralTable
-      columns={columns}
-      data={data}
-      onGenerate={handleGenerate}
-      isGenerating={isPending}
-    />
-  )
-}
-
-export default ReferralTableDAL
-
-interface ReferralTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data?: TData[]
-  onGenerate: () => void
-  isGenerating: boolean
-}
-
-const ReferralTable = <TData, TValue>({
-  data,
-  columns,
-  onGenerate,
-  isGenerating,
-}: ReferralTableProps<TData, TValue>) => {
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [globalFilter, setGlobalFilter] = useState('')
-  const [rowSelection, setRowSelection] = useState({})
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-
-  const table = useReactTable({
-    data: data ?? [],
-    columns,
-    ...tableDefaults.models,
-    state: {
-      sorting,
-      globalFilter,
-      rowSelection,
-      columnVisibility,
-    },
-    onSortingChange: setSorting,
-    onRowSelectionChange: setRowSelection,
-    onGlobalFilterChange: setGlobalFilter,
-    onColumnVisibilityChange: setColumnVisibility,
-  })
-
   return (
     <div className='p-8'>
       <DataTableHeader
@@ -103,15 +52,17 @@ const ReferralTable = <TData, TValue>({
         <Button
           variant='primary'
           className='ml-auto flex items-center'
-          onClick={onGenerate}
+          onClick={handleGenerate}
           disabled={isGenerating}
         >
           <PlusSquare />
           {isGenerating ? 'Generating...' : 'Generate'}
         </Button>
       </DataTableHeader>
-      <DataTableBody table={table} columns={columns} />
+      <DataTableBody table={table} columns={columns} isLoading={isPending} />
       <DataTableFooter table={table} />
     </div>
   )
 }
+
+export default ReferralTable

@@ -1,59 +1,20 @@
 'use client'
+
 import {
   DataTableBody,
   DataTableFooter,
   DataTableHeader,
-} from '@/components/tables/data-table'
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  useReactTable,
-  VisibilityState,
-} from '@tanstack/react-table'
-import { useState } from 'react'
-import { tableDefaults } from '@/tanstack-tables'
-import { columns } from './columns'
+} from '@virtality/ui/components/data-table'
 import { useMap } from '@virtality/react-query'
+import { useResourceTable } from '@/hooks/use-resource-table'
+import { columns } from './columns'
 
-const MapTableDAL = () => {
-  const { data } = useMap()
-  return <MapTable columns={columns} data={data} />
-}
-
-export default MapTableDAL
-
-interface MapTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data?: TData[]
-}
-
-const MapTable = <TData, TValue>({
-  data,
-  columns,
-}: MapTableProps<TData, TValue>) => {
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [globalFilter, setGlobalFilter] = useState('')
-  const [rowSelection, setRowSelection] = useState({})
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-
-  const table = useReactTable({
+const MapTable = () => {
+  const { data, isPending } = useMap()
+  const { table, globalFilter, setGlobalFilter } = useResourceTable({
     data: data ?? [],
     columns,
-    ...tableDefaults.models,
-    state: {
-      sorting,
-      globalFilter,
-      columnFilters,
-      rowSelection,
-      columnVisibility,
-    },
-    onSortingChange: setSorting,
-    onRowSelectionChange: setRowSelection,
-    onGlobalFilterChange: setGlobalFilter,
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
+    enableColumnFilters: true,
   })
 
   return (
@@ -63,8 +24,10 @@ const MapTable = <TData, TValue>({
         globalFilter={globalFilter}
         setGlobalFilter={setGlobalFilter}
       />
-      <DataTableBody table={table} columns={columns} rowNavigation />
+      <DataTableBody table={table} columns={columns} isLoading={isPending} />
       <DataTableFooter table={table} />
     </div>
   )
 }
+
+export default MapTable

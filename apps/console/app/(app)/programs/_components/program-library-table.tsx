@@ -5,13 +5,13 @@ import {
   useReactTable,
   VisibilityState,
 } from '@tanstack/react-table'
-import { useMemo, useState } from 'react'
-import { tableDefaults } from '@/components/tables/tanstack-table'
 import {
   DataTableBody,
   DataTableFooter,
   DataTableHeader,
-} from '@/components/tables/data-table'
+} from '@virtality/ui/components/data-table'
+import { tableDefaults } from '@virtality/ui/lib/table-defaults'
+import { useMemo, useState } from 'react'
 import { useReusablePrograms } from '@virtality/react-query'
 import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
 import { filterProgramsBySearch } from '@/lib/program-library'
@@ -30,7 +30,7 @@ export default function ProgramLibraryTable() {
   const [globalFilter, setGlobalFilter] = useState('')
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 
-  const { data: programs } = useReusablePrograms()
+  const { data: programs, isPending } = useReusablePrograms()
   const filteredPrograms = useMemo(
     () => filterProgramsBySearch(programs ?? [], globalFilter),
     [programs, globalFilter],
@@ -50,6 +50,10 @@ export default function ProgramLibraryTable() {
     onGlobalFilterChange: setGlobalFilter,
     onColumnVisibilityChange: setColumnVisibility,
   })
+
+  const rowNavigation = (id: string) => {
+    router.push(`/programs/${id}/edit`)
+  }
 
   return (
     <div className='h-screen-with-nav flex flex-col p-8'>
@@ -73,8 +77,9 @@ export default function ProgramLibraryTable() {
       <DataTableBody
         table={table}
         columns={programLibraryColumns}
-        rowNavigation={(id: string) => router.push(`/programs/${id}/edit`)}
+        rowNavigation={rowNavigation}
         className='flex-1'
+        isLoading={isPending}
       />
       <DataTableFooter table={table} />
     </div>

@@ -1,63 +1,25 @@
 'use client'
+
 import {
   DataTableBody,
   DataTableFooter,
   DataTableHeader,
-} from '@/components/tables/data-table'
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  useReactTable,
-  VisibilityState,
-} from '@tanstack/react-table'
+} from '@virtality/ui/components/data-table'
 import { useState } from 'react'
-import { columns } from '@/components/resources/exercises/columns'
 import { useExercise } from '@virtality/react-query'
-import { tableDefaults } from '@/tanstack-tables'
 import FilterBadge from '@/components/ui/filter-badge'
+import { columns } from '@/components/resources/exercises/columns'
+import { useResourceTable } from '@/hooks/use-resource-table'
 
-const ExerciseTableDAL = () => {
+const ExerciseTable = () => {
   const { data, isPending } = useExercise({ includeDisabled: true })
-  if (isPending) return <div className='p-8'>Loading...</div>
-  return <ExerciseTable columns={columns} data={data ?? []} />
-}
-
-export default ExerciseTableDAL
-
-interface ExerciseTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
-}
-
-const ExerciseTable = <TData, TValue>({
-  data,
-  columns,
-}: ExerciseTableProps<TData, TValue>) => {
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [globalFilter, setGlobalFilter] = useState('')
-  const [rowSelection, setRowSelection] = useState({})
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [enabledFilter, setEnabledFilter] = useState(false)
-
-  const table = useReactTable({
-    data,
-    columns,
-    ...tableDefaults.models,
-    state: {
-      sorting,
-      globalFilter,
-      columnFilters,
-      rowSelection,
-      columnVisibility,
-    },
-    onSortingChange: setSorting,
-    onRowSelectionChange: setRowSelection,
-    onGlobalFilterChange: setGlobalFilter,
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
-  })
+  const { table, globalFilter, setGlobalFilter, setColumnFilters } =
+    useResourceTable({
+      data: data ?? [],
+      columns,
+      enableColumnFilters: true,
+    })
 
   const handleEnabledFilter = () => {
     setEnabledFilter(!enabledFilter)
@@ -78,8 +40,10 @@ const ExerciseTable = <TData, TValue>({
           />
         }
       />
-      <DataTableBody table={table} columns={columns} rowNavigation />
+      <DataTableBody table={table} columns={columns} isLoading={isPending} />
       <DataTableFooter table={table} />
     </div>
   )
 }
+
+export default ExerciseTable

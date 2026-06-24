@@ -1,9 +1,9 @@
-import ReferralTableDAL from '@/components/referral/referral-table'
+import ReferralTable from '@/components/referral/referral-table'
 
 export const dynamic = 'force-dynamic'
 
 const ReferralPage = () => {
-  return <ReferralTableDAL />
+  return <ReferralTable />
 }
 
 export default ReferralPage
