@@ -33,7 +33,7 @@ import { cn } from '@virtality/ui/lib/utils'
 import { AlertCircle } from 'lucide-react'
 import { MouseEvent, ReactNode } from 'react'
 
-const LOADING_ROW_COUNT = 8
+export const DATA_TABLE_LOADING_ROW_COUNT = 8
 
 /** Portaled UI clicks bubble through the React tree into row handlers. */
 export const defaultRowNavigationExceptions = [
@@ -48,16 +48,29 @@ export const defaultRowNavigationExceptions = [
   '[data-slot="button"]',
 ]
 
+function toSelectorList(selectors?: string | string[]): string[] {
+  if (!selectors) return []
+  return Array.isArray(selectors) ? selectors : [selectors]
+}
+
 function getRowNavigationExceptions(
   rowNavigationExceptions?: string | string[],
 ): string[] {
-  const extra = rowNavigationExceptions
-    ? Array.isArray(rowNavigationExceptions)
-      ? rowNavigationExceptions
-      : [rowNavigationExceptions]
-    : []
+  return [
+    ...defaultRowNavigationExceptions,
+    ...toSelectorList(rowNavigationExceptions),
+  ]
+}
 
-  return [...defaultRowNavigationExceptions, ...extra]
+function getRowPresentation(original: unknown) {
+  const record = original as { id?: string; deletedAt?: string | null }
+  const hasDeletedAt = Object.hasOwn(original as object, 'deletedAt')
+  const hasId = Object.hasOwn(original as object, 'id')
+
+  return {
+    id: hasId ? record.id : undefined,
+    isDeleted: hasDeletedAt && record.deletedAt !== null,
+  }
 }
 
 interface DataTableHeaderProps<TData> {
@@ -101,20 +114,16 @@ export function DataTableHeader<TData>({
             {table
               .getAllColumns()
               .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className='capitalize'
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                )
-              })}
+              .map((column) => (
+                <DropdownMenuCheckboxItem
+                  key={column.id}
+                  className='capitalize'
+                  checked={column.getIsVisible()}
+                  onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                >
+                  {column.id}
+                </DropdownMenuCheckboxItem>
+              ))}
           </DropdownMenuContent>
         </DropdownMenu>
         {children}
@@ -143,22 +152,80 @@ export function DataTableBody<TData, TValue>({
 }: DataTableBodyProps<TData, TValue>) {
   'use no memo'
 
-  const rowClickHandler = (e: MouseEvent) => {
-    e.stopPropagation()
+  const rowClickHandler = (event: MouseEvent) => {
+    event.stopPropagation()
     if (!rowNavigation) return
-    const target = e.target as HTMLElement
-    const currTarget = e.currentTarget as HTMLElement
 
-    for (const exception of getRowNavigationExceptions(
+    const target = event.target as HTMLElement
+    const rowElement = event.currentTarget as HTMLElement
+    const navigationExceptions = getRowNavigationExceptions(
       rowNavigationExceptions,
-    )) {
+    )
+
+    for (const exception of navigationExceptions) {
       if (target.closest(exception)) return
     }
 
-    rowNavigation(currTarget.id)
+    rowNavigation(rowElement.id)
   }
 
   const visibleColumns = table.getVisibleLeafColumns()
+  const rows = table.getRowModel().rows
+
+  const renderBodyContent = () => {
+    if (isLoading) {
+      return Array.from({ length: DATA_TABLE_LOADING_ROW_COUNT }).map(
+        (_, rowIndex) => (
+          <TableRow
+            key={`loading-row-${rowIndex}`}
+            data-testid='data-table-skeleton-row'
+          >
+            {visibleColumns.map((column) => (
+              <TableCell key={column.id}>
+                <Skeleton
+                  data-testid='data-table-skeleton-cell'
+                  className='h-5 w-full max-w-48'
+                />
+              </TableCell>
+            ))}
+          </TableRow>
+        ),
+      )
+    }
+
+    if (!rows?.length) {
+      return (
+        <TableRow>
+          <TableCell colSpan={columns.length} className='h-24 text-center'>
+            No results.
+          </TableCell>
+        </TableRow>
+      )
+    }
+
+    return rows.map((row) => {
+      const { id, isDeleted } = getRowPresentation(row.original)
+
+      return (
+        <TableRow
+          id={id}
+          key={row.id}
+          data-state={row.getIsSelected() && 'selected'}
+          onClick={rowClickHandler}
+          className={cn(
+            isDeleted && 'line-through',
+            rowNavigation && 'cursor-pointer',
+          )}
+        >
+          {row.getVisibleCells().map((cell) => (
+            <TableCell key={cell.id}>
+              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            </TableCell>
+          ))}
+        </TableRow>
+      )
+    })
+  }
 
   return (
     <div className={cn('overflow-hidden rounded-md border', className)}>
@@ -166,84 +233,22 @@ export function DataTableBody<TData, TValue>({
         <TableHeader className='sticky top-0 z-10 bg-white dark:bg-zinc-950'>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                return (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                  </TableHead>
-                )
-              })}
+              {headerGroup.headers.map((header) => (
+                <TableHead key={header.id}>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                </TableHead>
+              ))}
             </TableRow>
           ))}
         </TableHeader>
 
         <TableBody aria-busy={isLoading || undefined}>
-          {isLoading ? (
-            Array.from({ length: LOADING_ROW_COUNT }).map((_, rowIndex) => (
-              <TableRow
-                key={`loading-row-${rowIndex}`}
-                data-testid='data-table-skeleton-row'
-              >
-                {visibleColumns.map((column) => (
-                  <TableCell key={column.id}>
-                    <Skeleton
-                      data-testid='data-table-skeleton-cell'
-                      className='h-5 w-full max-w-48'
-                    />
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
-          ) : table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => {
-              const hasDeleted = Object.hasOwn(
-                row.original as object,
-                'deletedAt',
-              )
-
-              const hasId = Object.hasOwn(row.original as object, 'id')
-
-              const isDeleted =
-                hasDeleted &&
-                (row.original as { deletedAt?: string | null }).deletedAt !==
-                  null
-
-              const id = hasId ? (row.original as { id: string }).id : undefined
-
-              return (
-                <TableRow
-                  id={id}
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                  onClick={rowClickHandler}
-                  className={cn(
-                    isDeleted && 'line-through',
-                    rowNavigation && 'cursor-pointer',
-                  )}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              )
-            })
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className='h-24 text-center'>
-                No results.
-              </TableCell>
-            </TableRow>
-          )}
+          {renderBodyContent()}
         </TableBody>
       </Table>
     </div>

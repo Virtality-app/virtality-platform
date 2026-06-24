@@ -5,13 +5,11 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { describe, expect, it } from 'vitest'
-import { DataTableBody } from './data-table.js'
+import { DATA_TABLE_LOADING_ROW_COUNT, DataTableBody } from './data-table.js'
 
 type Row = { id: string; name: string }
 
 const columns: ColumnDef<Row>[] = [{ accessorKey: 'name', header: 'Name' }]
-
-const LOADING_ROW_COUNT = 8
 
 function renderDataTableBody({
   data,
@@ -51,10 +49,10 @@ describe('DataTableBody', () => {
     expect(screen.queryByText('No results.')).not.toBeInTheDocument()
     expect(getTableBody()).toHaveAttribute('aria-busy', 'true')
     expect(screen.getAllByTestId('data-table-skeleton-row')).toHaveLength(
-      LOADING_ROW_COUNT,
+      DATA_TABLE_LOADING_ROW_COUNT,
     )
     expect(screen.getAllByTestId('data-table-skeleton-cell')).toHaveLength(
-      LOADING_ROW_COUNT * columns.length,
+      DATA_TABLE_LOADING_ROW_COUNT * columns.length,
     )
   })
 
