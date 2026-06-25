@@ -2,27 +2,31 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import {
+  LEGACY_LIBRARY_ACCESS_DISABLED,
+  LEGACY_LIBRARY_ACCESS_DISABLED_ON_CATALOG_FIRST_SELECTED_LIST,
+  QUICKSTART_DIALOG_PATH,
+  REUSABLE_PROGRAM_CREATE_FORM_PATH,
+  REUSABLE_PROGRAM_EDIT_FORM_PATH,
+} from './catalog-first-authoring-surface-seams.js'
 
 const consoleRoot = fileURLToPath(new URL('..', import.meta.url))
 
 const EXERCISE_LIBRARY_LIST_PATH = 'components/ui/exercise-library-list.tsx'
 
-/** Catalog-first flows must not expose the legacy library button on selected-list. */
 const CATALOG_FIRST_EXERCISE_LIBRARY_LIST_CONSUMERS = [
   {
-    path: 'app/(app)/patients/[patientId]/patient-dashboard/_components/quickstart-dialog.tsx',
-    legacyLibraryHidden:
-      /<ExerciseLibraryList[\s\S]*?showExerciseLibraryAccess=\{false\}/,
+    path: QUICKSTART_DIALOG_PATH,
+    legacyLibraryHidden: LEGACY_LIBRARY_ACCESS_DISABLED,
   },
   {
-    path: 'app/(app)/programs/[programId]/edit/_components/reusable-program-edit-form.tsx',
-    legacyLibraryHidden:
-      /<ExerciseLibraryList[\s\S]*?showExerciseLibraryAccess=\{false\}/,
+    path: REUSABLE_PROGRAM_EDIT_FORM_PATH,
+    legacyLibraryHidden: LEGACY_LIBRARY_ACCESS_DISABLED,
   },
   {
-    path: 'app/(app)/programs/new/_components/reusable-program-form.tsx',
+    path: REUSABLE_PROGRAM_CREATE_FORM_PATH,
     legacyLibraryHidden:
-      /showExerciseLibraryAccess=\{!isCatalogFirstSelectedListStep\}/,
+      LEGACY_LIBRARY_ACCESS_DISABLED_ON_CATALOG_FIRST_SELECTED_LIST,
   },
 ] as const
 

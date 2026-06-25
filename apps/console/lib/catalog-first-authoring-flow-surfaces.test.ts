@@ -3,68 +3,72 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { CATALOG_FIRST_AUTHORING_STEPS } from './catalog-first-authoring-flow.js'
+import {
+  LEGACY_LIBRARY_ACCESS_DISABLED,
+  LEGACY_LIBRARY_ACCESS_DISABLED_ON_CATALOG_FIRST_SELECTED_LIST,
+  QUICKSTART_DIALOG_PATH,
+  REUSABLE_PROGRAM_CREATE_FLOW_PATH,
+  REUSABLE_PROGRAM_CREATE_FORM_PATH,
+  REUSABLE_PROGRAM_EDIT_FORM_PATH,
+} from './catalog-first-authoring-surface-seams.js'
 import { CATALOG_FIRST_AUTHORING_MANUAL_QA } from './catalog-first-authoring-manual-qa.js'
 import { canSubmitReusableProgram } from './program-library-submit.js'
 import { canQuickStartFinalAction } from './quickstart-authoring-flow.js'
 
 const consoleRoot = fileURLToPath(new URL('..', import.meta.url))
 
-const CREATE_FORM_PATH =
-  'app/(app)/programs/new/_components/reusable-program-form.tsx'
-const CREATE_FLOW_PATH =
-  'app/(app)/programs/new/_components/reusable-program-create-flow.tsx'
-const EDIT_FORM_PATH =
-  'app/(app)/programs/[programId]/edit/_components/reusable-program-edit-form.tsx'
-const QUICKSTART_DIALOG_PATH =
-  'app/(app)/patients/[patientId]/patient-dashboard/_components/quickstart-dialog.tsx'
+type CatalogFirstFlowSurface = {
+  readonly id: string
+  readonly path: string
+  readonly catalogStepPattern: RegExp
+  readonly selectedListPattern: RegExp
+  readonly legacyLibraryHidden: RegExp
+  readonly flowMarker?: RegExp
+  readonly seedPattern?: RegExp
+  readonly requiresCanGoToSelectedList?: boolean
+  readonly companionPath?: string
+  readonly companionPatterns?: readonly RegExp[]
+}
 
-const CATALOG_FIRST_FLOW_SURFACES = [
+const CATALOG_FIRST_FLOW_SURFACES: readonly CatalogFirstFlowSurface[] = [
   {
     id: 'quick-start',
     path: QUICKSTART_DIALOG_PATH,
     catalogStepPattern: /isCatalogStep/,
     selectedListPattern: /isSelectedListStep/,
-    legacyLibraryHidden:
-      /<ExerciseLibraryList[\s\S]*?showExerciseLibraryAccess=\{false\}/,
-    noNestedLibraryDialog: true,
-    seedPattern: null,
+    legacyLibraryHidden: LEGACY_LIBRARY_ACCESS_DISABLED,
     requiresCanGoToSelectedList: false,
   },
   {
     id: 'scratch-create',
-    path: CREATE_FORM_PATH,
+    path: REUSABLE_PROGRAM_CREATE_FORM_PATH,
     catalogStepPattern: /isCatalogFirstCatalogStep/,
     selectedListPattern: /isCatalogFirstSelectedListStep/,
     flowMarker: /editorSource\.kind === 'scratch'/,
     legacyLibraryHidden:
-      /showExerciseLibraryAccess=\{!isCatalogFirstSelectedListStep\}/,
-    noNestedLibraryDialog: true,
-    seedPattern: null,
+      LEGACY_LIBRARY_ACCESS_DISABLED_ON_CATALOG_FIRST_SELECTED_LIST,
   },
   {
     id: 'starter-template-create',
-    path: CREATE_FORM_PATH,
+    path: REUSABLE_PROGRAM_CREATE_FORM_PATH,
     catalogStepPattern: /isCatalogFirstCatalogStep/,
     selectedListPattern: /isCatalogFirstSelectedListStep/,
     flowMarker: /editorSource\.kind === 'template'/,
     legacyLibraryHidden:
-      /showExerciseLibraryAccess=\{!isCatalogFirstSelectedListStep\}/,
-    noNestedLibraryDialog: true,
+      LEGACY_LIBRARY_ACCESS_DISABLED_ON_CATALOG_FIRST_SELECTED_LIST,
     seedPattern: /starterTemplateCatalogSelection/,
-    companionPath: CREATE_FLOW_PATH,
+    companionPath: REUSABLE_PROGRAM_CREATE_FLOW_PATH,
     companionPatterns: [/StarterTemplatePicker/, /setStep\('editor'\)/],
   },
   {
     id: 'reusable-program-edit',
-    path: EDIT_FORM_PATH,
+    path: REUSABLE_PROGRAM_EDIT_FORM_PATH,
     catalogStepPattern: /isCatalogStep/,
     selectedListPattern: /isSelectedListStep/,
-    legacyLibraryHidden:
-      /<ExerciseLibraryList[\s\S]*?showExerciseLibraryAccess=\{false\}/,
-    noNestedLibraryDialog: true,
+    legacyLibraryHidden: LEGACY_LIBRARY_ACCESS_DISABLED,
     seedPattern: /reusableProgramExercisesForCatalogSeed/,
   },
-] as const
+]
 
 function readConsoleFile(relativePath: string): string {
   return readFileSync(join(consoleRoot, relativePath), 'utf8')
@@ -72,10 +76,10 @@ function readConsoleFile(relativePath: string): string {
 
 function expectCatalogFirstAuthoringHook(
   source: string,
-  options: { requiresCanGoToSelectedList?: boolean } = {},
+  {
+    requiresCanGoToSelectedList = true,
+  }: { requiresCanGoToSelectedList?: boolean } = {},
 ) {
-  const { requiresCanGoToSelectedList = true } = options
-
   expect(source).toMatch(/useCatalogFirstAuthoringFlow/)
   expect(source).toMatch(/goToSelectedList/)
   expect(source).toMatch(/goToCatalog/)
@@ -107,15 +111,10 @@ describe('catalog-first authoring rollout seam', () => {
       const source = readConsoleFile(flow.path)
 
       it('wires the shared catalog-first authoring hook', () => {
-        const requiresCanGoToSelectedList =
-          'requiresCanGoToSelectedList' in flow
-            ? flow.requiresCanGoToSelectedList !== false
-            : true
-
         expectCatalogFirstAuthoringHook(source, {
-          requiresCanGoToSelectedList,
+          requiresCanGoToSelectedList: flow.requiresCanGoToSelectedList ?? true,
         })
-        if ('flowMarker' in flow && flow.flowMarker) {
+        if (flow.flowMarker) {
           expect(source).toMatch(flow.flowMarker)
         }
       })
@@ -131,21 +130,22 @@ describe('catalog-first authoring rollout seam', () => {
       })
 
       it('does not expose the nested exercise library dialog path', () => {
-        if (flow.noNestedLibraryDialog) {
-          expectNoLegacyExerciseLibraryPath(source)
-        }
+        expectNoLegacyExerciseLibraryPath(source)
       })
 
-      if (flow.seedPattern) {
+      const seedPattern = flow.seedPattern
+      if (seedPattern) {
         it('seeds catalog selection when the flow opens', () => {
-          expect(source).toMatch(flow.seedPattern)
+          expect(source).toMatch(seedPattern)
         })
       }
 
-      if ('companionPath' in flow && flow.companionPath) {
+      const companionPath = flow.companionPath
+      if (companionPath) {
+        const companionPatterns = flow.companionPatterns ?? []
         it('routes through prerequisite steps before the catalog editor', () => {
-          const companionSource = readConsoleFile(flow.companionPath)
-          for (const pattern of flow.companionPatterns ?? []) {
+          const companionSource = readConsoleFile(companionPath)
+          for (const pattern of companionPatterns) {
             expect(companionSource).toMatch(pattern)
           }
         })
