@@ -8,16 +8,11 @@ import {
 } from '@/components/ui/dialog'
 import { usePatientDashboard } from '@/context/patient-dashboard-context'
 import ExerciseLibraryList from '@/components/ui/exercise-library-list'
+import ExerciseGrid from '@/components/ui/exercise-grid'
 import { Button } from '@virtality/ui/components/button'
-import { useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { ArrowLeft, ArrowRight, Save, Zap } from 'lucide-react'
 import { useExerciseLibrary } from '@/context/exercise-library-context'
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@virtality/ui/components/card'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ExerciseWithSettings } from '@/types/models'
@@ -39,10 +34,9 @@ import {
   useORPC,
 } from '@virtality/react-query'
 import { withRom } from '@/lib/with-rom'
-import {
-  enabledVariantsForSubmit,
-  ZERO_ENABLED_VARIANTS_MESSAGE,
-} from '@/lib/program-submit-enabled-variants'
+import { ZERO_ENABLED_VARIANTS_MESSAGE } from '@/lib/program-submit-enabled-variants'
+import { useCatalogFirstAuthoringFlow } from '@/hooks/use-catalog-first-authoring-flow'
+import { canQuickStartFinalAction } from '@/lib/quickstart-authoring-flow'
 
 const applyExercises = (
   exerciseInfo: Exercise[],
@@ -60,7 +54,6 @@ const applyExercises = (
 const QuickStartDialog = () => {
   const queryClient = getQueryClient()
   const orpc = useORPC()
-  const [dialogState, setDialogState] = useState(0)
   const { data: exerciseInfo } = useExercise()
   const {
     state: { inQuickStart },
@@ -75,6 +68,15 @@ const QuickStartDialog = () => {
     state: { selectedExercises, deferredRemovalIds },
     handler: { updateExercises },
   } = useExerciseLibrary()
+
+  const {
+    isCatalogStep,
+    isSelectedListStep,
+    goToSelectedList,
+    goToCatalog,
+    resetFlow,
+    selectedExerciseCountLabel,
+  } = useCatalogFirstAuthoringFlow()
 
   const { mutateAsync: createReusableProgram } = useCreateReusableProgram({
     onSuccess: (data) => {
@@ -100,6 +102,7 @@ const QuickStartDialog = () => {
         })
 
         updateExercises([])
+        resetFlow()
         updatePatientDashboardState({
           exercises: withRom(formattedExercises),
           inQuickStart: false,
@@ -112,19 +115,32 @@ const QuickStartDialog = () => {
     defaultValues: { name: '' },
   })
 
-  const programDurationEstimate =
-    selectedExercises.reduce((prev, next) => {
-      const mult = next.reps * next.sets * 4
-      const time = prev + next.holdTime + mult + next.restTime
-      return time
-    }, 0) / 60
+  const wasInQuickStartRef = useRef(inQuickStart)
+
+  useEffect(() => {
+    const wasOpen = wasInQuickStartRef.current
+    wasInQuickStartRef.current = inQuickStart
+
+    if (inQuickStart === wasOpen) return
+
+    resetFlow()
+    form.reset({ name: '' })
+  }, [inQuickStart, resetFlow, form])
+
+  const handleOpenChange = (open: boolean) => {
+    setInQuickStart(open)
+  }
 
   const continueHandler = () => {
     if (!exerciseInfo) return
 
+    if (!canQuickStartFinalAction(selectedExercises, deferredRemovalIds)) {
+      return ErrorToasty(ZERO_ENABLED_VARIANTS_MESSAGE)
+    }
+
     posthog.capture('quickstart_continue')
 
-    setDialogState(0)
+    resetFlow()
     updateExercises([])
 
     updatePatientDashboardState({
@@ -134,13 +150,7 @@ const QuickStartDialog = () => {
   }
 
   const saveAsHandler = async (values: ReusableProgramForm) => {
-    if (!values) return
-
-    const enabledVariants = enabledVariantsForSubmit(
-      selectedExercises,
-      deferredRemovalIds,
-    )
-    if (enabledVariants.length === 0) {
+    if (!canQuickStartFinalAction(selectedExercises, deferredRemovalIds)) {
       return ErrorToasty(ZERO_ENABLED_VARIANTS_MESSAGE)
     }
 
@@ -163,44 +173,30 @@ const QuickStartDialog = () => {
     })
   }
 
-  const backBtnHandler = () => {
-    if (dialogState === 0) return
-    setDialogState((ps) => ps - 1)
-  }
-  const nextBtnHandler = () => {
-    if (selectedExercises.length === 0)
-      return ErrorToasty('You need to pick at least one exercise!')
-    setDialogState((ps) => ps + 1)
-  }
+  const canFinalize = canQuickStartFinalAction(
+    selectedExercises,
+    deferredRemovalIds,
+  )
 
   return (
-    <Dialog open={inQuickStart} onOpenChange={setInQuickStart}>
+    <Dialog open={inQuickStart} onOpenChange={handleOpenChange}>
       <DialogContent className='flex h-full max-h-4/5 max-w-none! flex-col overflow-hidden md:w-3xl xl:w-5xl'>
         <DialogHeader>
           <DialogTitle>Quick Start</DialogTitle>
         </DialogHeader>
         <DialogDescription>
-          {dialogState === 0
+          {isCatalogStep
             ? 'Pick some exercise and have the patient working in no time.'
-            : 'Choose to save the program for future use or continue to start immediately'}
+            : 'Tune your selected exercises, then continue or save as a reusable program.'}
         </DialogDescription>
 
-        <div className='flex-1 space-y-4 overflow-hidden'>
-          {dialogState === 0 ? (
-            <ExerciseLibraryList />
+        <div className='flex min-h-0 flex-1 flex-col space-y-4 overflow-hidden'>
+          {isCatalogStep ? (
+            <div className='min-h-0 flex-1 overflow-hidden'>
+              <ExerciseGrid />
+            </div>
           ) : (
             <>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Quickstart Program Overview</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div>Number of exercises: {selectedExercises.length}</div>
-                  <div>
-                    Program duration: ~{Math.floor(programDurationEstimate)} min
-                  </div>
-                </CardContent>
-              </Card>
               <form
                 id='programForm'
                 onSubmit={form.handleSubmit(saveAsHandler)}
@@ -211,35 +207,54 @@ const QuickStartDialog = () => {
                   label={'Program Name'}
                 />
               </form>
+              <div className='min-h-0 flex-1 overflow-auto'>
+                <ExerciseLibraryList showExerciseLibraryAccess={false} />
+              </div>
             </>
           )}
         </div>
 
-        <DialogFooter>
-          {dialogState !== 0 && (
+        <DialogFooter className='items-center gap-2 sm:justify-between'>
+          {isCatalogStep && (
             <>
+              <span className='text-muted-foreground text-sm'>
+                {selectedExerciseCountLabel(selectedExercises.length)}
+              </span>
               <Button
                 type='button'
-                variant='secondary'
-                onClick={backBtnHandler}
+                variant='primary'
+                onClick={goToSelectedList}
               >
-                <ArrowLeft />
-                Back
-              </Button>
-              <Button type='submit' form='programForm'>
-                Save Program <Save />
-              </Button>
-              <Button type='button' variant='primary' onClick={continueHandler}>
-                Continue
-                <Zap />
+                Next
+                <ArrowRight />
               </Button>
             </>
           )}
-          {dialogState === 0 && (
-            <Button type='button' variant='primary' onClick={nextBtnHandler}>
-              Next
-              <ArrowRight />
-            </Button>
+          {isSelectedListStep && (
+            <>
+              <Button type='button' variant='secondary' onClick={goToCatalog}>
+                <ArrowLeft />
+                Back
+              </Button>
+              <div className='flex gap-2'>
+                <Button
+                  type='submit'
+                  form='programForm'
+                  disabled={!canFinalize}
+                >
+                  Save Program <Save />
+                </Button>
+                <Button
+                  type='button'
+                  variant='primary'
+                  onClick={continueHandler}
+                  disabled={!canFinalize}
+                >
+                  Continue
+                  <Zap />
+                </Button>
+              </div>
+            </>
           )}
         </DialogFooter>
       </DialogContent>

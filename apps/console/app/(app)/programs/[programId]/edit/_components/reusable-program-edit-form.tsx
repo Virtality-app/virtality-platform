@@ -22,12 +22,17 @@ import { useExerciseLibrary } from '@/context/exercise-library-context'
 import { useEffect } from 'react'
 import {
   getQueryClient,
+  useExercise,
   useORPC,
   useReusableProgram,
   useUpdateReusableProgram,
   useUpdateReusableProgramExercises,
 } from '@virtality/react-query'
 import { withRom } from '@/lib/with-rom'
+import {
+  reusableProgramExercisesForCatalogSeed,
+  reusableProgramMetadataForEdit,
+} from '@/lib/reusable-program-edit-seed'
 import { toast } from 'react-toastify'
 import {
   ReusableProgramFormSchema,
@@ -52,6 +57,7 @@ const ReusableProgramEditForm = ({
   const { selectedExercises, deferredRemovalIds } = state
   const { updateExercises } = handler
   const { t } = useClientT('common')
+  const { data: exercises, isLoading: isLoadingExercises } = useExercise()
 
   const { data: existingProgram, isLoading } = useReusableProgram({
     id: programId,
@@ -74,7 +80,7 @@ const ReusableProgramEditForm = ({
     })
 
   useEffect(() => {
-    if (!existingProgram) return
+    if (!existingProgram || !exercises) return
 
     if (isStarterTemplateProgram(existingProgram)) {
       toast.error('Starter templates cannot be edited.')
@@ -82,14 +88,24 @@ const ReusableProgramEditForm = ({
       return
     }
 
-    updateExercises(withRom(existingProgram.exercises))
+    const seededExercises = reusableProgramExercisesForCatalogSeed(
+      existingProgram.exercises,
+      exercises,
+    )
+
+    updateExercises(withRom(seededExercises))
+    // Seed once when the edit form opens; keyed on program id and catalog.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [existingProgram])
+  }, [existingProgram?.id, exercises])
 
   const form = useForm<ReusableProgramForm>({
     resolver: zodResolver(ReusableProgramFormSchema),
     defaultValues: { name: '' },
-    values: { name: existingProgram?.name ?? '' },
+    values: {
+      name: existingProgram
+        ? reusableProgramMetadataForEdit(existingProgram).name
+        : '',
+    },
   })
 
   const onSubmit = (values: ReusableProgramForm) => {
@@ -108,19 +124,22 @@ const ReusableProgramEditForm = ({
       return
     }
 
-    const exercises = reusableProgramExercisesForEditSubmit(
+    const programExercises = reusableProgramExercisesForEditSubmit(
       selectedExercises,
       deferredRemovalIds,
       programId,
     )
 
     updateProgram({ id: programId, name: values.name.trim() })
-    updateProgramExercises({ reusableProgramId: programId, exercises })
+    updateProgramExercises({
+      reusableProgramId: programId,
+      exercises: programExercises,
+    })
   }
 
   const handleCancel = () => redirect('/programs')
 
-  if (isLoading || isUpdating || isUpdatingExercises) {
+  if (isLoading || isLoadingExercises || isUpdating || isUpdatingExercises) {
     return (
       <div className='h-screen-with-nav container mx-auto flex flex-col gap-6 p-4'>
         <LoadingScreen />

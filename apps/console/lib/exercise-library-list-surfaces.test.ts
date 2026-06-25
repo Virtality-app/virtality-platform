@@ -8,8 +8,10 @@ const consoleRoot = fileURLToPath(new URL('..', import.meta.url))
 const EXERCISE_LIBRARY_LIST_PATH = 'components/ui/exercise-library-list.tsx'
 
 const LEGACY_EXERCISE_LIBRARY_LIST_CONSUMERS = [
-  'app/(app)/programs/new/_components/reusable-program-form.tsx',
   'app/(app)/programs/[programId]/edit/_components/reusable-program-edit-form.tsx',
+] as const
+
+const CATALOG_FIRST_EXERCISE_LIBRARY_LIST_CONSUMERS = [
   'app/(app)/patients/[patientId]/patient-dashboard/_components/quickstart-dialog.tsx',
 ] as const
 
@@ -35,6 +37,26 @@ describe('exercise library list surfaces', () => {
       const source = readConsoleFile(path)
       expect(source).toMatch(/<ExerciseLibraryList/)
       expect(source).not.toMatch(/showExerciseLibraryAccess=\{false\}/)
+    }
+  })
+
+  it('hides legacy exercise library access on scratch catalog-first selected-list', () => {
+    const scratchFormSource = readConsoleFile(
+      'app/(app)/programs/new/_components/reusable-program-form.tsx',
+    )
+
+    expect(scratchFormSource).toMatch(/isScratchSelectedListStep/)
+    expect(scratchFormSource).toMatch(
+      /showExerciseLibraryAccess=\{!isScratchSelectedListStep\}/,
+    )
+  })
+
+  it('hides the legacy library button for catalog-first quick start', () => {
+    for (const path of CATALOG_FIRST_EXERCISE_LIBRARY_LIST_CONSUMERS) {
+      const source = readConsoleFile(path)
+      expect(source).toMatch(
+        /<ExerciseLibraryList[\s\S]*?showExerciseLibraryAccess=\{false\}/,
+      )
     }
   })
 

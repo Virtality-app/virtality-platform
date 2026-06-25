@@ -1,4 +1,4 @@
-import { useReducer } from 'react'
+import { useCallback, useReducer } from 'react'
 import {
   canAdvanceFromCatalogToSelectedList,
   catalogFirstAuthoringFlowReducer,
@@ -15,17 +15,17 @@ export function useCatalogFirstAuthoringFlow() {
     createCatalogFirstAuthoringFlowState,
   )
 
-  const goToSelectedList = () => {
+  const goToSelectedList = useCallback(() => {
     dispatch({ type: 'advanceToSelectedList' })
-  }
+  }, [])
 
-  const goToCatalog = () => {
+  const goToCatalog = useCallback(() => {
     dispatch({ type: 'returnToCatalog' })
-  }
+  }, [])
 
-  const resetFlow = () => {
+  const resetFlow = useCallback(() => {
     dispatch({ type: 'reset' })
-  }
+  }, [])
 
   return {
     step,

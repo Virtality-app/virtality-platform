@@ -5,9 +5,10 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useClientT } from '@/i18n/use-client-t'
 import { useRouter } from 'next/navigation'
-import { H2 } from '@/components/ui/typography'
+import { H2, P } from '@/components/ui/typography'
 import capitalize from 'lodash.capitalize'
 import ExerciseLibraryList from '@/components/ui/exercise-library-list'
+import ExerciseGrid from '@/components/ui/exercise-grid'
 import {
   Form,
   FormControl,
@@ -39,9 +40,10 @@ import {
 } from '@/lib/program-library-submit'
 import { ZERO_ENABLED_VARIANTS_MESSAGE } from '@/lib/program-submit-enabled-variants'
 import {
-  starterTemplateExercisesForEditor,
+  starterTemplateCatalogSelection,
   suggestedProgramNameFromTemplate,
 } from '@/lib/starter-template-create'
+import { useCatalogFirstAuthoringFlow } from '@/hooks/use-catalog-first-authoring-flow'
 
 type EditorSource =
   | { kind: 'scratch' }
@@ -64,6 +66,15 @@ const ReusableProgramFormView = ({
   const { updateExercises } = handler
   const { t } = useClientT('common')
   const { data: exercises, isLoading: isLoadingExercises } = useExercise()
+  const isScratch = editorSource.kind === 'scratch'
+  const {
+    isCatalogStep,
+    isSelectedListStep,
+    goToSelectedList,
+    goToCatalog,
+    selectedExerciseCountLabel,
+    canGoToSelectedList,
+  } = useCatalogFirstAuthoringFlow()
 
   const { mutateAsync: createProgram, isPending: isCreating } =
     useCreateReusableProgram({})
@@ -92,13 +103,13 @@ const ReusableProgramFormView = ({
   useEffect(() => {
     if (editorSource.kind !== 'template' || !exercises) return
 
-    const seededExercises = starterTemplateExercisesForEditor(
+    const catalogSelection = starterTemplateCatalogSelection(
       editorSource.template.exercises,
       exercises,
       generateUUID,
     )
 
-    updateExercises(withRom(seededExercises))
+    updateExercises(withRom(catalogSelection.selectedExercises))
     form.setValue(
       'name',
       suggestedProgramNameFromTemplate(editorSource.template.name),
@@ -140,6 +151,18 @@ const ReusableProgramFormView = ({
 
   const handleCancel = () => router.push('/programs')
 
+  const isScratchSelectedListStep = isScratch && isSelectedListStep
+  const showProgramNameField = !isScratch || isSelectedListStep
+
+  let secondaryNav: { onClick: () => void; label: string }
+  if (isScratchSelectedListStep) {
+    secondaryNav = { onClick: goToCatalog, label: t('btn.back') }
+  } else if (onBack) {
+    secondaryNav = { onClick: onBack, label: t('btn.back') }
+  } else {
+    secondaryNav = { onClick: handleCancel, label: t('btn.cancel') }
+  }
+
   if (
     isCreating ||
     isCreatingExercises ||
@@ -148,6 +171,46 @@ const ReusableProgramFormView = ({
     return (
       <div className='h-screen-with-nav container mx-auto flex flex-col gap-6 p-8'>
         <LoadingScreen />
+      </div>
+    )
+  }
+
+  if (isScratch && isCatalogStep) {
+    const selectedCount = selectedExercises.length
+
+    return (
+      <div className='h-screen-with-nav container mx-auto flex flex-col gap-6 p-8'>
+        <div className='flex h-full max-h-full flex-col space-y-2 overflow-hidden'>
+          <div className='flex items-start justify-between gap-4'>
+            <div>
+              <H2>Create program</H2>
+              <P className='text-muted-foreground'>
+                Choose exercises from the catalog, then review settings before
+                saving.
+              </P>
+            </div>
+
+            <div className='flex shrink-0 items-center gap-3'>
+              <span className='text-muted-foreground text-sm'>
+                {selectedExerciseCountLabel(selectedCount)}
+              </span>
+              <Button onClick={secondaryNav.onClick}>
+                {secondaryNav.label}
+              </Button>
+              <Button
+                variant='primary'
+                onClick={goToSelectedList}
+                disabled={!canGoToSelectedList(selectedCount)}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+
+          <div className='min-h-0 flex-1 overflow-auto'>
+            <ExerciseGrid />
+          </div>
+        </div>
       </div>
     )
   }
@@ -164,11 +227,7 @@ const ReusableProgramFormView = ({
           <H2>{heading}</H2>
 
           <div className='flex gap-2'>
-            {onBack ? (
-              <Button onClick={onBack}>{t('btn.back')}</Button>
-            ) : (
-              <Button onClick={handleCancel}>{t('btn.cancel')}</Button>
-            )}
+            <Button onClick={secondaryNav.onClick}>{secondaryNav.label}</Button>
             <Button variant='primary' form='reusableProgramForm'>
               {t('btn.submit')}
             </Button>
@@ -176,23 +235,27 @@ const ReusableProgramFormView = ({
         </div>
         <Form {...form}>
           <form id='reusableProgramForm' onSubmit={form.handleSubmit(onSubmit)}>
-            <FormField
-              name='name'
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{capitalize(field.name)}</FormLabel>
-                  <FormControl>
-                    <Input {...field} className='max-w-[250px]' />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {showProgramNameField && (
+              <FormField
+                name='name'
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{capitalize(field.name)}</FormLabel>
+                    <FormControl>
+                      <Input {...field} className='max-w-[250px]' />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
           </form>
         </Form>
         <div className='overflow-auto'>
-          <ExerciseLibraryList />
+          <ExerciseLibraryList
+            showExerciseLibraryAccess={!isScratchSelectedListStep}
+          />
         </div>
       </div>
     </div>

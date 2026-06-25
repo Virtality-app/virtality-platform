@@ -34,6 +34,13 @@ export type StarterTemplateEditorExercise = {
   exercise: Exercise
 } & typeof STANDARD_PROGRAM_EXERCISE_SETTINGS
 
+export type StarterTemplateCatalogSelection = {
+  /** Program Exercise rows seeded for catalog-first authoring. */
+  selectedExercises: StarterTemplateEditorExercise[]
+  /** Catalog variant selection keyed by Exercise Variant id (`exerciseId`). */
+  isSelected: Record<string, boolean>
+}
+
 export function sortStarterTemplateExercises<T extends { position: number }>(
   exercises: readonly T[],
 ): T[] {
@@ -73,28 +80,44 @@ export function starterTemplateExerciseNamesForPreview(
   )
 }
 
+function variantSelectionFromEditorExercises(
+  selectedExercises: readonly StarterTemplateEditorExercise[],
+): StarterTemplateCatalogSelection['isSelected'] {
+  return Object.fromEntries(
+    selectedExercises.map((row) => [row.exerciseId, true]),
+  )
+}
+
 export function starterTemplateExercisesForEditor(
   templateExercises: readonly StarterTemplateExerciseRow[],
   catalog: readonly Exercise[],
   generateId: () => string,
 ): StarterTemplateEditorExercise[] {
-  const catalogById = new Map(
-    catalog.map((exercise) => [exercise.id, exercise]),
+  return resolveStarterTemplateCatalogExercises(templateExercises, catalog).map(
+    (exercise) => ({
+      id: generateId(),
+      exerciseId: exercise.id,
+      exercise,
+      ...STANDARD_PROGRAM_EXERCISE_SETTINGS,
+    }),
+  )
+}
+
+export function starterTemplateCatalogSelection(
+  templateExercises: readonly StarterTemplateExerciseRow[],
+  catalog: readonly Exercise[],
+  generateId: () => string,
+): StarterTemplateCatalogSelection {
+  const selectedExercises = starterTemplateExercisesForEditor(
+    templateExercises,
+    catalog,
+    generateId,
   )
 
-  return sortStarterTemplateExercises(templateExercises).flatMap((row) => {
-    const exercise = catalogById.get(row.exerciseId)
-    if (!exercise?.enabled) return []
-
-    return [
-      {
-        id: generateId(),
-        exerciseId: row.exerciseId,
-        exercise,
-        ...STANDARD_PROGRAM_EXERCISE_SETTINGS,
-      },
-    ]
-  })
+  return {
+    selectedExercises,
+    isSelected: variantSelectionFromEditorExercises(selectedExercises),
+  }
 }
 
 export function suggestedProgramNameFromTemplate(templateName: string): string {

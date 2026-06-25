@@ -52,6 +52,15 @@ describe('program library surfaces', () => {
     expect(previewItemSource).not.toMatch(/sets|reps|restTime|holdTime|speed/)
   })
 
+  it('seeds starter template exercises into catalog selection after template pick', () => {
+    const createFormSource = readConsoleFile(
+      'app/(app)/programs/new/_components/reusable-program-form.tsx',
+    )
+
+    expect(createFormSource).toMatch(/starterTemplateCatalogSelection/)
+    expect(createFormSource).toMatch(/suggestedProgramNameFromTemplate/)
+  })
+
   it('requires a name and at least one enabled exercise before saving', () => {
     const createFormSource = readConsoleFile(
       'app/(app)/programs/new/_components/reusable-program-form.tsx',
@@ -87,5 +96,25 @@ describe('program library surfaces', () => {
     expect(editFormSource).toMatch(/isStarterTemplateProgram/)
     expect(editFormSource).toMatch(/Starter templates cannot be edited/)
     expect(editFormSource).toMatch(/router\.replace\('\/programs'\)/)
+  })
+
+  it('seeds catalog selection from existing program exercises without persisting on open', () => {
+    const editFormSource = readConsoleFile(
+      'app/(app)/programs/[programId]/edit/_components/reusable-program-edit-form.tsx',
+    )
+
+    expect(editFormSource).toMatch(/reusableProgramExercisesForCatalogSeed/)
+    expect(editFormSource).toMatch(/reusableProgramMetadataForEdit/)
+    expect(editFormSource).toMatch(
+      /updateExercises\(withRom\(seededExercises\)\)/,
+    )
+    expect(editFormSource).toMatch(/useUpdateReusableProgram\(\{\}\)/)
+    expect(editFormSource).toMatch(/form\.handleSubmit\(onSubmit\)/)
+    expect(editFormSource.indexOf('updateProgram(')).toBeGreaterThan(
+      editFormSource.indexOf('const onSubmit'),
+    )
+    expect(editFormSource.indexOf('updateProgramExercises(')).toBeGreaterThan(
+      editFormSource.indexOf('const onSubmit'),
+    )
   })
 })
