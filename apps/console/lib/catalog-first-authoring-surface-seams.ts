@@ -34,3 +34,16 @@ export const LEGACY_LIBRARY_ACCESS_DISABLED =
 /** Create-form surfaces that hide library access on the catalog-first selected-list step. */
 export const LEGACY_LIBRARY_ACCESS_DISABLED_ON_CATALOG_FIRST_SELECTED_LIST =
   /showExerciseLibraryAccess=\{!isCatalogFirstSelectedListStep\}/
+
+export const QUICKSTART_DIALOG_CONTENT_CLASS_ATTR =
+  /<DialogContent className='([^']+)'/
+
+/** At least 70% viewport width (e.g. w-4/5 = 80%, w-3/4 = 75%). */
+export const VIEWPORT_WIDTH_DIALOG_CLASS = /w-4\/5|w-3\/4|w-\[[7-8]\dvw\]/
+
+/** Breakpoint-specific widths defeat consistent viewport-relative sizing. */
+export const BREAKPOINT_SPECIFIC_WIDTH_CLASS = /\b(?:md|lg|xl|2xl):w-/
+
+export function readQuickstartDialogContentClass(source: string): string {
+  return source.match(QUICKSTART_DIALOG_CONTENT_CLASS_ATTR)?.[1] ?? ''
+}

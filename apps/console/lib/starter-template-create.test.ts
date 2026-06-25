@@ -92,15 +92,15 @@ const catalog = [
 ] as Exercise[]
 
 describe('starter template creation helpers', () => {
-  it('previews enabled exercises in template order without dose or settings', () => {
+  it('previews one row per exercise family in template order without dose or settings', () => {
     const previewExercises = starterTemplateExercisesForPreview(
       unorderedThreeExerciseTemplate,
       catalog,
     )
 
-    expect(previewExercises.map((exercise) => exercise.id)).toEqual([
-      'ex-1',
-      'ex-2',
+    expect(previewExercises.map((exercise) => exercise.id)).toEqual(['ex-1'])
+    expect(previewExercises.map((exercise) => exercise.displayName)).toEqual([
+      'Wrist extension',
     ])
 
     const names = starterTemplateExerciseNamesForPreview(
@@ -108,7 +108,7 @@ describe('starter template creation helpers', () => {
       catalog,
     )
 
-    expect(names).toEqual(['Wrist extension', 'Wrist extension'])
+    expect(names).toEqual(['Wrist extension'])
   })
 
   it('maps template exercises into catalog selection state by variant id', () => {
@@ -139,8 +139,11 @@ describe('starter template creation helpers', () => {
     })
   })
 
-  it('uses partial family selection when the template includes one bilateral variant', () => {
-    const generateId = vi.fn().mockReturnValue('row-1')
+  it('auto-includes both bilateral variants when the template includes one family member', () => {
+    const generateId = vi
+      .fn()
+      .mockReturnValueOnce('row-1')
+      .mockReturnValueOnce('row-2')
 
     const selection = starterTemplateCatalogSelection(
       [
@@ -158,8 +161,16 @@ describe('starter template creation helpers', () => {
       generateId,
     )
 
+    expect(selection.isSelected).toEqual({
+      'ex-1': true,
+      'ex-2': true,
+    })
+    expect(selection.selectedExercises.map((row) => row.exerciseId)).toEqual([
+      'ex-1',
+      'ex-2',
+    ])
     expect(wristFamilySelectionState(catalog, selection.isSelected)).toBe(
-      'partial',
+      'full',
     )
   })
 

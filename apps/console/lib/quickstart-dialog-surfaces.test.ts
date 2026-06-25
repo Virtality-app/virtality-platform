@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
+  BREAKPOINT_SPECIFIC_WIDTH_CLASS,
   PATIENT_DASHBOARD_PATH,
   QUICKSTART_DIALOG_PATH,
   readConsoleFile,
+  readQuickstartDialogContentClass,
+  VIEWPORT_WIDTH_DIALOG_CLASS,
 } from './catalog-first-authoring-surface-seams.js'
 
 describe('quick start dialog surfaces', () => {
@@ -65,5 +68,12 @@ describe('quick start dialog surfaces', () => {
     expect(dashboardSource).toMatch(/<QuickStartDialog\s*\/>/)
     expect(source).toMatch(/<Dialog open=\{inQuickStart\}/)
     expect(dashboardSource).not.toMatch(/quickstart.*route/i)
+  })
+
+  it('sizes the dialog to at least 70% of the viewport width', () => {
+    const dialogContentClass = readQuickstartDialogContentClass(source)
+
+    expect(dialogContentClass).toMatch(VIEWPORT_WIDTH_DIALOG_CLASS)
+    expect(dialogContentClass).not.toMatch(BREAKPOINT_SPECIFIC_WIDTH_CLASS)
   })
 })

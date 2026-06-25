@@ -179,7 +179,7 @@ const QuickStartDialog = () => {
 
   return (
     <Dialog open={inQuickStart} onOpenChange={handleOpenChange}>
-      <DialogContent className='flex h-full max-h-4/5 max-w-none! flex-col overflow-hidden md:w-3xl xl:w-5xl'>
+      <DialogContent className='flex h-full max-h-4/5 w-4/5 max-w-4/5! flex-col overflow-hidden'>
         <DialogHeader>
           <DialogTitle>Quick Start</DialogTitle>
         </DialogHeader>

@@ -5,7 +5,6 @@ import { MouseEvent, useEffect, useRef } from 'react'
 import { Pause, Play } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
 import { Item, ItemContent, ItemTitle } from '@/components/ui/item'
-import { getDisplayName } from '@/lib/utils'
 import type { StarterTemplatePreviewExercise } from '@/lib/starter-template-create'
 
 interface StarterTemplateExercisePreviewItemProps {
@@ -20,7 +19,7 @@ const StarterTemplateExercisePreviewItem = ({
   onPlayingChange,
 }: StarterTemplateExercisePreviewItemProps) => {
   const videoRef = useRef<HTMLVideoElement | null>(null)
-  const label = getDisplayName(exercise) ?? exercise.displayName
+  const label = exercise.displayName
 
   useEffect(() => {
     if (!isPlaying) {
