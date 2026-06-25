@@ -7,11 +7,23 @@ const consoleRoot = fileURLToPath(new URL('..', import.meta.url))
 
 const EXERCISE_LIBRARY_LIST_PATH = 'components/ui/exercise-library-list.tsx'
 
-const LEGACY_EXERCISE_LIBRARY_LIST_CONSUMERS = [] as const
-
+/** Catalog-first flows must not expose the legacy library button on selected-list. */
 const CATALOG_FIRST_EXERCISE_LIBRARY_LIST_CONSUMERS = [
-  'app/(app)/patients/[patientId]/patient-dashboard/_components/quickstart-dialog.tsx',
-  'app/(app)/programs/[programId]/edit/_components/reusable-program-edit-form.tsx',
+  {
+    path: 'app/(app)/patients/[patientId]/patient-dashboard/_components/quickstart-dialog.tsx',
+    legacyLibraryHidden:
+      /<ExerciseLibraryList[\s\S]*?showExerciseLibraryAccess=\{false\}/,
+  },
+  {
+    path: 'app/(app)/programs/[programId]/edit/_components/reusable-program-edit-form.tsx',
+    legacyLibraryHidden:
+      /<ExerciseLibraryList[\s\S]*?showExerciseLibraryAccess=\{false\}/,
+  },
+  {
+    path: 'app/(app)/programs/new/_components/reusable-program-form.tsx',
+    legacyLibraryHidden:
+      /showExerciseLibraryAccess=\{!isCatalogFirstSelectedListStep\}/,
+  },
 ] as const
 
 function readConsoleFile(relativePath: string): string {
@@ -31,32 +43,12 @@ describe('exercise library list surfaces', () => {
     )
   })
 
-  it('keeps legacy flows on the old library button and dialog by default', () => {
-    for (const path of LEGACY_EXERCISE_LIBRARY_LIST_CONSUMERS) {
-      const source = readConsoleFile(path)
+  it('hides legacy exercise library access on all catalog-first selected-list surfaces', () => {
+    for (const consumer of CATALOG_FIRST_EXERCISE_LIBRARY_LIST_CONSUMERS) {
+      const source = readConsoleFile(consumer.path)
       expect(source).toMatch(/<ExerciseLibraryList/)
-      expect(source).not.toMatch(/showExerciseLibraryAccess=\{false\}/)
-    }
-  })
-
-  it('hides legacy exercise library access on catalog-first selected-list', () => {
-    const createFormSource = readConsoleFile(
-      'app/(app)/programs/new/_components/reusable-program-form.tsx',
-    )
-
-    expect(createFormSource).toMatch(/isCatalogFirstCreate/)
-    expect(createFormSource).toMatch(/isCatalogFirstSelectedListStep/)
-    expect(createFormSource).toMatch(
-      /showExerciseLibraryAccess=\{!isCatalogFirstSelectedListStep\}/,
-    )
-  })
-
-  it('hides the legacy library button for catalog-first quick start', () => {
-    for (const path of CATALOG_FIRST_EXERCISE_LIBRARY_LIST_CONSUMERS) {
-      const source = readConsoleFile(path)
-      expect(source).toMatch(
-        /<ExerciseLibraryList[\s\S]*?showExerciseLibraryAccess=\{false\}/,
-      )
+      expect(source).toMatch(consumer.legacyLibraryHidden)
+      expect(source).not.toMatch(/ExerciseLibraryDialog/)
     }
   })
 
