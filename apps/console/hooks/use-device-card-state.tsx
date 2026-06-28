@@ -73,16 +73,17 @@ const useDeviceCardState = ({ device }: useDeviceCardStateProps) => {
   const handleCodeGeneration = async () => {
     try {
       const code = await progressiveRetry()
-      if (code) {
-        dispatch({ type: 'setVerificationCode', payload: code })
-        dispatch({ type: 'setCodeFieldOpen', payload: !state.isCodeFieldOpen })
-        device.mutations.setDeviceRoomCode(code)
-        return code
+      if (!code) {
+        throw new Error('Failed to generate code.')
       }
+
+      dispatch({ type: 'setVerificationCode', payload: code })
+      device.mutations.setDeviceRoomCode(code)
+      return code
     } catch (err) {
       const error = err as Error
       dispatch({ type: 'setError', payload: error.message })
-      throw new Error('Failed to generate code.', error)
+      throw error
     }
   }
 
@@ -109,24 +110,34 @@ const useDeviceCardState = ({ device }: useDeviceCardStateProps) => {
 
   const startPairing = async () => {
     try {
+      dispatch({ type: 'setError', payload: '' })
       dispatch({ type: 'setStatus', payload: 'pairing' })
+
       const code = await handleCodeGeneration()
       await VRConnection()
+
+      dispatch({ type: 'setCodeFieldOpen', payload: true })
 
       store?.setRow('devices', device.data.id, {
         ...devicesLocalData,
         ...state,
         status: 'pairing',
-        verificationCode: code ?? '',
+        verificationCode: code,
         isCodeFieldOpen: true,
         expirationTimestamp: Date.now(),
       })
 
       hasStartedPairing.current = true
     } catch (err) {
-      const error = err as Error
+      dispatch({ type: 'setStatus', payload: 'unpaired' })
+      dispatch({ type: 'setCodeFieldOpen', payload: false })
 
-      console.log('Failed because: ', error)
+      if (!(err instanceof Error) || !err.message) {
+        dispatch({
+          type: 'setError',
+          payload: 'Unable to start pairing. Please try again.',
+        })
+      }
     }
   }
 

@@ -61,8 +61,13 @@ const DeviceCard = ({ device }: DeviceProps) => {
 
   const handlePairing = () => {
     startPairing()
-    setCountdown(300)
   }
+
+  useEffect(() => {
+    if (isCodeFieldOpen && !error) {
+      setCountdown(300)
+    }
+  }, [isCodeFieldOpen, error])
 
   useEffect(() => {
     if (!device) return
@@ -81,6 +86,7 @@ const DeviceCard = ({ device }: DeviceProps) => {
 
     const onDisconnect = () => {
       if (status === 'paired') return
+      if (error) return
       resetState()
     }
 
@@ -93,35 +99,37 @@ const DeviceCard = ({ device }: DeviceProps) => {
       },
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [device, status])
+  }, [device, status, error])
 
   useEffect(() => {
-    if (countdown <= 0) return
-    const interval = isCodeFieldOpen
-      ? setInterval(() => {
-          setCountdown((prev) => prev - 1)
-        }, 1000)
-      : undefined
+    if (countdown <= 0 || !isCodeFieldOpen || error) return
+
+    const interval = setInterval(() => {
+      setCountdown((prev) => prev - 1)
+    }, 1000)
+
     return () => clearInterval(interval)
-  }, [countdown, isCodeFieldOpen])
+  }, [countdown, isCodeFieldOpen, error])
 
   const renderFooterActions = () => {
-    if (isCodeFieldOpen) {
-      if (error) {
-        return (
-          <div className='flex w-full flex-col'>
-            <div className='flex gap-2'>
-              <Button onClick={cancelPairing} className='flex-1'>
-                Cancel
-              </Button>
-              <Button onClick={startPairing} className='flex-1'>
-                Retry
-              </Button>
-            </div>
-          </div>
-        )
-      }
+    if (error && !isCodeFieldOpen) {
+      return (
+        <div className='flex w-full gap-2'>
+          <Button onClick={cancelPairing} className='flex-1'>
+            Cancel
+          </Button>
+          <Button
+            onClick={handlePairing}
+            disabled={status === 'pairing'}
+            className='flex-1'
+          >
+            Retry
+          </Button>
+        </div>
+      )
+    }
 
+    if (isCodeFieldOpen) {
       return (
         <div className='flex gap-2'>
           <Input
@@ -159,7 +167,12 @@ const DeviceCard = ({ device }: DeviceProps) => {
         >
           Remove
         </Button>
-        <Button variant='default' onClick={handlePairing} className='flex-1'>
+        <Button
+          variant='default'
+          onClick={handlePairing}
+          disabled={status === 'pairing'}
+          className='flex-1'
+        >
           Pair
         </Button>
       </div>
@@ -213,9 +226,21 @@ const DeviceCard = ({ device }: DeviceProps) => {
               )}
             ></span>
           </div>
-          <div className='text-muted-foreground flex items-center justify-between text-sm'>
-            <P className='text-sm'>{device.data.model}</P>
-            {isCodeFieldOpen && <span>Remaining time: {countdown} sec</span>}
+          <div className='text-muted-foreground flex flex-col gap-1 text-sm'>
+            <div className='flex items-center justify-between'>
+              <P className='text-sm'>{device.data.model}</P>
+              {isCodeFieldOpen && !error && (
+                <span>Remaining time: {countdown} sec</span>
+              )}
+            </div>
+            {status === 'pairing' && !isCodeFieldOpen && !error && (
+              <P className='text-sm'>Preparing to pair...</P>
+            )}
+            {error && (
+              <p className='text-destructive text-sm' role='alert'>
+                {error}
+              </p>
+            )}
           </div>
         </div>
       </CardContent>
