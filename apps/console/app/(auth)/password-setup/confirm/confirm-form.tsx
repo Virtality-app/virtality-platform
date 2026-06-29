@@ -38,7 +38,7 @@ const PasswordSetupConfirmForm = ({ token }: { token?: string }) => {
     useApprovePendingPasswordChange({
       onSuccess: async () => {
         await queryClient.invalidateQueries({
-            queryKey: orpc.user.hasPassword.key(),
+          queryKey: orpc.user.hasPassword.key(),
         })
         await queryClient.invalidateQueries({
           queryKey: orpc.pendingPasswordChange.getActive.key(),
