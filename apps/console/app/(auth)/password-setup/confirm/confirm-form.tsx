@@ -23,32 +23,43 @@ import { INVALID_APPROVAL_LINK_MESSAGE } from '@virtality/shared/utils'
 
 type Session = ReturnType<typeof authClient.useSession>['data']
 
-const getReturnPath = (session: Session) =>
-  session?.user ? `/user/${session.user.id}/profile` : '/sign-in'
-
-const getReturnLabel = (session: Session) =>
-  session?.user ? 'Back to profile' : 'Sign in'
-
-const navigateAfterApproval = (
-  router: ReturnType<typeof useRouter>,
+const getReturnNavigation = (
   session: Session,
-) => {
-  router.push(getReturnPath(session))
+  canReturnToProfile: boolean,
+): { href: string; label: string } => {
+  if (canReturnToProfile && session?.user) {
+    return {
+      href: `/user/${session.user.id}/profile`,
+      label: 'Back to profile',
+    }
+  }
+
+  return { href: '/sign-in', label: 'Sign in' }
 }
 
-const InvalidLinkCard = ({ session }: { session: Session }) => (
-  <Card className='w-full max-w-lg'>
-    <CardHeader>
-      <CardTitle className='text-2xl font-bold'>Invalid link</CardTitle>
-      <CardDescription>{INVALID_APPROVAL_LINK_MESSAGE}</CardDescription>
-    </CardHeader>
-    <CardFooter>
-      <Button asChild className='ml-auto'>
-        <Link href={getReturnPath(session)}>{getReturnLabel(session)}</Link>
-      </Button>
-    </CardFooter>
-  </Card>
-)
+const InvalidLinkCard = ({
+  session,
+  canReturnToProfile,
+}: {
+  session: Session
+  canReturnToProfile: boolean
+}) => {
+  const returnNavigation = getReturnNavigation(session, canReturnToProfile)
+
+  return (
+    <Card className='w-full max-w-lg'>
+      <CardHeader>
+        <CardTitle className='text-2xl font-bold'>Invalid link</CardTitle>
+        <CardDescription>{INVALID_APPROVAL_LINK_MESSAGE}</CardDescription>
+      </CardHeader>
+      <CardFooter>
+        <Button asChild className='ml-auto'>
+          <Link href={returnNavigation.href}>{returnNavigation.label}</Link>
+        </Button>
+      </CardFooter>
+    </Card>
+  )
+}
 
 const PasswordSetupConfirmForm = ({ token }: { token?: string }) => {
   const router = useRouter()
@@ -87,7 +98,7 @@ const PasswordSetupConfirmForm = ({ token }: { token?: string }) => {
   }, [inspect, token])
 
   if (!token) {
-    return <InvalidLinkCard session={session} />
+    return <InvalidLinkCard session={session} canReturnToProfile={false} />
   }
 
   if (isInspecting || inspectResult === undefined) {
@@ -106,10 +117,16 @@ const PasswordSetupConfirmForm = ({ token }: { token?: string }) => {
   }
 
   if (!inspectResult.valid) {
-    return <InvalidLinkCard session={session} />
+    return (
+      <InvalidLinkCard
+        session={session}
+        canReturnToProfile={inspectResult.canReturnToProfile}
+      />
+    )
   }
 
   const isChange = inspectResult.kind === 'CHANGE'
+  const returnNavigation = getReturnNavigation(session, true)
 
   if (isApproved) {
     return (
@@ -127,9 +144,9 @@ const PasswordSetupConfirmForm = ({ token }: { token?: string }) => {
         <CardFooter>
           <Button
             className='ml-auto'
-            onClick={() => navigateAfterApproval(router, session)}
+            onClick={() => router.push(returnNavigation.href)}
           >
-            {getReturnLabel(session)}
+            {returnNavigation.label}
           </Button>
         </CardFooter>
       </Card>
@@ -161,7 +178,7 @@ const PasswordSetupConfirmForm = ({ token }: { token?: string }) => {
       </CardContent>
       <CardFooter className='flex gap-2'>
         <Button asChild variant='outline'>
-          <Link href={getReturnPath(session)}>Cancel</Link>
+          <Link href={returnNavigation.href}>Cancel</Link>
         </Button>
         <Button
           className='ml-auto'

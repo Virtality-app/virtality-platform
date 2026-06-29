@@ -40,7 +40,7 @@ export type ActivePendingPasswordChange = {
 
 export type InspectPendingPasswordChangeResult =
   | { valid: true; kind: PendingPasswordChangeKind }
-  | { valid: false }
+  | { valid: false; canReturnToProfile: boolean }
 
 export type CreatePendingPasswordSetupInput = {
   userId: string
@@ -363,18 +363,24 @@ export async function getActivePendingPasswordChange(
   }
 }
 
-async function findValidPendingByToken(
-  deps: PendingPasswordChangeDeps,
+async function findPendingByTokenHash(
+  pendingPasswordChange: PendingPasswordChangeDeps['pendingPasswordChange'],
   token: string,
 ) {
-  const now = deps.now?.() ?? new Date()
   const approvalTokenHash = hashApprovalToken(token)
-  const pending = await deps.pendingPasswordChange.findFirst({
-    where: { approvalTokenHash, status: 'PENDING' },
+  return pendingPasswordChange.findFirst({
+    where: { approvalTokenHash },
     orderBy: { createdAt: 'desc' },
   })
+}
 
-  if (!pending || pending.expiresAt <= now) {
+async function validatePendingTokenRecord(
+  deps: PendingPasswordChangeDeps,
+  pending: NonNullable<Awaited<ReturnType<typeof findPendingByTokenHash>>>,
+) {
+  const now = deps.now?.() ?? new Date()
+
+  if (pending.status !== 'PENDING' || pending.expiresAt <= now) {
     return null
   }
 
@@ -390,16 +396,36 @@ async function findValidPendingByToken(
   return pending
 }
 
+async function findValidPendingByToken(
+  deps: PendingPasswordChangeDeps,
+  token: string,
+) {
+  const record = await findPendingByTokenHash(deps.pendingPasswordChange, token)
+  if (!record) {
+    return null
+  }
+
+  return validatePendingTokenRecord(deps, record)
+}
+
 export async function inspectPendingPasswordChange(
   deps: PendingPasswordChangeDeps,
   token: string,
+  viewerUserId?: string,
 ): Promise<InspectPendingPasswordChangeResult> {
-  const pending = await findValidPendingByToken(deps, token)
-  if (!pending) {
-    return { valid: false }
+  const record = await findPendingByTokenHash(deps.pendingPasswordChange, token)
+  const validPending = record
+    ? await validatePendingTokenRecord(deps, record)
+    : null
+
+  if (validPending) {
+    return { valid: true, kind: validPending.kind }
   }
 
-  return { valid: true, kind: pending.kind }
+  const canReturnToProfile =
+    viewerUserId !== undefined && record?.userId === viewerUserId
+
+  return { valid: false, canReturnToProfile }
 }
 
 export async function approvePendingPasswordSetup(
