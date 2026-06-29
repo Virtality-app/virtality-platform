@@ -140,6 +140,10 @@ _Avoid_: Reordering fully deferred-removal rows
 Deferred removal applies to direction-toggle interactions in the selected-program list; `Remove Selected` remains immediate-delete behavior.
 _Avoid_: Broad removal-semantics changes in the same iteration
 
+**Pending Password Change**:
+An email-approved profile flow where a signed-in user submits a new password, receives an approval email at their verified primary address, and explicitly confirms before the credential is set or changed. Distinct from **password reset**, which is unauthenticated account recovery.
+_Avoid_: Password reset, email verification, pending password setup as a separate concept
+
 ## Example Dialogue
 
 Dev: "Should we list every **Exercise Variant** directly in the picker?"  
