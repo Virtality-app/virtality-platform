@@ -44,6 +44,34 @@ _Avoid_: Completed session, failed launch
 Exercise performance data captured during a **Started Session** and persisted incrementally as treatment progresses.
 _Avoid_: End-only session data, temporary progress
 
+**Completed Rep Measurement**:
+Performance data for a repetition that has actually finished during a **Started Session**. Completed repetition numbers are one-based ordinals in console domain language.
+_Avoid_: In-progress rep, expected rep, skipped rep placeholder
+
+**Completed Set**:
+A set whose prescribed repetitions have finished during a **Started Session**. Completed set numbers are one-based ordinals in console domain language.
+_Avoid_: Current set index, previous set index, zero-based set number
+
+**Progress Save Checkpoint**:
+A treatment transition where the current **Session Progress Record** should be preserved: set completion, **Session Exercise Skip**, normal session end, or **Interrupted Session** handling. A **Completed Rep Measurement** creates progress data; a checkpoint preserves it. A failed immediate remote save should not block treatment when the progress remains recoverable for a later checkpoint or session end.
+_Avoid_: Save every frame, end-only save, rep-as-transaction
+
+**Pending Exercise Change**:
+A clinician-requested exercise change during a **Started Session** that has created a progress-preservation boundary but has not yet been acknowledged by the headset. Only one **Pending Exercise Change** can be in flight; additional exercise changes wait until it resolves. If the headset does not acknowledge the change, the request fails and the previous exercise remains the **Headset-Confirmed Current Exercise**.
+_Avoid_: Current exercise, completed skip
+
+**Headset-Confirmed Current Exercise**:
+The exercise the headset has acknowledged as active during a **Started Session**.
+_Avoid_: Requested exercise, selected list row, optimistic current exercise
+
+**Session Exercise Completion**:
+The normal closure of an exercise attempt after the prescribed repetitions and sets have been completed during a **Started Session**. It is a **Progress Save Checkpoint** but not a **Session Exercise Skip**.
+_Avoid_: Automatic skip, clinician skip, exercise navigation
+
+**Session Exercise Skip**:
+A clinician action during a **Started Session** that closes the current exercise attempt before normal completion, preserves any partial **Session Progress Record** made from **Completed Rep Measurements**, and makes another exercise current after headset acknowledgement. This includes bounded forward/back controls and direct exercise selection; forward/back controls do not wrap around the exercise list. Selecting the already-current exercise is a no-op, not a skip. The skip's progress-preservation boundary is the clinician action, so later headset messages from the previous exercise do not extend the skipped attempt. It does not invent progress for unattempted or in-flight repetitions. It is not simple navigation and it is not an **Interrupted Session**.
+_Avoid_: Exercise navigation, failed exercise, session interruption
+
 **Program Exercise**:
 An exercise and settings entry that belongs to a **Reusable Program**. It represents reusable treatment intent, not patient history.
 _Avoid_: Preset exercise, session exercise, exercise settings row
