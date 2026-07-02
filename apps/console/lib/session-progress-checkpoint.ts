@@ -53,6 +53,17 @@ export function isExerciseLastSet(input: {
   )
 }
 
+export function shouldResetLiveExerciseAfterSetCompletion(input: {
+  currentExerciseIndex: number
+  nextCurrentExerciseIndex: number
+  exerciseCount: number
+}): boolean {
+  return (
+    input.nextCurrentExerciseIndex !== input.currentExerciseIndex &&
+    input.nextCurrentExerciseIndex < input.exerciseCount
+  )
+}
+
 function compactProgressByExerciseId(
   progressByExerciseId: Readonly<
     Record<string, ReadonlyArray<ProgressDataPoint> | undefined>

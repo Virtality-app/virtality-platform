@@ -3,6 +3,7 @@ import { buildSessionExerciseRowsFromWorkingCopy } from './patient-dashboard-ses
 import {
   buildSetCompletionCheckpoint,
   isExerciseLastSet,
+  shouldResetLiveExerciseAfterSetCompletion,
 } from './session-progress-checkpoint.js'
 import type { CompleteExercise } from '@/types/models'
 
@@ -55,6 +56,38 @@ describe('isExerciseLastSet', () => {
         lastCompletedRepIndex: 1,
         prescribedSets: 2,
         prescribedReps: 3,
+      }),
+    ).toBe(false)
+  })
+})
+
+describe('shouldResetLiveExerciseAfterSetCompletion', () => {
+  it('is true when the checkpoint advances to a valid exercise index', () => {
+    expect(
+      shouldResetLiveExerciseAfterSetCompletion({
+        currentExerciseIndex: 2,
+        nextCurrentExerciseIndex: 0,
+        exerciseCount: 3,
+      }),
+    ).toBe(true)
+  })
+
+  it('is false when the checkpoint keeps the same exercise index', () => {
+    expect(
+      shouldResetLiveExerciseAfterSetCompletion({
+        currentExerciseIndex: 1,
+        nextCurrentExerciseIndex: 1,
+        exerciseCount: 3,
+      }),
+    ).toBe(false)
+  })
+
+  it('is false when the next index is outside the exercise list', () => {
+    expect(
+      shouldResetLiveExerciseAfterSetCompletion({
+        currentExerciseIndex: 1,
+        nextCurrentExerciseIndex: 3,
+        exerciseCount: 3,
       }),
     ).toBe(false)
   })

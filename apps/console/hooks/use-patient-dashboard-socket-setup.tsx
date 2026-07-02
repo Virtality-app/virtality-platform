@@ -25,6 +25,7 @@ import {
   buildExerciseSkipCheckpoint,
   buildSetCompletionCheckpoint,
   mutableProgressByExerciseId,
+  shouldResetLiveExerciseAfterSetCompletion,
 } from '@/lib/session-progress-checkpoint'
 import {
   isDirectExerciseSelectionDisabled,
@@ -565,6 +566,17 @@ const usePatientDashboardSocketSetup = ({
       checkpoint.progressByExerciseId,
     )
     currExercise.current = checkpoint.nextCurrentExerciseIndex
+
+    if (
+      shouldResetLiveExerciseAfterSetCompletion({
+        currentExerciseIndex,
+        nextCurrentExerciseIndex: checkpoint.nextCurrentExerciseIndex,
+        exerciseCount: exercises!.length,
+      })
+    ) {
+      applyExerciseAtIndex(checkpoint.nextCurrentExerciseIndex)
+      progressDataClear()
+    }
 
     try {
       await upsertPatientSessionData([checkpoint.upsert])

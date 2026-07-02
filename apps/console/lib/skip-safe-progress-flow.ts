@@ -12,6 +12,7 @@ import {
   buildExerciseSkipCheckpoint,
   buildSetCompletionCheckpoint,
   mutableProgressByExerciseId,
+  shouldResetLiveExerciseAfterSetCompletion,
 } from './session-progress-checkpoint'
 import {
   isDirectExerciseSelectionDisabled,
@@ -218,8 +219,11 @@ export function applySetEndToFlow(
   }
 
   if (
-    checkpoint.nextCurrentExerciseIndex !== currentExerciseIndex &&
-    checkpoint.nextCurrentExerciseIndex < state.sessionExerciseRows.length
+    shouldResetLiveExerciseAfterSetCompletion({
+      currentExerciseIndex,
+      nextCurrentExerciseIndex: checkpoint.nextCurrentExerciseIndex,
+      exerciseCount: state.sessionExerciseRows.length,
+    })
   ) {
     nextState = clearCurrentExerciseProgress(nextState)
   }
