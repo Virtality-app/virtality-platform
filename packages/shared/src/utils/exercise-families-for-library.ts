@@ -55,8 +55,9 @@ export function familyMemberForNearTermDirection<
 }
 
 /**
- * Whether a family card should show full, partial, or no selection highlight when
- * toggling variants individually (PRD #5, GitHub #13).
+ * How many library-selection variants in a family are in the draft.
+ * `partial` vs `full` affects family-card toggle behavior; card highlight uses
+ * the same treatment for both (GitHub #122).
  */
 export function libraryFamilySelectionState(
   members: readonly { id: string }[],

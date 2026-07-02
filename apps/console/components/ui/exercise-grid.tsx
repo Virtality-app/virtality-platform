@@ -310,6 +310,7 @@ const ExerciseGrid = () => {
               selectionMembers,
               isSelected ?? undefined,
             )
+            const isFamilySelected = selectionState !== 'none'
             const rep = family.representative
             const familyFavoriteTargets = selectionMembers.map((m) => ({
               exerciseId: m.id,
@@ -324,8 +325,7 @@ const ExerciseGrid = () => {
                   family,
                   isSelected,
                 )}
-                isSelected={selectionState === 'full'}
-                isPartiallySelected={selectionState === 'partial'}
+                isSelected={isFamilySelected}
                 familyFavoriteTargets={familyFavoriteTargets}
                 onDirectionBadgeClick={(side) =>
                   handleDirectionToggle(family, side)

@@ -64,7 +64,6 @@ interface FlipCardProps {
   directionBadges?: DirectionBadgeHighlight[]
   /** Toggle a single near-term variant without dual-side auto-add (GitHub #13). */
   onDirectionBadgeClick?: (side: NearTermDirection, e: MouseEvent) => void
-  isPartiallySelected?: boolean
 }
 
 const FlipCard = ({
@@ -77,7 +76,6 @@ const FlipCard = ({
   footerTitle,
   directionBadges,
   onDirectionBadgeClick,
-  isPartiallySelected,
 }: FlipCardProps) => {
   const [isFlipped, setIsFlipped] = useState(false)
   const [isPreviewPlaying, setIsPreviewPlaying] = useState(false)
@@ -124,9 +122,6 @@ const FlipCard = ({
         'perspective-1000 relative w-full cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg',
         isSelected &&
           'scale-[1.01] drop-shadow-[0_0_16px_rgba(34,211,238,0.55)] transition-transform duration-200',
-        isPartiallySelected &&
-          !isSelected &&
-          'ring-cyan-highlight/70 scale-[1.005] ring-2 transition-transform duration-200',
         className,
       )}
     >

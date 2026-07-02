@@ -14,9 +14,17 @@ import { Store } from 'tinybase'
 import useDashboardState from './use-patient-dashboard-state'
 import SuccessToasty from '../components/ui/SuccessToasty'
 import NotifyDoctorToasty from '../components/ui/NotifyDoctorToasty'
-import { ProgressDataSchema, ProgressData } from '@/lib/definitions'
 import { getDisplayName } from '@/lib/utils'
 import usePlotData from './use-plot-data'
+import {
+  applyCompletedRepToPlotData,
+  normalizeRepEndPayload,
+  normalizeSetEndPayload,
+} from '@/lib/progress-event-normalization'
+import {
+  buildSetCompletionCheckpoint,
+  mutableProgressByExerciseId,
+} from '@/lib/session-progress-checkpoint'
 import {
   getQueryClient,
   useStartPatientSessionFromAck,
@@ -33,10 +41,7 @@ import {
   shouldCreatePatientSessionOnStartAck,
   type SessionExerciseRowInput,
 } from '@/lib/patient-dashboard-session-launch'
-import {
-  buildCurrentExerciseProgressUpsert,
-  buildSessionProgressUpserts,
-} from '@/lib/session-progress-persistence'
+import { buildSessionProgressUpserts } from '@/lib/session-progress-persistence'
 import {
   buildSessionWorkingCopySyncPayload,
   serializeSessionWorkingCopy,
@@ -125,28 +130,6 @@ const usePatientDashboardSocketSetup = ({
     patientSessionId.current = ''
     sessionExerciseRows.current = []
     lastSyncedWorkingCopy.current = null
-  }
-
-  const persistCurrentExerciseProgress = async () => {
-    const sessionExercise = sessionExerciseRows.current[currExercise.current]
-    if (
-      !canPersistSessionProgress(
-        patientSessionId.current,
-        sessionExerciseRows.current,
-        currExercise.current,
-      ) ||
-      !sessionExercise
-    ) {
-      return
-    }
-
-    await upsertPatientSessionData([
-      buildCurrentExerciseProgressUpsert({
-        patientSessionId: patientSessionId.current,
-        sessionExercise,
-        progressPoints: realTimeData.current,
-      }),
-    ])
   }
 
   const handleSessionDataCreation = async () => {
@@ -292,59 +275,52 @@ const usePatientDashboardSocketSetup = ({
       return
     }
 
-    const parsedData = JSON.parse(payload) as ProgressData
+    const normalized = normalizeRepEndPayload(payload)
 
-    const validatedData = ProgressDataSchema.safeParse(parsedData)
+    if (!normalized.ok) {
+      console.log('Ignoring malformed RepEnd payload')
+      return
+    }
 
-    if (validatedData.success) {
-      if (stats.current.highscore < parsedData.progress) {
-        stats.current.highscore = parsedData.progress
-        stats.current.bestExercise =
-          getDisplayName(exercises![currExercise.current].exercise) ?? ''
-      }
+    const { completedRep, progress } = normalized.event
+    const currentExercise = exercises![currExercise.current]
 
-      const prevPlotData = realTimeData.current
-      const index = validatedData.data.previousRep
-      const set = currSet.current + 1
-      const rep = index + 1
-      const value = validatedData.data.progress * 100
-      currRep.current = index
+    if (stats.current.highscore < progress) {
+      stats.current.highscore = progress
+      stats.current.bestExercise =
+        getDisplayName(currentExercise.exercise) ?? ''
+    }
 
-      const updatedPlotData = [...prevPlotData]
-      updatedPlotData[index] = {
-        ...updatedPlotData[index],
-        rep,
-        [`set_${set}`]: value,
-      }
+    const activeSet = currSet.current + 1
+    const updatedPlotData = applyCompletedRepToPlotData(realTimeData.current, {
+      completedRep,
+      activeSet,
+      progressPercent: progress * 100,
+    })
 
-      realTimeData.current = updatedPlotData
+    currRep.current = completedRep - 1
+    realTimeData.current = updatedPlotData
 
-      setPlotData(updatedPlotData)
-      setActiveExerciseData({ ...activeExerciseData, currentRep: rep })
-      const prevData = progressData.current
-      store?.setCell(
-        'patients',
-        patientId,
-        'progress',
-        JSON.stringify({
-          ...prevData,
-          [exercises![currExercise.current].exerciseId]: updatedPlotData,
-        }),
-      )
+    setPlotData(updatedPlotData)
+    setActiveExerciseData({ ...activeExerciseData, currentRep: completedRep })
+    const prevData = progressData.current
+    store?.setCell(
+      'patients',
+      patientId,
+      'progress',
+      JSON.stringify({
+        ...prevData,
+        [currentExercise.exerciseId]: updatedPlotData,
+      }),
+    )
 
-      store?.setCell(
-        'patients',
-        patientId,
-        'highscore',
-        stats.current.highscore,
-      )
-      store?.setCell(
-        'patients',
-        patientId,
-        'bestExercise',
-        stats.current.bestExercise,
-      )
-    } else console.log(validatedData.error.message)
+    store?.setCell('patients', patientId, 'highscore', stats.current.highscore)
+    store?.setCell(
+      'patients',
+      patientId,
+      'bestExercise',
+      stats.current.bestExercise,
+    )
   }
 
   const handleSetEnd = async (payload: string) => {
@@ -358,33 +334,40 @@ const usePatientDashboardSocketSetup = ({
       return
     }
 
-    const parsedData = JSON.parse(payload) as { previousSet: number }
+    const normalized = normalizeSetEndPayload(payload)
 
-    currSet.current = Number(parsedData.previousSet)
-    const set = currSet.current
-    const rep = currRep.current
-    const index = currExercise.current
-
-    setActiveExerciseData({ ...activeExerciseData, currentSet: set + 1 })
-
-    const isLastSet =
-      set === exercises![index].sets && rep === exercises![index].reps - 1
-
-    const isLastExercise = index === exercises!.length - 1
-
-    if (isLastSet) {
-      progressData.current = {
-        ...progressData.current,
-        [exercises![index]?.exerciseId]: realTimeData.current,
-      }
-
-      if (isLastExercise) {
-        currExercise.current = 0
-      }
+    if (!normalized.ok) {
+      console.log('Ignoring malformed SetEnd payload')
+      return
     }
 
+    const { completedSet } = normalized.event
+    const currentExerciseIndex = currExercise.current
+
+    currSet.current = completedSet
+
+    setActiveExerciseData({
+      ...activeExerciseData,
+      currentSet: completedSet + 1,
+    })
+
+    const checkpoint = buildSetCompletionCheckpoint({
+      patientSessionId: patientSessionId.current,
+      sessionExerciseRows: sessionExerciseRows.current,
+      currentExerciseIndex,
+      progressByExerciseId: progressData.current ?? {},
+      currentExerciseProgress: realTimeData.current,
+      completedSet,
+      lastCompletedRepIndex: currRep.current,
+      isLastExercise: currentExerciseIndex === exercises!.length - 1,
+    })
+
     try {
-      await persistCurrentExerciseProgress()
+      await upsertPatientSessionData([checkpoint.upsert])
+      progressData.current = mutableProgressByExerciseId(
+        checkpoint.progressByExerciseId,
+      )
+      currExercise.current = checkpoint.nextCurrentExerciseIndex
     } catch (error) {
       console.error(error)
     }

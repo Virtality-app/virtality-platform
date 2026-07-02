@@ -27,6 +27,17 @@ export const REUSABLE_PROGRAM_CREATE_FLOW_PATH =
 export const REUSABLE_PROGRAM_EDIT_FORM_PATH =
   'app/(app)/programs/[programId]/edit/_components/reusable-program-edit-form.tsx'
 
+export const EXERCISE_GRID_PATH = 'components/ui/exercise-grid.tsx'
+export const FLIP_CARD_PATH = 'components/ui/flip-card.tsx'
+
+/** Family cards highlight when any variant is in the library selection (GitHub #122). */
+export const EXERCISE_GRID_FAMILY_CARD_SELECTED =
+  /isSelected=\{isFamilySelected\}/
+
+/** Partial-selection-only card styling removed in GitHub #122. */
+export const PARTIAL_SELECTION_HIGHLIGHT_PROP = /isPartiallySelected/
+export const PARTIAL_SELECTION_RING_CLASS = /ring-cyan-highlight\/70/
+
 /** Selected-list surfaces that pass `showExerciseLibraryAccess={false}`. */
 export const LEGACY_LIBRARY_ACCESS_DISABLED =
   /<ExerciseLibraryList[\s\S]*?showExerciseLibraryAccess=\{false\}/
