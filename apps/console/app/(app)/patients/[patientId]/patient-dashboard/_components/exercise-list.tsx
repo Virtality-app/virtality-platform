@@ -28,15 +28,22 @@ import ExerciseSettings from '@/components/ui/exercise-settings'
 import { motion } from 'motion/react'
 import { useExercise } from '@virtality/react-query'
 import SuccessToasty from '@/components/ui/SuccessToasty'
+import {
+  isDirectExerciseSelectionDisabled,
+  resolveCurrentExerciseIndex,
+  resolveExerciseListHighlightState,
+} from '@/lib/session-exercise-skip'
 
 const ExerciseList = ({ className }: { className?: string }) => {
-  const { state, handler, currExercise } = usePatientDashboard()
+  const { state, handler, currExercise, requestDirectExerciseSelection } =
+    usePatientDashboard()
   const {
     programState,
     selectedMode,
     exercises,
     selectedDevice,
     activeExerciseData,
+    pendingExerciseChange,
   } = state
   const { setExercises, updatePatientDashboardState } = handler
   const { data: defaultExercises } = useExercise()
@@ -46,6 +53,30 @@ const ExerciseList = ({ className }: { className?: string }) => {
   const isProgramPaused = programState === 'paused'
 
   const isMain = selectedMode === 'main'
+  const isActiveMainSession = (isProgramActive || isProgramPaused) && isMain
+  const headsetConfirmedExerciseIndex = resolveCurrentExerciseIndex({
+    exercises,
+    activeExerciseId: activeExerciseData.id,
+    fallbackIndex: currExercise.current,
+  })
+  const exerciseListHighlightContext = {
+    headsetConfirmedExerciseIndex,
+    pendingExerciseChange,
+  }
+  const isDirectSelectionBlocked =
+    isProgramActive &&
+    isMain &&
+    isDirectExerciseSelectionDisabled({ pendingExerciseChange })
+
+  const handleExerciseSelection = (index: number, exerciseId: string) => {
+    if (isProgramActive && isMain) {
+      void requestDirectExerciseSelection(index)
+      return
+    }
+
+    selectedDevice?.events.program.ChangeExercise(exerciseId)
+    currExercise.current = index
+  }
 
   const applySettings = (index: number) => {
     if (!exercises) return
@@ -141,10 +172,12 @@ const ExerciseList = ({ className }: { className?: string }) => {
         {exercises.length !== 0 ? (
           <ItemGroup>
             {exercises.map((ex, index) => {
-              const isHighlighted =
-                (isProgramActive || isProgramPaused) &&
-                isMain &&
-                index === currExercise.current
+              const highlightState = isActiveMainSession
+                ? resolveExerciseListHighlightState({
+                    exerciseIndex: index,
+                    ...exerciseListHighlightContext,
+                  })
+                : null
 
               const defaultExercise = defaultExercises?.find(
                 (de) => de.id === ex.exerciseId,
@@ -168,7 +201,8 @@ const ExerciseList = ({ className }: { className?: string }) => {
                       size='sm'
                       className={cn(
                         'hover:bg-vital-blue-700/20 px-2',
-                        isHighlighted && 'text-green-400',
+                        highlightState === 'confirmed' && 'text-green-400',
+                        highlightState === 'pending' && 'text-amber-400',
                       )}
                     >
                       <ItemMedia className='flex-col'>
@@ -200,13 +234,14 @@ const ExerciseList = ({ className }: { className?: string }) => {
                       )}
 
                       <p
-                        className='flex-1 truncate overflow-x-hidden hover:cursor-pointer'
-                        onClick={() => {
-                          selectedDevice?.events.program.ChangeExercise(
-                            ex.exerciseId,
-                          )
-                          currExercise.current = index
-                        }}
+                        className={cn(
+                          'flex-1 truncate overflow-x-hidden hover:cursor-pointer',
+                          isDirectSelectionBlocked &&
+                            'pointer-events-none opacity-60',
+                        )}
+                        onClick={() =>
+                          handleExerciseSelection(index, ex.exerciseId)
+                        }
                       >
                         {getDisplayName(defaultExercise)}
                       </p>

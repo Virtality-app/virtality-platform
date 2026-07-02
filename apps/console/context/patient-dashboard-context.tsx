@@ -14,6 +14,7 @@ export type PatientDashboardValue = {
   handler: ReturnType<typeof usePatientDashboardState>['handler']
   patientSessionId: { current: string }
   requestForwardBackSkip: (direction: SkipDirection) => void
+  requestDirectExerciseSelection: (targetExerciseIndex: number) => void
   store?: Store
   currExercise: RefObject<number>
   patientLocalData: PatientLocalData
@@ -42,16 +43,19 @@ export const PatientDashboardProvider = ({
     patientLocalData,
   })
   const plot = usePlotData()
-  const { patientSessionId, requestForwardBackSkip } =
-    usePatientDashboardSocketSetup({
-      state,
-      handler,
-      patientId,
-      store,
-      currExercise,
-      patientLocalData,
-      plot,
-    })
+  const {
+    patientSessionId,
+    requestForwardBackSkip,
+    requestDirectExerciseSelection,
+  } = usePatientDashboardSocketSetup({
+    state,
+    handler,
+    patientId,
+    store,
+    currExercise,
+    patientLocalData,
+    plot,
+  })
 
   const { plotData } = plot.state
 
@@ -63,6 +67,7 @@ export const PatientDashboardProvider = ({
         patientId,
         patientSessionId,
         requestForwardBackSkip,
+        requestDirectExerciseSelection,
         store,
         currExercise,
         patientLocalData,

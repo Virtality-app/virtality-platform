@@ -3,6 +3,7 @@ import { buildSessionExerciseRowsFromWorkingCopy } from './patient-dashboard-ses
 import {
   buildCurrentExerciseProgressUpsert,
   buildSessionProgressUpserts,
+  resolveExerciseProgressForPersistence,
   serializeSessionProgressValue,
 } from './session-progress-persistence.js'
 import type { CompleteExercise } from '@/types/models'
@@ -67,6 +68,59 @@ describe('buildCurrentExerciseProgressUpsert', () => {
   })
 })
 
+describe('resolveExerciseProgressForPersistence', () => {
+  it('returns the checkpoint snapshot for non-current exercises', () => {
+    expect(
+      resolveExerciseProgressForPersistence({
+        isCurrentExercise: false,
+        snapshotProgress: [{ rep: 1, set_1: 70 }],
+        liveProgress: [{ rep: 1, set_1: 55 }, { rep: 2 }],
+      }),
+    ).toEqual([{ rep: 1, set_1: 70 }])
+  })
+
+  it('prefers live completed progress when it is at least as complete as the snapshot', () => {
+    expect(
+      resolveExerciseProgressForPersistence({
+        isCurrentExercise: true,
+        snapshotProgress: [{ rep: 1, set_1: 70 }],
+        liveProgress: [
+          { rep: 1, set_1: 70 },
+          { rep: 2, set_1: 80 },
+          { rep: 3 },
+        ],
+      }),
+    ).toEqual([
+      { rep: 1, set_1: 70 },
+      { rep: 2, set_1: 80 },
+    ])
+  })
+
+  it('keeps the checkpoint snapshot when live progress is stale or empty', () => {
+    expect(
+      resolveExerciseProgressForPersistence({
+        isCurrentExercise: true,
+        snapshotProgress: [
+          { rep: 1, set_1: 60 },
+          { rep: 2, set_1: 65 },
+        ],
+        liveProgress: [{ rep: 1 }, { rep: 2 }, { rep: 3 }],
+      }),
+    ).toEqual([
+      { rep: 1, set_1: 60 },
+      { rep: 2, set_1: 65 },
+    ])
+
+    expect(
+      resolveExerciseProgressForPersistence({
+        isCurrentExercise: true,
+        snapshotProgress: [{ rep: 1, set_1: 70 }],
+        liveProgress: [{ rep: 1 }, { rep: 2 }, { rep: 3 }, { rep: 4 }],
+      }),
+    ).toEqual([{ rep: 1, set_1: 70 }])
+  })
+})
+
 describe('buildSessionProgressUpserts', () => {
   let rowCounter = 0
   const sessionExerciseRows = buildSessionExerciseRowsFromWorkingCopy(
@@ -123,5 +177,75 @@ describe('buildSessionProgressUpserts', () => {
       { rep: 2, set_1: 100, set_2: 95, set_3: 90 },
     ])
     expect(JSON.parse(upserts[1]!.value)).toEqual([{ rep: 1, set_1: 55 }])
+  })
+
+  it('includes a local skip checkpoint snapshot at normal session end', () => {
+    const upserts = buildSessionProgressUpserts({
+      patientSessionId: 'session-1',
+      sessionExerciseRows,
+      progressByExerciseId: {
+        'ex-1': [{ rep: 1, set_1: 70 }],
+      },
+      currentExerciseIndex: 1,
+      currentExerciseProgress: [{ rep: 1, set_1: 55 }, { rep: 2 }],
+    })
+
+    expect(JSON.parse(upserts[0]!.value)).toEqual([{ rep: 1, set_1: 70 }])
+    expect(JSON.parse(upserts[1]!.value)).toEqual([{ rep: 1, set_1: 55 }])
+  })
+
+  it('includes a local set-completion checkpoint snapshot at normal session end', () => {
+    const upserts = buildSessionProgressUpserts({
+      patientSessionId: 'session-1',
+      sessionExerciseRows,
+      progressByExerciseId: {
+        'ex-2': [
+          { rep: 1, set_1: 60 },
+          { rep: 2, set_1: 65 },
+        ],
+      },
+      currentExerciseIndex: 0,
+      currentExerciseProgress: [{ rep: 1 }, { rep: 2 }, { rep: 3 }],
+    })
+
+    expect(JSON.parse(upserts[0]!.value)).toEqual([])
+    expect(JSON.parse(upserts[1]!.value)).toEqual([
+      { rep: 1, set_1: 60 },
+      { rep: 2, set_1: 65 },
+    ])
+  })
+
+  it('does not overwrite newer live progress with a stale local snapshot', () => {
+    const upserts = buildSessionProgressUpserts({
+      patientSessionId: 'session-1',
+      sessionExerciseRows,
+      progressByExerciseId: {
+        'ex-1': [{ rep: 1, set_1: 70 }],
+      },
+      currentExerciseIndex: 0,
+      currentExerciseProgress: [
+        { rep: 1, set_1: 70 },
+        { rep: 2, set_1: 80 },
+        { rep: 3 },
+      ],
+    })
+
+    expect(JSON.parse(upserts[0]!.value)).toEqual([
+      { rep: 1, set_1: 70 },
+      { rep: 2, set_1: 80 },
+    ])
+  })
+
+  it('persists empty progress for unattempted exercises without invented rep values', () => {
+    const upserts = buildSessionProgressUpserts({
+      patientSessionId: 'session-1',
+      sessionExerciseRows,
+      progressByExerciseId: {},
+      currentExerciseIndex: 1,
+      currentExerciseProgress: [{ rep: 1 }, { rep: 2 }, { rep: 3 }, { rep: 4 }],
+    })
+
+    expect(JSON.parse(upserts[0]!.value)).toEqual([])
+    expect(JSON.parse(upserts[1]!.value)).toEqual([])
   })
 })

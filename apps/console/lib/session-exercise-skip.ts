@@ -8,6 +8,12 @@ export type PendingExerciseChange = {
   sourceExerciseId: string
 }
 
+function hasPendingExerciseChange(
+  pendingExerciseChange: PendingExerciseChange | null,
+): boolean {
+  return pendingExerciseChange !== null
+}
+
 export function resolveCurrentExerciseIndex(input: {
   exercises: ReadonlyArray<{ exerciseId: string }> | undefined
   activeExerciseId: string | null
@@ -40,13 +46,50 @@ export function resolveForwardBackSkipTarget(input: {
   return input.currentExerciseIndex - 1
 }
 
+export function resolveDirectExerciseSkipTarget(input: {
+  currentExerciseIndex: number
+  targetExerciseIndex: number
+}): number | null {
+  if (input.targetExerciseIndex === input.currentExerciseIndex) {
+    return null
+  }
+
+  return input.targetExerciseIndex
+}
+
+export type ExerciseListHighlightState = 'confirmed' | 'pending'
+
+export function resolveExerciseListHighlightState(input: {
+  exerciseIndex: number
+  headsetConfirmedExerciseIndex: number
+  pendingExerciseChange: PendingExerciseChange | null
+}): ExerciseListHighlightState | null {
+  if (input.exerciseIndex === input.headsetConfirmedExerciseIndex) {
+    return 'confirmed'
+  }
+
+  if (
+    input.pendingExerciseChange?.targetExerciseIndex === input.exerciseIndex
+  ) {
+    return 'pending'
+  }
+
+  return null
+}
+
+export function shouldPromotePendingExerciseOnAck(input: {
+  pendingExerciseChange: PendingExerciseChange | null
+}): boolean {
+  return hasPendingExerciseChange(input.pendingExerciseChange)
+}
+
 export function isSkipControlDisabled(input: {
   direction: SkipDirection
   currentExerciseIndex: number
   exerciseCount: number
   pendingExerciseChange: PendingExerciseChange | null
 }): boolean {
-  if (input.pendingExerciseChange !== null) {
+  if (hasPendingExerciseChange(input.pendingExerciseChange)) {
     return true
   }
 
@@ -55,6 +98,12 @@ export function isSkipControlDisabled(input: {
   }
 
   return input.currentExerciseIndex <= 0
+}
+
+export function isDirectExerciseSelectionDisabled(input: {
+  pendingExerciseChange: PendingExerciseChange | null
+}): boolean {
+  return hasPendingExerciseChange(input.pendingExerciseChange)
 }
 
 export function extractCompletedProgressPoints(

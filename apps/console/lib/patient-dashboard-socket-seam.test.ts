@@ -65,4 +65,25 @@ describe('patient dashboard session launch seam', () => {
       /Waiting for the VR headset to connect\./,
     )
   })
+
+  it('routes direct exercise-list selection through skip-safe pending change flow', () => {
+    const exerciseListSource = readConsoleFile(
+      'app/(app)/patients/[patientId]/patient-dashboard/_components/exercise-list.tsx',
+    )
+    const socketSetupSource = readConsoleFile(
+      'hooks/use-patient-dashboard-socket-setup.tsx',
+    )
+    const contextSource = readConsoleFile(
+      'context/patient-dashboard-context.tsx',
+    )
+
+    expect(exerciseListSource).toMatch(/requestDirectExerciseSelection/)
+    expect(exerciseListSource).toMatch(/resolveExerciseListHighlightState/)
+    expect(exerciseListSource).toMatch(/isDirectExerciseSelectionDisabled/)
+    expect(socketSetupSource).toMatch(/requestDirectExerciseSelection/)
+    expect(socketSetupSource).toMatch(/resolveDirectExerciseSkipTarget/)
+    expect(socketSetupSource).toMatch(/requestExerciseSkipToIndex/)
+    expect(socketSetupSource).toMatch(/shouldPromotePendingExerciseOnAck/)
+    expect(contextSource).toMatch(/requestDirectExerciseSelection/)
+  })
 })

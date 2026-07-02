@@ -3,10 +3,14 @@ import { buildSessionExerciseRowsFromWorkingCopy } from './patient-dashboard-ses
 import { buildExerciseSkipCheckpoint } from './session-progress-checkpoint.js'
 import {
   extractCompletedProgressPoints,
+  isDirectExerciseSelectionDisabled,
   isSkipControlDisabled,
   resolveCurrentExerciseIndex,
+  resolveDirectExerciseSkipTarget,
+  resolveExerciseListHighlightState,
   resolveForwardBackSkipTarget,
   shouldIgnoreProgressEventDuringPendingExerciseChange,
+  shouldPromotePendingExerciseOnAck,
   type PendingExerciseChange,
 } from './session-exercise-skip.js'
 import type { CompleteExercise } from '@/types/models'
@@ -208,6 +212,110 @@ describe('buildExerciseSkipCheckpoint', () => {
 
     expect(checkpoint.upsert).toBeNull()
     expect(checkpoint.progressByExerciseId).toEqual({})
+  })
+})
+
+describe('resolveDirectExerciseSkipTarget', () => {
+  it('returns the target index for a different exercise', () => {
+    expect(
+      resolveDirectExerciseSkipTarget({
+        currentExerciseIndex: 0,
+        targetExerciseIndex: 2,
+      }),
+    ).toBe(2)
+  })
+
+  it('returns null when selecting the already-current exercise', () => {
+    expect(
+      resolveDirectExerciseSkipTarget({
+        currentExerciseIndex: 1,
+        targetExerciseIndex: 1,
+      }),
+    ).toBeNull()
+  })
+})
+
+describe('direct exercise selection disabled state', () => {
+  it('blocks selection while a pending exercise change is in flight', () => {
+    const pending: PendingExerciseChange = {
+      targetExerciseIndex: 2,
+      sourceExerciseIndex: 0,
+      sourceExerciseId: 'ex-1',
+    }
+
+    expect(
+      isDirectExerciseSelectionDisabled({
+        pendingExerciseChange: pending,
+      }),
+    ).toBe(true)
+    expect(
+      isDirectExerciseSelectionDisabled({
+        pendingExerciseChange: null,
+      }),
+    ).toBe(false)
+  })
+})
+
+describe('resolveExerciseListHighlightState', () => {
+  const pending: PendingExerciseChange = {
+    targetExerciseIndex: 2,
+    sourceExerciseIndex: 0,
+    sourceExerciseId: 'ex-1',
+  }
+
+  it('highlights the headset-confirmed exercise and the pending target separately', () => {
+    expect(
+      resolveExerciseListHighlightState({
+        exerciseIndex: 0,
+        headsetConfirmedExerciseIndex: 0,
+        pendingExerciseChange: pending,
+      }),
+    ).toBe('confirmed')
+    expect(
+      resolveExerciseListHighlightState({
+        exerciseIndex: 2,
+        headsetConfirmedExerciseIndex: 0,
+        pendingExerciseChange: pending,
+      }),
+    ).toBe('pending')
+    expect(
+      resolveExerciseListHighlightState({
+        exerciseIndex: 1,
+        headsetConfirmedExerciseIndex: 0,
+        pendingExerciseChange: pending,
+      }),
+    ).toBeNull()
+  })
+
+  it('shows only the confirmed exercise once the pending change clears', () => {
+    expect(
+      resolveExerciseListHighlightState({
+        exerciseIndex: 2,
+        headsetConfirmedExerciseIndex: 2,
+        pendingExerciseChange: null,
+      }),
+    ).toBe('confirmed')
+  })
+})
+
+describe('shouldPromotePendingExerciseOnAck', () => {
+  it('promotes the pending target only when a pending exercise change exists', () => {
+    const pending: PendingExerciseChange = {
+      targetExerciseIndex: 1,
+      sourceExerciseIndex: 0,
+      sourceExerciseId: 'ex-1',
+    }
+
+    expect(
+      shouldPromotePendingExerciseOnAck({
+        pendingExerciseChange: pending,
+      }),
+    ).toBe(true)
+    expect(
+      shouldPromotePendingExerciseOnAck({
+        pendingExerciseChange: null,
+      }),
+    ).toBe(false)
   })
 })
 

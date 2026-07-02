@@ -27,8 +27,11 @@ import {
   mutableProgressByExerciseId,
 } from '@/lib/session-progress-checkpoint'
 import {
+  isDirectExerciseSelectionDisabled,
+  resolveDirectExerciseSkipTarget,
   resolveForwardBackSkipTarget,
   shouldIgnoreProgressEventDuringPendingExerciseChange,
+  shouldPromotePendingExerciseOnAck,
   type PendingExerciseChange,
   type SkipDirection,
 } from '@/lib/session-exercise-skip'
@@ -208,29 +211,23 @@ const usePatientDashboardSocketSetup = ({
     })
   }
 
-  const requestForwardBackSkip = async (direction: SkipDirection) => {
-    if (
-      programState !== 'started' ||
-      !exercises?.length ||
-      pendingExerciseChange.current !== null
-    ) {
-      return
-    }
-
-    const targetIndex = resolveForwardBackSkipTarget({
-      currentExerciseIndex: currExercise.current,
-      exerciseCount: exercises.length,
-      direction,
+  const canRequestExerciseSkip = () =>
+    programState === 'started' &&
+    Boolean(exercises?.length) &&
+    !isDirectExerciseSelectionDisabled({
+      pendingExerciseChange: pendingExerciseChange.current,
     })
 
-    if (targetIndex === null) {
+  const requestExerciseSkipToIndex = async (targetIndex: number) => {
+    if (!canRequestExerciseSkip()) {
       return
     }
 
     const sourceIndex = currExercise.current
     const sourceExercise = exercises[sourceIndex]
+    const targetExercise = exercises[targetIndex]
 
-    if (!sourceExercise) {
+    if (!sourceExercise || !targetExercise || targetIndex === sourceIndex) {
       return
     }
 
@@ -255,6 +252,10 @@ const usePatientDashboardSocketSetup = ({
         currentExerciseProgress: realTimeData.current,
       })
 
+      progressData.current = mutableProgressByExerciseId(
+        checkpoint.progressByExerciseId,
+      )
+
       if (checkpoint.upsert) {
         try {
           await upsertPatientSessionData([checkpoint.upsert])
@@ -262,15 +263,44 @@ const usePatientDashboardSocketSetup = ({
           console.error(error)
         }
       }
-
-      progressData.current = mutableProgressByExerciseId(
-        checkpoint.progressByExerciseId,
-      )
     }
 
-    selectedDevice?.events.program.ChangeExercise(
-      exercises[targetIndex].exerciseId,
-    )
+    selectedDevice?.events.program.ChangeExercise(targetExercise.exerciseId)
+  }
+
+  const requestForwardBackSkip = async (direction: SkipDirection) => {
+    if (!canRequestExerciseSkip()) {
+      return
+    }
+
+    const targetIndex = resolveForwardBackSkipTarget({
+      currentExerciseIndex: currExercise.current,
+      exerciseCount: exercises.length,
+      direction,
+    })
+
+    if (targetIndex === null) {
+      return
+    }
+
+    await requestExerciseSkipToIndex(targetIndex)
+  }
+
+  const requestDirectExerciseSelection = async (targetIndex: number) => {
+    if (!canRequestExerciseSkip()) {
+      return
+    }
+
+    const resolvedTarget = resolveDirectExerciseSkipTarget({
+      currentExerciseIndex: currExercise.current,
+      targetExerciseIndex: targetIndex,
+    })
+
+    if (resolvedTarget === null) {
+      return
+    }
+
+    await requestExerciseSkipToIndex(resolvedTarget)
   }
 
   const handlePersistenceFailureAfterStartAck = () => {
@@ -377,8 +407,14 @@ const usePatientDashboardSocketSetup = ({
   }
 
   const handleChangeExerciseAck = () => {
-    if (pendingExerciseChange.current) {
-      applyExerciseAtIndex(pendingExerciseChange.current.targetExerciseIndex)
+    const pending = pendingExerciseChange.current
+    if (
+      shouldPromotePendingExerciseOnAck({
+        pendingExerciseChange: pending,
+      }) &&
+      pending
+    ) {
+      applyExerciseAtIndex(pending.targetExerciseIndex)
       clearPendingExerciseChange()
     }
 
@@ -491,12 +527,13 @@ const usePatientDashboardSocketSetup = ({
       isLastExercise: currentExerciseIndex === exercises!.length - 1,
     })
 
+    progressData.current = mutableProgressByExerciseId(
+      checkpoint.progressByExerciseId,
+    )
+    currExercise.current = checkpoint.nextCurrentExerciseIndex
+
     try {
       await upsertPatientSessionData([checkpoint.upsert])
-      progressData.current = mutableProgressByExerciseId(
-        checkpoint.progressByExerciseId,
-      )
-      currExercise.current = checkpoint.nextCurrentExerciseIndex
     } catch (error) {
       console.error(error)
     }
@@ -635,6 +672,7 @@ const usePatientDashboardSocketSetup = ({
   return {
     patientSessionId,
     requestForwardBackSkip,
+    requestDirectExerciseSelection,
   }
 }
 
