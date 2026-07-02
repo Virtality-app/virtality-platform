@@ -47,7 +47,18 @@ describe('patient session history surfaces', () => {
     )
 
     expect(tabSource).toMatch(/usePatientSessions/)
+    expect(tabSource).toMatch(/usePatientSessionDateRange/)
     expect(tabSource).not.toMatch(/usePatientPrograms/)
     expect(tabSource).not.toMatch(/programId/)
+  })
+
+  it('uses start and end date pickers with persisted session ranges', () => {
+    const overviewSource = readConsoleFile(
+      'app/(app)/patients/[patientId]/profile/_components/sessions-overview.tsx',
+    )
+
+    expect(overviewSource).toMatch(/Start date/)
+    expect(overviewSource).toMatch(/End date/)
+    expect(overviewSource).toMatch(/DATE_RANGE_PRESET_LABELS/)
   })
 })

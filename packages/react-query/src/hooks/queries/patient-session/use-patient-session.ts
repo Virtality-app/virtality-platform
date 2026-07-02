@@ -9,10 +9,7 @@ export function usePatientSession({ sessionId }: UsePatientSessionProps) {
   const orpc = useORPC()
   return useQuery(
     orpc.patientSession.find.queryOptions({
-      input:
-        sessionId || sessionId !== ''
-          ? { where: { id: sessionId } }
-          : skipToken,
+      input: sessionId ? { where: { id: sessionId } } : skipToken,
     }),
   )
 }

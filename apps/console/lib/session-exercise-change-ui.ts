@@ -4,7 +4,7 @@ import {
   type ExerciseListHighlightState,
   type PendingExerciseChange,
   type SkipDirection,
-} from './session-exercise-skip.js'
+} from './session-exercise-skip'
 
 export const EXERCISE_CHANGE_ACK_TIMEOUT_MS = 15_000
 
@@ -118,4 +118,18 @@ export function resolveExerciseListHighlightBadgeClass(
     case 'pending':
       return 'bg-amber-500/20 text-amber-300'
   }
+}
+
+export function shouldShowExerciseListHighlightBadge(
+  highlightState: ExerciseListHighlightState | null,
+): highlightState is 'pending' {
+  return highlightState === 'pending'
+}
+
+export function resolveSessionExerciseChangeStatusItemClass(): string {
+  return 'max-h-9 min-w-0 shrink flex-nowrap items-center gap-1.5 border-amber-500/40 bg-amber-500/10 px-2 py-1 text-amber-100'
+}
+
+export function resolveSessionExerciseChangeStatusMessageClass(): string {
+  return 'truncate text-xs leading-none'
 }

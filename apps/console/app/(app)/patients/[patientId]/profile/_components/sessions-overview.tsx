@@ -1,13 +1,17 @@
 'use client'
 
 import {
-  filterSessionsByDateRange,
   getVisitConsistency,
   getSessionDurationTrend,
   getDoseTrend,
-  DATE_RANGE_DAYS,
-  type DateRangePreset,
 } from '@/lib/session-metrics'
+import {
+  DATE_RANGE_PRESETS,
+  DATE_RANGE_PRESET_LABELS,
+  filterSessionsByDateRange,
+  getRangeSpanDays,
+  type DateRangePreset,
+} from '@/lib/session-date-range'
 import { filterCompletedClinicalSessions } from '@/lib/session-history'
 import type { ExtendedPatientSession } from '@/types/models'
 import {
@@ -24,40 +28,77 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { format } from 'date-fns'
 import { Activity, Calendar as CalendarIcon, TrendingUp } from 'lucide-react'
 import { motion } from 'motion/react'
 import { cn } from '@/lib/utils'
 
+const DATE_PICKER_BUTTON_CLASS = cn(
+  'h-9 w-[200px] justify-start pl-3 text-left font-normal',
+  'border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900/50 dark:hover:bg-zinc-800/50',
+)
+
+interface SessionDatePickerProps {
+  label: string
+  selected: Date
+  onSelect: (date: Date) => void
+  isDateDisabled: (date: Date) => boolean
+}
+
+function SessionDatePicker({
+  label,
+  selected,
+  onSelect,
+  isDateDisabled,
+}: SessionDatePickerProps) {
+  return (
+    <div className='flex flex-col gap-2'>
+      <Label className='text-sm font-medium text-zinc-700 dark:text-zinc-300'>
+        {label}
+      </Label>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant='outline' className={DATE_PICKER_BUTTON_CLASS}>
+            {format(selected, 'PPP')}
+            <CalendarIcon className='ml-auto size-4 opacity-50' />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className='w-auto p-0' align='start'>
+          <Calendar
+            mode='single'
+            selected={selected}
+            onSelect={(value) => value && onSelect(value)}
+            disabled={isDateDisabled}
+          />
+        </PopoverContent>
+      </Popover>
+    </div>
+  )
+}
+
 interface SessionsOverviewProps {
   sessions: ExtendedPatientSession[]
   startDate: Date
-  rangePreset: DateRangePreset
+  endDate: Date
   onStartDateChange: (date: Date) => void
-  onRangePresetChange: (preset: DateRangePreset) => void
+  onEndDateChange: (date: Date) => void
+  onPresetSelect: (preset: DateRangePreset) => void
 }
 
 export function SessionsOverview({
   sessions,
   startDate,
-  rangePreset,
+  endDate,
   onStartDateChange,
-  onRangePresetChange,
+  onEndDateChange,
+  onPresetSelect,
 }: SessionsOverviewProps) {
   const completedSessions = filterCompletedClinicalSessions(sessions)
-  const filtered = filterSessionsByDateRange(
-    completedSessions,
+  const filtered = filterSessionsByDateRange(completedSessions, {
     startDate,
-    rangePreset,
-  )
-  const gapThresholdDays = DATE_RANGE_DAYS[rangePreset]
+    endDate,
+  })
+  const gapThresholdDays = getRangeSpanDays({ startDate, endDate })
   const { avgDaysBetween, gaps } = getVisitConsistency(
     filtered,
     gapThresholdDays,
@@ -72,6 +113,7 @@ export function SessionsOverview({
   const totalDose = doseTrend.reduce((a, b) => a + b.dose, 0)
   const avgDosePerSession =
     doseTrend.length > 0 ? totalDose / doseTrend.length : 0
+  const today = new Date()
 
   return (
     <motion.div
@@ -80,56 +122,39 @@ export function SessionsOverview({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
     >
-      <div className='flex flex-wrap items-end gap-4 rounded-xl border border-zinc-200 bg-white px-4 py-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950'>
-        <div className='flex flex-col gap-2'>
-          <Label className='text-sm font-medium text-zinc-700 dark:text-zinc-300'>
-            From date
-          </Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant='outline'
-                className={cn(
-                  'h-9 w-[200px] justify-start pl-3 text-left font-normal',
-                  'border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900/50 dark:hover:bg-zinc-800/50',
-                )}
-              >
-                {format(startDate, 'PPP')}
-                <CalendarIcon className='ml-auto size-4 opacity-50' />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className='w-auto p-0' align='start'>
-              <Calendar
-                mode='single'
-                selected={startDate}
-                onSelect={(value) => value && onStartDateChange(value)}
-                disabled={(date) => date > new Date()}
-              />
-            </PopoverContent>
-          </Popover>
+      <div className='space-y-4 rounded-xl border border-zinc-200 bg-white px-4 py-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950'>
+        <div className='flex flex-wrap items-end gap-4'>
+          <SessionDatePicker
+            label='Start date'
+            selected={startDate}
+            onSelect={onStartDateChange}
+            isDateDisabled={(date) => date > endDate || date > today}
+          />
+          <SessionDatePicker
+            label='End date'
+            selected={endDate}
+            onSelect={onEndDateChange}
+            isDateDisabled={(date) => date < startDate || date > today}
+          />
+          <p className='ml-auto text-sm text-zinc-500 dark:text-zinc-400'>
+            {filtered.length} completed session
+            {filtered.length !== 1 ? 's' : ''} in range
+          </p>
         </div>
-        <div className='flex flex-col gap-2'>
-          <Label className='text-sm font-medium text-zinc-700 dark:text-zinc-300'>
-            Range
-          </Label>
-          <Select
-            value={rangePreset}
-            onValueChange={(v) => onRangePresetChange(v as DateRangePreset)}
-          >
-            <SelectTrigger className='h-9 w-[140px] border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900/50'>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='week'>Week</SelectItem>
-              <SelectItem value='month'>Month</SelectItem>
-              <SelectItem value='3months'>3 months</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className='flex flex-wrap gap-2'>
+          {DATE_RANGE_PRESETS.map((preset) => (
+            <Button
+              key={preset}
+              type='button'
+              size='sm'
+              variant='outline'
+              className='border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900/50'
+              onClick={() => onPresetSelect(preset)}
+            >
+              {DATE_RANGE_PRESET_LABELS[preset]}
+            </Button>
+          ))}
         </div>
-        <p className='ml-auto text-sm text-zinc-500 dark:text-zinc-400'>
-          {filtered.length} completed session{filtered.length !== 1 ? 's' : ''}{' '}
-          in range
-        </p>
       </div>
 
       <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>

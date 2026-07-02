@@ -17,6 +17,7 @@ describe('session exercise change UI surfaces', () => {
     expect(controlPanel).toMatch(/<SessionExerciseChangeStatus/)
     expect(controlPanel).toMatch(/pendingExerciseChange/)
     expect(status).toMatch(/resolveExerciseChangeStatusMessage/)
+    expect(status).toMatch(/resolveSessionExerciseChangeStatusItemClass/)
     expect(status).toMatch(/aria-live='polite'/)
   })
 
@@ -25,7 +26,7 @@ describe('session exercise change UI surfaces', () => {
 
     expect(exerciseList).toMatch(/EXERCISE_LIST_HIGHLIGHT_LABEL/)
     expect(exerciseList).toMatch(/resolveExerciseListHighlightClass/)
-    expect(exerciseList).toMatch(/resolveExerciseListHighlightBadgeClass/)
+    expect(exerciseList).toMatch(/shouldShowExerciseListHighlightBadge/)
     expect(exerciseList).toMatch(/headset-confirmed exercise/)
     expect(exerciseList).toMatch(/pending change[\s\S]*target/)
   })

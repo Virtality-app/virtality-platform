@@ -7,9 +7,12 @@ import {
   resolveExerciseChangeStatusMessage,
   resolveExerciseListHighlightBadgeClass,
   resolveExerciseListHighlightClass,
+  resolveSessionExerciseChangeStatusItemClass,
+  resolveSessionExerciseChangeStatusMessageClass,
   resolveSkipControlDisabledReason,
   resolveSkipControlTooltip,
   resolveSkipControlUiState,
+  shouldShowExerciseListHighlightBadge,
 } from './session-exercise-change-ui.js'
 import type { PendingExerciseChange } from './session-exercise-skip.js'
 
@@ -148,6 +151,28 @@ describe('resolveExerciseChangeFailureMessage', () => {
     expect(resolveExerciseChangeFailureMessage('Shoulder Flexion')).toMatch(
       /remains/i,
     )
+  })
+})
+
+describe('shouldShowExerciseListHighlightBadge', () => {
+  it('does not show a badge for the headset-confirmed exercise', () => {
+    expect(shouldShowExerciseListHighlightBadge('confirmed')).toBe(false)
+  })
+
+  it('shows a badge only for the pending change target', () => {
+    expect(shouldShowExerciseListHighlightBadge('pending')).toBe(true)
+    expect(shouldShowExerciseListHighlightBadge(null)).toBe(false)
+  })
+})
+
+describe('resolveSessionExerciseChangeStatus layout classes', () => {
+  it('keeps the pending status compact and truncatable in the control panel row', () => {
+    const itemClass = resolveSessionExerciseChangeStatusItemClass()
+
+    expect(itemClass).toMatch(/max-h-9/)
+    expect(itemClass).toMatch(/flex-nowrap/)
+    expect(itemClass).toMatch(/min-w-0/)
+    expect(resolveSessionExerciseChangeStatusMessageClass()).toMatch(/truncate/)
   })
 })
 

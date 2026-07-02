@@ -38,6 +38,7 @@ import {
   resolveDirectSelectionBlockedTooltip,
   resolveExerciseListHighlightBadgeClass,
   resolveExerciseListHighlightClass,
+  shouldShowExerciseListHighlightBadge,
 } from '@/lib/session-exercise-change-ui'
 import {
   Tooltip,
@@ -277,7 +278,9 @@ const ExerciseList = ({ className }: { className?: string }) => {
                           >
                             {getDisplayName(defaultExercise)}
                           </p>
-                          {highlightState && (
+                          {shouldShowExerciseListHighlightBadge(
+                            highlightState,
+                          ) && (
                             <span
                               className={cn(
                                 'shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium tracking-wide uppercase',

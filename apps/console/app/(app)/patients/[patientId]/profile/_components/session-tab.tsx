@@ -1,46 +1,43 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { subDays } from 'date-fns'
 import SessionsTable from './sessions-table'
 import { SessionsOverview } from './sessions-overview'
 import { usePatientSession, usePatientSessions } from '@virtality/react-query'
 import SessionCard from './session-card'
 import { filterCompletedClinicalSessions } from '@/lib/session-history'
-import type { DateRangePreset } from '@/lib/session-metrics'
-import { filterSessionsByDateRange } from '@/lib/session-metrics'
+import { filterSessionsByDateRange } from '@/lib/session-date-range'
 import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
+import { usePatientSessionDateRange } from '@/hooks/use-patient-session-date-range'
 
 interface SessionTabProps {
   patientId: string
 }
-
-const DEFAULT_RANGE: DateRangePreset = 'month'
-const DEFAULT_START = subDays(new Date(), 30)
 
 export default function SessionTab({ patientId }: SessionTabProps) {
   usePageViewTracking({
     props: { route_group: 'patient', tab_view: 'patient-sessions' },
   })
   const [sessionViewing, setSessionViewing] = useState<string>('')
-  const [startDate, setStartDate] = useState<Date>(() => DEFAULT_START)
-  const [rangePreset, setRangePreset] = useState<DateRangePreset>(DEFAULT_RANGE)
+  const { startDate, endDate, setStartDate, setEndDate, applyPreset } =
+    usePatientSessionDateRange(patientId)
 
-  const { data: session, isLoading } = usePatientSession({
-    sessionId: sessionViewing,
+  const { data: session, isLoading: isSessionLoading } = usePatientSession({
+    sessionId: sessionViewing || undefined,
   })
 
-  const { data: allSessions } = usePatientSessions({
-    input: {
-      where: {
-        patientId,
-        AND: [
-          { deletedAt: null },
-          { status: { in: ['COMPLETED', 'INTERRUPTED'] } },
-        ],
+  const { data: allSessions, isPending: isSessionsPending } =
+    usePatientSessions({
+      input: {
+        where: {
+          patientId,
+          AND: [
+            { deletedAt: null },
+            { status: { in: ['COMPLETED', 'INTERRUPTED'] } },
+          ],
+        },
       },
-    },
-  })
+    })
 
   const clinicalHistorySessions = allSessions ?? []
   const completedSessions = filterCompletedClinicalSessions(
@@ -49,14 +46,13 @@ export default function SessionTab({ patientId }: SessionTabProps) {
 
   const filteredSessions = useMemo(() => {
     if (!clinicalHistorySessions.length) return []
-    return filterSessionsByDateRange(
-      clinicalHistorySessions,
+    return filterSessionsByDateRange(clinicalHistorySessions, {
       startDate,
-      rangePreset,
-    )
-  }, [clinicalHistorySessions, startDate, rangePreset])
+      endDate,
+    })
+  }, [clinicalHistorySessions, startDate, endDate])
 
-  if (isLoading) {
+  if (sessionViewing && isSessionLoading) {
     return (
       <div className='flex flex-1 items-center justify-center py-12'>
         <p className='text-sm text-zinc-500 dark:text-zinc-400'>
@@ -96,15 +92,17 @@ export default function SessionTab({ patientId }: SessionTabProps) {
       <SessionsOverview
         sessions={completedSessions}
         startDate={startDate}
-        rangePreset={rangePreset}
+        endDate={endDate}
         onStartDateChange={setStartDate}
-        onRangePresetChange={setRangePreset}
+        onEndDateChange={setEndDate}
+        onPresetSelect={applyPreset}
       />
       <div className='flex flex-1 flex-col'>
         <SessionsTable
           patientId={patientId}
           onSessionSelect={setSessionViewing}
           sessions={filteredSessions}
+          isLoading={isSessionsPending}
         />
       </div>
     </div>

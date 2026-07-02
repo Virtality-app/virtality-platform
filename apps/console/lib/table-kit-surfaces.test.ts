@@ -64,8 +64,9 @@ describe('console table kit migration', () => {
 
     expectSharedDataTableKit(tableSource)
     expect(tableSource).toMatch(/usesProvidedSessions/)
+    expect(tableSource).toMatch(/isLoadingProp/)
     expect(tableSource).toMatch(
-      /isLoading=\{!usesProvidedSessions && isPending\}/,
+      /isLoading=\{isLoadingProp \?\? \(!usesProvidedSessions && isPending\)\}/,
     )
   })
 

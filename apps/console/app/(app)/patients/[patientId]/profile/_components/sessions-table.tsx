@@ -15,12 +15,14 @@ interface SessionsTableProps {
   onSessionSelect: (value: string) => void
   /** When provided, use this list instead of fetching (e.g. date-filtered). */
   sessions?: ExtendedPatientSession[] | null
+  isLoading?: boolean
 }
 
 const SessionsTable = ({
   patientId,
   onSessionSelect,
   sessions: sessionsProp,
+  isLoading: isLoadingProp,
 }: SessionsTableProps) => {
   const { data: fetchedSessions, isPending } = usePatientSessions({
     input: {
@@ -59,7 +61,7 @@ const SessionsTable = ({
         columns={sessionsColumns}
         rowNavigation={rowNavigation}
         className='flex-1'
-        isLoading={!usesProvidedSessions && isPending}
+        isLoading={isLoadingProp ?? (!usesProvidedSessions && isPending)}
       />
       <DataTableFooter table={table} />
     </div>

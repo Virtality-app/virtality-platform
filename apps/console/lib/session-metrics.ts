@@ -4,10 +4,7 @@
  */
 
 import type { ExtendedPatientSession, ProgressDataPoint } from '@/types/models'
-import {
-  filterClinicalHistorySessions,
-  filterCompletedClinicalSessions,
-} from '@/lib/session-history'
+import { filterCompletedClinicalSessions } from '@/lib/session-history'
 
 const MS_PER_DAY = 86400000
 
@@ -482,31 +479,16 @@ export function getVisitConsistency(
   return { avgDaysBetween, gaps }
 }
 
-export type DateRangePreset = 'week' | 'month' | '3months'
-
-export const DATE_RANGE_DAYS: Record<DateRangePreset, number> = {
-  week: 7,
-  month: 30,
-  '3months': 90,
-}
-
-/** Filter sessions to those in clinical history within [startDate, startDate + rangeDays]. */
-export function filterSessionsByDateRange(
-  sessions: ExtendedPatientSession[],
-  startDate: Date,
-  rangePreset: DateRangePreset,
-): ExtendedPatientSession[] {
-  const rangeDays = DATE_RANGE_DAYS[rangePreset]
-  const endDate = new Date(startDate)
-  endDate.setDate(endDate.getDate() + rangeDays)
-  const startMs = startDate.getTime()
-  const endMs = endDate.getTime()
-  return filterClinicalHistorySessions(sessions).filter((session) => {
-    const historyDate =
-      session.completedAt != null
-        ? new Date(session.completedAt)
-        : new Date(session.createdAt)
-    const t = historyDate.getTime()
-    return t >= startMs && t <= endMs
-  })
-}
+export type {
+  DateRangePreset,
+  SessionDateRange,
+} from '@/lib/session-date-range'
+export {
+  DATE_RANGE_DAYS,
+  DATE_RANGE_PRESETS,
+  DATE_RANGE_PRESET_LABELS,
+  filterSessionsByDateRange,
+  getDefaultSessionDateRange,
+  getRangeSpanDays,
+  getSessionDateRangeForPreset,
+} from '@/lib/session-date-range'
