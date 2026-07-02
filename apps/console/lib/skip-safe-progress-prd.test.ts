@@ -47,6 +47,7 @@ describe('PRD 123 skip-safe exercise progress checkpoints', () => {
     expect(normalization).toMatch(/normalizeSetEndPayload/)
     expect(checkpoint).toMatch(/buildSetCompletionCheckpoint/)
     expect(checkpoint).toMatch(/buildExerciseSkipCheckpoint/)
+    expect(checkpoint).toMatch(/shouldResetLiveExerciseAfterSetCompletion/)
     expect(skip).toMatch(/extractCompletedProgressPoints/)
     expect(skip).toMatch(/shouldIgnoreProgressEventDuringPendingExerciseChange/)
     expect(flow).toMatch(/applyRepEndToFlow/)
@@ -73,22 +74,13 @@ describe('PRD 123 skip-safe exercise progress checkpoints', () => {
     expect(socketSetup).toMatch(/requestForwardBackSkip/)
     expect(socketSetup).toMatch(/requestDirectExerciseSelection/)
     expect(socketSetup).toMatch(/shouldPromotePendingExerciseOnAck/)
-    expect(controlPanel).toMatch(/requestForwardBackSkip/)
-    expect(exerciseList).toMatch(/requestDirectExerciseSelection/)
-    expect(exerciseList).toMatch(/resolveExerciseListHighlightState/)
-  })
-
-  it('resets live exercise state when final-exercise set completion advances the index', () => {
-    const socketSetup = readConsoleFile(
-      'hooks/use-patient-dashboard-socket-setup.tsx',
-    )
-
-    expect(socketSetup).toMatch(
-      /checkpoint\.nextCurrentExerciseIndex !== currentExerciseIndex/,
-    )
+    expect(socketSetup).toMatch(/shouldResetLiveExerciseAfterSetCompletion/)
     expect(socketSetup).toMatch(
       /applyExerciseAtIndex\(checkpoint\.nextCurrentExerciseIndex\)/,
     )
+    expect(controlPanel).toMatch(/requestForwardBackSkip/)
+    expect(exerciseList).toMatch(/requestDirectExerciseSelection/)
+    expect(exerciseList).toMatch(/resolveExerciseListHighlightState/)
   })
 
   it('surfaces pending exercise change status in the active session UI', () => {
