@@ -1,5 +1,6 @@
 import type { ProgressDataPoint } from '@/types/models'
 import type { SessionExerciseRowInput } from './patient-dashboard-session-launch'
+import { extractCompletedProgressPoints } from './session-exercise-skip'
 import {
   buildCurrentExerciseProgressUpsert,
   type SessionProgressUpsertInput,
@@ -22,6 +23,22 @@ export type SetCompletionCheckpointResult = {
   upsert: SessionProgressUpsertInput
   progressByExerciseId: Record<string, ReadonlyArray<ProgressDataPoint>>
   nextCurrentExerciseIndex: number
+}
+
+export type ExerciseSkipCheckpointInput = {
+  patientSessionId: string
+  sessionExerciseRows: ReadonlyArray<SessionExerciseRowInput>
+  currentExerciseIndex: number
+  progressByExerciseId: Readonly<
+    Record<string, ReadonlyArray<ProgressDataPoint> | undefined>
+  >
+  currentExerciseProgress: ReadonlyArray<ProgressDataPoint>
+}
+
+export type ExerciseSkipCheckpointResult = {
+  upsert: SessionProgressUpsertInput | null
+  progressByExerciseId: Record<string, ReadonlyArray<ProgressDataPoint>>
+  completedProgressPoints: ReadonlyArray<ProgressDataPoint>
 }
 
 export function isExerciseLastSet(input: {
@@ -100,5 +117,43 @@ export function buildSetCompletionCheckpoint(
     }),
     progressByExerciseId,
     nextCurrentExerciseIndex,
+  }
+}
+
+export function buildExerciseSkipCheckpoint(
+  input: ExerciseSkipCheckpointInput,
+): ExerciseSkipCheckpointResult {
+  const sessionExercise = input.sessionExerciseRows[input.currentExerciseIndex]
+
+  if (!sessionExercise) {
+    throw new Error('Missing session exercise row for skip checkpoint')
+  }
+
+  const completedProgressPoints = extractCompletedProgressPoints(
+    input.currentExerciseProgress,
+  )
+  const progressByExerciseId = compactProgressByExerciseId(
+    input.progressByExerciseId,
+  )
+
+  if (completedProgressPoints.length === 0) {
+    return {
+      upsert: null,
+      progressByExerciseId,
+      completedProgressPoints,
+    }
+  }
+
+  return {
+    upsert: buildCurrentExerciseProgressUpsert({
+      patientSessionId: input.patientSessionId,
+      sessionExercise,
+      progressPoints: completedProgressPoints,
+    }),
+    progressByExerciseId: {
+      ...progressByExerciseId,
+      [sessionExercise.exerciseId]: completedProgressPoints,
+    },
+    completedProgressPoints,
   }
 }

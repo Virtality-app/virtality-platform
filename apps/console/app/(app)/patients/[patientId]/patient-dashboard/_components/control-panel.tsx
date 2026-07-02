@@ -1,4 +1,4 @@
-import { useEffect, useState, MouseEvent, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import {
   CircleAlert,
   MonitorPlay,
@@ -59,6 +59,11 @@ import {
   getTreatmentLaunchError,
 } from '@/lib/patient-dashboard-treatment-launch'
 import { useVrHeadsetPresence } from '@/hooks/use-vr-headset-presence'
+import {
+  isSkipControlDisabled,
+  resolveCurrentExerciseIndex,
+  type SkipDirection,
+} from '@/lib/session-exercise-skip'
 
 let wakeLock: WakeLockSentinel | null = null
 
@@ -74,7 +79,8 @@ const ControlPanel = ({
   setShowCasting,
 }: ControlPanelProps) => {
   const { devices } = useDeviceContext()
-  const { state, handler, patientId, currExercise } = usePatientDashboard()
+  const { state, handler, patientId, currExercise, requestForwardBackSkip } =
+    usePatientDashboard()
   const { data: patientSessions } = usePatientSessions({
     input: { where: { patientId } },
   })
@@ -88,6 +94,7 @@ const ControlPanel = ({
     selectedAvatar,
     exercises,
     activeExerciseData,
+    pendingExerciseChange,
   } = state
 
   const {
@@ -182,39 +189,8 @@ const ControlPanel = ({
     selectedDevice?.events.program.End()
   }
 
-  const skipExercise = (e: MouseEvent) => {
-    if (!exercises) return
-    const skipDirection = e.currentTarget.id
-
-    let nextExercise = currExercise.current
-    switch (skipDirection) {
-      case 'back':
-        if (nextExercise === 0) {
-          nextExercise = exercises.length - 1
-          break
-        }
-        nextExercise--
-        break
-      case 'forward':
-        if (nextExercise === exercises.length - 1) {
-          nextExercise = 0
-          break
-        }
-        nextExercise++
-        break
-      default:
-        break
-    }
-    currExercise.current = nextExercise
-    const payload = exercises[nextExercise].exerciseId
-    selectedDevice?.events.program.ChangeExercise(payload)
-    setActiveExerciseData({
-      id: exercises[nextExercise].exerciseId,
-      currentRep: 0,
-      currentSet: 1,
-      totalReps: exercises[nextExercise].reps,
-      totalSets: exercises[nextExercise].sets,
-    })
+  const skipExercise = (direction: SkipDirection) => {
+    void requestForwardBackSkip(direction)
   }
 
   const handleWarmupStart = () => {
@@ -246,6 +222,27 @@ const ControlPanel = ({
   const isProgramPaused = programState === 'paused'
   const isProgramLaunching = programState === 'launching'
   const isMain = selectedMode === 'main'
+  const currentExerciseIndex = resolveCurrentExerciseIndex({
+    exercises,
+    activeExerciseId: activeExerciseData.id,
+    fallbackIndex: currExercise.current,
+  })
+  const exerciseCount = exercises?.length ?? 0
+  const skipControlState = {
+    currentExerciseIndex,
+    exerciseCount,
+    pendingExerciseChange,
+  }
+  const isForwardSkipDisabled = isSkipControlDisabled({
+    ...skipControlState,
+    direction: 'forward',
+  })
+  const isBackSkipDisabled = isSkipControlDisabled({
+    ...skipControlState,
+    direction: 'back',
+  })
+  const isSkipBlockedByProgramState =
+    isProgramInactive || isProgramPaused || isProgramLaunching
 
   const { GuardDialog } = useNavigationGuard(connected, () => {
     selectedDevice?.socket.disconnect()
@@ -272,6 +269,9 @@ const ControlPanel = ({
           programEnd={programEnd}
           handleWarmupStart={handleWarmupStart}
           skipExercise={skipExercise}
+          isForwardSkipDisabled={isForwardSkipDisabled}
+          isBackSkipDisabled={isBackSkipDisabled}
+          isSkipBlockedByProgramState={isSkipBlockedByProgramState}
         />
         <Separator orientation='vertical' className='h-8!' />
       </div>
@@ -323,7 +323,10 @@ interface ControlsProps {
   programStart: () => Id | undefined
   programEnd: () => void
   handleWarmupStart: () => Id | undefined
-  skipExercise: (e: MouseEvent) => void
+  skipExercise: (direction: SkipDirection) => void
+  isForwardSkipDisabled: boolean
+  isBackSkipDisabled: boolean
+  isSkipBlockedByProgramState: boolean
 }
 
 const Controls = ({
@@ -337,6 +340,9 @@ const Controls = ({
   programEnd,
   handleWarmupStart,
   skipExercise,
+  isForwardSkipDisabled,
+  isBackSkipDisabled,
+  isSkipBlockedByProgramState,
 }: ControlsProps) => {
   const StartProgramButton = useRef<HTMLButtonElement>(null)
   const needsHeadsetForLaunch = isProgramInactive || isProgramPaused
@@ -369,13 +375,10 @@ const Controls = ({
       return (
         <>
           <Button
-            disabled={
-              isProgramInactive || isProgramPaused || isProgramLaunching
-            }
-            id='back'
+            disabled={isSkipBlockedByProgramState || isBackSkipDisabled}
             size='icon'
             variant='outline'
-            onClick={skipExercise}
+            onClick={() => skipExercise('back')}
           >
             <SkipBack />
           </Button>
@@ -401,13 +404,10 @@ const Controls = ({
           )}
 
           <Button
-            disabled={
-              isProgramInactive || isProgramPaused || isProgramLaunching
-            }
-            id='forward'
+            disabled={isSkipBlockedByProgramState || isForwardSkipDisabled}
             size='icon'
             variant='outline'
-            onClick={skipExercise}
+            onClick={() => skipExercise('forward')}
           >
             <SkipForward />
           </Button>

@@ -7,11 +7,13 @@ import { useRow, useStore } from 'tinybase/ui-react'
 import { PatientLocalData, ProgressDataPoint } from '@/types/models'
 import { Store } from 'tinybase'
 import usePlotData from '@/hooks/use-plot-data'
+import type { SkipDirection } from '@/lib/session-exercise-skip'
 
 export type PatientDashboardValue = {
   state: ReturnType<typeof usePatientDashboardState>['state']
   handler: ReturnType<typeof usePatientDashboardState>['handler']
   patientSessionId: { current: string }
+  requestForwardBackSkip: (direction: SkipDirection) => void
   store?: Store
   currExercise: RefObject<number>
   patientLocalData: PatientLocalData
@@ -40,15 +42,16 @@ export const PatientDashboardProvider = ({
     patientLocalData,
   })
   const plot = usePlotData()
-  const patientSessionId = usePatientDashboardSocketSetup({
-    state,
-    handler,
-    patientId,
-    store,
-    currExercise,
-    patientLocalData,
-    plot,
-  })
+  const { patientSessionId, requestForwardBackSkip } =
+    usePatientDashboardSocketSetup({
+      state,
+      handler,
+      patientId,
+      store,
+      currExercise,
+      patientLocalData,
+      plot,
+    })
 
   const { plotData } = plot.state
 
@@ -59,6 +62,7 @@ export const PatientDashboardProvider = ({
         handler,
         patientId,
         patientSessionId,
+        requestForwardBackSkip,
         store,
         currExercise,
         patientLocalData,

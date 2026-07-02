@@ -11,6 +11,7 @@ import {
   buildProgramSelectionState,
   resolveLastUsedProgram,
 } from '@/lib/patient-dashboard-program-selection'
+import type { PendingExerciseChange } from '@/lib/session-exercise-skip'
 
 type State = {
   isSettingsOpen: { id: string; open: boolean } | null
@@ -31,6 +32,7 @@ type State = {
     currentRep: number
     totalReps: number
   }
+  pendingExerciseChange: PendingExerciseChange | null
 }
 
 const initialState: State = {
@@ -52,6 +54,7 @@ const initialState: State = {
     currentRep: 0,
     totalReps: 0,
   },
+  pendingExerciseChange: null,
 }
 
 type SetterName<K extends string> = K extends `is${infer Rest}`

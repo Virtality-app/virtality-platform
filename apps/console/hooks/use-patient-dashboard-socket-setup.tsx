@@ -22,9 +22,16 @@ import {
   normalizeSetEndPayload,
 } from '@/lib/progress-event-normalization'
 import {
+  buildExerciseSkipCheckpoint,
   buildSetCompletionCheckpoint,
   mutableProgressByExerciseId,
 } from '@/lib/session-progress-checkpoint'
+import {
+  resolveForwardBackSkipTarget,
+  shouldIgnoreProgressEventDuringPendingExerciseChange,
+  type PendingExerciseChange,
+  type SkipDirection,
+} from '@/lib/session-exercise-skip'
 import {
   getQueryClient,
   useStartPatientSessionFromAck,
@@ -101,6 +108,7 @@ const usePatientDashboardSocketSetup = ({
   const currSet = useRef(0)
   const currRep = useRef(0)
   const stats = useRef({ highscore: 0, bestExercise: '' })
+  const pendingExerciseChange = useRef<PendingExerciseChange | null>(null)
 
   const invalidatePatientSessions = async () =>
     await queryClient.invalidateQueries({
@@ -130,6 +138,34 @@ const usePatientDashboardSocketSetup = ({
     patientSessionId.current = ''
     sessionExerciseRows.current = []
     lastSyncedWorkingCopy.current = null
+    clearPendingExerciseChange()
+  }
+
+  const clearPendingExerciseChange = () => {
+    pendingExerciseChange.current = null
+    updatePatientDashboardState({ pendingExerciseChange: null })
+  }
+
+  const setPendingExerciseChange = (change: PendingExerciseChange) => {
+    pendingExerciseChange.current = change
+    updatePatientDashboardState({ pendingExerciseChange: change })
+  }
+
+  const applyExerciseAtIndex = (index: number) => {
+    const exercise = exercises?.[index]
+
+    if (!exercise) {
+      return
+    }
+
+    currExercise.current = index
+    setActiveExerciseData({
+      id: exercise.exerciseId,
+      currentRep: 0,
+      currentSet: 1,
+      totalReps: exercise.reps,
+      totalSets: exercise.sets,
+    })
   }
 
   const handleSessionDataCreation = async () => {
@@ -150,11 +186,91 @@ const usePatientDashboardSocketSetup = ({
 
   const progressDataClear = () => {
     currSet.current = 0
+    currRep.current = 0
     const reps = exercises?.[currExercise.current]?.reps ?? 0
     realTimeData.current = Array.from({ length: reps }, (_, i) => ({
       rep: i + 1,
     }))
     setPlotData(realTimeData.current)
+  }
+
+  const shouldIgnoreProgressEvent = () => {
+    const currentExercise = exercises?.[currExercise.current]
+
+    if (!currentExercise) {
+      return false
+    }
+
+    return shouldIgnoreProgressEventDuringPendingExerciseChange({
+      pendingExerciseChange: pendingExerciseChange.current,
+      eventExerciseIndex: currExercise.current,
+      eventExerciseId: currentExercise.exerciseId,
+    })
+  }
+
+  const requestForwardBackSkip = async (direction: SkipDirection) => {
+    if (
+      programState !== 'started' ||
+      !exercises?.length ||
+      pendingExerciseChange.current !== null
+    ) {
+      return
+    }
+
+    const targetIndex = resolveForwardBackSkipTarget({
+      currentExerciseIndex: currExercise.current,
+      exerciseCount: exercises.length,
+      direction,
+    })
+
+    if (targetIndex === null) {
+      return
+    }
+
+    const sourceIndex = currExercise.current
+    const sourceExercise = exercises[sourceIndex]
+
+    if (!sourceExercise) {
+      return
+    }
+
+    setPendingExerciseChange({
+      targetExerciseIndex: targetIndex,
+      sourceExerciseIndex: sourceIndex,
+      sourceExerciseId: sourceExercise.exerciseId,
+    })
+
+    if (
+      canPersistSessionProgress(
+        patientSessionId.current,
+        sessionExerciseRows.current,
+        sourceIndex,
+      )
+    ) {
+      const checkpoint = buildExerciseSkipCheckpoint({
+        patientSessionId: patientSessionId.current,
+        sessionExerciseRows: sessionExerciseRows.current,
+        currentExerciseIndex: sourceIndex,
+        progressByExerciseId: progressData.current ?? {},
+        currentExerciseProgress: realTimeData.current,
+      })
+
+      if (checkpoint.upsert) {
+        try {
+          await upsertPatientSessionData([checkpoint.upsert])
+        } catch (error) {
+          console.error(error)
+        }
+      }
+
+      progressData.current = mutableProgressByExerciseId(
+        checkpoint.progressByExerciseId,
+      )
+    }
+
+    selectedDevice?.events.program.ChangeExercise(
+      exercises[targetIndex].exerciseId,
+    )
   }
 
   const handlePersistenceFailureAfterStartAck = () => {
@@ -261,6 +377,11 @@ const usePatientDashboardSocketSetup = ({
   }
 
   const handleChangeExerciseAck = () => {
+    if (pendingExerciseChange.current) {
+      applyExerciseAtIndex(pendingExerciseChange.current.targetExerciseIndex)
+      clearPendingExerciseChange()
+    }
+
     progressDataClear()
   }
 
@@ -272,6 +393,10 @@ const usePatientDashboardSocketSetup = ({
         currExercise.current,
       )
     ) {
+      return
+    }
+
+    if (shouldIgnoreProgressEvent()) {
       return
     }
 
@@ -331,6 +456,10 @@ const usePatientDashboardSocketSetup = ({
         currExercise.current,
       )
     ) {
+      return
+    }
+
+    if (shouldIgnoreProgressEvent()) {
       return
     }
 
@@ -503,7 +632,10 @@ const usePatientDashboardSocketSetup = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state, socket])
 
-  return patientSessionId
+  return {
+    patientSessionId,
+    requestForwardBackSkip,
+  }
 }
 
 export default usePatientDashboardSocketSetup
