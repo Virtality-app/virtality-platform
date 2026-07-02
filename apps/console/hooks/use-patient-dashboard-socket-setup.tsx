@@ -566,6 +566,14 @@ const usePatientDashboardSocketSetup = ({
     )
     currExercise.current = checkpoint.nextCurrentExerciseIndex
 
+    if (
+      checkpoint.nextCurrentExerciseIndex !== currentExerciseIndex &&
+      checkpoint.nextCurrentExerciseIndex < exercises!.length
+    ) {
+      applyExerciseAtIndex(checkpoint.nextCurrentExerciseIndex)
+      progressDataClear()
+    }
+
     try {
       await upsertPatientSessionData([checkpoint.upsert])
     } catch (error) {
