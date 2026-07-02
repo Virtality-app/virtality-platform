@@ -4,8 +4,10 @@ import {
   normalizeRepEndPayload,
   normalizeSetEndPayload,
 } from './progress-event-normalization'
-import { buildSessionExerciseRowsFromWorkingCopy } from './patient-dashboard-session-launch'
-import type { SessionExerciseRowInput } from './patient-dashboard-session-launch'
+import {
+  buildSessionExerciseRowsFromWorkingCopy,
+  type SessionExerciseRowInput,
+} from './patient-dashboard-session-launch'
 import {
   buildExerciseSkipCheckpoint,
   buildSetCompletionCheckpoint,
@@ -18,7 +20,6 @@ import {
   shouldIgnoreProgressEventDuringPendingExerciseChange,
   shouldPromotePendingExerciseOnAck,
   type PendingExerciseChange,
-  type SkipDirection,
 } from './session-exercise-skip'
 import {
   buildSessionProgressUpserts,
@@ -48,6 +49,25 @@ export type ExerciseSkipRequest =
 
 type PersistOptions = {
   persistSucceeds?: boolean
+}
+
+function unchangedResult(
+  state: SkipSafeProgressFlowState,
+): SkipSafeProgressFlowActionResult {
+  return { state, remoteUpserts: [] }
+}
+
+function progressCheckpointBase(
+  state: SkipSafeProgressFlowState,
+  currentExerciseIndex = state.headsetConfirmedExerciseIndex,
+) {
+  return {
+    patientSessionId: state.patientSessionId,
+    sessionExerciseRows: state.sessionExerciseRows,
+    currentExerciseIndex,
+    progressByExerciseId: state.progressByExerciseId,
+    currentExerciseProgress: state.currentExerciseProgress,
+  }
 }
 
 function createEmptyPlotData(reps: number): ProgressDataPoint[] {
@@ -92,11 +112,7 @@ function recordRemoteUpsert(
   upsert: SessionProgressUpsertInput | null,
   options?: PersistOptions,
 ): SkipSafeProgressFlowActionResult {
-  if (!upsert) {
-    return result
-  }
-
-  if (options?.persistSucceeds === false) {
+  if (!upsert || options?.persistSucceeds === false) {
     return result
   }
 
@@ -137,13 +153,13 @@ export function applyRepEndToFlow(
   payload: string,
 ): SkipSafeProgressFlowActionResult {
   if (shouldIgnoreProgressEvent(state)) {
-    return { state, remoteUpserts: [] }
+    return unchangedResult(state)
   }
 
   const normalized = normalizeRepEndPayload(payload)
 
   if (!normalized.ok) {
-    return { state, remoteUpserts: [] }
+    return unchangedResult(state)
   }
 
   const { completedRep, progress } = normalized.event
@@ -173,23 +189,19 @@ export function applySetEndToFlow(
   options?: PersistOptions,
 ): SkipSafeProgressFlowActionResult {
   if (shouldIgnoreProgressEvent(state)) {
-    return { state, remoteUpserts: [] }
+    return unchangedResult(state)
   }
 
   const normalized = normalizeSetEndPayload(payload)
 
   if (!normalized.ok) {
-    return { state, remoteUpserts: [] }
+    return unchangedResult(state)
   }
 
   const { completedSet } = normalized.event
   const currentExerciseIndex = state.headsetConfirmedExerciseIndex
   const checkpoint = buildSetCompletionCheckpoint({
-    patientSessionId: state.patientSessionId,
-    sessionExerciseRows: state.sessionExerciseRows,
-    currentExerciseIndex,
-    progressByExerciseId: state.progressByExerciseId,
-    currentExerciseProgress: state.currentExerciseProgress,
+    ...progressCheckpointBase(state, currentExerciseIndex),
     completedSet,
     lastCompletedRepIndex: state.currRep,
     isLastExercise:
@@ -229,13 +241,13 @@ export function requestExerciseSkipInFlow(
       pendingExerciseChange: state.pendingExerciseChange,
     })
   ) {
-    return { state, remoteUpserts: [], skipRequested: false }
+    return { ...unchangedResult(state), skipRequested: false }
   }
 
   const targetIndex = resolveSkipTargetIndex(state, request)
 
   if (targetIndex === null) {
-    return { state, remoteUpserts: [], skipRequested: false }
+    return { ...unchangedResult(state), skipRequested: false }
   }
 
   const sourceIndex = state.headsetConfirmedExerciseIndex
@@ -243,7 +255,7 @@ export function requestExerciseSkipInFlow(
   const targetExercise = state.sessionExerciseRows[targetIndex]
 
   if (!sourceExercise || !targetExercise || targetIndex === sourceIndex) {
-    return { state, remoteUpserts: [], skipRequested: false }
+    return { ...unchangedResult(state), skipRequested: false }
   }
 
   const pendingExerciseChange: PendingExerciseChange = {
@@ -252,13 +264,9 @@ export function requestExerciseSkipInFlow(
     sourceExerciseId: sourceExercise.exerciseId,
   }
 
-  const checkpoint = buildExerciseSkipCheckpoint({
-    patientSessionId: state.patientSessionId,
-    sessionExerciseRows: state.sessionExerciseRows,
-    currentExerciseIndex: sourceIndex,
-    progressByExerciseId: state.progressByExerciseId,
-    currentExerciseProgress: state.currentExerciseProgress,
-  })
+  const checkpoint = buildExerciseSkipCheckpoint(
+    progressCheckpointBase(state, sourceIndex),
+  )
 
   const nextState: SkipSafeProgressFlowState = {
     ...state,
@@ -281,18 +289,22 @@ function resolveSkipTargetIndex(
   state: SkipSafeProgressFlowState,
   request: ExerciseSkipRequest,
 ): number | null {
-  if (request.kind === 'direct') {
-    return resolveDirectExerciseSkipTarget({
-      currentExerciseIndex: state.headsetConfirmedExerciseIndex,
-      targetExerciseIndex: request.targetExerciseIndex,
-    })
-  }
+  const currentExerciseIndex = state.headsetConfirmedExerciseIndex
 
-  return resolveForwardBackSkipTarget({
-    currentExerciseIndex: state.headsetConfirmedExerciseIndex,
-    exerciseCount: state.sessionExerciseRows.length,
-    direction: request.kind satisfies SkipDirection,
-  })
+  switch (request.kind) {
+    case 'direct':
+      return resolveDirectExerciseSkipTarget({
+        currentExerciseIndex,
+        targetExerciseIndex: request.targetExerciseIndex,
+      })
+    case 'forward':
+    case 'back':
+      return resolveForwardBackSkipTarget({
+        currentExerciseIndex,
+        exerciseCount: state.sessionExerciseRows.length,
+        direction: request.kind,
+      })
+  }
 }
 
 export function acknowledgeExerciseChangeInFlow(
@@ -301,12 +313,10 @@ export function acknowledgeExerciseChangeInFlow(
   const pending = state.pendingExerciseChange
 
   if (
-    !shouldPromotePendingExerciseOnAck({
-      pendingExerciseChange: pending,
-    }) ||
-    !pending
+    !pending ||
+    !shouldPromotePendingExerciseOnAck({ pendingExerciseChange: pending })
   ) {
-    return { state, remoteUpserts: [], acknowledged: false }
+    return { ...unchangedResult(state), acknowledged: false }
   }
 
   const nextState = clearCurrentExerciseProgress({
@@ -322,7 +332,7 @@ export function failPendingExerciseChangeInFlow(
   state: SkipSafeProgressFlowState,
 ): SkipSafeProgressFlowActionResult & { failed: boolean } {
   if (!state.pendingExerciseChange) {
-    return { state, remoteUpserts: [], failed: false }
+    return { ...unchangedResult(state), failed: false }
   }
 
   return {
@@ -338,13 +348,7 @@ export function failPendingExerciseChangeInFlow(
 export function buildSessionEndProgressUpserts(
   state: SkipSafeProgressFlowState,
 ): SessionProgressUpsertInput[] {
-  return buildSessionProgressUpserts({
-    patientSessionId: state.patientSessionId,
-    sessionExerciseRows: state.sessionExerciseRows,
-    progressByExerciseId: state.progressByExerciseId,
-    currentExerciseIndex: state.headsetConfirmedExerciseIndex,
-    currentExerciseProgress: state.currentExerciseProgress,
-  })
+  return buildSessionProgressUpserts(progressCheckpointBase(state))
 }
 
 export function completeSessionInFlow(

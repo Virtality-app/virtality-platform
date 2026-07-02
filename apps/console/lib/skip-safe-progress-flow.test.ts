@@ -9,6 +9,7 @@ import {
   failPendingExerciseChangeInFlow,
   interruptSessionInFlow,
   requestExerciseSkipInFlow,
+  type SkipSafeProgressFlowActionResult,
 } from './skip-safe-progress-flow.js'
 import {
   isDirectExerciseSelectionDisabled,
@@ -60,17 +61,31 @@ function createFlowState(startingExerciseIndex = 0) {
   })
 }
 
+function repEndPayload(previousRep: number, progress: number) {
+  return JSON.stringify({ previousRep, progress })
+}
+
+function setEndPayload(previousSet: number) {
+  return JSON.stringify({ previousSet })
+}
+
+function parseUpsertValue(
+  result: SkipSafeProgressFlowActionResult,
+  index: number,
+) {
+  return JSON.parse(result.remoteUpserts[index]!.value)
+}
+
 function completeAllRepsInCurrentSet(
   state: ReturnType<typeof createFlowState>,
   progress = 0.8,
 ) {
+  const prescribedReps =
+    state.sessionExerciseRows[state.headsetConfirmedExerciseIndex]?.reps ?? 0
   let next = state
 
-  for (let rep = 0; rep < 3; rep += 1) {
-    const result = applyRepEndToFlow(
-      next,
-      JSON.stringify({ previousRep: rep, progress }),
-    )
+  for (let rep = 0; rep < prescribedReps; rep += 1) {
+    const result = applyRepEndToFlow(next, repEndPayload(rep, progress))
     next = result.state
   }
 
@@ -82,9 +97,9 @@ describe('skip-safe active-session progress flow regression', () => {
     let state = createFlowState()
     state = completeAllRepsInCurrentSet(state)
 
-    const setEnd = applySetEndToFlow(state, JSON.stringify({ previousSet: 1 }))
+    const setEnd = applySetEndToFlow(state, setEndPayload(1))
 
-    expect(JSON.parse(setEnd.remoteUpserts[0]!.value)).toEqual([
+    expect(parseUpsertValue(setEnd, 0)).toEqual([
       { rep: 1, set_1: 80 },
       { rep: 2, set_1: 80 },
       { rep: 3, set_1: 80 },
@@ -95,10 +110,7 @@ describe('skip-safe active-session progress flow regression', () => {
 
   it('preserves partial progress when skipping forward or back', () => {
     let state = createFlowState()
-    const afterRep = applyRepEndToFlow(
-      state,
-      JSON.stringify({ previousRep: 0, progress: 0.7 }),
-    ).state
+    const afterRep = applyRepEndToFlow(state, repEndPayload(0, 0.7)).state
 
     const forwardSkip = requestExerciseSkipInFlow(afterRep, { kind: 'forward' })
 
@@ -108,9 +120,7 @@ describe('skip-safe active-session progress flow regression', () => {
       sourceExerciseIndex: 0,
       sourceExerciseId: 'ex-1',
     })
-    expect(JSON.parse(forwardSkip.remoteUpserts[0]!.value)).toEqual([
-      { rep: 1, set_1: 70 },
-    ])
+    expect(parseUpsertValue(forwardSkip, 0)).toEqual([{ rep: 1, set_1: 70 }])
     expect(forwardSkip.state.progressByExerciseId).toEqual({
       'ex-1': [{ rep: 1, set_1: 70 }],
     })
@@ -118,26 +128,18 @@ describe('skip-safe active-session progress flow regression', () => {
     const acked = acknowledgeExerciseChangeInFlow(forwardSkip.state)
     const withProgress = applyRepEndToFlow(
       acked.state,
-      JSON.stringify({ previousRep: 0, progress: 0.75 }),
+      repEndPayload(0, 0.75),
     ).state
     const backSkip = requestExerciseSkipInFlow(withProgress, { kind: 'back' })
 
     expect(backSkip.skipRequested).toBe(true)
-    expect(JSON.parse(backSkip.remoteUpserts[0]!.value)).toEqual([
-      { rep: 1, set_1: 75 },
-    ])
+    expect(parseUpsertValue(backSkip, 0)).toEqual([{ rep: 1, set_1: 75 }])
   })
 
   it('treats direct exercise selection as a skip with the same preservation rules', () => {
     let state = createFlowState()
-    state = applyRepEndToFlow(
-      state,
-      JSON.stringify({ previousRep: 0, progress: 0.8 }),
-    ).state
-    state = applyRepEndToFlow(
-      state,
-      JSON.stringify({ previousRep: 1, progress: 0.65 }),
-    ).state
+    state = applyRepEndToFlow(state, repEndPayload(0, 0.8)).state
+    state = applyRepEndToFlow(state, repEndPayload(1, 0.65)).state
 
     const directSkip = requestExerciseSkipInFlow(state, {
       kind: 'direct',
@@ -146,7 +148,7 @@ describe('skip-safe active-session progress flow regression', () => {
 
     expect(directSkip.skipRequested).toBe(true)
     expect(directSkip.state.pendingExerciseChange?.targetExerciseIndex).toBe(2)
-    expect(JSON.parse(directSkip.remoteUpserts[0]!.value)).toEqual([
+    expect(parseUpsertValue(directSkip, 0)).toEqual([
       { rep: 1, set_1: 80 },
       { rep: 2, set_1: 65 },
     ])
@@ -204,7 +206,7 @@ describe('skip-safe active-session progress flow regression', () => {
   it('retries unsaved skip checkpoint snapshots at normal session end', () => {
     const afterRep = applyRepEndToFlow(
       createFlowState(),
-      JSON.stringify({ previousRep: 0, progress: 0.72 }),
+      repEndPayload(0, 0.72),
     ).state
     const skipped = requestExerciseSkipInFlow(
       afterRep,
@@ -222,51 +224,35 @@ describe('skip-safe active-session progress flow regression', () => {
     const acked = acknowledgeExerciseChangeInFlow(skipped.state)
     const sessionEnd = completeSessionInFlow(acked.state)
 
-    expect(JSON.parse(sessionEnd.remoteUpserts[0]!.value)).toEqual([
-      { rep: 1, set_1: 72 },
-    ])
-    expect(JSON.parse(sessionEnd.remoteUpserts[1]!.value)).toEqual([])
-    expect(JSON.parse(sessionEnd.remoteUpserts[2]!.value)).toEqual([])
+    expect(parseUpsertValue(sessionEnd, 0)).toEqual([{ rep: 1, set_1: 72 }])
+    expect(parseUpsertValue(sessionEnd, 1)).toEqual([])
+    expect(parseUpsertValue(sessionEnd, 2)).toEqual([])
   })
 
   it('recovers checkpoint snapshots when a session is interrupted', () => {
     let state = createFlowState()
-    state = applyRepEndToFlow(
-      state,
-      JSON.stringify({ previousRep: 0, progress: 0.6 }),
-    ).state
+    state = applyRepEndToFlow(state, repEndPayload(0, 0.6)).state
     const skipped = requestExerciseSkipInFlow(state, { kind: 'forward' })
     const acked = acknowledgeExerciseChangeInFlow(skipped.state)
     const interrupted = interruptSessionInFlow(acked.state)
 
-    expect(JSON.parse(interrupted.remoteUpserts[0]!.value)).toEqual([
-      { rep: 1, set_1: 60 },
-    ])
-    expect(JSON.parse(interrupted.remoteUpserts[1]!.value)).toEqual([])
+    expect(parseUpsertValue(interrupted, 0)).toEqual([{ rep: 1, set_1: 60 }])
+    expect(parseUpsertValue(interrupted, 1)).toEqual([])
     expect(interrupted.state.headsetConfirmedExerciseIndex).toBe(0)
     expect(interrupted.state.pendingExerciseChange).toBeNull()
   })
 
   it('persists final-exercise progress before resetting the current exercise index', () => {
     let state = createFlowState(2)
-    state = applyRepEndToFlow(
-      state,
-      JSON.stringify({ previousRep: 0, progress: 0.5 }),
-    ).state
-    state = applyRepEndToFlow(
-      state,
-      JSON.stringify({ previousRep: 1, progress: 0.6 }),
-    ).state
+    state = applyRepEndToFlow(state, repEndPayload(0, 0.5)).state
+    state = applyRepEndToFlow(state, repEndPayload(1, 0.6)).state
 
-    const finalSetEnd = applySetEndToFlow(
-      state,
-      JSON.stringify({ previousSet: 1 }),
-    )
+    const finalSetEnd = applySetEndToFlow(state, setEndPayload(1))
 
     expect(finalSetEnd.remoteUpserts[0]!.sessionExerciseId).toBe(
       'session-row-3',
     )
-    expect(JSON.parse(finalSetEnd.remoteUpserts[0]!.value)).toEqual([
+    expect(parseUpsertValue(finalSetEnd, 0)).toEqual([
       { rep: 1, set_1: 50 },
       { rep: 2, set_1: 60 },
     ])
@@ -278,14 +264,8 @@ describe('skip-safe active-session progress flow regression', () => {
       kind: 'forward',
     })
 
-    const lateRep = applyRepEndToFlow(
-      skipped.state,
-      JSON.stringify({ previousRep: 1, progress: 0.9 }),
-    )
-    const lateSet = applySetEndToFlow(
-      lateRep.state,
-      JSON.stringify({ previousSet: 1 }),
-    )
+    const lateRep = applyRepEndToFlow(skipped.state, repEndPayload(1, 0.9))
+    const lateSet = applySetEndToFlow(lateRep.state, setEndPayload(1))
 
     expect(lateRep.state.currentExerciseProgress).toEqual(
       skipped.state.currentExerciseProgress,
@@ -301,11 +281,8 @@ describe('skip-safe active-session progress flow regression', () => {
   it('walks the full skip-safe flow end to end', () => {
     let state = createFlowState()
 
-    state = applyRepEndToFlow(
-      state,
-      JSON.stringify({ previousRep: 0, progress: 0.7 }),
-    ).state
-    state = applySetEndToFlow(state, JSON.stringify({ previousSet: 1 })).state
+    state = applyRepEndToFlow(state, repEndPayload(0, 0.7)).state
+    state = applySetEndToFlow(state, setEndPayload(1)).state
 
     const forwardSkip = requestExerciseSkipInFlow(
       state,
@@ -316,10 +293,7 @@ describe('skip-safe active-session progress flow regression', () => {
     )
     state = acknowledgeExerciseChangeInFlow(forwardSkip.state).state
 
-    state = applyRepEndToFlow(
-      state,
-      JSON.stringify({ previousRep: 0, progress: 0.5 }),
-    ).state
+    state = applyRepEndToFlow(state, repEndPayload(0, 0.5)).state
     const directSkip = requestExerciseSkipInFlow(state, {
       kind: 'direct',
       targetExerciseIndex: 2,
@@ -330,7 +304,7 @@ describe('skip-safe active-session progress flow regression', () => {
     const persistedByExerciseId = Object.fromEntries(
       state.sessionExerciseRows.map((row, index) => [
         row.exerciseId,
-        JSON.parse(sessionEnd.remoteUpserts[index]!.value),
+        parseUpsertValue(sessionEnd, index),
       ]),
     )
 
