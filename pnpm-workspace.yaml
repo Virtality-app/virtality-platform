@@ -14,6 +14,10 @@ allowBuilds:
   sharp: true
   unrs-resolver: true
 
+minimumReleaseAgeExclude:
+  - '@posthog/core@1.39.5'
+  - posthog-js@1.396.5
+
 onlyBuiltDependencies:
   - '@prisma/client'
   - '@prisma/engines'

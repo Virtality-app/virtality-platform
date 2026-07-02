@@ -3,7 +3,13 @@
   "private": true,
   "version": "0.0.0",
   "description": "",
-  "packageManager": "pnpm@11.8.0",
+  "packageManager": "pnpm@11.9.0",
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": ">=24.0.0"
+    }
+  },
   "scripts": {
     "dev": "turbo dev",
     "dev:apps": "turbo run dev:apps",
@@ -38,13 +44,10 @@
   "devDependencies": {
     "@ai-hero/sandcastle": "0.6.6",
     "fallow": "2.94.0",
-    "pnpm": "11.8.0",
     "prettier": "3.8.1",
     "prettier-plugin-tailwindcss": "0.7.2",
     "rimraf": "6.1.2",
-    "turbo": "2.8.11"
-  },
-  "dependencies": {
+    "turbo": "2.8.11",
     "zod": "4.3.6"
   }
 }
