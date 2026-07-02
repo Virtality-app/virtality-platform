@@ -36,6 +36,10 @@ import {
   type SkipDirection,
 } from '@/lib/session-exercise-skip'
 import {
+  EXERCISE_CHANGE_ACK_TIMEOUT_MS,
+  resolveExerciseChangeFailureMessage,
+} from '@/lib/session-exercise-change-ui'
+import {
   getQueryClient,
   useStartPatientSessionFromAck,
   useUpsertPatientSessionData,
@@ -112,6 +116,9 @@ const usePatientDashboardSocketSetup = ({
   const currRep = useRef(0)
   const stats = useRef({ highscore: 0, bestExercise: '' })
   const pendingExerciseChange = useRef<PendingExerciseChange | null>(null)
+  const pendingExerciseChangeTimeout = useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null)
 
   const invalidatePatientSessions = async () =>
     await queryClient.invalidateQueries({
@@ -144,14 +151,41 @@ const usePatientDashboardSocketSetup = ({
     clearPendingExerciseChange()
   }
 
+  const clearPendingExerciseChangeTimeout = () => {
+    if (pendingExerciseChangeTimeout.current) {
+      clearTimeout(pendingExerciseChangeTimeout.current)
+      pendingExerciseChangeTimeout.current = null
+    }
+  }
+
   const clearPendingExerciseChange = () => {
+    clearPendingExerciseChangeTimeout()
     pendingExerciseChange.current = null
     updatePatientDashboardState({ pendingExerciseChange: null })
   }
 
+  const handlePendingExerciseChangeFailure = () => {
+    const pending = pendingExerciseChange.current
+
+    if (!pending) {
+      return
+    }
+
+    const sourceExercise = exercises?.[pending.sourceExerciseIndex]
+    const confirmedExerciseName =
+      getDisplayName(sourceExercise?.exercise) ?? 'Current exercise'
+
+    clearPendingExerciseChange()
+    ErrorToasty(resolveExerciseChangeFailureMessage(confirmedExerciseName))
+  }
+
   const setPendingExerciseChange = (change: PendingExerciseChange) => {
+    clearPendingExerciseChangeTimeout()
     pendingExerciseChange.current = change
     updatePatientDashboardState({ pendingExerciseChange: change })
+    pendingExerciseChangeTimeout.current = setTimeout(() => {
+      handlePendingExerciseChangeFailure()
+    }, EXERCISE_CHANGE_ACK_TIMEOUT_MS)
   }
 
   const applyExerciseAtIndex = (index: number) => {

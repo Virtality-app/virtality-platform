@@ -33,6 +33,18 @@ import {
   resolveCurrentExerciseIndex,
   resolveExerciseListHighlightState,
 } from '@/lib/session-exercise-skip'
+import {
+  EXERCISE_LIST_HIGHLIGHT_LABEL,
+  resolveDirectSelectionBlockedTooltip,
+  resolveExerciseListHighlightBadgeClass,
+  resolveExerciseListHighlightClass,
+} from '@/lib/session-exercise-change-ui'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 const ExerciseList = ({ className }: { className?: string }) => {
   const { state, handler, currExercise, requestDirectExerciseSelection } =
@@ -67,6 +79,9 @@ const ExerciseList = ({ className }: { className?: string }) => {
     isProgramActive &&
     isMain &&
     isDirectExerciseSelectionDisabled({ pendingExerciseChange })
+  const directSelectionBlockedTooltip = resolveDirectSelectionBlockedTooltip(
+    isDirectSelectionBlocked ? pendingExerciseChange : null,
+  )
 
   const handleExerciseSelection = (index: number, exerciseId: string) => {
     if (isProgramActive && isMain) {
@@ -164,138 +179,169 @@ const ExerciseList = ({ className }: { className?: string }) => {
   }
 
   return (
-    <Card className={cn('', className)}>
-      <CardHeader>
-        <CardTitle>Exercises</CardTitle>
-      </CardHeader>
-      <CardContent className='overflow-auto p-2'>
-        {exercises.length !== 0 ? (
-          <ItemGroup>
-            {exercises.map((ex, index) => {
-              const highlightState = isActiveMainSession
-                ? resolveExerciseListHighlightState({
-                    exerciseIndex: index,
-                    ...exerciseListHighlightContext,
-                  })
-                : null
+    <TooltipProvider delayDuration={200}>
+      <Card className={cn('', className)}>
+        <CardHeader>
+          <CardTitle>Exercises</CardTitle>
+          {isActiveMainSession && (
+            <p className='text-muted-foreground text-xs'>
+              Green ring: headset-confirmed exercise. Amber ring: pending change
+              target.
+            </p>
+          )}
+          {isDirectSelectionBlocked && directSelectionBlockedTooltip && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <p className='text-xs text-amber-300'>
+                  Exercise list selection is locked while a change is in flight.
+                </p>
+              </TooltipTrigger>
+              <TooltipContent>{directSelectionBlockedTooltip}</TooltipContent>
+            </Tooltip>
+          )}
+        </CardHeader>
+        <CardContent className='overflow-auto p-2'>
+          {exercises.length !== 0 ? (
+            <ItemGroup>
+              {exercises.map((ex, index) => {
+                const highlightState = isActiveMainSession
+                  ? resolveExerciseListHighlightState({
+                      exerciseIndex: index,
+                      ...exerciseListHighlightContext,
+                    })
+                  : null
 
-              const defaultExercise = defaultExercises?.find(
-                (de) => de.id === ex.exerciseId,
-              )
+                const defaultExercise = defaultExercises?.find(
+                  (de) => de.id === ex.exerciseId,
+                )
 
-              return (
-                <Fragment key={ex.id}>
-                  <motion.div
-                    layout
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 20 }}
-                    transition={{
-                      layout: { duration: 0.3, ease: 'easeInOut' },
-                      opacity: { duration: 0.2 },
-                      y: { duration: 0.2 },
-                    }}
-                  >
-                    <Item
-                      id={ex.id}
-                      size='sm'
-                      className={cn(
-                        'hover:bg-vital-blue-700/20 px-2',
-                        highlightState === 'confirmed' && 'text-green-400',
-                        highlightState === 'pending' && 'text-amber-400',
-                      )}
+                return (
+                  <Fragment key={ex.id}>
+                    <motion.div
+                      layout
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 20 }}
+                      transition={{
+                        layout: { duration: 0.3, ease: 'easeInOut' },
+                        opacity: { duration: 0.2 },
+                        y: { duration: 0.2 },
+                      }}
                     >
-                      <ItemMedia className='flex-col'>
-                        <Button
-                          size='icon-sm'
-                          variant='ghost'
-                          onClick={() => moveExerciseUp(index)}
-                          disabled={
-                            index === 0 || isProgramActive || isProgramPaused
-                          }
-                        >
-                          <ChevronUp />
-                        </Button>
-                        <Button
-                          size='icon-sm'
-                          variant='ghost'
-                          onClick={() => moveExerciseDown(index)}
-                          disabled={
-                            index === exercises.length - 1 ||
-                            isProgramActive ||
-                            isProgramPaused
-                          }
-                        >
-                          <ChevronDown />
-                        </Button>
-                      </ItemMedia>
-                      {defaultExercise && (
-                        <ExerciseDescriptionCard exercise={defaultExercise} />
-                      )}
-
-                      <p
+                      <Item
+                        id={ex.id}
+                        size='sm'
                         className={cn(
-                          'flex-1 truncate overflow-x-hidden hover:cursor-pointer',
-                          isDirectSelectionBlocked &&
-                            'pointer-events-none opacity-60',
+                          'hover:bg-vital-blue-700/20 px-2',
+                          resolveExerciseListHighlightClass(highlightState),
                         )}
-                        onClick={() =>
-                          handleExerciseSelection(index, ex.exerciseId)
-                        }
                       >
-                        {getDisplayName(defaultExercise)}
-                      </p>
-
-                      <ItemActions>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button variant='outline' size='icon'>
-                              <Settings />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent
-                            side='right'
-                            className='flex flex-col gap-4'
+                        <ItemMedia className='flex-col'>
+                          <Button
+                            size='icon-sm'
+                            variant='ghost'
+                            onClick={() => moveExerciseUp(index)}
+                            disabled={
+                              index === 0 || isProgramActive || isProgramPaused
+                            }
                           >
-                            <ExerciseSettings
-                              ex={ex}
-                              exercises={exercises}
-                              setExercises={setExercises}
-                              index={index}
-                              orientation='vertical'
-                            />
+                            <ChevronUp />
+                          </Button>
+                          <Button
+                            size='icon-sm'
+                            variant='ghost'
+                            onClick={() => moveExerciseDown(index)}
+                            disabled={
+                              index === exercises.length - 1 ||
+                              isProgramActive ||
+                              isProgramPaused
+                            }
+                          >
+                            <ChevronDown />
+                          </Button>
+                        </ItemMedia>
+                        {defaultExercise && (
+                          <ExerciseDescriptionCard exercise={defaultExercise} />
+                        )}
 
-                            <div className='col-start-3 flex gap-2 place-self-end'>
-                              {exercises.length > 1 && (
-                                <Button
-                                  variant='outline'
-                                  onClick={() =>
-                                    applySettingsToAllExercises(index)
-                                  }
-                                >
-                                  Apply to all
-                                </Button>
+                        <div className='flex min-w-0 flex-1 items-center gap-2'>
+                          <p
+                            className={cn(
+                              'truncate overflow-x-hidden hover:cursor-pointer',
+                              isDirectSelectionBlocked &&
+                                'pointer-events-none opacity-60',
+                            )}
+                            onClick={() =>
+                              handleExerciseSelection(index, ex.exerciseId)
+                            }
+                          >
+                            {getDisplayName(defaultExercise)}
+                          </p>
+                          {highlightState && (
+                            <span
+                              className={cn(
+                                'shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium tracking-wide uppercase',
+                                resolveExerciseListHighlightBadgeClass(
+                                  highlightState,
+                                ),
                               )}
-                              <Button onClick={() => applySettings(index)}>
-                                Apply Changes
+                            >
+                              {EXERCISE_LIST_HIGHLIGHT_LABEL[highlightState]}
+                            </span>
+                          )}
+                        </div>
+
+                        <ItemActions>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button variant='outline' size='icon'>
+                                <Settings />
                               </Button>
-                            </div>
-                            <PopoverArrow className='fill-zinc-200 dark:fill-zinc-800' />
-                          </PopoverContent>
-                        </Popover>
-                      </ItemActions>
-                    </Item>
-                  </motion.div>
-                  {index !== exercises.length - 1 && <ItemSeparator />}
-                </Fragment>
-              )
-            })}
-          </ItemGroup>
-        ) : (
-          <p className='text-muted-foreground'>No exercises...</p>
-        )}
-      </CardContent>
-    </Card>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              side='right'
+                              className='flex flex-col gap-4'
+                            >
+                              <ExerciseSettings
+                                ex={ex}
+                                exercises={exercises}
+                                setExercises={setExercises}
+                                index={index}
+                                orientation='vertical'
+                              />
+
+                              <div className='col-start-3 flex gap-2 place-self-end'>
+                                {exercises.length > 1 && (
+                                  <Button
+                                    variant='outline'
+                                    onClick={() =>
+                                      applySettingsToAllExercises(index)
+                                    }
+                                  >
+                                    Apply to all
+                                  </Button>
+                                )}
+                                <Button onClick={() => applySettings(index)}>
+                                  Apply Changes
+                                </Button>
+                              </div>
+                              <PopoverArrow className='fill-zinc-200 dark:fill-zinc-800' />
+                            </PopoverContent>
+                          </Popover>
+                        </ItemActions>
+                      </Item>
+                    </motion.div>
+                    {index !== exercises.length - 1 && <ItemSeparator />}
+                  </Fragment>
+                )
+              })}
+            </ItemGroup>
+          ) : (
+            <p className='text-muted-foreground'>No exercises...</p>
+          )}
+        </CardContent>
+      </Card>
+    </TooltipProvider>
   )
 }
 

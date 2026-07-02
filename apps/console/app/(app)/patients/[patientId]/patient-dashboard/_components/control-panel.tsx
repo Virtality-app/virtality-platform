@@ -49,7 +49,11 @@ import ErrorToasty from '@/components/ui/ErrorToasty'
 import useNavigationGuard from '@/hooks/use-navigation-guard'
 import ProgramSelector from './program-selector'
 import { Item } from '@/components/ui/item'
-import { usePatient, usePatientSessions } from '@virtality/react-query'
+import {
+  useExercise,
+  usePatient,
+  usePatientSessions,
+} from '@virtality/react-query'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@virtality/ui/components/label'
 import { useFeatureFlagResult } from 'posthog-js/react'
@@ -60,10 +64,17 @@ import {
 } from '@/lib/patient-dashboard-treatment-launch'
 import { useVrHeadsetPresence } from '@/hooks/use-vr-headset-presence'
 import {
-  isSkipControlDisabled,
   resolveCurrentExerciseIndex,
   type SkipDirection,
 } from '@/lib/session-exercise-skip'
+import { resolveSkipControlUiState } from '@/lib/session-exercise-change-ui'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import SessionExerciseChangeStatus from './session-exercise-change-status'
 
 let wakeLock: WakeLockSentinel | null = null
 
@@ -85,6 +96,7 @@ const ControlPanel = ({
     input: { where: { patientId } },
   })
   const { data: patient } = usePatient({ patientId })
+  const { data: defaultExercises } = useExercise()
   const sessionNumber = patientSessions?.length ?? 0
   const {
     programState,
@@ -233,11 +245,11 @@ const ControlPanel = ({
     exerciseCount,
     pendingExerciseChange,
   }
-  const isForwardSkipDisabled = isSkipControlDisabled({
+  const forwardSkipControl = resolveSkipControlUiState({
     ...skipControlState,
     direction: 'forward',
   })
-  const isBackSkipDisabled = isSkipControlDisabled({
+  const backSkipControl = resolveSkipControlUiState({
     ...skipControlState,
     direction: 'back',
   })
@@ -269,8 +281,10 @@ const ControlPanel = ({
           programEnd={programEnd}
           handleWarmupStart={handleWarmupStart}
           skipExercise={skipExercise}
-          isForwardSkipDisabled={isForwardSkipDisabled}
-          isBackSkipDisabled={isBackSkipDisabled}
+          isForwardSkipDisabled={forwardSkipControl.isDisabled}
+          isBackSkipDisabled={backSkipControl.isDisabled}
+          forwardSkipTooltip={forwardSkipControl.tooltip}
+          backSkipTooltip={backSkipControl.tooltip}
           isSkipBlockedByProgramState={isSkipBlockedByProgramState}
         />
         <Separator orientation='vertical' className='h-8!' />
@@ -285,6 +299,13 @@ const ControlPanel = ({
             <Item variant='outline' size='sm' className='max-h-9 p-1'>
               {`Reps: ${activeExerciseData.currentRep} / ${activeExerciseData.totalReps}`}
             </Item>
+            {pendingExerciseChange && (
+              <SessionExerciseChangeStatus
+                pendingExerciseChange={pendingExerciseChange}
+                exercises={exercises}
+                defaultExercises={defaultExercises}
+              />
+            )}
           </>
         )}
 
@@ -326,6 +347,8 @@ interface ControlsProps {
   skipExercise: (direction: SkipDirection) => void
   isForwardSkipDisabled: boolean
   isBackSkipDisabled: boolean
+  forwardSkipTooltip?: string
+  backSkipTooltip?: string
   isSkipBlockedByProgramState: boolean
 }
 
@@ -342,6 +365,8 @@ const Controls = ({
   skipExercise,
   isForwardSkipDisabled,
   isBackSkipDisabled,
+  forwardSkipTooltip,
+  backSkipTooltip,
   isSkipBlockedByProgramState,
 }: ControlsProps) => {
   const StartProgramButton = useRef<HTMLButtonElement>(null)
@@ -373,15 +398,13 @@ const Controls = ({
   switch (selectedMode) {
     case 'main':
       return (
-        <>
-          <Button
+        <TooltipProvider delayDuration={200}>
+          <SkipControlButton
+            direction='back'
             disabled={isSkipBlockedByProgramState || isBackSkipDisabled}
-            size='icon'
-            variant='outline'
+            tooltip={backSkipTooltip}
             onClick={() => skipExercise('back')}
-          >
-            <SkipBack />
-          </Button>
+          />
 
           <Button
             ref={StartProgramButton}
@@ -403,15 +426,13 @@ const Controls = ({
             </Button>
           )}
 
-          <Button
+          <SkipControlButton
+            direction='forward'
             disabled={isSkipBlockedByProgramState || isForwardSkipDisabled}
-            size='icon'
-            variant='outline'
+            tooltip={forwardSkipTooltip}
             onClick={() => skipExercise('forward')}
-          >
-            <SkipForward />
-          </Button>
-        </>
+          />
+        </TooltipProvider>
       )
 
     case 'free':
@@ -442,6 +463,50 @@ interface ModeSelectorProps {
   selectedMode: PatientDashboardValue['state']['selectedMode']
   setSelectedMode: PatientDashboardValue['handler']['setSelectedMode']
   programState: PatientDashboardValue['state']['programState']
+}
+
+const SKIP_CONTROL_ARIA_LABEL: Record<SkipDirection, string> = {
+  forward: 'Skip to next exercise',
+  back: 'Skip to previous exercise',
+}
+
+interface SkipControlButtonProps {
+  direction: SkipDirection
+  disabled: boolean
+  tooltip?: string
+  onClick: () => void
+}
+
+const SkipControlButton = ({
+  direction,
+  disabled,
+  tooltip,
+  onClick,
+}: SkipControlButtonProps) => {
+  const button = (
+    <Button
+      disabled={disabled}
+      size='icon'
+      variant='outline'
+      onClick={onClick}
+      aria-label={SKIP_CONTROL_ARIA_LABEL[direction]}
+    >
+      {direction === 'forward' ? <SkipForward /> : <SkipBack />}
+    </Button>
+  )
+
+  if (!tooltip) {
+    return button
+  }
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className='inline-flex'>{button}</span>
+      </TooltipTrigger>
+      <TooltipContent>{tooltip}</TooltipContent>
+    </Tooltip>
+  )
 }
 
 const ModeSelector = ({
