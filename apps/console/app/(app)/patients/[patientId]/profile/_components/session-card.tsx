@@ -68,6 +68,17 @@ interface SessionCardProps {
   onBack: (value: string) => void
 }
 
+const getSessionChartExerciseTitle = (exercise?: Exercise) => {
+  if (!exercise) return undefined
+
+  const direction = exercise.direction.trim()
+  if (!direction || direction.toLowerCase() === 'both') {
+    return exercise.displayName
+  }
+
+  return `${exercise.displayName} ${direction}`
+}
+
 const SessionCard = ({ session, patientId, onBack }: SessionCardProps) => {
   usePageViewTracking({
     props: { route_group: 'patient', tab_view: 'patient-session' },
@@ -112,7 +123,9 @@ const SessionCard = ({ session, patientId, onBack }: SessionCardProps) => {
       const id = session.sessionExercise.find(
         (ex) => ex.id === data.sessionExerciseId,
       )?.exerciseId
-      const name = exercises?.find((ex) => ex.id === id)?.displayName
+      const name = getSessionChartExerciseTitle(
+        exercises?.find((ex) => ex.id === id),
+      )
       return { value, name }
     }) ?? []
 
