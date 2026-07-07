@@ -22,6 +22,10 @@ const legalPages = [
     pdfAssetPath: 'legal/terms-of-service.pdf',
     pdfPath: '/legal/terms-of-service.pdf',
     downloadFileName: 'virtality-terms-of-service.pdf',
+    pageImages: Array.from(
+      { length: 7 },
+      (_, index) => `/legal/terms-of-service-pages/page-${index + 1}.png`,
+    ),
   },
   {
     name: 'privacy',
@@ -30,6 +34,10 @@ const legalPages = [
     pdfAssetPath: 'legal/privacy-policy.pdf',
     pdfPath: '/legal/privacy-policy.pdf',
     downloadFileName: 'virtality-privacy-policy.pdf',
+    pageImages: Array.from(
+      { length: 5 },
+      (_, index) => `/legal/privacy-policy-pages/page-${index + 1}.png`,
+    ),
   },
 ]
 
@@ -40,23 +48,31 @@ describe('legal documents (PRD 132)', () => {
       pdfAssetPath,
       pdfPath,
       downloadFileName,
+      pageImages,
     } of legalPages) {
       const document = LEGAL_DOCUMENTS[documentKey]
 
       expect(document.pdfPath).toBe(pdfPath)
       expect(document.downloadFileName).toBe(downloadFileName)
+      expect(document.pageImages).toEqual(pageImages)
       expect(publicAssetExists(pdfAssetPath)).toBe(true)
+      for (const pageImage of pageImages) {
+        expect(publicAssetExists(pageImage.replace(/^\//, ''))).toBe(true)
+      }
     }
   })
 
   it('renders legal pages with inline PDF embed and download fallback', () => {
     const viewer = readWebsiteFile('components/shared/legal-pdf-viewer.tsx')
 
-    expect(viewer).toMatch(/<iframe/)
-    expect(viewer).toMatch(/src=\{pdfPath\}/)
+    expect(viewer).toMatch(/pageImages\.map/)
+    expect(viewer).toMatch(/<img/)
+    expect(viewer).toMatch(/src=\{pageImage\}/)
+    expect(viewer).not.toMatch(/<object/)
+    expect(viewer).not.toMatch(/<iframe/)
     expect(viewer).toMatch(/href=\{pdfPath\}/)
-    expect(viewer).toMatch(/download=\{downloadFileName\}/)
-    expect(viewer).toMatch(/Download \{title\} \(PDF\)/)
+    expect(viewer).not.toMatch(/download=\{downloadFileName\}/)
+    expect(viewer).toMatch(/Open \{title\} \(PDF\)/)
 
     for (const { pagePath, documentKey } of legalPages) {
       const page = readWebsiteFile(pagePath)
