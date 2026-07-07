@@ -2,13 +2,11 @@ import type { LegalDocument } from '@/lib/legal-documents'
 import { Download } from 'lucide-react'
 import Link from 'next/link'
 
-type LegalPdfViewerProps = LegalDocument
-
 const LegalPdfViewer = ({
   title,
   pdfPath,
   downloadFileName,
-}: LegalPdfViewerProps) => {
+}: LegalDocument) => {
   return (
     <section className='container mx-auto px-4 py-10 md:px-8 md:py-14'>
       <div className='mx-auto max-w-5xl space-y-6'>
