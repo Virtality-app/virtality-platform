@@ -48,47 +48,6 @@ const Features = () => {
             />
           ))}
         </div>
-
-        {/* Clinical metrics bar */}
-        <div className='mt-20 max-w-5xl mx-auto'>
-          <div className='bg-white dark:bg-zinc-800 rounded-2xl shadow-xl border border-vital-blue-100/50 p-8'>
-            <div className='grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-vital-blue-100'>
-              <div className='pt-8 md:pt-0'>
-                <div className='text-4xl font-bold text-vital-blue-700 mb-2'>
-                  50-95%
-                </div>
-                <div className='text-sm font-medium text-slate-600 dark:text-gray-300'>
-                  Faster Recovery Rate
-                </div>
-                <div className='text-xs text-slate-500 mt-1'>
-                  vs. traditional therapy
-                </div>
-              </div>
-              <div className='pt-8 md:pt-0'>
-                <div className='text-4xl font-bold text-vital-blue-700 mb-2'>
-                  95%
-                </div>
-                <div className='text-sm font-medium text-slate-600 dark:text-gray-300'>
-                  Patient Engagement
-                </div>
-                <div className='text-xs text-slate-500 mt-1'>
-                  sustained throughout treatment
-                </div>
-              </div>
-              <div className='pt-8 md:pt-0'>
-                <div className='text-4xl font-bold text-vital-blue-700 mb-2'>
-                  2.5x
-                </div>
-                <div className='text-sm font-medium text-slate-600 dark:text-gray-300'>
-                  Increased Efficiency
-                </div>
-                <div className='text-xs text-slate-500 mt-1'>
-                  more patients per session
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   )
