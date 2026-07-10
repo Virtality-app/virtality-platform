@@ -1,4 +1,5 @@
 export { sendThankYouEmail } from './lib/send-thank-you.js'
+export { sendWaitlistNotification } from './lib/send-waitlist-notification.js'
 export { sendDeleteAccountVerification } from './lib/send-delete-account-ver.js'
 export { sendResetPassword } from './lib/send-reset-password.js'
 export { sendVerificationEmail } from './lib/send-email-verification.js'

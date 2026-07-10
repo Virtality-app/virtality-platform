@@ -1,6 +1,20 @@
 import { WaitlistSchema } from '@virtality/shared/types'
 import { generateUUID } from '@virtality/shared/utils'
+import { sendWaitlistNotification } from '@virtality/nodemailer'
 import { base } from '../context.ts'
+import {
+  createWaitlistEntry,
+  getWaitlistNotifyRecipient,
+} from './waitlist/waitlist-create.ts'
+
+const waitlistLogger = {
+  warn: (event: string, meta?: Record<string, unknown>) => {
+    console.warn(event, meta)
+  },
+  info: (event: string, meta?: Record<string, unknown>) => {
+    console.info(event, meta)
+  },
+}
 
 const listWaitlist = base
   .route({ path: '/waitlist/list', method: 'GET' })
@@ -17,27 +31,28 @@ const listWaitlist = base
 const createWaitlist = base
   .route({ path: '/waitlist/create', method: 'POST' })
   .input(WaitlistSchema)
-  .handler(async ({ context, input }) => {
-    const { prisma } = context
+  .handler(
+    async ({
+      context,
+      input,
+    }): Promise<
+      { success: true; message: null } | { success: false; message: string }
+    > => {
+      const { prisma } = context
 
-    const exists = await prisma.waitingList.findFirst({
-      where: { email: input.email },
-    })
-
-    if (exists) {
-      return { success: false, message: 'You are already on the waitlist.' }
-    }
-
-    await prisma.waitingList.create({
-      data: {
-        id: generateUUID(),
-        ...input,
-        createdAt: new Date(),
-      },
-    })
-
-    return { success: true, message: null }
-  })
+      return createWaitlistEntry(
+        {
+          prisma,
+          generateId: generateUUID,
+          now: () => new Date(),
+          getNotifyRecipient: getWaitlistNotifyRecipient,
+          sendWaitlistNotification,
+          logger: waitlistLogger,
+        },
+        input,
+      )
+    },
+  )
 
 export const waitlist = {
   list: listWaitlist,
