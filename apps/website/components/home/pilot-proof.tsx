@@ -1,7 +1,13 @@
-import { Clock3, Target } from 'lucide-react'
-import { PILOT_PROOF_CONTENT } from '@/lib/landing-page-content'
+import { Clock3, Target, type LucideIcon } from 'lucide-react'
+import {
+  PILOT_PROOF_CONTENT,
+  type PilotProofIconName,
+} from '@/lib/landing-page-content'
 
-const highlightIcons = [Clock3, Target]
+const pilotProofIcons: Record<PilotProofIconName, LucideIcon> = {
+  Clock3,
+  Target,
+}
 
 const PilotProof = () => {
   return (
@@ -31,8 +37,8 @@ const PilotProof = () => {
         </div>
 
         <div className='mx-auto mt-14 grid max-w-5xl gap-6 md:grid-cols-2'>
-          {PILOT_PROOF_CONTENT.highlights.map((highlight, index) => {
-            const Icon = highlightIcons[index] ?? Clock3
+          {PILOT_PROOF_CONTENT.highlights.map((highlight) => {
+            const Icon = pilotProofIcons[highlight.icon]
 
             return (
               <div

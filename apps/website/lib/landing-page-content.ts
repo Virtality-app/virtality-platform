@@ -1,7 +1,17 @@
-export type LandingBenefit = {
+export type LandingContentItem = {
   title: string
   description: string
 }
+
+export type LandingBenefit = LandingContentItem
+
+export const BENEFITS_SECTION_CONTENT = {
+  eyebrow: 'Why clinics choose Virtality',
+  titleLead: 'Practical problems',
+  titleAccent: 'solved in clinic',
+  intro:
+    'Built for private clinic owners and lead physiotherapists who need patients moving again without adding operational friction.',
+} as const
 
 export const LANDING_BENEFITS: LandingBenefit[] = [
   {
@@ -36,9 +46,10 @@ export const LANDING_BENEFITS: LandingBenefit[] = [
   },
 ]
 
-export type PilotProofHighlight = {
-  title: string
-  description: string
+export type PilotProofIconName = 'Clock3' | 'Target'
+
+export type PilotProofHighlight = LandingContentItem & {
+  icon: PilotProofIconName
 }
 
 export const PILOT_PROOF_CONTENT = {
@@ -48,11 +59,13 @@ export const PILOT_PROOF_CONTENT = {
     'Virtality is still in early pilot use with private clinics. The stories below come from that pilot work—not promises that every patient will recover on the same timeline.',
   highlights: [
     {
+      icon: 'Clock3',
       title: 'Days, not months',
       description:
         'In early pilot clinics, physiotherapists observed meaningful movement progress over days, not months, when patients followed guided VR sessions consistently.',
     },
     {
+      icon: 'Target',
       title: '2 targeted sessions',
       description:
         'In pilot data, two targeted guided sessions helped patients move past initial fear and return to prescribed movement—enough to keep rehab moving forward.',
