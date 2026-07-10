@@ -1,5 +1,5 @@
 'use client'
-import { Users, TrendingUp, Clock } from 'lucide-react'
+import { Users } from 'lucide-react'
 import { useWaitlist } from '@virtality/react-query'
 import { Card, CardContent } from '@virtality/ui/components/card'
 import { Spinner } from '@virtality/ui/components/spinner'
@@ -54,58 +54,25 @@ const CallToAction = () => {
 
               <WaitlistForm />
 
-              {/* Stats grid */}
-              <div className='mt-10 pt-10 border-t border-vital-blue-100'>
-                <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
-                  <div className='text-center group'>
-                    <div className='inline-flex items-center justify-center w-12 h-12 bg-linear-to-br from-vital-blue-700 to-vital-blue-600 rounded-xl mb-3 group-hover:scale-110 transition-transform shadow-lg shadow-vital-blue-700/20'>
-                      <Users className='w-6 h-6 text-white' />
-                    </div>
-                    <div className='text-3xl font-bold text-vital-blue-700 mb-1'>
-                      <div className='flex items-center justify-center'>
-                        {isLoading ? (
-                          <Spinner className='size-9' />
-                        ) : (
-                          (waitlist?.length ?? 0) + '+'
-                        )}
-                      </div>
-                    </div>
-                    <div className='text-sm font-medium text-slate-600'>
-                      Healthcare Professionals
-                    </div>
-                    <div className='text-xs text-slate-500 mt-1'>
-                      in early access program
+              <div className='mt-10 border-t border-vital-blue-100 pt-10'>
+                <div className='mx-auto max-w-sm text-center group'>
+                  <div className='mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-linear-to-br from-vital-blue-700 to-vital-blue-600 shadow-lg shadow-vital-blue-700/20 transition-transform group-hover:scale-110'>
+                    <Users className='h-6 w-6 text-white' />
+                  </div>
+                  <div className='mb-1 text-3xl font-bold text-vital-blue-700'>
+                    <div className='flex items-center justify-center'>
+                      {isLoading ? (
+                        <Spinner className='size-9' />
+                      ) : (
+                        (waitlist?.length ?? 0) + '+'
+                      )}
                     </div>
                   </div>
-
-                  <div className='text-center group'>
-                    <div className='inline-flex items-center justify-center w-12 h-12 bg-linear-to-br from-vital-blue-700 to-vital-blue-600 rounded-xl mb-3 group-hover:scale-110 transition-transform shadow-lg shadow-vital-blue-700/20'>
-                      <TrendingUp className='w-6 h-6 text-white' />
-                    </div>
-                    <div className='text-3xl font-bold text-vital-blue-700 mb-1'>
-                      95%
-                    </div>
-                    <div className='text-sm font-medium text-slate-600'>
-                      Patient Engagement Rate
-                    </div>
-                    <div className='text-xs text-slate-500 mt-1'>
-                      sustained throughout treatment
-                    </div>
+                  <div className='text-sm font-medium text-slate-600'>
+                    Healthcare Professionals
                   </div>
-
-                  <div className='text-center group'>
-                    <div className='inline-flex items-center justify-center w-12 h-12 bg-linear-to-br from-vital-blue-700 to-vital-blue-600 rounded-xl mb-3 group-hover:scale-110 transition-transform shadow-lg shadow-vital-blue-700/20'>
-                      <Clock className='w-6 h-6 text-white' />
-                    </div>
-                    <div className='text-3xl font-bold text-vital-blue-700 mb-1'>
-                      50-95%
-                    </div>
-                    <div className='text-sm font-medium text-slate-600'>
-                      Faster Recovery Time
-                    </div>
-                    <div className='text-xs text-slate-500 mt-1'>
-                      vs. traditional therapy
-                    </div>
+                  <div className='mt-1 text-xs text-slate-500'>
+                    in early access program
                   </div>
                 </div>
               </div>
