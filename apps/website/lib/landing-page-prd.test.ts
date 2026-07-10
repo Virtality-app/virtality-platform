@@ -24,6 +24,7 @@ const landingPageSurfaces = [
   'components/home/hero.tsx',
   'components/home/hero-title.tsx',
   'components/home/powered-by.tsx',
+  'components/home/press.tsx',
 ]
 
 describe('PRD 135 landing page benefits and pilot-proof narrative', () => {

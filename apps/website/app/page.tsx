@@ -4,6 +4,7 @@ import Features from '@/components/home/features'
 import Hero from '@/components/home/hero'
 import PilotProof from '@/components/home/pilot-proof'
 import PoweredBy from '@/components/home/powered-by'
+import Press from '@/components/home/press'
 import PromoVideo from '@/components/video/promo-video'
 
 const HomePage = () => {
@@ -15,6 +16,7 @@ const HomePage = () => {
       <PromoVideo />
       <Features />
       <PoweredBy />
+      <Press />
       {/* <Testimonials /> */}
       <CallToAction />
     </div>

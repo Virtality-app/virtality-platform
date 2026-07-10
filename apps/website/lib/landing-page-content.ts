@@ -80,3 +80,8 @@ export const LANDING_PAGE_FORBIDDEN_CLAIMS = [
   /\+87%/i,
   /Recovery Rate/i,
 ] as const
+
+export const SETUP_CAPABILITY_TITLE = 'Quick setup, equipment included'
+
+export const SETUP_CAPABILITY_CONTENT =
+  'Get started in under 40 seconds with no extra cameras, sensors, cables, or calibration. Equipment is provided so your clinic can begin guided VR sessions without sourcing hardware.'
