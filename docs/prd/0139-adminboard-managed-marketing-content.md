@@ -84,11 +84,11 @@ Once managed content exists, the public landing page should behave exactly as PR
 1. Website loads published marketing records from a read-only public API (or server component data fetch).
 2. Records map into the existing `CredibilityLogoItem` / `PressLogoItem` shapes in `apps/website/lib/partner-press-content.ts`.
 3. `src` on each item is set from `bucketCdnUrl(objectKey)` (or the API returns a resolved `cdnUrl` computed the same way).
-4. `apps/website/components/home/powered-by.tsx` and `press.tsx` keep using `getVisiblePartnerRows`, `filterValidLogoItems`, `hasPressSection`, and `getPressLinkProps` without markup changes.
+4. `apps/website/components/home/powered-by.tsx` and `press.tsx` keep using `getVisiblePartnerRows`, `filterValidLogoItems`, `hasPartnerSection`, `hasPressSection`, and `getPressLinkProps` without markup changes.
 
 ### Visibility and validation rules (unchanged from PRD #136)
 
-- `filterValidLogoItems` drops items missing both a resolvable logo `src` and non-empty `alt`.
+- `filterValidLogoItems` drops items unless both a resolvable logo `src` and non-empty `alt` are present.
 - Partner rows render only when that row has at least one valid logo.
 - The entire Supported by section is omitted when `hasPartnerSection` is false.
 - The Press section is omitted when `hasPressSection` is false.

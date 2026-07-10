@@ -4,63 +4,78 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 const repoRoot = fileURLToPath(new URL('../../..', import.meta.url))
-const specPath = join(
-  repoRoot,
-  'docs/prd/0139-adminboard-managed-marketing-content.md',
-)
 
-function readFollowUpSpec(): string {
-  return readFileSync(specPath, 'utf8')
+const FOLLOW_UP_SPEC_PATH =
+  'docs/prd/0139-adminboard-managed-marketing-content.md'
+
+function readRepoFile(relativePath: string): string {
+  return readFileSync(join(repoRoot, relativePath), 'utf8')
 }
+
+function expectSpecToMatch(spec: string, patterns: readonly RegExp[]): void {
+  for (const pattern of patterns) {
+    expect(spec, pattern.toString()).toMatch(pattern)
+  }
+}
+
+const followUpSpec = readRepoFile(FOLLOW_UP_SPEC_PATH)
+
+const managedContentTypePatterns = [
+  /strategic partner logo/i,
+  /clinical partner logo/i,
+  /press logo/i,
+  /press link/i,
+] as const
+
+const bucketObjectReusePatterns = [
+  /Bucket Object/i,
+  /CDN URL/i,
+  /objectKey/i,
+  /bucketCdnUrl/i,
+  /Object Replacement/i,
+  /BucketObjectPickerDialog|bucket object picker/i,
+] as const
+
+const partnerVsPressPatterns = [
+  /partner logo/i,
+  /press/i,
+  /href/i,
+  /Supported by/i,
+  /does not.*link|no external link|not link/i,
+  /new tab/i,
+] as const
+
+const websiteRenderingPatterns = [
+  /filterValidLogoItems/i,
+  /getVisiblePartnerRows/i,
+  /hasPressSection|hasPartnerSection/i,
+  /hide|hidden/i,
+  /partner-press-content/i,
+] as const
+
+const openDecisionPatterns = [
+  /open decision|product input|content input|requires human/i,
+  /logo assets|press coverage|sort order|display order/i,
+] as const
 
 describe('PRD 139 Adminboard-managed marketing content follow-up specification', () => {
   it('defines which marketing content types Adminboard manages', () => {
-    const spec = readFollowUpSpec()
-
-    expect(spec).toMatch(/strategic partner logo/i)
-    expect(spec).toMatch(/clinical partner logo/i)
-    expect(spec).toMatch(/press logo/i)
-    expect(spec).toMatch(/press link/i)
+    expectSpecToMatch(followUpSpec, managedContentTypePatterns)
   })
 
   it('explains how Bucket Objects and CDN URLs are reused for logos', () => {
-    const spec = readFollowUpSpec()
-
-    expect(spec).toMatch(/Bucket Object/i)
-    expect(spec).toMatch(/CDN URL/i)
-    expect(spec).toMatch(/objectKey/i)
-    expect(spec).toMatch(/bucketCdnUrl/i)
-    expect(spec).toMatch(/Object Replacement/i)
-    expect(spec).toMatch(/BucketObjectPickerDialog|bucket object picker/i)
+    expectSpecToMatch(followUpSpec, bucketObjectReusePatterns)
   })
 
   it('distinguishes partner logos from press posts and links', () => {
-    const spec = readFollowUpSpec()
-
-    expect(spec).toMatch(/partner logo/i)
-    expect(spec).toMatch(/press/i)
-    expect(spec).toMatch(/href/i)
-    expect(spec).toMatch(/Supported by/i)
-    expect(spec).toMatch(/does not.*link|no external link|not link/i)
-    expect(spec).toMatch(/new tab/i)
+    expectSpecToMatch(followUpSpec, partnerVsPressPatterns)
   })
 
   it('identifies website rendering behavior once managed content exists', () => {
-    const spec = readFollowUpSpec()
-
-    expect(spec).toMatch(/filterValidLogoItems/i)
-    expect(spec).toMatch(/getVisiblePartnerRows/i)
-    expect(spec).toMatch(/hasPressSection|hasPartnerSection/i)
-    expect(spec).toMatch(/hide|hidden/i)
-    expect(spec).toMatch(/partner-press-content/i)
+    expectSpecToMatch(followUpSpec, websiteRenderingPatterns)
   })
 
   it('calls out decisions still requiring human product or content input', () => {
-    const spec = readFollowUpSpec()
-
-    expect(spec).toMatch(
-      /open decision|product input|content input|requires human/i,
-    )
-    expect(spec).toMatch(/logo assets|press coverage|sort order|display order/i)
+    expectSpecToMatch(followUpSpec, openDecisionPatterns)
   })
 })
