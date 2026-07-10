@@ -1,9 +1,8 @@
+import type { SendWaitlistNotificationInput } from '@virtality/nodemailer'
 import type { WaitlistSchemaType } from '@virtality/shared/types'
+import type { AppLogger } from '@virtality/shared/observability'
 
-export type WaitlistNotifyLogger = {
-  warn: (event: string, meta?: Record<string, unknown>) => void
-  info: (event: string, meta?: Record<string, unknown>) => void
-}
+export type WaitlistNotifyLogger = Pick<AppLogger, 'info' | 'warn'>
 
 export type CreateWaitlistDeps = {
   prisma: {
@@ -24,16 +23,20 @@ export type CreateWaitlistDeps = {
   generateId: () => string
   now: () => Date
   getNotifyRecipient: () => string | undefined
-  sendWaitlistNotification: (input: {
-    recipient: string
-    email: string
-  }) => Promise<void>
+  sendWaitlistNotification: (
+    input: SendWaitlistNotificationInput,
+  ) => Promise<void>
   logger: WaitlistNotifyLogger
 }
 
 export type CreateWaitlistResult =
   | { success: true; message: null }
   | { success: false; message: string }
+
+export type NotifyWaitlistTeamDeps = Pick<
+  CreateWaitlistDeps,
+  'getNotifyRecipient' | 'sendWaitlistNotification' | 'logger'
+>
 
 export function getWaitlistNotifyRecipient(
   env: NodeJS.ProcessEnv = process.env,
@@ -43,14 +46,12 @@ export function getWaitlistNotifyRecipient(
 }
 
 export async function notifyWaitlistTeam(
-  deps: {
-    recipient: string | undefined
-    sendWaitlistNotification: CreateWaitlistDeps['sendWaitlistNotification']
-    logger: WaitlistNotifyLogger
-  },
+  deps: NotifyWaitlistTeamDeps,
   input: { email: string },
 ): Promise<'sent' | 'skipped'> {
-  if (!deps.recipient) {
+  const recipient = deps.getNotifyRecipient()
+
+  if (!recipient) {
     deps.logger.warn('waitlist.notify.skipped', {
       reason: 'WAITLIST_NOTIFY_EMAIL not configured',
     })
@@ -58,11 +59,11 @@ export async function notifyWaitlistTeam(
   }
 
   await deps.sendWaitlistNotification({
-    recipient: deps.recipient,
+    recipient,
     email: input.email,
   })
   deps.logger.info('waitlist.notify.sent', {
-    recipient: deps.recipient,
+    recipient,
   })
   return 'sent'
 }
@@ -87,14 +88,7 @@ export async function createWaitlistEntry(
     },
   })
 
-  await notifyWaitlistTeam(
-    {
-      recipient: deps.getNotifyRecipient(),
-      sendWaitlistNotification: deps.sendWaitlistNotification,
-      logger: deps.logger,
-    },
-    { email: input.email },
-  )
+  await notifyWaitlistTeam(deps, { email: input.email })
 
   return { success: true, message: null }
 }

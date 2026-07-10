@@ -82,7 +82,7 @@ describe('notifyWaitlistTeam', () => {
 
     const result = await notifyWaitlistTeam(
       {
-        recipient: 'team@virtality.app',
+        getNotifyRecipient: () => 'team@virtality.app',
         sendWaitlistNotification,
         logger,
       },
@@ -106,7 +106,7 @@ describe('notifyWaitlistTeam', () => {
 
     const result = await notifyWaitlistTeam(
       {
-        recipient: undefined,
+        getNotifyRecipient: () => undefined,
         sendWaitlistNotification,
         logger,
       },

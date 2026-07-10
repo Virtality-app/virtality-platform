@@ -13,3 +13,4 @@ export type {
   PendingPasswordChangeData,
 } from './types/auth.js'
 export type { SendEmailOptions } from './lib/send-email.js'
+export type { SendWaitlistNotificationInput } from './lib/send-waitlist-notification.js'
