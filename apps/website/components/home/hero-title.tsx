@@ -6,6 +6,7 @@ import { ArrowRight, Activity } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { getDemoBookingUrl } from '@/lib/demo-booking'
 import {
+  HERO_BADGE_LABEL,
   HERO_HEADLINE,
   HERO_PRIMARY_CTA_LABEL,
   HERO_SECONDARY_CTA_LABEL,
@@ -15,9 +16,10 @@ import { scrollToFinalCta } from '@/lib/scroll-to-cta'
 import { splitText } from '@/lib/utils'
 import { animate, stagger } from 'motion/react'
 
+const demoBookingUrl = getDemoBookingUrl()
+
 const HeroTitle = () => {
   const containerRef = useRef<HTMLDivElement>(null)
-  const demoBookingUrl = getDemoBookingUrl()
 
   useEffect(() => {
     document.fonts.ready.then(() => {
@@ -58,7 +60,7 @@ const HeroTitle = () => {
     <div ref={containerRef} className='space-y-8'>
       <div className='inline-flex items-center gap-2 rounded-full bg-linear-to-r from-vital-blue-700 to-vital-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-vital-blue-700/20'>
         <Activity className='w-4 h-4' />
-        <span className='tracking-wide'>Evidence-Based VR Therapy</span>
+        <span className='tracking-wide'>{HERO_BADGE_LABEL}</span>
       </div>
 
       <h1 className='text-4xl font-bold leading-[1.15] md:text-5xl lg:text-6xl text-slate-900 dark:text-white'>

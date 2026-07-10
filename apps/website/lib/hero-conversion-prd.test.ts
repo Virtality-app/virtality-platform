@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import {
+  HERO_BADGE_LABEL,
   HERO_HEADLINE,
   HERO_PRIMARY_CTA_LABEL,
   HERO_SECONDARY_CTA_LABEL,
@@ -31,6 +32,7 @@ describe('hero conversion path (PRD 133 / issue 134)', () => {
   })
 
   it('defines hero copy that leads with movement and physiotherapist VR therapy', () => {
+    expect(HERO_BADGE_LABEL).toBe('Evidence-Based VR Therapy')
     expect(HERO_HEADLINE).toBe('Because every move matters.')
     expect(HERO_SUPPORTING_COPY).toMatch(/physiotherapist/i)
     expect(HERO_SUPPORTING_COPY).toMatch(/evidence-based VR therapy/i)
@@ -48,6 +50,7 @@ describe('hero conversion path (PRD 133 / issue 134)', () => {
   it('routes hero primary CTA to the final CTA with free-trial copy', () => {
     const heroTitle = readWebsiteFile('components/home/hero-title.tsx')
 
+    expect(heroTitle).toMatch(/HERO_BADGE_LABEL/)
     expect(heroTitle).toMatch(/HERO_PRIMARY_CTA_LABEL/)
     expect(heroTitle).toMatch(/scrollToFinalCta/)
     expect(heroTitle).not.toMatch(/View Features/)

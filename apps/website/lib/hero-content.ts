@@ -1,3 +1,5 @@
+export const HERO_BADGE_LABEL = 'Evidence-Based VR Therapy'
+
 export const HERO_HEADLINE = 'Because every move matters.'
 
 export const HERO_SUPPORTING_COPY =
