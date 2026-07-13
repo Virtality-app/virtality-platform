@@ -1,11 +1,17 @@
 'use client'
 
 import {
+  SortingState,
+  useReactTable,
+  VisibilityState,
+} from '@tanstack/react-table'
+import {
   DataTableBody,
   DataTableFooter,
   DataTableHeader,
 } from '@virtality/ui/components/data-table'
-import { useResourceTable } from '@virtality/ui/lib/use-resource-table'
+import { tableDefaults } from '@virtality/ui/lib/table-defaults'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@virtality/ui/components/button'
 import Link from 'next/link'
@@ -21,30 +27,47 @@ import {
 } from '@virtality/react-query'
 import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
 import { trackAnalyticsEvent } from '@/lib/analytics-contract'
+import { filterPatientsBySearch } from '@/lib/patient-list'
 
 const PatientsTable = () => {
+  'use no memo'
   useIsAuthed()
   usePageViewTracking({ props: { route_group: 'patient' } })
   const queryClient = getQueryClient()
   const orpc = useORPC()
   const router = useRouter()
 
-  const { data: tableData, isPending } = usePatients()
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [globalFilter, setGlobalFilter] = useState('')
+  const [rowSelection, setRowSelection] = useState({})
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
 
-  const {
-    table,
-    globalFilter,
-    setGlobalFilter,
-    rowSelection,
-    setRowSelection,
-  } = useResourceTable({
-    data: tableData ?? [],
+  const { data: tableData, isPending } = usePatients()
+  const filteredPatients = useMemo(
+    () => filterPatientsBySearch(tableData ?? [], globalFilter),
+    [tableData, globalFilter],
+  )
+
+  // eslint-disable-next-line react-hooks/incompatible-library
+  const table = useReactTable({
+    data: filteredPatients,
     columns,
+    ...tableDefaults.models,
+    state: {
+      sorting,
+      globalFilter,
+      rowSelection,
+      columnVisibility,
+    },
+    onSortingChange: setSorting,
+    onRowSelectionChange: setRowSelection,
+    onGlobalFilterChange: setGlobalFilter,
+    onColumnVisibilityChange: setColumnVisibility,
   })
 
-  const selectedRow = tableData?.filter((_, index) =>
-    Object.keys(rowSelection)?.includes(String(index)),
-  )
+  const selectedRows = table
+    .getFilteredSelectedRowModel()
+    .rows.map((row) => row.original)
 
   const { mutate: deletePatients } = useDeletePatient({
     onSuccess: () => {
@@ -57,8 +80,8 @@ const PatientsTable = () => {
   })
 
   const deleteSelectedHandler = () => {
-    const ids = selectedRow?.map((d) => d.id)
-    if (!ids) return
+    const ids = selectedRows.map((patient) => patient.id)
+    if (!ids.length) return
     for (const id of ids) {
       deletePatients({ id })
     }
@@ -75,7 +98,7 @@ const PatientsTable = () => {
         globalFilter={globalFilter}
         setGlobalFilter={setGlobalFilter}
       >
-        {selectedRow && selectedRow.length !== 0 && (
+        {selectedRows.length !== 0 && (
           <DeleteConfirmDialog
             title={'Delete Selected Patients'}
             description={
