@@ -13,6 +13,14 @@ export const PARTNER_LOGO_CATEGORIES = [
   'clinical',
 ] as const satisfies readonly PartnerLogoCategory[]
 
+export const DEFAULT_PARTNER_LOGO_CATEGORY = PARTNER_LOGO_CATEGORIES[0]
+
+export function isPartnerLogoCategory(
+  value: string,
+): value is PartnerLogoCategory {
+  return (PARTNER_LOGO_CATEGORIES as readonly string[]).includes(value)
+}
+
 export const PARTNER_LOGO_CATEGORY_LABELS: Record<PartnerLogoCategory, string> =
   {
     strategic: 'Strategic',

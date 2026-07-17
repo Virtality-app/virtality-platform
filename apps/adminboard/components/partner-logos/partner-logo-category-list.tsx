@@ -1,40 +1,125 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
+import { RemovePartnerLogoDialog } from '@/components/partner-logos/remove-partner-logo-dialog'
+import { getErrorMessage } from '@/lib/get-error-message'
 import type { PartnerLogoListItem } from '@virtality/shared/types'
+import { useReorderPartnerLogo } from '@virtality/react-query'
+import { ChevronDown, ChevronUp, Pencil, Trash2 } from 'lucide-react'
 import Image from 'next/image'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
+import { toast } from 'sonner'
 
 type PartnerLogoCategoryListProps = {
   title: string
   description: string
   logos: PartnerLogoListItem[]
   isLoading?: boolean
+  onEdit: (logo: PartnerLogoListItem) => void
 }
 
-function PartnerLogoList({ logos }: { logos: PartnerLogoListItem[] }) {
+type PartnerLogoListProps = {
+  logos: PartnerLogoListItem[]
+  onEdit: (logo: PartnerLogoListItem) => void
+}
+
+function PartnerLogoList({ logos, onEdit }: PartnerLogoListProps) {
+  const { mutate: reorderPartnerLogo, isPending: isReordering } =
+    useReorderPartnerLogo()
+  const [logoToRemove, setLogoToRemove] = useState<PartnerLogoListItem | null>(
+    null,
+  )
+
+  const handleReorder = (
+    logo: PartnerLogoListItem,
+    direction: 'up' | 'down',
+  ) => {
+    reorderPartnerLogo(
+      { id: logo.id, direction },
+      {
+        onError: (error: unknown) => {
+          toast.error(getErrorMessage(error, 'Failed to reorder partner logo.'))
+        },
+      },
+    )
+  }
+
   return (
-    <ul className='space-y-3'>
-      {logos.map((logo) => (
-        <li
-          key={logo.id}
-          className='flex items-center gap-4 rounded-lg border p-3'
-        >
-          <Image
-            src={logo.cdnUrl}
-            alt={logo.alt}
-            width={64}
-            height={64}
-            className='size-16 rounded bg-white object-contain p-1'
-          />
-          <div className='min-w-0 flex-1'>
-            <p className='font-medium'>{logo.alt}</p>
-            <p className='text-muted-foreground truncate font-mono text-xs'>
-              {logo.objectKey}
-            </p>
-          </div>
-        </li>
-      ))}
-    </ul>
+    <>
+      <ul className='space-y-3'>
+        {logos.map((logo, index) => (
+          <li
+            key={logo.id}
+            className='flex items-center gap-4 rounded-lg border p-3'
+          >
+            <Image
+              src={logo.cdnUrl}
+              alt={logo.alt}
+              width={64}
+              height={64}
+              className='size-16 rounded bg-white object-contain p-1'
+            />
+            <div className='min-w-0 flex-1'>
+              <p className='font-medium'>{logo.alt}</p>
+              <p className='text-muted-foreground truncate font-mono text-xs'>
+                {logo.objectKey}
+              </p>
+            </div>
+            <div className='flex shrink-0 items-center gap-1'>
+              <Button
+                type='button'
+                variant='outline'
+                size='icon'
+                disabled={isReordering || index === 0}
+                aria-label={`Move ${logo.alt} up`}
+                onClick={() => handleReorder(logo, 'up')}
+              >
+                <ChevronUp className='size-4' />
+              </Button>
+              <Button
+                type='button'
+                variant='outline'
+                size='icon'
+                disabled={isReordering || index === logos.length - 1}
+                aria-label={`Move ${logo.alt} down`}
+                onClick={() => handleReorder(logo, 'down')}
+              >
+                <ChevronDown className='size-4' />
+              </Button>
+              <Button
+                type='button'
+                variant='outline'
+                size='icon'
+                disabled={isReordering}
+                aria-label={`Edit ${logo.alt}`}
+                onClick={() => onEdit(logo)}
+              >
+                <Pencil className='size-4' />
+              </Button>
+              <Button
+                type='button'
+                variant='outline'
+                size='icon'
+                aria-label={`Remove ${logo.alt}`}
+                onClick={() => setLogoToRemove(logo)}
+              >
+                <Trash2 className='size-4' />
+              </Button>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <RemovePartnerLogoDialog
+        open={logoToRemove !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setLogoToRemove(null)
+          }
+        }}
+        logo={logoToRemove}
+      />
+    </>
   )
 }
 
@@ -43,6 +128,7 @@ export const PartnerLogoCategoryList = ({
   description,
   logos,
   isLoading = false,
+  onEdit,
 }: PartnerLogoCategoryListProps) => {
   let body: ReactNode
 
@@ -57,7 +143,7 @@ export const PartnerLogoCategoryList = ({
       </p>
     )
   } else {
-    body = <PartnerLogoList logos={logos} />
+    body = <PartnerLogoList logos={logos} onEdit={onEdit} />
   }
 
   return (

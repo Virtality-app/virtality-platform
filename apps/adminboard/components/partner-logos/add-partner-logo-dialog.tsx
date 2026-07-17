@@ -16,10 +16,13 @@ import { Label } from '@virtality/ui/components/label'
 import { Spinner } from '@virtality/ui/components/spinner'
 import { BucketObjectPickerDialog } from '@/components/email/bucket-object-picker-dialog'
 import {
+  DEFAULT_PARTNER_LOGO_CATEGORY,
   getPartnerLogoUploadPrefix,
+  isPartnerLogoCategory,
   PARTNER_LOGO_CATEGORIES,
   PARTNER_LOGO_CATEGORY_LABELS,
 } from '@/lib/partner-logos'
+import { getErrorMessage } from '@/lib/get-error-message'
 import type { PartnerLogoCategory } from '@virtality/shared/types'
 import { bucketCdnUrl } from '@virtality/shared/utils'
 import {
@@ -43,14 +46,8 @@ type UploadAssignmentQueue = {
   total: number
 }
 
-const defaultCategory: PartnerLogoCategory = 'strategic'
-
 function isSourceMode(value: string): value is SourceMode {
   return value === 'pick' || value === 'upload'
-}
-
-function getErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback
 }
 
 export const AddPartnerLogoDialog = ({
@@ -60,7 +57,9 @@ export const AddPartnerLogoDialog = ({
   const [sourceMode, setSourceMode] = useState<SourceMode>('pick')
   const [objectKey, setObjectKey] = useState('')
   const [alt, setAlt] = useState('')
-  const [category, setCategory] = useState<PartnerLogoCategory>(defaultCategory)
+  const [category, setCategory] = useState<PartnerLogoCategory>(
+    DEFAULT_PARTNER_LOGO_CATEGORY,
+  )
   const [pickerOpen, setPickerOpen] = useState(false)
   const [addAnother, setAddAnother] = useState(false)
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
@@ -82,7 +81,7 @@ export const AddPartnerLogoDialog = ({
   const resetForm = () => {
     setObjectKey('')
     setAlt('')
-    setCategory(defaultCategory)
+    setCategory(DEFAULT_PARTNER_LOGO_CATEGORY)
     setPickerOpen(false)
     setAddAnother(false)
     setSelectedFiles([])
@@ -334,9 +333,12 @@ export const AddPartnerLogoDialog = ({
                 className='bg-background w-full rounded-md border px-3 py-2 text-sm'
                 value={category}
                 disabled={isPending}
-                onChange={(event) =>
-                  setCategory(event.target.value as PartnerLogoCategory)
-                }
+                onChange={(event) => {
+                  const value = event.target.value
+                  if (isPartnerLogoCategory(value)) {
+                    setCategory(value)
+                  }
+                }}
               >
                 {PARTNER_LOGO_CATEGORIES.map((value) => (
                   <option key={value} value={value}>

@@ -2,6 +2,9 @@ import type {
   CreatePartnerLogoInput,
   PartnerLogoCategory,
   PartnerLogoListItem,
+  ReorderPartnerLogoInput,
+  RemovePartnerLogoInput,
+  UpdatePartnerLogoInput,
 } from '../types/partner-logo.ts'
 import { bucketCdnUrl, validateBucketObjectKey } from './bucket.ts'
 
@@ -15,7 +18,15 @@ export type PartnerLogoRecord = {
   updatedAt: Date
 }
 
+export type PartnerLogoUpdateData = {
+  objectKey?: string
+  alt?: string
+  category?: PartnerLogoCategory
+  sortOrder?: number
+}
+
 export type PartnerLogoStore = {
+  findById: (id: string) => Promise<PartnerLogoRecord | null>
   findByObjectKey: (objectKey: string) => Promise<PartnerLogoRecord | null>
   findMaxSortOrder: (category: PartnerLogoCategory) => Promise<number | null>
   create: (data: {
@@ -25,7 +36,22 @@ export type PartnerLogoStore = {
     category: PartnerLogoCategory
     sortOrder: number
   }) => Promise<PartnerLogoRecord>
+  update: (
+    id: string,
+    data: PartnerLogoUpdateData,
+  ) => Promise<PartnerLogoRecord>
+  deleteById: (id: string) => Promise<void>
   listAll: () => Promise<PartnerLogoRecord[]>
+}
+
+export type PartnerLogoBucketDeleter = {
+  deleteObject: (objectKey: string) => Promise<void>
+}
+
+export type RemovePartnerLogoOutcome = {
+  id: string
+  objectKey: string
+  bucketObjectDeleted: boolean
 }
 
 export class PartnerLogoObjectKeyAlreadyAssignedError extends Error {
@@ -39,6 +65,13 @@ export class PartnerLogoValidationError extends Error {
   constructor(message: string) {
     super(message)
     this.name = 'PartnerLogoValidationError'
+  }
+}
+
+export class PartnerLogoNotFoundError extends Error {
+  constructor(id: string) {
+    super(`Partner logo "${id}" was not found.`)
+    this.name = 'PartnerLogoNotFoundError'
   }
 }
 
@@ -84,7 +117,9 @@ export async function listPartnerLogos(
     .map(mapPartnerLogoToListItem)
 }
 
-function normalizePartnerLogoInput(input: CreatePartnerLogoInput) {
+function normalizePartnerLogoFields(
+  input: Pick<CreatePartnerLogoInput, 'objectKey' | 'alt' | 'category'>,
+) {
   const objectKey = input.objectKey.trim()
   const alt = input.alt.trim()
   const objectKeyError = validateBucketObjectKey(objectKey)
@@ -104,12 +139,21 @@ function normalizePartnerLogoInput(input: CreatePartnerLogoInput) {
   }
 }
 
+function getCategoryLogosOrdered(
+  records: readonly PartnerLogoRecord[],
+  category: PartnerLogoCategory,
+): PartnerLogoRecord[] {
+  return records
+    .filter((record) => record.category === category)
+    .sort((left, right) => left.sortOrder - right.sortOrder)
+}
+
 export async function createPartnerLogo(
   store: PartnerLogoStore,
   deps: { generateId: () => string },
   input: CreatePartnerLogoInput,
 ): Promise<PartnerLogoListItem> {
-  const normalized = normalizePartnerLogoInput(input)
+  const normalized = normalizePartnerLogoFields(input)
   const existing = await store.findByObjectKey(normalized.objectKey)
 
   if (existing) {
@@ -126,4 +170,116 @@ export async function createPartnerLogo(
   })
 
   return mapPartnerLogoToListItem(created)
+}
+
+export async function updatePartnerLogo(
+  store: PartnerLogoStore,
+  input: UpdatePartnerLogoInput,
+): Promise<PartnerLogoListItem> {
+  const existing = await store.findById(input.id)
+
+  if (!existing) {
+    throw new PartnerLogoNotFoundError(input.id)
+  }
+
+  const normalized = normalizePartnerLogoFields(input)
+
+  if (normalized.objectKey !== existing.objectKey) {
+    const conflict = await store.findByObjectKey(normalized.objectKey)
+
+    if (conflict && conflict.id !== existing.id) {
+      throw new PartnerLogoObjectKeyAlreadyAssignedError(normalized.objectKey)
+    }
+  }
+
+  let sortOrder = existing.sortOrder
+
+  if (normalized.category !== existing.category) {
+    const maxSortOrder = await store.findMaxSortOrder(normalized.category)
+    sortOrder = (maxSortOrder ?? -1) + 1
+  }
+
+  const updated = await store.update(input.id, {
+    objectKey: normalized.objectKey,
+    alt: normalized.alt,
+    category: normalized.category,
+    sortOrder,
+  })
+
+  return mapPartnerLogoToListItem(updated)
+}
+
+export async function reorderPartnerLogo(
+  store: PartnerLogoStore,
+  input: ReorderPartnerLogoInput,
+): Promise<PartnerLogoListItem[]> {
+  const existing = await store.findById(input.id)
+
+  if (!existing) {
+    throw new PartnerLogoNotFoundError(input.id)
+  }
+
+  const categoryLogos = getCategoryLogosOrdered(
+    await store.listAll(),
+    existing.category,
+  )
+  const currentIndex = categoryLogos.findIndex(
+    (record) => record.id === input.id,
+  )
+  let targetIndex: number
+  if (input.direction === 'up') {
+    targetIndex = currentIndex - 1
+  } else {
+    targetIndex = currentIndex + 1
+  }
+
+  if (
+    currentIndex === -1 ||
+    targetIndex < 0 ||
+    targetIndex >= categoryLogos.length
+  ) {
+    return listPartnerLogos(store)
+  }
+
+  const neighbor = categoryLogos[targetIndex]!
+  const currentSortOrder = existing.sortOrder
+  const neighborSortOrder = neighbor.sortOrder
+
+  await store.update(existing.id, { sortOrder: neighborSortOrder })
+  await store.update(neighbor.id, { sortOrder: currentSortOrder })
+
+  return listPartnerLogos(store)
+}
+
+export async function removePartnerLogo(
+  store: PartnerLogoStore,
+  deps: {
+    deleteBucketObject?: PartnerLogoBucketDeleter
+  },
+  input: RemovePartnerLogoInput,
+): Promise<RemovePartnerLogoOutcome> {
+  const record = await store.findById(input.id)
+
+  if (!record) {
+    throw new PartnerLogoNotFoundError(input.id)
+  }
+
+  const { objectKey } = record
+  await store.deleteById(input.id)
+
+  if (input.alsoDeleteBucketObject) {
+    if (!deps.deleteBucketObject) {
+      throw new Error(
+        'Bucket object deleter is required when alsoDeleteBucketObject is true.',
+      )
+    }
+
+    await deps.deleteBucketObject.deleteObject(objectKey)
+  }
+
+  return {
+    id: input.id,
+    objectKey,
+    bucketObjectDeleted: input.alsoDeleteBucketObject === true,
+  }
 }

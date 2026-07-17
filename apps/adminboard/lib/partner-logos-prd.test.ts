@@ -90,3 +90,52 @@ describe('issue 149 partner logos upload-and-assign slice', () => {
     expect(dialog).toMatch(/BucketObjectPickerDialog/)
   })
 })
+
+describe('issue 150 partner logos edit reorder slice', () => {
+  it('lets admins edit objectKey, alt, and category on an existing logo', () => {
+    const dialog = readAdminboardFile(
+      'components/partner-logos/edit-partner-logo-dialog.tsx',
+    )
+    const dashboard = readAdminboardFile(
+      'components/partner-logos/partner-logos-dashboard.tsx',
+    )
+
+    expect(dialog).toMatch(/useUpdatePartnerLogo/)
+    expect(dialog).toMatch(/BucketObjectPickerDialog/)
+    expect(dialog).toMatch(/alt/i)
+    expect(dialog).toMatch(/category/i)
+    expect(dashboard).toMatch(/EditPartnerLogoDialog/)
+    expect(dashboard).toMatch(/onEdit/)
+  })
+
+  it('exposes up and down reorder controls within each category list', () => {
+    const list = readAdminboardFile(
+      'components/partner-logos/partner-logo-category-list.tsx',
+    )
+
+    expect(list).toMatch(/useReorderPartnerLogo/)
+    expect(list).toMatch(/ChevronUp/)
+    expect(list).toMatch(/ChevronDown/)
+    expect(list).toMatch(/handleReorder\(logo, 'up'\)/)
+    expect(list).toMatch(/handleReorder\(logo, 'down'\)/)
+  })
+})
+
+describe('issue 151 partner logos remove slice', () => {
+  it('removes assignments with optional bucket object delete and confirm', () => {
+    const categoryList = readAdminboardFile(
+      'components/partner-logos/partner-logo-category-list.tsx',
+    )
+    const removeDialog = readAdminboardFile(
+      'components/partner-logos/remove-partner-logo-dialog.tsx',
+    )
+
+    expect(categoryList).toMatch(/RemovePartnerLogoDialog/)
+    expect(categoryList).toMatch(/Remove partner logo|Remove \$\{logo\.alt\}/)
+    expect(removeDialog).toMatch(/useRemovePartnerLogo/)
+    expect(removeDialog).toMatch(/alsoDeleteBucketObject/)
+    expect(removeDialog).toMatch(/Also delete the Bucket Object/)
+    expect(removeDialog).toMatch(/confirmObjectDelete|Delete Bucket Object/)
+    expect(removeDialog).not.toMatch(/useBucketObjectReferences/)
+  })
+})

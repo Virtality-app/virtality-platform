@@ -4,9 +4,14 @@ import {
   comparePartnerLogosForList,
   createPartnerLogo,
   listPartnerLogos,
+  PartnerLogoNotFoundError,
   PartnerLogoObjectKeyAlreadyAssignedError,
+  removePartnerLogo,
+  reorderPartnerLogo,
+  updatePartnerLogo,
   type PartnerLogoRecord,
   type PartnerLogoStore,
+  type PartnerLogoUpdateData,
 } from './partner-logo.ts'
 
 const now = new Date('2026-07-17T12:00:00.000Z')
@@ -18,6 +23,9 @@ function createStore(
 
   return {
     records,
+    findById: vi.fn(
+      async (id: string) => records.find((record) => record.id === id) ?? null,
+    ),
     findByObjectKey: vi.fn(
       async (objectKey: string) =>
         records.find((record) => record.objectKey === objectKey) ?? null,
@@ -31,6 +39,14 @@ function createStore(
       }
 
       return Math.max(...categoryRecords.map((record) => record.sortOrder))
+    }),
+    deleteById: vi.fn(async (id: string) => {
+      const index = records.findIndex((record) => record.id === id)
+      if (index === -1) {
+        return
+      }
+
+      records.splice(index, 1)
     }),
     create: vi.fn(
       async (data: {
@@ -49,6 +65,15 @@ function createStore(
         return record
       },
     ),
+    update: vi.fn(async (id: string, data: PartnerLogoUpdateData) => {
+      const record = records.find((entry) => entry.id === id)
+      if (!record) {
+        throw new Error(`Record ${id} not found`)
+      }
+
+      Object.assign(record, data, { updatedAt: now })
+      return record
+    }),
     listAll: vi.fn(async () => [...records]),
   }
 }
@@ -170,6 +195,71 @@ describe('partner logo domain', () => {
     )
   })
 
+  it('removes the assignment by default without deleting the bucket object', async () => {
+    const store = createStore([
+      {
+        id: 'logo-1',
+        objectKey: 'marketing/logos/strategic/acme.png',
+        alt: 'Acme',
+        category: 'strategic',
+        sortOrder: 0,
+        createdAt: now,
+        updatedAt: now,
+      },
+    ])
+    const deleteBucketObject = vi.fn(async () => undefined)
+
+    const outcome = await removePartnerLogo(
+      store,
+      { deleteBucketObject: { deleteObject: deleteBucketObject } },
+      { id: 'logo-1' },
+    )
+
+    expect(outcome).toEqual({
+      id: 'logo-1',
+      objectKey: 'marketing/logos/strategic/acme.png',
+      bucketObjectDeleted: false,
+    })
+    expect(store.records).toHaveLength(0)
+    expect(deleteBucketObject).not.toHaveBeenCalled()
+    await expect(listPartnerLogos(store)).resolves.toEqual([])
+  })
+
+  it('deletes the bucket object when alsoDeleteBucketObject is requested', async () => {
+    const store = createStore([
+      {
+        id: 'logo-1',
+        objectKey: 'marketing/logos/strategic/acme.png',
+        alt: 'Acme',
+        category: 'strategic',
+        sortOrder: 0,
+        createdAt: now,
+        updatedAt: now,
+      },
+    ])
+    const deleteBucketObject = vi.fn(async () => undefined)
+
+    const outcome = await removePartnerLogo(
+      store,
+      { deleteBucketObject: { deleteObject: deleteBucketObject } },
+      { id: 'logo-1', alsoDeleteBucketObject: true },
+    )
+
+    expect(outcome.bucketObjectDeleted).toBe(true)
+    expect(deleteBucketObject).toHaveBeenCalledWith(
+      'marketing/logos/strategic/acme.png',
+    )
+    expect(store.records).toHaveLength(0)
+  })
+
+  it('rejects remove when the partner logo assignment does not exist', async () => {
+    const store = createStore()
+
+    await expect(
+      removePartnerLogo(store, {}, { id: 'missing-logo' }),
+    ).rejects.toBeInstanceOf(PartnerLogoNotFoundError)
+  })
+
   it('orders strategic logos before clinical logos', () => {
     expect(
       comparePartnerLogosForList(
@@ -183,5 +273,120 @@ describe('partner logo domain', () => {
         },
       ),
     ).toBeGreaterThan(0)
+  })
+
+  it('updates objectKey, alt, and category on an existing logo', async () => {
+    const store = createStore([
+      {
+        id: 'logo-1',
+        objectKey: 'marketing/logos/strategic/a.png',
+        alt: 'A',
+        category: 'strategic',
+        sortOrder: 0,
+        createdAt: now,
+        updatedAt: now,
+      },
+    ])
+
+    const updated = await updatePartnerLogo(store, {
+      id: 'logo-1',
+      objectKey: 'marketing/logos/strategic/a-revised.png',
+      alt: 'A revised',
+      category: 'strategic',
+    })
+
+    expect(updated).toMatchObject({
+      objectKey: 'marketing/logos/strategic/a-revised.png',
+      alt: 'A revised',
+      category: 'strategic',
+      sortOrder: 0,
+    })
+  })
+
+  it('appends a logo to the end when its category changes', async () => {
+    const store = createStore([
+      {
+        id: 'logo-1',
+        objectKey: 'marketing/logos/strategic/a.png',
+        alt: 'A',
+        category: 'strategic',
+        sortOrder: 0,
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
+        id: 'logo-2',
+        objectKey: 'marketing/logos/clinical/b.png',
+        alt: 'B',
+        category: 'clinical',
+        sortOrder: 0,
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
+        id: 'logo-3',
+        objectKey: 'marketing/logos/clinical/c.png',
+        alt: 'C',
+        category: 'clinical',
+        sortOrder: 1,
+        createdAt: now,
+        updatedAt: now,
+      },
+    ])
+
+    const updated = await updatePartnerLogo(store, {
+      id: 'logo-1',
+      objectKey: 'marketing/logos/strategic/a.png',
+      alt: 'A',
+      category: 'clinical',
+    })
+
+    expect(updated).toMatchObject({
+      category: 'clinical',
+      sortOrder: 2,
+    })
+  })
+
+  it('swaps sort order when reordering within a category', async () => {
+    const store = createStore([
+      {
+        id: 'logo-1',
+        objectKey: 'marketing/logos/strategic/a.png',
+        alt: 'A',
+        category: 'strategic',
+        sortOrder: 0,
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
+        id: 'logo-2',
+        objectKey: 'marketing/logos/strategic/b.png',
+        alt: 'B',
+        category: 'strategic',
+        sortOrder: 1,
+        createdAt: now,
+        updatedAt: now,
+      },
+      {
+        id: 'logo-3',
+        objectKey: 'marketing/logos/strategic/c.png',
+        alt: 'C',
+        category: 'strategic',
+        sortOrder: 2,
+        createdAt: now,
+        updatedAt: now,
+      },
+    ])
+
+    const reordered = await reorderPartnerLogo(store, {
+      id: 'logo-2',
+      direction: 'down',
+    })
+
+    expect(reordered.map((item) => item.id)).toEqual([
+      'logo-1',
+      'logo-3',
+      'logo-2',
+    ])
   })
 })

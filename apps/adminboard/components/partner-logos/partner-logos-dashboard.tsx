@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { AddPartnerLogoDialog } from '@/components/partner-logos/add-partner-logo-dialog'
+import { EditPartnerLogoDialog } from '@/components/partner-logos/edit-partner-logo-dialog'
 import { PartnerLogoCategoryList } from '@/components/partner-logos/partner-logo-category-list'
 import {
   groupPartnerLogosByCategory,
@@ -10,11 +11,15 @@ import {
   PARTNER_LOGO_CATEGORY_LABELS,
 } from '@/lib/partner-logos'
 import { usePartnerLogos } from '@virtality/react-query'
+import type { PartnerLogoListItem } from '@virtality/shared/types'
 import { PlusSquare } from 'lucide-react'
 import { useState } from 'react'
 
 const PartnerLogosDashboard = () => {
   const [addDialogOpen, setAddDialogOpen] = useState(false)
+  const [editingLogo, setEditingLogo] = useState<PartnerLogoListItem | null>(
+    null,
+  )
   const { data: partnerLogos = [], isPending } = usePartnerLogos()
   const logosByCategory = groupPartnerLogosByCategory(partnerLogos)
 
@@ -45,6 +50,7 @@ const PartnerLogosDashboard = () => {
             description={PARTNER_LOGO_CATEGORY_DESCRIPTIONS[category]}
             logos={logosByCategory[category]}
             isLoading={isPending}
+            onEdit={setEditingLogo}
           />
         ))}
       </div>
@@ -52,6 +58,11 @@ const PartnerLogosDashboard = () => {
       <AddPartnerLogoDialog
         open={addDialogOpen}
         onOpenChange={setAddDialogOpen}
+      />
+
+      <EditPartnerLogoDialog
+        logo={editingLogo}
+        onClose={() => setEditingLogo(null)}
       />
     </div>
   )

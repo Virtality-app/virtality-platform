@@ -68,6 +68,9 @@ export { useRemoveFavoriteExercise } from './favorite-exercise/use-remove-favori
 
 // Partner logo mutations
 export { useCreatePartnerLogo } from './partner-logo/use-create-partner-logo.js'
+export { useUpdatePartnerLogo } from './partner-logo/use-update-partner-logo.js'
+export { useReorderPartnerLogo } from './partner-logo/use-reorder-partner-logo.js'
+export { useRemovePartnerLogo } from './partner-logo/use-remove-partner-logo.js'
 
 // Bucket mutations
 export { useUploadBucketObjects } from './bucket/use-upload-bucket-objects.js'
