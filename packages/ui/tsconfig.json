@@ -2,10 +2,9 @@
   "extends": "@virtality/typescript-config/react-library.json",
   "compilerOptions": {
     "rootDir": "./",
-    "baseUrl": "./src",
     "outDir": "./dist",
     "paths": {
-      "@virtality/ui/*": ["*"]
+      "@virtality/ui/*": ["./src/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
