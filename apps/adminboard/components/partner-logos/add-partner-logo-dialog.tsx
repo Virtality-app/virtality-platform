@@ -38,7 +38,20 @@ type AddPartnerLogoDialogProps = {
 
 type SourceMode = 'pick' | 'upload'
 
+type UploadAssignmentQueue = {
+  pendingKeys: string[]
+  total: number
+}
+
 const defaultCategory: PartnerLogoCategory = 'strategic'
+
+function isSourceMode(value: string): value is SourceMode {
+  return value === 'pick' || value === 'upload'
+}
+
+function getErrorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error ? error.message : fallback
+}
 
 export const AddPartnerLogoDialog = ({
   open,
@@ -51,17 +64,20 @@ export const AddPartnerLogoDialog = ({
   const [pickerOpen, setPickerOpen] = useState(false)
   const [addAnother, setAddAnother] = useState(false)
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
-  const [pendingObjectKeys, setPendingObjectKeys] = useState<string[]>([])
-  const [uploadQueueTotal, setUploadQueueTotal] = useState(0)
+  const [uploadQueue, setUploadQueue] = useState<UploadAssignmentQueue | null>(
+    null,
+  )
   const { mutate: createPartnerLogo, isPending: isSaving } =
     useCreatePartnerLogo()
   const uploadMutation = useUploadBucketObjects()
 
   const isPending = isSaving || uploadMutation.isPending
   const uploadTargetPrefix = getPartnerLogoUploadPrefix(category)
-  const hasPendingAssignments = pendingObjectKeys.length > 0
-  const assignmentPosition =
-    uploadQueueTotal > 0 ? uploadQueueTotal - pendingObjectKeys.length + 1 : 0
+  const hasPendingAssignments = (uploadQueue?.pendingKeys.length ?? 0) > 0
+  const showAssignmentProgress = uploadQueue !== null && uploadQueue.total > 1
+  const assignmentPosition = uploadQueue
+    ? uploadQueue.total - uploadQueue.pendingKeys.length
+    : 0
 
   const resetForm = () => {
     setObjectKey('')
@@ -70,8 +86,7 @@ export const AddPartnerLogoDialog = ({
     setPickerOpen(false)
     setAddAnother(false)
     setSelectedFiles([])
-    setPendingObjectKeys([])
-    setUploadQueueTotal(0)
+    setUploadQueue(null)
     setSourceMode('pick')
     uploadMutation.reset()
   }
@@ -83,15 +98,15 @@ export const AddPartnerLogoDialog = ({
   }, [open])
 
   const advanceToNextAssignment = () => {
-    if (pendingObjectKeys.length > 0) {
-      const [nextObjectKey, ...remainingKeys] = pendingObjectKeys
-      setObjectKey(nextObjectKey)
-      setAlt('')
-      setPendingObjectKeys(remainingKeys)
-      return true
+    if (!uploadQueue || uploadQueue.pendingKeys.length === 0) {
+      return false
     }
 
-    return false
+    const [nextObjectKey, ...remainingKeys] = uploadQueue.pendingKeys
+    setObjectKey(nextObjectKey)
+    setAlt('')
+    setUploadQueue({ ...uploadQueue, pendingKeys: remainingKeys })
+    return true
   }
 
   const handleSaveSuccess = () => {
@@ -131,11 +146,7 @@ export const AddPartnerLogoDialog = ({
       {
         onSuccess: handleSaveSuccess,
         onError: (error: unknown) => {
-          toast.error(
-            error instanceof Error
-              ? error.message
-              : 'Failed to assign partner logo.',
-          )
+          toast.error(getErrorMessage(error, 'Failed to assign partner logo.'))
         },
       },
     )
@@ -171,24 +182,25 @@ export const AddPartnerLogoDialog = ({
       const [firstObjectKey, ...remainingObjectKeys] = uploadedObjectKeys
 
       setObjectKey(firstObjectKey)
-      setPendingObjectKeys(remainingObjectKeys)
-      setUploadQueueTotal(uploadedObjectKeys.length)
+      setUploadQueue({
+        pendingKeys: remainingObjectKeys,
+        total: uploadedObjectKeys.length,
+      })
       setSelectedFiles([])
       setSourceMode('pick')
 
-      if (outcome.failures.length > 0) {
-        toast.warning(
-          `${outcome.uploads.length} uploaded, ${outcome.failures.length} failed.`,
-        )
+      const uploadedCount = outcome.uploads.length
+      const failedCount = outcome.failures.length
+
+      if (failedCount > 0) {
+        toast.warning(`${uploadedCount} uploaded, ${failedCount} failed.`)
+      } else if (uploadedCount === 1) {
+        toast.success('Logo uploaded. Add alt text and save to assign.')
       } else {
-        toast.success(
-          uploadedObjectKeys.length === 1
-            ? 'Logo uploaded. Add alt text and save to assign.'
-            : `${uploadedObjectKeys.length} logos uploaded. Assign each in turn.`,
-        )
+        toast.success(`${uploadedCount} logos uploaded. Assign each in turn.`)
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Upload failed.')
+      toast.error(getErrorMessage(error, 'Upload failed.'))
     }
   }
 
@@ -208,7 +220,11 @@ export const AddPartnerLogoDialog = ({
           <div className='space-y-4'>
             <Tabs
               value={sourceMode}
-              onValueChange={(value) => setSourceMode(value as SourceMode)}
+              onValueChange={(value) => {
+                if (isSourceMode(value)) {
+                  setSourceMode(value)
+                }
+              }}
             >
               <TabsList className='grid w-full grid-cols-2'>
                 <TabsTrigger value='pick' disabled={isPending}>
@@ -292,18 +308,16 @@ export const AddPartnerLogoDialog = ({
                 <p className='text-muted-foreground truncate font-mono text-xs'>
                   {objectKey}
                 </p>
-                {uploadQueueTotal > 1 ? (
+                {showAssignmentProgress ? (
                   <p className='text-muted-foreground text-xs'>
-                    Assigning logo {assignmentPosition} of {uploadQueueTotal}.
+                    Assigning logo {assignmentPosition} of {uploadQueue.total}.
                   </p>
                 ) : null}
               </div>
             ) : null}
 
             <div className='space-y-2'>
-              <label className='text-sm font-medium' htmlFor='partner-logo-alt'>
-                Alt text
-              </label>
+              <Label htmlFor='partner-logo-alt'>Alt text</Label>
               <Input
                 id='partner-logo-alt'
                 value={alt}
@@ -314,12 +328,7 @@ export const AddPartnerLogoDialog = ({
             </div>
 
             <div className='space-y-2'>
-              <label
-                className='text-sm font-medium'
-                htmlFor='partner-logo-category'
-              >
-                Category
-              </label>
+              <Label htmlFor='partner-logo-category'>Category</Label>
               <select
                 id='partner-logo-category'
                 className='bg-background w-full rounded-md border px-3 py-2 text-sm'
@@ -362,7 +371,7 @@ export const AddPartnerLogoDialog = ({
                 disabled={isPending}
                 onClick={handleSave}
               >
-                {isPending ? 'Saving...' : 'Save'}
+                {isSaving ? 'Saving...' : 'Save'}
               </Button>
             </div>
           </DialogFooter>
