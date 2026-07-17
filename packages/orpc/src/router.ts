@@ -14,6 +14,7 @@ import { patientSessionData } from './procedures/patient-session-data.ts'
 import { patientSessionExercise } from './procedures/patient-session-exercise.ts'
 import { user } from './procedures/user/index.ts'
 import { waitlist } from './procedures/waitlist.ts'
+import { partnerLogo } from './procedures/partner-logo.ts'
 import { email } from './procedures/email.ts'
 import { referral } from './procedures/referral.ts'
 import { bucket } from './procedures/bucket.ts'
@@ -40,6 +41,7 @@ export const router = {
   patientSessionData,
   patientSessionExercise,
   waitlist,
+  partnerLogo,
   email,
   referral,
   bucket,

@@ -2,11 +2,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import {
-  CLINICAL_PARTNER_LOGOS,
-  PRESS_LOGO_ITEMS,
-  STRATEGIC_PARTNER_LOGOS,
-} from './partner-press-content'
+import { PRESS_LOGO_ITEMS } from './partner-press-content'
 import {
   CREDIBILITY_LOGO_HOVER_CLASS,
   filterValidLogoItems,
@@ -44,9 +40,7 @@ describe('PRD 136 partner and press sections', () => {
         [{ src: '', alt: 'Also missing' }],
       ),
     ).toEqual([])
-    expect(
-      hasPartnerSection(STRATEGIC_PARTNER_LOGOS, CLINICAL_PARTNER_LOGOS),
-    ).toBe(false)
+    expect(hasPartnerSection([], [])).toBe(false)
   })
 
   it('renders strategic and clinical rows only when valid logos exist', () => {
@@ -85,12 +79,12 @@ describe('PRD 136 partner and press sections', () => {
     expect(getPressLinkProps('   ')).toEqual({})
   })
 
-  it('drives partner and press rendering from static data modules', () => {
+  it('drives partner rendering from the public list and press from static data', () => {
     const poweredBy = readWebsiteFile('components/home/powered-by.tsx')
     const press = readWebsiteFile('components/home/press.tsx')
 
-    expect(poweredBy).toMatch(/STRATEGIC_PARTNER_LOGOS/)
-    expect(poweredBy).toMatch(/CLINICAL_PARTNER_LOGOS/)
+    expect(poweredBy).toMatch(/usePartnerLogos/)
+    expect(poweredBy).toMatch(/mapPartnerLogosToCredibilityLists/)
     expect(poweredBy).toMatch(/getVisiblePartnerRows/)
     expect(poweredBy).not.toMatch(/piraeus-logo\.png/)
     expect(press).toMatch(/PRESS_LOGO_ITEMS/)

@@ -1,0 +1,18 @@
+// Marketing Partner Logo Domain
+
+enum PartnerLogoCategory {
+  strategic
+  clinical
+}
+
+model MarketingPartnerLogo {
+  id         String               @id
+  objectKey  String               @unique
+  alt        String
+  category   PartnerLogoCategory
+  sortOrder  Int
+  createdAt  DateTime             @default(now()) @db.Timestamp(6)
+  updatedAt  DateTime             @updatedAt @db.Timestamp(6)
+
+  @@index([category, sortOrder])
+}

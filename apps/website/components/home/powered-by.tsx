@@ -1,19 +1,17 @@
 'use client'
 
+import { usePartnerLogos } from '@virtality/react-query'
 import CredibilityLogo from '@/components/home/credibility-logo'
 import CredibilitySectionHeader from '@/components/home/credibility-section-header'
-import {
-  CLINICAL_PARTNER_LOGOS,
-  STRATEGIC_PARTNER_LOGOS,
-  SUPPORTED_BY_CONTENT,
-} from '@/lib/partner-press-content'
+import { mapPartnerLogosToCredibilityLists } from '@/lib/partner-logo-adapter'
+import { SUPPORTED_BY_CONTENT } from '@/lib/partner-press-content'
 import { getVisiblePartnerRows } from '@/lib/partner-press'
 
 const PoweredBy = () => {
-  const partnerRows = getVisiblePartnerRows(
-    STRATEGIC_PARTNER_LOGOS,
-    CLINICAL_PARTNER_LOGOS,
-  )
+  const { data: partnerLogos = [] } = usePartnerLogos()
+  const { strategicLogos, clinicalLogos } =
+    mapPartnerLogosToCredibilityLists(partnerLogos)
+  const partnerRows = getVisiblePartnerRows(strategicLogos, clinicalLogos)
 
   if (partnerRows.length === 0) {
     return null

@@ -52,6 +52,9 @@ export { useDeviceCore } from './use-device.js'
 // Waitlist queries
 export { useWaitlist } from './waitlist/use-waitlist.js'
 
+// Partner logo queries
+export { usePartnerLogos } from './partner-logo/use-partner-logos.js'
+
 // Referral queries
 export { useReferralCodes } from './referral/use-referral-codes.js'
 

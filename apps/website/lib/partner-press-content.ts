@@ -34,8 +34,4 @@ export const PRESS_SECTION_CONTENT = {
     "Coverage and features from publications following Virtality's work in evidence-based VR therapy.",
 } as const
 
-export const STRATEGIC_PARTNER_LOGOS: CredibilityLogoItem[] = []
-
-export const CLINICAL_PARTNER_LOGOS: CredibilityLogoItem[] = []
-
 export const PRESS_LOGO_ITEMS: PressLogoItem[] = []
