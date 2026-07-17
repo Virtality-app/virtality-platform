@@ -28,6 +28,14 @@ export const PARTNER_LOGO_CATEGORY_DESCRIPTIONS: Record<
   clinical: 'Clinic credibility logos shown in the clinical partners row.',
 }
 
+export const PARTNER_LOGO_UPLOAD_BASE_PREFIX = 'marketing/logos'
+
+export function getPartnerLogoUploadPrefix(
+  category: PartnerLogoCategory,
+): string {
+  return `${PARTNER_LOGO_UPLOAD_BASE_PREFIX}/${category}`
+}
+
 export function groupPartnerLogosByCategory(
   logos: readonly PartnerLogoListItem[],
 ): PartnerLogoCategoryLists {

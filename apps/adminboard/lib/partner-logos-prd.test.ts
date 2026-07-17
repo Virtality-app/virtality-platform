@@ -57,3 +57,36 @@ describe('issue 147 partner logos adminboard slice', () => {
     expect(picker).not.toMatch(/marketing\/logos/)
   })
 })
+
+describe('issue 149 partner logos upload-and-assign slice', () => {
+  it('supports upload-and-assign with category-based marketing/logos prefix', () => {
+    const dialog = readAdminboardFile(
+      'components/partner-logos/add-partner-logo-dialog.tsx',
+    )
+    const helpers = readAdminboardFile('lib/partner-logos.ts')
+
+    expect(dialog).toMatch(/useUploadBucketObjects/)
+    expect(dialog).toMatch(/getPartnerLogoUploadPrefix/)
+    expect(helpers).toMatch(/PARTNER_LOGO_UPLOAD_BASE_PREFIX/)
+    expect(helpers).toMatch(/marketing\/logos/)
+  })
+
+  it('supports multi-file upload on the upload path', () => {
+    const dialog = readAdminboardFile(
+      'components/partner-logos/add-partner-logo-dialog.tsx',
+    )
+
+    expect(dialog).toMatch(/type=['"]file['"]/)
+    expect(dialog).toMatch(/multiple/)
+  })
+
+  it('keeps the dialog open with Add another after a successful save', () => {
+    const dialog = readAdminboardFile(
+      'components/partner-logos/add-partner-logo-dialog.tsx',
+    )
+
+    expect(dialog).toMatch(/Add another/)
+    expect(dialog).toMatch(/addAnother/)
+    expect(dialog).toMatch(/BucketObjectPickerDialog/)
+  })
+})

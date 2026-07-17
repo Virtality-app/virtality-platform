@@ -1,6 +1,10 @@
 import type { PartnerLogoListItem } from '@virtality/shared/types'
 import { describe, expect, it } from 'vitest'
-import { groupPartnerLogosByCategory } from './partner-logos'
+import {
+  getPartnerLogoUploadPrefix,
+  groupPartnerLogosByCategory,
+  PARTNER_LOGO_UPLOAD_BASE_PREFIX,
+} from './partner-logos'
 
 const logos: PartnerLogoListItem[] = [
   {
@@ -42,5 +46,17 @@ describe('groupPartnerLogosByCategory', () => {
       strategic: [],
       clinical: [],
     })
+  })
+})
+
+describe('getPartnerLogoUploadPrefix', () => {
+  it('defaults to marketing/logos with a category subfolder', () => {
+    expect(PARTNER_LOGO_UPLOAD_BASE_PREFIX).toBe('marketing/logos')
+    expect(getPartnerLogoUploadPrefix('strategic')).toBe(
+      'marketing/logos/strategic',
+    )
+    expect(getPartnerLogoUploadPrefix('clinical')).toBe(
+      'marketing/logos/clinical',
+    )
   })
 })
