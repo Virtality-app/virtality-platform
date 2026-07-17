@@ -3,6 +3,7 @@ import type { ExtendedPatientSession } from '@/types/models'
 import {
   filterClinicalHistorySessions,
   filterCompletedClinicalSessions,
+  filterSessionsBySearch,
   getClinicalHistorySessionDate,
   getClinicalHistorySessionStatusLabel,
   getSessionSourceProgramDisplayName,
@@ -66,6 +67,38 @@ describe('session history helpers', () => {
       'Interrupted',
     )
     expect(getClinicalHistorySessionStatusLabel('ACTIVE')).toBeNull()
+  })
+})
+
+describe('filterSessionsBySearch', () => {
+  const sessions = [
+    {
+      ...baseSession,
+      id: 'abc-123-def',
+      sourceProgramName: 'Shoulder rehab',
+      sourceReusableProgramId: 'program-1',
+      status: 'COMPLETED',
+    },
+    {
+      ...baseSession,
+      id: 'ghi-456-jkl',
+      sourceProgramName: null,
+      sourceReusableProgramId: null,
+      status: 'INTERRUPTED',
+      completedAt: null,
+    },
+  ] as ExtendedPatientSession[]
+
+  it('returns all sessions when the query is empty', () => {
+    expect(filterSessionsBySearch(sessions, '')).toEqual(sessions)
+    expect(filterSessionsBySearch(sessions, '   ')).toEqual(sessions)
+  })
+
+  it('matches program name, status label, and short id', () => {
+    expect(filterSessionsBySearch(sessions, 'shoulder')).toHaveLength(1)
+    expect(filterSessionsBySearch(sessions, 'interrupted')).toHaveLength(1)
+    expect(filterSessionsBySearch(sessions, 'quick start')).toHaveLength(1)
+    expect(filterSessionsBySearch(sessions, 'abc')).toHaveLength(1)
   })
 })
 

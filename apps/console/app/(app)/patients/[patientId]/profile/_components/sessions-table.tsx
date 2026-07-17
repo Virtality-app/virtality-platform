@@ -1,12 +1,19 @@
 'use client'
 
 import {
+  SortingState,
+  useReactTable,
+  VisibilityState,
+} from '@tanstack/react-table'
+import {
   DataTableBody,
   DataTableFooter,
   DataTableHeader,
 } from '@virtality/ui/components/data-table'
-import { useResourceTable } from '@virtality/ui/lib/use-resource-table'
+import { tableDefaults } from '@virtality/ui/lib/table-defaults'
+import { useMemo, useState } from 'react'
 import { usePatientSessions } from '@virtality/react-query'
+import { filterSessionsBySearch } from '@/lib/session-history'
 import { sessionsColumns } from './sessions-columns'
 import type { ExtendedPatientSession } from '@/types/models'
 
@@ -24,6 +31,12 @@ const SessionsTable = ({
   sessions: sessionsProp,
   isLoading: isLoadingProp,
 }: SessionsTableProps) => {
+  'use no memo'
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [globalFilter, setGlobalFilter] = useState('')
+  const [rowSelection, setRowSelection] = useState({})
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+
   const { data: fetchedSessions, isPending } = usePatientSessions({
     input: {
       where: {
@@ -39,10 +52,26 @@ const SessionsTable = ({
   const usesProvidedSessions = sessionsProp !== undefined
   const tableData =
     (usesProvidedSessions ? sessionsProp : fetchedSessions) ?? []
+  const filteredSessions = useMemo(
+    () => filterSessionsBySearch(tableData, globalFilter),
+    [tableData, globalFilter],
+  )
 
-  const { table, globalFilter, setGlobalFilter } = useResourceTable({
-    data: tableData,
+  // eslint-disable-next-line react-hooks/incompatible-library
+  const table = useReactTable({
+    data: filteredSessions,
     columns: sessionsColumns,
+    ...tableDefaults.models,
+    state: {
+      sorting,
+      globalFilter,
+      rowSelection,
+      columnVisibility,
+    },
+    onSortingChange: setSorting,
+    onRowSelectionChange: setRowSelection,
+    onGlobalFilterChange: setGlobalFilter,
+    onColumnVisibilityChange: setColumnVisibility,
   })
 
   const rowNavigation = (id: string) => {

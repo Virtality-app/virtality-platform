@@ -59,3 +59,32 @@ export function getClinicalHistorySessionStatusLabel(
   if (isInterruptedClinicalSession(status)) return 'Interrupted'
   return null
 }
+
+export type SessionListRow = Pick<
+  PatientSession,
+  'id' | 'status' | 'sourceProgramName' | 'sourceReusableProgramId'
+>
+
+export function filterSessionsBySearch<T extends SessionListRow>(
+  sessions: T[],
+  query: string,
+): T[] {
+  const normalizedQuery = query.trim().toLowerCase()
+  if (!normalizedQuery) return sessions
+
+  return sessions.filter((session) => {
+    const statusLabel = getClinicalHistorySessionStatusLabel(session.status)
+    const haystack = [
+      session.id,
+      session.id.split('-')[0],
+      getSessionSourceProgramDisplayName(session),
+      statusLabel,
+      session.status,
+    ]
+      .filter((value): value is string => Boolean(value))
+      .join(' ')
+      .toLowerCase()
+
+    return haystack.includes(normalizedQuery)
+  })
+}
