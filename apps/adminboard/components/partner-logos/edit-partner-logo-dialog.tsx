@@ -12,12 +12,7 @@ import {
 import { Input } from '@virtality/ui/components/input'
 import { Label } from '@virtality/ui/components/label'
 import { BucketObjectPickerDialog } from '@/components/email/bucket-object-picker-dialog'
-import {
-  DEFAULT_PARTNER_LOGO_CATEGORY,
-  isPartnerLogoCategory,
-  PARTNER_LOGO_CATEGORIES,
-  PARTNER_LOGO_CATEGORY_LABELS,
-} from '@/lib/partner-logos'
+import { DEFAULT_PARTNER_LOGO_CATEGORY } from '@/lib/partner-logos'
 import { getErrorMessage } from '@/lib/get-error-message'
 import type {
   PartnerLogoCategory,
@@ -29,6 +24,7 @@ import { ImageIcon } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { PartnerLogoCategorySelect } from '@/components/partner-logos/partner-logo-category-select'
 
 type EditPartnerLogoDialogProps = {
   logo: PartnerLogoListItem | null
@@ -155,27 +151,12 @@ export const EditPartnerLogoDialog = ({
               />
             </div>
 
-            <div className='space-y-2'>
-              <Label htmlFor='edit-partner-logo-category'>Category</Label>
-              <select
-                id='edit-partner-logo-category'
-                className='bg-background w-full rounded-md border px-3 py-2 text-sm'
-                value={category}
-                disabled={isPending}
-                onChange={(event) => {
-                  const value = event.target.value
-                  if (isPartnerLogoCategory(value)) {
-                    setCategory(value)
-                  }
-                }}
-              >
-                {PARTNER_LOGO_CATEGORIES.map((value) => (
-                  <option key={value} value={value}>
-                    {PARTNER_LOGO_CATEGORY_LABELS[value]}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <PartnerLogoCategorySelect
+              id='edit-partner-logo-category'
+              value={category}
+              disabled={isPending}
+              onChange={setCategory}
+            />
           </div>
 
           <DialogFooter className='gap-2 sm:justify-end'>
