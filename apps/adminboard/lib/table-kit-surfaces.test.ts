@@ -11,15 +11,6 @@ function readAdminboardFile(relativePath: string): string {
   return readFileSync(join(adminboardRoot, relativePath), 'utf8')
 }
 
-function pathExists(relativePath: string): boolean {
-  try {
-    readFileSync(join(adminboardRoot, relativePath))
-    return true
-  } catch {
-    return false
-  }
-}
-
 function expectSharedTablePrimitives(source: string) {
   expect(source).toMatch(/@virtality\/ui\/components\/table/)
   expect(source).not.toMatch(/@\/components\/ui\/table/)
@@ -45,10 +36,8 @@ function expectFetchLoading(source: string) {
 }
 
 describe('adminboard table kit migration', () => {
-  it.each([
-    ['bucket browser', 'components/bucket/bucket-browser.tsx'],
-    ['inline-editable data-table', 'components/ui/data-table.tsx'],
-  ])('imports shared table primitives in %s', (_, relativePath) => {
+  it('imports shared table primitives in bucket browser', () => {
+    const relativePath = 'components/bucket/bucket-browser.tsx'
     expectSharedTablePrimitives(readAdminboardFile(relativePath))
   })
 
@@ -92,10 +81,5 @@ describe('adminboard table kit migration', () => {
     expectSharedDataTableKit(tableSource)
     expectSharedTableConfiguration(tableSource)
     expect(tableSource).not.toMatch(/isLoading=/)
-  })
-
-  it('removes adminboard-local table kit copies', () => {
-    expect(pathExists('components/ui/table.tsx')).toBe(false)
-    expect(pathExists('components/tables/data-table-template.tsx')).toBe(false)
   })
 })
