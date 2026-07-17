@@ -1,6 +1,19 @@
 import { WaitlistSchema } from '@virtality/shared/types'
 import { generateUUID } from '@virtality/shared/utils'
+import { sendWaitlistNotification } from '@virtality/nodemailer'
+import { createAppLogger } from '@virtality/shared/observability'
 import { base } from '../context.ts'
+import {
+  createWaitlistEntry,
+  getWaitlistNotifyRecipient,
+} from './waitlist/waitlist-create.ts'
+
+const waitlistLogger = createAppLogger({
+  serviceName: 'server',
+  defaultAttributes: {
+    component: 'waitlist',
+  },
+})
 
 const listWaitlist = base
   .route({ path: '/waitlist/list', method: 'GET' })
@@ -17,27 +30,19 @@ const listWaitlist = base
 const createWaitlist = base
   .route({ path: '/waitlist/create', method: 'POST' })
   .input(WaitlistSchema)
-  .handler(async ({ context, input }) => {
-    const { prisma } = context
-
-    const exists = await prisma.waitingList.findFirst({
-      where: { email: input.email },
-    })
-
-    if (exists) {
-      return { success: false, message: 'You are already on the waitlist.' }
-    }
-
-    await prisma.waitingList.create({
-      data: {
-        id: generateUUID(),
-        ...input,
-        createdAt: new Date(),
+  .handler(async ({ context, input }) =>
+    createWaitlistEntry(
+      {
+        prisma: context.prisma,
+        generateId: generateUUID,
+        now: () => new Date(),
+        getNotifyRecipient: getWaitlistNotifyRecipient,
+        sendWaitlistNotification,
+        logger: waitlistLogger,
       },
-    })
-
-    return { success: true, message: null }
-  })
+      input,
+    ),
+  )
 
 export const waitlist = {
   list: listWaitlist,

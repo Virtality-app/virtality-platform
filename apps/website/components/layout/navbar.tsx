@@ -9,6 +9,8 @@ import {
   SiLinkedin,
   SiX,
 } from '@icons-pack/react-simple-icons'
+import ScrollToCtaButton from '@/components/shared/scroll-to-cta-button'
+import { NAV_BOOK_DEMO_LABEL } from '@/lib/hero-content'
 import { getConsoleUrl } from '@virtality/shared/types'
 
 const consoleURL = getConsoleUrl()
@@ -69,6 +71,12 @@ const Navbar = async () => {
           >
             <Link href='/blog'>Blog</Link>
           </Button>
+          <ScrollToCtaButton
+            variant='outline'
+            className='border-vital-blue-700 text-vital-blue-700 hover:bg-vital-blue-50 font-semibold'
+          >
+            {NAV_BOOK_DEMO_LABEL}
+          </ScrollToCtaButton>
           <Button
             asChild
             className='bg-vital-blue-700 hover:bg-vital-blue-800 text-white font-semibold shadow-md shadow-vital-blue-700/20'

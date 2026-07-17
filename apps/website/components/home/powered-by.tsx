@@ -1,98 +1,60 @@
 'use client'
 
-import Image from 'next/image'
-import piraeus from '@/public/piraeus-logo.png'
-import pos4work from '@/public/pos4work-logo.png'
-import kinesio from '@/public/kinesiotherapy-logo.png'
-import chiropracticCenter from '@/public/the-chiropractic-center-logo.png'
-import { cn } from '@/lib/utils'
+import CredibilityLogo from '@/components/home/credibility-logo'
+import CredibilitySectionHeader from '@/components/home/credibility-section-header'
+import {
+  CLINICAL_PARTNER_LOGOS,
+  STRATEGIC_PARTNER_LOGOS,
+  SUPPORTED_BY_CONTENT,
+} from '@/lib/partner-press-content'
+import { getVisiblePartnerRows } from '@/lib/partner-press'
 
-const PRIMARY_LOGOS = [
-  { src: piraeus, alt: 'Piraeus', className: 'px-4' },
-  { src: pos4work, alt: 'Pos4Work', className: 'px-4' },
-]
+const PoweredBy = () => {
+  const partnerRows = getVisiblePartnerRows(
+    STRATEGIC_PARTNER_LOGOS,
+    CLINICAL_PARTNER_LOGOS,
+  )
 
-const SECONDARY_LOGOS = [
-  {
-    src: kinesio,
-    alt: 'Kinesiotherapy Center',
-    className: 'bg-neutral-800 px-4',
-    wide: true,
-  },
-  {
-    src: chiropracticCenter,
-    alt: 'The Chiropractic Center',
-    className: '',
-    compact: true,
-  },
-]
+  if (partnerRows.length === 0) {
+    return null
+  }
 
-const PoweredBy = () => (
-  <section className='relative py-20 overflow-hidden bg-white'>
-    <div className='container m-auto px-4 md:px-8'>
-      <div className='text-center mb-14'>
-        <p
-          className='text-[11px] font-bold tracking-[0.4em] uppercase text-vital-blue-600 mb-6'
-          style={{ fontFamily: "'JetBrains Mono', monospace" }}
-        >
-          Strategic Partnership
-        </p>
-        <h2 className='text-4xl md:text-5xl font-black text-slate-900 mb-2 leading-[1.1]'>
-          Supported <span className='text-vital-blue-600'>By</span>
-        </h2>
-        <p className='text-slate-500 max-w-md mx-auto text-sm leading-relaxed mt-4'>
-          Our innovation is backed by leading institutions and clinics committed
-          to advancing healthcare technology
-        </p>
-      </div>
+  const strategicRow = partnerRows.find((row) => row.kind === 'strategic')
+  const clinicalRow = partnerRows.find((row) => row.kind === 'clinical')
 
-      {/* Primary logos row */}
-      <div className='flex flex-col sm:flex-row justify-center items-center gap-10 mb-8'>
-        {PRIMARY_LOGOS.map((logo, i) => (
-          <div key={i} className='group flex flex-col items-center gap-4'>
-            <div className={cn('relative w-56 h-20', logo.className)}>
-              <Image
-                src={logo.src}
-                alt={logo.alt}
-                fill
-                className={cn('object-contain absolute', logo.className)}
-              />
-            </div>
-            <div className='w-2/3 h-[2px] rounded-full bg-linear-to-r from-transparent via-vital-blue-400 to-transparent opacity-0 group-hover:opacity-70 transition-opacity duration-300' />
+  return (
+    <section className='relative overflow-hidden bg-white py-20'>
+      <div className='container m-auto px-4 md:px-8'>
+        <CredibilitySectionHeader content={SUPPORTED_BY_CONTENT} />
+
+        {strategicRow ? (
+          <div className='mb-8 flex flex-col items-center justify-center gap-10 sm:flex-row'>
+            {strategicRow.logos.map((logo) => (
+              <CredibilityLogo key={logo.alt} item={logo} size='primary' />
+            ))}
           </div>
-        ))}
-      </div>
+        ) : null}
 
-      {/* Horizontal divider */}
-      <div className='flex justify-center items-center gap-6 my-8'>
-        <div className='h-px flex-1 max-w-32 bg-linear-to-r from-transparent to-slate-200' />
-        <span className='text-[9px] font-bold tracking-[0.35em] uppercase text-slate-400'>
-          Clinical Partners
-        </span>
-        <div className='h-px flex-1 max-w-32 bg-linear-to-l from-transparent to-slate-200' />
-      </div>
-
-      {/* Secondary logos row */}
-      <div className='flex justify-center items-center gap-10'>
-        {SECONDARY_LOGOS.map((logo, i) => (
-          <div
-            key={i}
-            className={cn(
-              'relative h-14 opacity-35 hover:opacity-80 transition-opacity duration-500',
-              logo.wide ? 'w-56' : 'w-24',
-            )}
-          >
-            <Image
-              src={logo.src}
-              alt={logo.alt}
-              fill
-              className={cn('object-contain absolute', logo.className)}
-            />
+        {strategicRow && clinicalRow ? (
+          <div className='my-8 flex items-center justify-center gap-6'>
+            <div className='h-px max-w-32 flex-1 bg-linear-to-r from-transparent to-slate-200' />
+            <span className='text-[9px] font-bold tracking-[0.35em] text-slate-400 uppercase'>
+              {SUPPORTED_BY_CONTENT.clinicalPartnersLabel}
+            </span>
+            <div className='h-px max-w-32 flex-1 bg-linear-to-l from-transparent to-slate-200' />
           </div>
-        ))}
+        ) : null}
+
+        {clinicalRow ? (
+          <div className='flex items-center justify-center gap-10'>
+            {clinicalRow.logos.map((logo) => (
+              <CredibilityLogo key={logo.alt} item={logo} size='secondary' />
+            ))}
+          </div>
+        ) : null}
       </div>
-    </div>
-  </section>
-)
+    </section>
+  )
+}
 
 export default PoweredBy

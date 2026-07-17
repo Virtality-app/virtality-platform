@@ -1,3 +1,8 @@
+import {
+  SETUP_CAPABILITY_CONTENT,
+  SETUP_CAPABILITY_TITLE,
+} from '@/lib/landing-page-content'
+
 export const features: Array<{
   title: string
   context: string
@@ -16,10 +21,9 @@ export const features: Array<{
     icon: 'Brain',
   },
   {
-    title: 'Remote Monitoring',
-    context:
-      'Monitor and manage therapy progress from anywhere. Adjust treatments in real time, even during unsupervised, at-home sessions.',
-    icon: 'Users',
+    title: SETUP_CAPABILITY_TITLE,
+    context: SETUP_CAPABILITY_CONTENT,
+    icon: 'Package',
   },
   {
     title: 'Progress Analytics',

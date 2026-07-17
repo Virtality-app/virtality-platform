@@ -4,8 +4,19 @@ import Link from 'next/link'
 import { Button } from '@virtality/ui/components/button'
 import { ArrowRight, Activity } from 'lucide-react'
 import { useEffect, useRef } from 'react'
+import { getDemoBookingUrl } from '@/lib/demo-booking'
+import {
+  HERO_BADGE_LABEL,
+  HERO_HEADLINE,
+  HERO_PRIMARY_CTA_LABEL,
+  HERO_SECONDARY_CTA_LABEL,
+  HERO_SUPPORTING_COPY,
+} from '@/lib/hero-content'
+import { scrollToFinalCta } from '@/lib/scroll-to-cta'
 import { splitText } from '@/lib/utils'
 import { animate, stagger } from 'motion/react'
+
+const demoBookingUrl = getDemoBookingUrl()
 
 const HeroTitle = () => {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -45,53 +56,39 @@ const HeroTitle = () => {
     })
   }, [])
 
-  const handleViewFeatures = () => {
-    const featuresElement = document.getElementById('features')
-    featuresElement?.scrollIntoView({ behavior: 'smooth' })
-  }
-
   return (
     <div ref={containerRef} className='space-y-8'>
       <div className='inline-flex items-center gap-2 rounded-full bg-linear-to-r from-vital-blue-700 to-vital-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-vital-blue-700/20'>
         <Activity className='w-4 h-4' />
-        <span className='tracking-wide'>Clinical-Grade VR Rehabilitation</span>
+        <span className='tracking-wide'>{HERO_BADGE_LABEL}</span>
       </div>
 
       <h1 className='text-4xl font-bold leading-[1.15] md:text-5xl lg:text-6xl text-slate-900 dark:text-white'>
-        Accelerate Patient Recovery with{' '}
-        <span className='bg-linear-to-r from-vital-blue-700 to-vital-blue-600 bg-clip-text text-transparent'>
-          Evidence-Based VR Therapy
-        </span>
+        {HERO_HEADLINE}
       </h1>
 
       <p className='text-lg leading-relaxed text-slate-600 dark:text-gray-300 md:text-xl max-w-xl'>
-        Empower your clinical practice with precision VR rehabilitation
-        technology designed for healthcare professionals treating mobility
-        impairments.
+        {HERO_SUPPORTING_COPY}
       </p>
 
       <div className='flex flex-col sm:flex-row gap-4 pt-4'>
         <Button
-          asChild
           variant='primary'
-          className='h-auto px-6 py-4 text-base font-semibold shadow-lg shadow-vital-blue-700/25 hover:shadow-xl hover:shadow-vital-blue-700/30 transition-all'
+          className='h-auto px-6 py-4 text-base font-semibold shadow-lg shadow-vital-blue-700/25 hover:shadow-xl hover:shadow-vital-blue-700/30 transition-all flex items-center gap-2 group'
+          onClick={scrollToFinalCta}
         >
-          <Link
-            href='https://cal.com/virtality'
-            className='flex items-center gap-2 group'
-            target='_blank'
-          >
-            Request Clinical Demo
-            <ArrowRight className='size-5 group-hover:translate-x-1 transition-transform' />
-          </Link>
+          {HERO_PRIMARY_CTA_LABEL}
+          <ArrowRight className='size-5 group-hover:translate-x-1 transition-transform' />
         </Button>
 
         <Button
+          asChild
           variant='outline'
           className='h-auto px-6 py-4 text-base font-semibold border-2 border-vital-blue-700 text-vital-blue-700 hover:bg-vital-blue-50'
-          onClick={handleViewFeatures}
         >
-          View Features
+          <Link href={demoBookingUrl} target='_blank' rel='noopener noreferrer'>
+            {HERO_SECONDARY_CTA_LABEL}
+          </Link>
         </Button>
       </div>
     </div>
