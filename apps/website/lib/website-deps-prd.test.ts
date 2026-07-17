@@ -4,26 +4,26 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 const websiteRoot = fileURLToPath(new URL('..', import.meta.url))
-const repoRoot = fileURLToPath(new URL('../../..', import.meta.url))
+
+type WebsitePackageJson = {
+  dependencies?: Record<string, string>
+  devDependencies?: Record<string, string>
+}
 
 function readWebsiteFile(relativePath: string): string {
   return readFileSync(join(websiteRoot, relativePath), 'utf8')
 }
 
-function readWebsiteDependencies(): Record<string, string> {
-  const { dependencies = {} } = JSON.parse(readWebsiteFile('package.json')) as {
-    dependencies?: Record<string, string>
-  }
+function readWebsitePackageJson(): WebsitePackageJson {
+  return JSON.parse(readWebsiteFile('package.json')) as WebsitePackageJson
+}
 
-  return dependencies
+function readWebsiteDependencies(): Record<string, string> {
+  return readWebsitePackageJson().dependencies ?? {}
 }
 
 function readWebsiteDevDependencies(): Record<string, string> {
-  const { devDependencies = {} } = JSON.parse(
-    readWebsiteFile('package.json'),
-  ) as { devDependencies?: Record<string, string> }
-
-  return devDependencies
+  return readWebsitePackageJson().devDependencies ?? {}
 }
 
 const CONSOLE_LEFTOVER_DEPENDENCIES = ['react-resizable-panels'] as const
@@ -77,14 +77,13 @@ describe('issue #144 prune Website package.json deps unused by Website', () => {
   )
 
   it('keeps radix label and slot used by the local form component', () => {
-    expect(readWebsiteDependencies()).toHaveProperty('@radix-ui/react-label')
-    expect(readWebsiteDependencies()).toHaveProperty('@radix-ui/react-slot')
-    expect(readWebsiteFile('components/ui/form.tsx')).toMatch(
-      /@radix-ui\/react-label/,
-    )
-    expect(readWebsiteFile('components/ui/form.tsx')).toMatch(
-      /@radix-ui\/react-slot/,
-    )
+    const dependencies = readWebsiteDependencies()
+    const formSource = readWebsiteFile('components/ui/form.tsx')
+
+    expect(dependencies).toHaveProperty('@radix-ui/react-label')
+    expect(dependencies).toHaveProperty('@radix-ui/react-slot')
+    expect(formSource).toMatch(/@radix-ui\/react-label/)
+    expect(formSource).toMatch(/@radix-ui\/react-slot/)
   })
 
   it.each(UNUSED_PRISMA_DEPENDENCIES)(
@@ -123,17 +122,18 @@ describe('issue #144 prune Website package.json deps unused by Website', () => {
   )
 
   it('keeps react-email for the waitlist email template', () => {
-    expect(readWebsiteDependencies()).toHaveProperty('@react-email/components')
-    expect(readWebsiteFile('components/email/waitinglist-email.tsx')).toMatch(
-      /@react-email\/components/,
+    const dependencies = readWebsiteDependencies()
+    const emailTemplateSource = readWebsiteFile(
+      'components/email/waitinglist-email.tsx',
     )
+
+    expect(dependencies).toHaveProperty('@react-email/components')
+    expect(emailTemplateSource).toMatch(/@react-email\/components/)
   })
 
   it('keeps website testimonials in the codebase', () => {
     expect(
-      existsSync(
-        join(repoRoot, 'apps/website/components/home/testimonials.tsx'),
-      ),
+      existsSync(join(websiteRoot, 'components/home/testimonials.tsx')),
     ).toBe(true)
   })
 })
