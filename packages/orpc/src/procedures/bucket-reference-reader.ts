@@ -56,5 +56,22 @@ export function createPrismaBucketReferenceReader(
           image: true,
         },
       }),
+    findPartnerLogoReferences: (lookupValues) =>
+      prisma.marketingPartnerLogo
+        .findMany({
+          where: { objectKey: { in: lookupValues } },
+          select: {
+            id: true,
+            alt: true,
+            objectKey: true,
+          },
+        })
+        .then((partnerLogos) =>
+          partnerLogos.map(({ id, alt, objectKey }) => ({
+            id,
+            alt,
+            image: objectKey,
+          })),
+        ),
   }
 }

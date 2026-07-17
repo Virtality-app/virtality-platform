@@ -20,6 +20,7 @@ function createReader(
     findMapReferences: async () => [],
     findPatientReferences: async () => [],
     findUserReferences: async () => [],
+    findPartnerLogoReferences: async () => [],
     ...overrides,
   }
 }
@@ -115,6 +116,30 @@ describe('findKnownBucketObjectReferences', () => {
         resourceId: 'ex-2',
         resourceLabel: 'Squat Demo',
         field: 'video',
+      },
+    ])
+  })
+
+  it('detects partner logo references by object key', async () => {
+    const outcome = await findKnownBucketObjectReferences({
+      reader: createReader({
+        findPartnerLogoReferences: async () => [
+          {
+            id: 'logo-1',
+            alt: 'NHS Trust',
+            image: 'marketing/logos/nhs-trust.png',
+          },
+        ],
+      }),
+      objectKey: 'marketing/logos/nhs-trust.png',
+    })
+
+    expect(outcome.references).toEqual([
+      {
+        resourceType: 'partnerLogo',
+        resourceId: 'logo-1',
+        resourceLabel: 'NHS Trust',
+        field: 'image',
       },
     ])
   })

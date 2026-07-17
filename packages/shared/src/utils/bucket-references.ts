@@ -6,6 +6,7 @@ export type BucketReferenceResourceType =
   | 'map'
   | 'patient'
   | 'user'
+  | 'partnerLogo'
 
 export type BucketReferenceField = 'image' | 'video'
 
@@ -68,6 +69,13 @@ export type BucketReferenceReader = {
       image: string | null
     }>
   >
+  findPartnerLogoReferences: (lookupValues: string[]) => Promise<
+    Array<{
+      id: string
+      alt: string
+      image: string
+    }>
+  >
 }
 
 const RESOURCE_TYPE_ORDER: BucketReferenceResourceType[] = [
@@ -76,6 +84,7 @@ const RESOURCE_TYPE_ORDER: BucketReferenceResourceType[] = [
   'map',
   'patient',
   'user',
+  'partnerLogo',
 ]
 
 export function buildBucketReferenceLookupValues(objectKey: string): string[] {
@@ -121,13 +130,15 @@ export async function findKnownBucketObjectReferences({
   const lookupValues = buildBucketReferenceLookupValues(trimmedKey)
   const references: BucketObjectReference[] = []
 
-  const [exercises, avatars, maps, patients, users] = await Promise.all([
-    reader.findExerciseReferences(lookupValues),
-    reader.findAvatarReferences(lookupValues),
-    reader.findMapReferences(lookupValues),
-    reader.findPatientReferences(lookupValues),
-    reader.findUserReferences(lookupValues),
-  ])
+  const [exercises, avatars, maps, patients, users, partnerLogos] =
+    await Promise.all([
+      reader.findExerciseReferences(lookupValues),
+      reader.findAvatarReferences(lookupValues),
+      reader.findMapReferences(lookupValues),
+      reader.findPatientReferences(lookupValues),
+      reader.findUserReferences(lookupValues),
+      reader.findPartnerLogoReferences(lookupValues),
+    ])
 
   for (const exercise of exercises) {
     if (fieldMatchesReference(exercise.image, lookupValues)) {
@@ -188,6 +199,17 @@ export async function findKnownBucketObjectReferences({
         resourceType: 'user',
         resourceId: user.id,
         resourceLabel: user.name,
+        field: 'image',
+      })
+    }
+  }
+
+  for (const partnerLogo of partnerLogos) {
+    if (fieldMatchesReference(partnerLogo.image, lookupValues)) {
+      references.push({
+        resourceType: 'partnerLogo',
+        resourceId: partnerLogo.id,
+        resourceLabel: partnerLogo.alt,
         field: 'image',
       })
     }

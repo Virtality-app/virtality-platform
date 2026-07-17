@@ -12,6 +12,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Check,
+  Images,
   LayoutDashboard,
   LineChart,
   LinkIcon,
@@ -113,6 +114,18 @@ const Navbar = () => {
               <Link href='/bucket' className='flex flex-row items-center gap-2'>
                 <Trash />
                 S3 bucket
+              </Link>
+            </NavigationMenuLink>
+          </NavigationMenuItem>
+
+          <NavigationMenuItem>
+            <NavigationMenuLink asChild>
+              <Link
+                href='/partner-logos'
+                className='flex flex-row items-center gap-2'
+              >
+                <Images />
+                Partner logos
               </Link>
             </NavigationMenuLink>
           </NavigationMenuItem>
