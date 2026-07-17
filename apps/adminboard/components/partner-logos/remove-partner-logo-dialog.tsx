@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Spinner } from '@virtality/ui/components/spinner'
+import { getErrorMessage } from '@/lib/get-error-message'
 import type { PartnerLogoListItem } from '@virtality/shared/types'
 import { useRemovePartnerLogo } from '@virtality/react-query'
 import { useEffect, useState } from 'react'
@@ -80,9 +81,7 @@ export function RemovePartnerLogoDialog({
       })
       onOpenChange(false)
     } catch (error) {
-      setValidationError(
-        error instanceof Error ? error.message : 'Remove failed.',
-      )
+      setValidationError(getErrorMessage(error, 'Remove failed.'))
     }
   }
 

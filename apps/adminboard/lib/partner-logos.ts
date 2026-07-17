@@ -15,10 +15,12 @@ export const PARTNER_LOGO_CATEGORIES = [
 
 export const DEFAULT_PARTNER_LOGO_CATEGORY = PARTNER_LOGO_CATEGORIES[0]
 
+const PARTNER_LOGO_CATEGORY_SET = new Set<string>(PARTNER_LOGO_CATEGORIES)
+
 export function isPartnerLogoCategory(
   value: string,
 ): value is PartnerLogoCategory {
-  return (PARTNER_LOGO_CATEGORIES as readonly string[]).includes(value)
+  return PARTNER_LOGO_CATEGORY_SET.has(value)
 }
 
 export const PARTNER_LOGO_CATEGORY_LABELS: Record<PartnerLogoCategory, string> =
@@ -47,10 +49,12 @@ export function getPartnerLogoUploadPrefix(
 export function groupPartnerLogosByCategory(
   logos: readonly PartnerLogoListItem[],
 ): PartnerLogoCategoryLists {
-  const grouped: PartnerLogoCategoryLists = {
-    strategic: [],
-    clinical: [],
-  }
+  const grouped = Object.fromEntries(
+    PARTNER_LOGO_CATEGORIES.map((category) => [
+      category,
+      [] as PartnerLogoListItem[],
+    ]),
+  ) as PartnerLogoCategoryLists
 
   for (const logo of logos) {
     grouped[logo.category].push(logo)

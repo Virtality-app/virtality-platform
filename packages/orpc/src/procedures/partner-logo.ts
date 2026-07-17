@@ -71,6 +71,17 @@ function throwPartnerLogoOrpcError(error: unknown): never {
   throw error
 }
 
+async function withPartnerLogoStore<T>(
+  prisma: PrismaClient,
+  operation: (store: PartnerLogoStore) => Promise<T>,
+): Promise<T> {
+  try {
+    return await operation(createPrismaPartnerLogoStore(prisma))
+  } catch (error) {
+    throwPartnerLogoOrpcError(error)
+  }
+}
+
 const listPartnerLogosProcedure = base
   .route({ path: '/partner-logo/list', method: 'GET' })
   .handler(async ({ context }) => {
@@ -81,50 +92,36 @@ const listPartnerLogosProcedure = base
 const createPartnerLogoProcedure = authed
   .route({ path: '/partner-logo/create', method: 'POST' })
   .input(createPartnerLogoInputSchema)
-  .handler(async ({ context, input }) => {
-    const store = createPrismaPartnerLogoStore(context.prisma)
-
-    try {
-      return await createPartnerLogo(store, { generateId: generateUUID }, input)
-    } catch (error) {
-      throwPartnerLogoOrpcError(error)
-    }
-  })
+  .handler(({ context, input }) =>
+    withPartnerLogoStore(context.prisma, (store) =>
+      createPartnerLogo(store, { generateId: generateUUID }, input),
+    ),
+  )
 
 const updatePartnerLogoProcedure = authed
   .route({ path: '/partner-logo/update', method: 'POST' })
   .input(updatePartnerLogoInputSchema)
-  .handler(async ({ context, input }) => {
-    const store = createPrismaPartnerLogoStore(context.prisma)
-
-    try {
-      return await updatePartnerLogo(store, input)
-    } catch (error) {
-      throwPartnerLogoOrpcError(error)
-    }
-  })
+  .handler(({ context, input }) =>
+    withPartnerLogoStore(context.prisma, (store) =>
+      updatePartnerLogo(store, input),
+    ),
+  )
 
 const reorderPartnerLogoProcedure = authed
   .route({ path: '/partner-logo/reorder', method: 'POST' })
   .input(reorderPartnerLogoInputSchema)
-  .handler(async ({ context, input }) => {
-    const store = createPrismaPartnerLogoStore(context.prisma)
-
-    try {
-      return await reorderPartnerLogo(store, input)
-    } catch (error) {
-      throwPartnerLogoOrpcError(error)
-    }
-  })
+  .handler(({ context, input }) =>
+    withPartnerLogoStore(context.prisma, (store) =>
+      reorderPartnerLogo(store, input),
+    ),
+  )
 
 const removePartnerLogoProcedure = authed
   .route({ path: '/partner-logo/remove', method: 'DELETE' })
   .input(removePartnerLogoInputSchema)
-  .handler(async ({ context, input }) => {
-    const store = createPrismaPartnerLogoStore(context.prisma)
-
-    try {
-      return await removePartnerLogo(
+  .handler(({ context, input }) =>
+    withPartnerLogoStore(context.prisma, (store) =>
+      removePartnerLogo(
         store,
         {
           deleteBucketObject: {
@@ -137,11 +134,9 @@ const removePartnerLogoProcedure = authed
           },
         },
         input,
-      )
-    } catch (error) {
-      throwPartnerLogoOrpcError(error)
-    }
-  })
+      ),
+    ),
+  )
 
 export const partnerLogo = {
   list: listPartnerLogosProcedure,

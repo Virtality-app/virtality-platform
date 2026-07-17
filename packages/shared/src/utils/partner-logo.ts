@@ -1,10 +1,11 @@
-import type {
-  CreatePartnerLogoInput,
-  PartnerLogoCategory,
-  PartnerLogoListItem,
-  ReorderPartnerLogoInput,
-  RemovePartnerLogoInput,
-  UpdatePartnerLogoInput,
+import {
+  partnerLogoCategorySchema,
+  type CreatePartnerLogoInput,
+  type PartnerLogoCategory,
+  type PartnerLogoListItem,
+  type ReorderPartnerLogoInput,
+  type RemovePartnerLogoInput,
+  type UpdatePartnerLogoInput,
 } from '../types/partner-logo.ts'
 import { bucketCdnUrl, validateBucketObjectKey } from './bucket.ts'
 
@@ -75,10 +76,9 @@ export class PartnerLogoNotFoundError extends Error {
   }
 }
 
-const CATEGORY_ORDER: Record<PartnerLogoCategory, number> = {
-  strategic: 0,
-  clinical: 1,
-}
+const CATEGORY_ORDER = Object.fromEntries(
+  partnerLogoCategorySchema.options.map((category, index) => [category, index]),
+) as Record<PartnerLogoCategory, number>
 
 export function comparePartnerLogosForList(
   left: Pick<PartnerLogoRecord, 'category' | 'sortOrder'>,
@@ -280,6 +280,6 @@ export async function removePartnerLogo(
   return {
     id: input.id,
     objectKey,
-    bucketObjectDeleted: input.alsoDeleteBucketObject === true,
+    bucketObjectDeleted: Boolean(input.alsoDeleteBucketObject),
   }
 }
