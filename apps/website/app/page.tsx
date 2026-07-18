@@ -6,6 +6,7 @@ import Hero from '@/components/home/hero'
 import PilotProof from '@/components/home/pilot-proof'
 import PoweredBy from '@/components/home/powered-by'
 import Press from '@/components/home/press'
+import Testimonials from '@/components/home/testimonials'
 import PromoVideo from '@/components/video/promo-video'
 
 const HomePage = () => {
@@ -13,13 +14,13 @@ const HomePage = () => {
     <div className='bg-white text-slate-900 dark:bg-zinc-900 dark:text-gray-100'>
       <Hero />
       <BenefitsGrid />
+      <Testimonials />
       <PilotProof />
       <PromoVideo />
       <Features />
       <PoweredBy />
       <Press />
       <Benefits />
-      {/* <Testimonials /> */}
       <CallToAction />
     </div>
   )
