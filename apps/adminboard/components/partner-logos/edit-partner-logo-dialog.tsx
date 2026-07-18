@@ -100,7 +100,7 @@ export const EditPartnerLogoDialog = ({
           }
         }}
       >
-        <DialogContent className='max-w-lg'>
+        <DialogContent className='max-w-lg overflow-hidden'>
           <DialogHeader>
             <DialogTitle>Edit partner logo</DialogTitle>
             <DialogDescription>
@@ -110,8 +110,8 @@ export const EditPartnerLogoDialog = ({
             </DialogDescription>
           </DialogHeader>
 
-          <div className='space-y-4'>
-            <div className='space-y-2'>
+          <div className='flex min-w-0 flex-col gap-4'>
+            <div className='flex min-w-0 flex-col gap-2'>
               <p className='text-sm font-medium'>Bucket Object</p>
               <div className='flex items-center gap-3'>
                 <Button
@@ -134,7 +134,10 @@ export const EditPartnerLogoDialog = ({
                 ) : null}
               </div>
               {objectKey ? (
-                <p className='text-muted-foreground truncate font-mono text-xs'>
+                <p
+                  className='text-muted-foreground truncate font-mono text-xs'
+                  title={objectKey}
+                >
                   {objectKey}
                 </p>
               ) : null}

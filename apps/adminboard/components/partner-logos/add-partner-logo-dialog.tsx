@@ -19,6 +19,7 @@ import {
   DEFAULT_PARTNER_LOGO_CATEGORY,
   getPartnerLogoUploadPrefix,
 } from '@/lib/partner-logos'
+import { formatBucketUploadFileCount } from '@/lib/bucket-upload-display'
 import { getErrorMessage } from '@/lib/get-error-message'
 import type { PartnerLogoCategory } from '@virtality/shared/types'
 import { bucketCdnUrl } from '@virtality/shared/utils'
@@ -204,7 +205,7 @@ export const AddPartnerLogoDialog = ({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className='max-w-lg'>
+        <DialogContent className='max-w-lg overflow-hidden'>
           <DialogHeader>
             <DialogTitle>Add partner logo</DialogTitle>
             <DialogDescription>
@@ -214,7 +215,7 @@ export const AddPartnerLogoDialog = ({
             </DialogDescription>
           </DialogHeader>
 
-          <div className='space-y-4'>
+          <div className='flex min-w-0 flex-col gap-4'>
             <Tabs
               value={sourceMode}
               onValueChange={(value) => {
@@ -256,22 +257,39 @@ export const AddPartnerLogoDialog = ({
                 </div>
               </TabsContent>
 
-              <TabsContent value='upload' className='space-y-3'>
-                <div className='space-y-2'>
+              <TabsContent
+                value='upload'
+                className='flex min-w-0 flex-col gap-3'
+              >
+                <div className='flex min-w-0 flex-col gap-2'>
                   <Label htmlFor='partner-logo-upload-files'>Images</Label>
                   <Input
                     id='partner-logo-upload-files'
                     type='file'
                     accept='image/*'
                     multiple
+                    className='file:text-foreground text-transparent'
                     disabled={isPending}
                     onChange={handleFileChange}
                   />
                   {selectedFiles.length > 0 ? (
-                    <p className='text-muted-foreground text-xs'>
-                      {selectedFiles.length} file
-                      {selectedFiles.length === 1 ? '' : 's'} selected.
-                    </p>
+                    <div className='flex min-w-0 flex-col gap-1'>
+                      <p className='text-muted-foreground text-xs'>
+                        {formatBucketUploadFileCount(selectedFiles.length)}
+                      </p>
+                      <ul className='flex max-h-32 min-w-0 flex-col gap-1 overflow-y-auto'>
+                        {selectedFiles.map((file, index) => (
+                          <li
+                            key={`${index}-${file.name}`}
+                            data-testid='partner-logo-upload-selected-file'
+                            className='text-muted-foreground truncate text-xs'
+                            title={file.name}
+                          >
+                            {file.name}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   ) : null}
                 </div>
 
@@ -301,8 +319,11 @@ export const AddPartnerLogoDialog = ({
             </Tabs>
 
             {objectKey ? (
-              <div className='space-y-2'>
-                <p className='text-muted-foreground truncate font-mono text-xs'>
+              <div className='flex min-w-0 flex-col gap-2'>
+                <p
+                  className='text-muted-foreground truncate font-mono text-xs'
+                  title={objectKey}
+                >
                   {objectKey}
                 </p>
                 {showAssignmentProgress ? (
