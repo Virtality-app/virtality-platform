@@ -1,9 +1,11 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@virtality/ui/components/button'
 import { ArrowRight, Activity } from 'lucide-react'
 import { useEffect, useRef } from 'react'
+import { Fraunces } from 'next/font/google'
 import { getDemoBookingUrl } from '@/lib/demo-booking'
 import {
   HERO_BADGE_LABEL,
@@ -16,10 +18,22 @@ import { scrollToFinalCta } from '@/lib/scroll-to-cta'
 import { splitText } from '@/lib/utils'
 import { animate, stagger } from 'motion/react'
 
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  weight: ['500', '600'],
+  style: ['normal', 'italic'],
+})
+
 const demoBookingUrl = getDemoBookingUrl()
 
-const HeroTitle = () => {
+type HeroTitleProps = {
+  align?: 'center' | 'left'
+  badge?: 'label' | 'logo'
+}
+
+const HeroTitle = ({ align = 'center', badge = 'label' }: HeroTitleProps) => {
   const containerRef = useRef<HTMLDivElement>(null)
+  const isLeftAligned = align === 'left'
 
   useEffect(() => {
     document.fonts.ready.then(() => {
@@ -37,12 +51,12 @@ const HeroTitle = () => {
       )
       animate(
         words,
-        { opacity: [0, 1], y: [20, 0] },
+        { opacity: [0, 1], y: [24, 0] },
         {
           type: 'spring',
-          duration: 1.5,
+          duration: 1.4,
           bounce: 0,
-          delay: stagger(0.04),
+          delay: stagger(0.05),
         },
       )
       animate(
@@ -57,34 +71,62 @@ const HeroTitle = () => {
   }, [])
 
   return (
-    <div ref={containerRef} className='space-y-8'>
-      <div className='inline-flex items-center gap-2 rounded-full bg-linear-to-r from-vital-blue-700 to-vital-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-vital-blue-700/20'>
-        <Activity className='w-4 h-4' />
-        <span className='tracking-wide'>{HERO_BADGE_LABEL}</span>
-      </div>
+    <div
+      ref={containerRef}
+      className={`flex flex-col gap-7 ${
+        isLeftAligned ? 'items-start text-left' : 'items-center text-center'
+      }`}
+    >
+      {badge === 'logo' ? (
+        <Image
+          src='/virtality_cyan.png'
+          alt='Virtality'
+          width={1368}
+          height={138}
+          priority
+          className='h-7 w-auto sm:h-8'
+        />
+      ) : (
+        <div className='inline-flex items-center gap-2 rounded-full border border-vital-blue-700/25 bg-white/70 px-4 py-1.5 text-[11px] font-semibold tracking-[0.22em] text-vital-blue-800 uppercase shadow-sm shadow-vital-blue-900/5 backdrop-blur-sm dark:bg-white/10 dark:text-vital-blue-200'>
+          <Activity className='size-3.5' />
+          <span>{HERO_BADGE_LABEL}</span>
+        </div>
+      )}
 
-      <h1 className='text-4xl font-bold leading-[1.15] md:text-5xl lg:text-6xl text-slate-900 dark:text-white'>
+      <h1
+        className={`${fraunces.className} max-w-4xl text-[2.75rem] leading-[1.02] font-medium tracking-tight text-slate-900 sm:text-6xl md:text-[4.75rem] dark:text-white [&_.split-word:last-child]:text-vital-blue-700 [&_.split-word:last-child]:italic dark:[&_.split-word:last-child]:text-vital-blue-300`}
+      >
         {HERO_HEADLINE}
       </h1>
 
-      <p className='text-lg leading-relaxed text-slate-600 dark:text-gray-300 md:text-xl max-w-xl'>
+      <p
+        className={`text-lg leading-relaxed text-slate-600 md:text-xl dark:text-gray-300 ${
+          isLeftAligned ? 'max-w-md' : 'max-w-lg'
+        }`}
+      >
         {HERO_SUPPORTING_COPY}
       </p>
 
-      <div className='flex flex-col sm:flex-row gap-4 pt-4'>
+      <div
+        className={`flex flex-col gap-5 pt-3 sm:flex-row ${
+          isLeftAligned ? 'items-start' : 'items-center'
+        }`}
+      >
         <Button
           variant='primary'
-          className='h-auto px-6 py-4 text-base font-semibold shadow-lg shadow-vital-blue-700/25 hover:shadow-xl hover:shadow-vital-blue-700/30 transition-all flex items-center gap-2 group'
+          className='h-auto rounded-full px-7 py-4 text-base font-semibold shadow-lg shadow-vital-blue-700/25 transition-all hover:shadow-xl hover:shadow-vital-blue-700/30'
           onClick={scrollToFinalCta}
         >
-          {HERO_PRIMARY_CTA_LABEL}
-          <ArrowRight className='size-5 group-hover:translate-x-1 transition-transform' />
+          <span className='flex items-center gap-2'>
+            {HERO_PRIMARY_CTA_LABEL}
+            <ArrowRight className='size-4 transition-transform group-hover:translate-x-1' />
+          </span>
         </Button>
 
         <Button
           asChild
-          variant='outline'
-          className='h-auto px-6 py-4 text-base font-semibold border-2 border-vital-blue-700 text-vital-blue-700 hover:bg-vital-blue-50'
+          variant='ghost'
+          className='h-auto rounded-full px-2 py-4 text-base font-semibold text-slate-700 underline-offset-4 hover:text-vital-blue-700 hover:underline dark:text-gray-200'
         >
           <Link href={demoBookingUrl} target='_blank' rel='noopener noreferrer'>
             {HERO_SECONDARY_CTA_LABEL}

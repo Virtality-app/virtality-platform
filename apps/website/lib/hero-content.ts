@@ -3,7 +3,7 @@ export const HERO_BADGE_LABEL = 'Evidence-Based VR Therapy'
 export const HERO_HEADLINE = 'Because every move matters.'
 
 export const HERO_SUPPORTING_COPY =
-  'Virtality helps physiotherapists unlock movement with evidence-based VR therapy.'
+  'Virtality helps physiotherapists unlock movement faster with evidence-based VR therapy.'
 
 export const HERO_PRIMARY_CTA_LABEL = 'Try Virtality free for two weeks'
 

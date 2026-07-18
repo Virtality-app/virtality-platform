@@ -24,7 +24,7 @@ const landingPageSectionOrder = [
 
 const landingPageSurfaces = [
   'app/page.tsx',
-  'components/home/hero.tsx',
+  'components/home/hero-image-backdrop.tsx',
   'components/home/hero-title.tsx',
   'components/home/benefits.tsx',
   'components/home/pilot-proof.tsx',

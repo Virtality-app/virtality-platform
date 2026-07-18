@@ -21,7 +21,7 @@ const landingPageSurfaces = [
   'components/home/features.tsx',
   'components/home/call-to-action.tsx',
   'components/video/promo-video.tsx',
-  'components/home/hero.tsx',
+  'components/home/hero-image-backdrop.tsx',
   'components/home/hero-title.tsx',
   'components/home/powered-by.tsx',
   'components/home/press.tsx',

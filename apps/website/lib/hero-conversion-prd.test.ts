@@ -39,10 +39,12 @@ describe('hero conversion path (PRD 133 / issue 134)', () => {
   })
 
   it('preserves the hero waitlist banner and CDN headset image', () => {
-    const hero = readWebsiteFile('components/home/hero.tsx')
+    const hero = readWebsiteFile('components/home/hero-image-backdrop.tsx')
+    const heroLegacy = readWebsiteFile('components/home/hero_legacy.tsx')
 
     expect(hero).toMatch(/ButtonToAction/)
-    expect(hero).toMatch(
+    expect(heroLegacy).toMatch(/ButtonToAction/)
+    expect(heroLegacy).toMatch(
       /https:\/\/cdn\.virtality\.app\/f0c18d8ef3258c8510bbf79bba1f3872241bdab6c8251c9724e4e766132a5b20/,
     )
   })
