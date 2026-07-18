@@ -17,6 +17,7 @@ import {
   validateBucketTargetPrefix,
   type BucketUploadResultItem,
 } from '@virtality/shared/utils'
+import { formatBucketUploadFileCount } from '@/lib/bucket-upload-display'
 import { Copy, Upload } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -34,13 +35,23 @@ function UploadResultRow({ upload }: { upload: BucketUploadResultItem }) {
 
   return (
     <div className='flex items-start justify-between gap-3 rounded-md border border-zinc-200 p-3 dark:border-zinc-800'>
-      <div className='min-w-0'>
-        <p className='truncate font-medium'>{upload.filename}</p>
-        <p className='truncate font-mono text-xs text-zinc-500'>
+      <div className='min-w-0 flex-1'>
+        <p className='truncate font-medium' title={upload.filename}>
+          {upload.filename}
+        </p>
+        <p
+          className='truncate font-mono text-xs text-zinc-500'
+          title={upload.objectKey}
+        >
           {upload.objectKey}
         </p>
       </div>
-      <Button size='sm' variant='outline' onClick={copyCdnUrl}>
+      <Button
+        size='sm'
+        variant='outline'
+        className='shrink-0'
+        onClick={copyCdnUrl}
+      >
         <Copy />
         Copy CDN URL
       </Button>
@@ -130,12 +141,12 @@ export function BucketUploadDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-xl'>
+      <DialogContent className='overflow-hidden sm:max-w-xl'>
         <DialogHeader>
           <DialogTitle>Upload bucket objects</DialogTitle>
         </DialogHeader>
 
-        <div className='flex flex-col gap-4'>
+        <div className='flex min-w-0 flex-col gap-4'>
           <div className='flex flex-col gap-2'>
             <Label htmlFor='bucket-upload-target'>Target folder</Label>
             <Input
@@ -154,20 +165,34 @@ export function BucketUploadDialog({
             ) : null}
           </div>
 
-          <div className='flex flex-col gap-2'>
+          <div className='flex min-w-0 flex-col gap-2'>
             <Label htmlFor='bucket-upload-files'>Files</Label>
             <Input
               id='bucket-upload-files'
               type='file'
               multiple
+              className='file:text-foreground text-transparent'
               onChange={handleFileChange}
               disabled={uploadMutation.isPending || uploadResults.length > 0}
             />
             {selectedFiles.length > 0 ? (
-              <p className='text-xs text-zinc-500'>
-                {selectedFiles.length} file
-                {selectedFiles.length === 1 ? '' : 's'} selected.
-              </p>
+              <div className='flex min-w-0 flex-col gap-1'>
+                <p className='text-xs text-zinc-500'>
+                  {formatBucketUploadFileCount(selectedFiles.length)}
+                </p>
+                <ul className='flex max-h-32 min-w-0 flex-col gap-1 overflow-y-auto'>
+                  {selectedFiles.map((file, index) => (
+                    <li
+                      key={`${index}-${file.name}`}
+                      data-testid='bucket-upload-selected-file'
+                      className='truncate text-xs text-zinc-600 dark:text-zinc-300'
+                      title={file.name}
+                    >
+                      {file.name}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ) : null}
           </div>
 
@@ -187,8 +212,12 @@ export function BucketUploadDialog({
           {uploadFailures.length > 0 ? (
             <div className='flex flex-col gap-2'>
               <p className='text-sm font-medium text-red-500'>Failed uploads</p>
-              {uploadFailures.map((failure) => (
-                <p key={failure.filename} className='text-sm text-red-500'>
+              {uploadFailures.map((failure, index) => (
+                <p
+                  key={`${index}-${failure.filename}`}
+                  className='truncate text-sm text-red-500'
+                  title={`${failure.filename}: ${failure.error}`}
+                >
                   {failure.filename}: {failure.error}
                 </p>
               ))}
