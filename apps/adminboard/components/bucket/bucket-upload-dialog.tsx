@@ -17,10 +17,7 @@ import {
   validateBucketTargetPrefix,
   type BucketUploadResultItem,
 } from '@virtality/shared/utils'
-import {
-  formatBucketUploadFileCount,
-  getBucketUploadSelectedFileNames,
-} from '@/lib/bucket-upload-display'
+import { formatBucketUploadFileCount } from '@/lib/bucket-upload-display'
 import { Copy, Upload } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -108,11 +105,6 @@ export function BucketUploadDialog({
     !uploadMutation.isPending &&
     uploadResults.length === 0
 
-  const selectedFileNames = useMemo(
-    () => getBucketUploadSelectedFileNames(selectedFiles),
-    [selectedFiles],
-  )
-
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? [])
     setSelectedFiles(files)
@@ -189,14 +181,14 @@ export function BucketUploadDialog({
                   {formatBucketUploadFileCount(selectedFiles.length)}
                 </p>
                 <ul className='flex max-h-32 min-w-0 flex-col gap-1 overflow-y-auto'>
-                  {selectedFileNames.map((filename) => (
+                  {selectedFiles.map((file, index) => (
                     <li
-                      key={filename}
+                      key={`${index}-${file.name}`}
                       data-testid='bucket-upload-selected-file'
                       className='truncate text-xs text-zinc-600 dark:text-zinc-300'
-                      title={filename}
+                      title={file.name}
                     >
-                      {filename}
+                      {file.name}
                     </li>
                   ))}
                 </ul>
@@ -220,9 +212,9 @@ export function BucketUploadDialog({
           {uploadFailures.length > 0 ? (
             <div className='flex flex-col gap-2'>
               <p className='text-sm font-medium text-red-500'>Failed uploads</p>
-              {uploadFailures.map((failure) => (
+              {uploadFailures.map((failure, index) => (
                 <p
-                  key={failure.filename}
+                  key={`${index}-${failure.filename}`}
                   className='truncate text-sm text-red-500'
                   title={`${failure.filename}: ${failure.error}`}
                 >
