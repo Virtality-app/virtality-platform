@@ -17,6 +17,10 @@
       "types": "./src/lib/use-resource-table.ts",
       "default": "./dist/src/lib/use-resource-table.js"
     },
+    "./hooks/*": {
+      "types": "./src/hooks/*.ts",
+      "default": "./dist/src/hooks/*.js"
+    },
     "./components/*": {
       "types": "./src/components/*.tsx",
       "default": "./dist/src/components/*.js"
@@ -41,9 +45,11 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "1.1.15",
     "@radix-ui/react-label": "2.1.8",
     "@radix-ui/react-separator": "1.1.8",
     "@radix-ui/react-slot": "1.2.4",
+    "@radix-ui/react-tooltip": "1.2.8",
     "react-email": "6.9.0",
     "@tailwindcss/postcss": "4.1.18",
     "class-variance-authority": "0.7.1",

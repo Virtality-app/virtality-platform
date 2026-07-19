@@ -124,7 +124,7 @@ describe('PRD 145 adminboard-managed strategic and clinical partner logos', () =
   })
 
   it('provides the adminboard partner logos surface with assign, edit, reorder, and remove flows', () => {
-    const navbar = readRepoFile('apps/adminboard/components/layout/navbar.tsx')
+    const nav = readRepoFile('apps/adminboard/data/static/sidebar-nav.ts')
     const dashboard = readRepoFile(
       'apps/adminboard/components/partner-logos/partner-logos-dashboard.tsx',
     )
@@ -141,7 +141,7 @@ describe('PRD 145 adminboard-managed strategic and clinical partner logos', () =
       'apps/adminboard/components/partner-logos/partner-logo-category-list.tsx',
     )
 
-    expect(navbar).toMatch(/\/partner-logos/)
+    expect(nav).toMatch(/\/partner-logos/)
     expect(repoFileExists('apps/adminboard/app/partner-logos/page.tsx')).toBe(
       true,
     )

@@ -16,6 +16,17 @@ _Avoid_: Shared component, universal component
 The rule for moving a component from **Local App UI** to the **Shared UI Bucket**: used by at least two apps, free of app-domain logic.
 _Avoid_: Ad-hoc move, opportunistic copy
 
+## Promoted chrome primitives
+
+Shared sidebar stack used by console and adminboard:
+
+- `sidebar`
+- `sheet`
+- `tooltip`
+- `hooks/use-mobile`
+
+Apps keep local nav config and layout composition; only the primitives live here.
+
 ## Primitive Migration Triage
 
 Current duplicate UI primitives with conflicts (not zero-conflict yet):

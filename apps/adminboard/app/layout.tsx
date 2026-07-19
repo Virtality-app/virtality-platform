@@ -1,11 +1,13 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
+import { cookies } from 'next/headers'
 import './globals.css'
 import { ThemeProvider } from '@/components/ui/ThemeProvider'
-import Navbar from '@/components/layout/navbar'
+import AppShell from '@/components/layout/app-shell'
 import { QueryProvider, ORPCProvider } from '@virtality/react-query'
 import { Toaster } from '@/components/ui/sonner'
 import { getServerUrl, ORPC_PREFIX } from '@virtality/shared/types'
+import { SIDEBAR_COOKIE_NAME } from '@virtality/ui/components/sidebar'
 
 const baseURL = getServerUrl()
 
@@ -29,6 +31,10 @@ const RootLayout = async ({
 }: Readonly<{
   children: React.ReactNode
 }>) => {
+  const cookieStore = await cookies()
+  const defaultSidebarOpen =
+    cookieStore.get(SIDEBAR_COOKIE_NAME)?.value !== 'false'
+
   return (
     <html lang='en' suppressHydrationWarning>
       <body
@@ -42,10 +48,9 @@ const RootLayout = async ({
               enableSystem
               disableTransitionOnChange
             >
-              <Navbar />
-              <main className='min-h-screen-with-header bg-background text-foreground h-full'>
+              <AppShell defaultSidebarOpen={defaultSidebarOpen}>
                 {children}
-              </main>
+              </AppShell>
               <Toaster />
             </ThemeProvider>
           </ORPCProvider>

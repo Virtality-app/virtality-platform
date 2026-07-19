@@ -1,14 +1,18 @@
-import { SidebarProvider } from '@/components/ui/sidebar'
+import { cookies } from 'next/headers'
+import { SidebarProvider, SIDEBAR_COOKIE_NAME } from '@/components/ui/sidebar'
 import RootSidebar from '@/components/layout/sidebar'
 import Navbar from '@/components/layout/navbar'
 
-export default function AppLayout({
+export default async function AppLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const cookieStore = await cookies()
+  const defaultOpen = cookieStore.get(SIDEBAR_COOKIE_NAME)?.value !== 'false'
+
   return (
-    <SidebarProvider suppressHydrationWarning>
+    <SidebarProvider defaultOpen={defaultOpen} suppressHydrationWarning>
       <RootSidebar />
       <main className='w-full'>
         <Navbar />

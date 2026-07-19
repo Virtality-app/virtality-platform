@@ -17,10 +17,10 @@ function adminboardFileExists(relativePath: string): boolean {
 
 describe('issue 147 partner logos adminboard slice', () => {
   it('exposes a top-level Partner logos nav item and page', () => {
-    const navbar = readAdminboardFile('components/layout/navbar.tsx')
+    const nav = readAdminboardFile('data/static/sidebar-nav.ts')
 
-    expect(navbar).toMatch(/href=['"]\/partner-logos['"]/)
-    expect(navbar).toMatch(/Partner logos/)
+    expect(nav).toMatch(/href: ['"]\/partner-logos['"]/)
+    expect(nav).toMatch(/Partner logos/)
     expect(adminboardFileExists('app/partner-logos/page.tsx')).toBe(true)
   })
 
