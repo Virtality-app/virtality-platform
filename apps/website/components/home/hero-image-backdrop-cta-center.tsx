@@ -80,7 +80,7 @@ const HeroImageBackdropCtaCenter = () => {
           <Button
             asChild
             variant='ghost'
-            className='h-auto rounded-full px-2 py-4 text-base font-semibold text-slate-700 underline-offset-4 hover:text-vital-blue-700 hover:underline dark:text-gray-200'
+            className='h-auto rounded-full px-4 py-4 text-base font-semibold text-slate-700 underline-offset-4 hover:text-vital-blue-700 hover:underline dark:text-gray-200'
           >
             <Link
               href={demoBookingUrl}

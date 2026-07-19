@@ -27,7 +27,7 @@ const Benefits = () => {
             <div className='absolute -top-8 -left-8 w-32 h-32 border-2 border-vital-blue-600/30 rounded-full'></div>
             <div className='absolute -bottom-8 -right-8 w-40 h-40 border-2 border-vital-blue-500/20 rounded-full'></div>
 
-            <div className='relative bg-white/90 backdrop-blur-sm p-3 rounded-3xl shadow-2xl border border-vital-blue-100/50'>
+            <div className='relative bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-vital-blue-100/50'>
               <Image
                 src='https://cdn.virtality.app/2e78ac55ab9e56ef44091705aabeced201df5db4e6c6a92b2133ca556a93bbee'
                 alt='Patient using VR for rehabilitation'
@@ -57,7 +57,7 @@ const Benefits = () => {
             <ul className='space-y-6'>
               {LANDING_BENEFITS.map((benefit) => (
                 <li key={benefit.title} className='flex items-start group'>
-                  <div className='mr-4 mt-0.5 flex-shrink-0'>
+                  <div className='mr-4 mt-0.5 shrink-0'>
                     <div className='flex size-10 items-center justify-center rounded-lg bg-linear-to-br from-vital-blue-700 to-vital-blue-600 shadow-md group-hover:scale-110 transition-transform'>
                       <CheckCircle2 className='w-5 h-5 text-white' />
                     </div>
