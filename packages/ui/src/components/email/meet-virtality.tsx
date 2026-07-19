@@ -2,7 +2,7 @@ import EmailBase from './templates/email-base.js'
 import EmailHeader from './templates/email-header.js'
 import EmailFooter from './templates/email-footer.js'
 import { card, container, paragraph } from './styles/email.js'
-import { Container, Section, Text, Img, Heading } from '@react-email/components'
+import { Container, Section, Text, Img, Heading } from 'react-email'
 
 interface MeetVirtalityProps {
   companyName?: string

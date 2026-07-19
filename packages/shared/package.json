@@ -36,7 +36,7 @@
     "zod": "4.3.6"
   },
   "devDependencies": {
-    "@types/node": "20.11.17",
+    "@types/node": "20.19.43",
     "@virtality/typescript-config": "workspace:*",
     "typescript": "5.9.3",
     "vitest": "3.2.4"

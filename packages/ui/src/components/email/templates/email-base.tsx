@@ -1,4 +1,4 @@
-import { Body, Html, Preview, Head } from '@react-email/components'
+import { Body, Html, Preview, Head } from 'react-email'
 import { main } from '../styles/email.js'
 
 interface EmailBaseProps {

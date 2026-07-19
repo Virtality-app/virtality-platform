@@ -12,14 +12,7 @@ import {
   linkText,
   link,
 } from './styles/email.js'
-import {
-  Button,
-  Container,
-  Hr,
-  Link,
-  Section,
-  Text,
-} from '@react-email/components'
+import { Button, Container, Hr, Link, Section, Text } from 'react-email'
 
 const EmailVerification = ({
   url,

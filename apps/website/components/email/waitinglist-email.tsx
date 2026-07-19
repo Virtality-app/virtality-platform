@@ -11,7 +11,7 @@ import {
   Button,
   Hr,
   Img,
-} from '@react-email/components'
+} from 'react-email'
 
 export interface WaitingListEmailProps {
   firstName?: string

@@ -9,7 +9,7 @@ import {
   listItem,
   caption,
 } from './styles/email.js'
-import { Container, Section, Text, Img, Heading } from '@react-email/components'
+import { Container, Section, Text, Img, Heading } from 'react-email'
 
 interface ProductUpdateProps {
   companyName?: string

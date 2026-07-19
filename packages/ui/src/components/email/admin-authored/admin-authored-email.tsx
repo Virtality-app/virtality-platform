@@ -1,4 +1,4 @@
-import { Container } from '@react-email/components'
+import { Container } from 'react-email'
 import EmailBase from '../templates/email-base.js'
 import EmailHeader from '../templates/email-header.js'
 import EmailFooter from '../templates/email-footer.js'

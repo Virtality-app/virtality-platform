@@ -1,4 +1,4 @@
-import { Container, Heading, Section, Text } from '@react-email/components'
+import { Container, Heading, Section, Text } from 'react-email'
 import EmailFooter from './templates/email-footer.js'
 import EmailHeader from './templates/email-header.js'
 import EmailBase from './templates/email-base.js'

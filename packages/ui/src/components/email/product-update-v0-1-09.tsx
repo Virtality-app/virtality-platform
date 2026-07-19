@@ -8,7 +8,7 @@ import {
   sectionHeading,
   listItem,
 } from './styles/email.js'
-import { Container, Section, Text, Heading } from '@react-email/components'
+import { Container, Section, Text, Heading } from 'react-email'
 
 interface ProductUpdateV0109Props {
   companyName?: string

@@ -13,14 +13,7 @@ import {
   link,
   warningText,
 } from './styles/email.js'
-import {
-  Button,
-  Container,
-  Link,
-  Section,
-  Text,
-  Hr,
-} from '@react-email/components'
+import { Button, Container, Link, Section, Text, Hr } from 'react-email'
 
 interface ResetPasswordProps {
   url: string
