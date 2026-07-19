@@ -5,7 +5,6 @@ import Features from '@/components/home/features'
 import HeroImageBackdropCtaCenter from '@/components/home/hero-image-backdrop-cta-center'
 // import HeroImageBackdrop from '@/components/home/hero-image-backdrop'
 // import HeroImageBackdropScaled from '@/components/home/hero-image-backdrop-scaled'
-import PilotProof from '@/components/home/pilot-proof'
 import SupportedBy from '@/components/home/supported-by'
 import Testimonials from '@/components/home/testimonials'
 import PromoVideo from '@/components/video/promo-video'
@@ -16,7 +15,6 @@ const HomePage = () => {
       {/* <HeroImageBackdrop /> */}
       {/* <HeroImageBackdropScaled /> */}
       <HeroImageBackdropCtaCenter />
-      <PilotProof />
       <BenefitsGrid />
       <Testimonials />
       <PromoVideo />

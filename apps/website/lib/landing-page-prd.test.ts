@@ -11,17 +11,13 @@ function readWebsiteFile(relativePath: string): string {
 }
 
 describe('PRD 135 landing page benefits and pilot-proof narrative', () => {
-  it('orders pilot proof and benefits before the how-it-works video', () => {
+  it('orders benefits before the how-it-works video', () => {
     const page = readWebsiteFile('app/page.tsx')
     const benefitsIndex = page.indexOf('<Benefits')
-    const pilotProofIndex = page.indexOf('<PilotProof')
     const promoVideoIndex = page.indexOf('<PromoVideo')
 
     expect(benefitsIndex).toBeGreaterThan(-1)
-    expect(pilotProofIndex).toBeGreaterThan(-1)
     expect(benefitsIndex).toBeLessThan(promoVideoIndex)
-    expect(pilotProofIndex).toBeLessThan(promoVideoIndex)
-    expect(pilotProofIndex).toBeLessThan(benefitsIndex)
   })
 
   it('defines six approved benefit items with careful condition support wording', () => {
@@ -43,7 +39,7 @@ describe('PRD 135 landing page benefits and pilot-proof narrative', () => {
     expect(combinedBenefits).not.toMatch(/cure/i)
   })
 
-  it('shows the clinical metrics card in the pilot section', () => {
+  it('shows the clinical metrics card in the benefits grid section', () => {
     expect(PILOT_PROOF_CONTENT.metrics).toHaveLength(3)
 
     const combinedMetrics = PILOT_PROOF_CONTENT.metrics
@@ -56,8 +52,8 @@ describe('PRD 135 landing page benefits and pilot-proof narrative', () => {
     expect(combinedMetrics).toMatch(/2\.5x/)
     expect(combinedMetrics).toMatch(/Increased Efficiency/)
 
-    const pilotProof = readWebsiteFile('components/home/pilot-proof.tsx')
-    expect(pilotProof).toContain('PILOT_PROOF_CONTENT.metrics')
+    const benefitsGrid = readWebsiteFile('components/home/benefits-grid.tsx')
+    expect(benefitsGrid).toContain('PILOT_PROOF_CONTENT.metrics')
   })
 
   it('removes the dead case-studies link from benefits', () => {

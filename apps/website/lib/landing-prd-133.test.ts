@@ -12,7 +12,6 @@ function readWebsiteFile(relativePath: string): string {
 
 const landingPageSectionOrder = [
   '<Hero',
-  '<PilotProof',
   '<Benefits',
   '<PromoVideo',
   '<Features',
@@ -25,7 +24,6 @@ const landingPageSurfaces = [
   'components/home/hero-image-backdrop.tsx',
   'components/home/hero-title.tsx',
   'components/home/benefits.tsx',
-  'components/home/pilot-proof.tsx',
   'components/video/promo-video.tsx',
   'components/home/features.tsx',
   'components/home/supported-by/supported-by.tsx',
@@ -47,7 +45,6 @@ const landingContentModules = [
 
 const landingPageImports = [
   "from '@/components/home/benefits'",
-  "from '@/components/home/pilot-proof'",
   "from '@/components/home/supported-by'",
 ] as const
 
@@ -92,10 +89,10 @@ describe('PRD 133 clinic-owner landing page redesign', () => {
     }
   })
 
-  it('keeps the clinical metrics card available on the pilot section surface', () => {
-    const pilotProof = readWebsiteFile('components/home/pilot-proof.tsx')
+  it('keeps the clinical metrics card available on the benefits grid surface', () => {
+    const benefitsGrid = readWebsiteFile('components/home/benefits-grid.tsx')
 
-    expect(pilotProof).toContain('PILOT_PROOF_CONTENT.metrics')
-    expect(pilotProof).toMatch(/rounded-2xl/)
+    expect(benefitsGrid).toContain('PILOT_PROOF_CONTENT.metrics')
+    expect(benefitsGrid).toMatch(/rounded-2xl/)
   })
 })

@@ -59,7 +59,7 @@ export const PRESS_LOGO_ITEMS: PressLogoItem[] = [
   {
     src: '/press/beyondexpo-logo.png',
     alt: 'Beyond Expo',
-    href: 'https://www.youtube.com/watch?v=ZihOBeZiosY',
+    href: 'https://www.livemedia.gr/video/614292',
     wide: true,
   },
   {
@@ -77,6 +77,13 @@ export const PRESS_LOGO_ITEMS: PressLogoItem[] = [
     src: '/press/ena-channel-kavala-logo.png',
     alt: 'Ena Channel Kavala',
     href: 'https://youtu.be/LSxk7x2QZJw?si=ACf_05SeX39G_fFk&t=348',
+    wide: true,
+    compact: true,
+  },
+  {
+    src: '/press/hec-paris-logo.png',
+    alt: 'HEC Paris',
+    href: 'https://www.hec.edu/en/innovation-entrepreneurship-institute/news/we4g-2026-meet-10-finalists',
     wide: true,
     compact: true,
   },
