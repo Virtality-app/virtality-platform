@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 type CredibilityLogoProps = {
   item: CredibilityLogoItem
   size?: 'primary' | 'secondary'
+  className?: string
 }
 
 function getCredibilityLogoDimensions(
@@ -27,7 +28,11 @@ function getCredibilityLogoDimensions(
   return 'w-40 h-14'
 }
 
-const CredibilityLogo = ({ item, size = 'primary' }: CredibilityLogoProps) => {
+const CredibilityLogo = ({
+  item,
+  size = 'primary',
+  className,
+}: CredibilityLogoProps) => {
   const dimensions = getCredibilityLogoDimensions(size, item)
 
   return (
@@ -36,6 +41,7 @@ const CredibilityLogo = ({ item, size = 'primary' }: CredibilityLogoProps) => {
         'group relative flex flex-col items-center gap-4',
         CREDIBILITY_LOGO_HOVER_CLASS,
         dimensions,
+        className,
       )}
     >
       <div className={cn('relative h-full w-full', item.className)}>

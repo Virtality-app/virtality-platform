@@ -189,6 +189,10 @@
     animation: float 6s ease-in-out infinite;
   }
 
+  .animate-press-marquee {
+    animation: pressMarquee 40s linear infinite;
+  }
+
   @keyframes float {
     0%,
     100% {
@@ -196,6 +200,15 @@
     }
     50% {
       transform: translateY(-10px);
+    }
+  }
+
+  @keyframes pressMarquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
     }
   }
 

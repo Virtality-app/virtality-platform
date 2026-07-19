@@ -67,7 +67,11 @@ describe('PRD 136 partner and press sections', () => {
     expect(hasPressSection([{ src: '', alt: 'Missing press logo' }])).toBe(
       false,
     )
-    expect(hasPressSection(PRESS_LOGO_ITEMS)).toBe(false)
+  })
+
+  it('shows the press section when static press logos are configured', () => {
+    expect(hasPressSection(PRESS_LOGO_ITEMS)).toBe(true)
+    expect(PRESS_LOGO_ITEMS.length).toBeGreaterThan(0)
   })
 
   it('opens press items with URLs in a new tab', () => {
