@@ -84,13 +84,25 @@ describe('PRD 136 partner and press sections', () => {
   })
 
   it('drives partner rendering from the public list and press from static data', () => {
-    const poweredBy = readWebsiteFile('components/home/powered-by.tsx')
-    const press = readWebsiteFile('components/home/press.tsx')
+    const supportedBy = readWebsiteFile(
+      'components/home/supported-by/supported-by.tsx',
+    )
+    const strategic = readWebsiteFile(
+      'components/home/supported-by/strategic-partners.tsx',
+    )
+    const clinical = readWebsiteFile(
+      'components/home/supported-by/clinical-partners.tsx',
+    )
+    const press = readWebsiteFile(
+      'components/home/supported-by/press-logos.tsx',
+    )
 
-    expect(poweredBy).toMatch(/usePartnerLogos/)
-    expect(poweredBy).toMatch(/mapPartnerLogosToCredibilityLists/)
-    expect(poweredBy).toMatch(/getVisiblePartnerRows/)
-    expect(poweredBy).not.toMatch(/piraeus-logo\.png/)
+    expect(supportedBy).toMatch(/usePartnerLogos/)
+    expect(supportedBy).toMatch(/mapPartnerLogosToCredibilityLists/)
+    expect(supportedBy).toMatch(/getVisiblePartnerRows/)
+    expect(supportedBy).not.toMatch(/piraeus-logo\.png/)
+    expect(strategic).toMatch(/CredibilityLogo/)
+    expect(clinical).toMatch(/CredibilityLogo/)
     expect(press).toMatch(/PRESS_LOGO_ITEMS/)
     expect(press).toMatch(/filterValidLogoItems/)
     expect(press).toMatch(/getPressLinkProps/)
@@ -100,25 +112,30 @@ describe('PRD 136 partner and press sections', () => {
     const credibilityLogo = readWebsiteFile(
       'components/home/credibility-logo.tsx',
     )
-    const poweredBy = readWebsiteFile('components/home/powered-by.tsx')
-    const press = readWebsiteFile('components/home/press.tsx')
+    const strategic = readWebsiteFile(
+      'components/home/supported-by/strategic-partners.tsx',
+    )
+    const clinical = readWebsiteFile(
+      'components/home/supported-by/clinical-partners.tsx',
+    )
+    const press = readWebsiteFile(
+      'components/home/supported-by/press-logos.tsx',
+    )
 
     expect(credibilityLogo).toMatch(/CREDIBILITY_LOGO_HOVER_CLASS/)
-    expect(poweredBy).toMatch(/CredibilityLogo/)
+    expect(strategic).toMatch(/CredibilityLogo/)
+    expect(clinical).toMatch(/CredibilityLogo/)
     expect(press).toMatch(/CredibilityLogo/)
     expect(CREDIBILITY_LOGO_HOVER_CLASS).toMatch(/opacity-35/)
   })
 
-  it('places press after supported-by and before the final CTA', () => {
+  it('places supported-by before the final CTA', () => {
     const page = readWebsiteFile('app/page.tsx')
-    const poweredByIndex = page.indexOf('<PoweredBy')
-    const pressIndex = page.indexOf('<Press')
+    const supportedByIndex = page.indexOf('<SupportedBy')
     const callToActionIndex = page.indexOf('<CallToAction')
 
-    expect(poweredByIndex).toBeGreaterThan(-1)
-    expect(pressIndex).toBeGreaterThan(-1)
+    expect(supportedByIndex).toBeGreaterThan(-1)
     expect(callToActionIndex).toBeGreaterThan(-1)
-    expect(pressIndex).toBeGreaterThan(poweredByIndex)
-    expect(callToActionIndex).toBeGreaterThan(pressIndex)
+    expect(callToActionIndex).toBeGreaterThan(supportedByIndex)
   })
 })

@@ -93,17 +93,25 @@ describe('PRD 145 adminboard-managed strategic and clinical partner logos', () =
   })
 
   it('drives the website Supported by section from the public list without static partner arrays', () => {
-    const poweredBy = readRepoFile(
-      'apps/website/components/home/powered-by.tsx',
+    const supportedBy = readRepoFile(
+      'apps/website/components/home/supported-by/supported-by.tsx',
+    )
+    const strategic = readRepoFile(
+      'apps/website/components/home/supported-by/strategic-partners.tsx',
+    )
+    const clinical = readRepoFile(
+      'apps/website/components/home/supported-by/clinical-partners.tsx',
     )
     const content = readRepoFile('apps/website/lib/partner-press-content.ts')
     const adapter = readRepoFile('apps/website/lib/partner-logo-adapter.ts')
 
-    expect(poweredBy).toMatch(/usePartnerLogos/)
-    expect(poweredBy).toMatch(/mapPartnerLogosToCredibilityLists/)
-    expect(poweredBy).toMatch(/getVisiblePartnerRows/)
-    expect(poweredBy).toMatch(/CredibilityLogo/)
-    expect(poweredBy).not.toMatch(/<a |href=/)
+    expect(supportedBy).toMatch(/usePartnerLogos/)
+    expect(supportedBy).toMatch(/mapPartnerLogosToCredibilityLists/)
+    expect(supportedBy).toMatch(/getVisiblePartnerRows/)
+    expect(strategic).toMatch(/CredibilityLogo/)
+    expect(clinical).toMatch(/CredibilityLogo/)
+    expect(strategic).not.toMatch(/<a |href=/)
+    expect(clinical).not.toMatch(/<a |href=/)
     expect(content).toMatch(/SUPPORTED_BY_CONTENT/)
     expect(content).not.toMatch(
       /STRATEGIC_PARTNER|CLINICAL_PARTNER|strategicLogos|clinicalLogos/,
@@ -114,7 +122,9 @@ describe('PRD 145 adminboard-managed strategic and clinical partner logos', () =
   })
 
   it('keeps press logos static and separate from the partner logo slice', () => {
-    const press = readRepoFile('apps/website/components/home/press.tsx')
+    const press = readRepoFile(
+      'apps/website/components/home/supported-by/press-logos.tsx',
+    )
     const content = readRepoFile('apps/website/lib/partner-press-content.ts')
 
     expect(press).toMatch(/PRESS_LOGO_ITEMS/)

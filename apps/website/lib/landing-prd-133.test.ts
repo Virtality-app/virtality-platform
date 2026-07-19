@@ -17,8 +17,7 @@ const landingPageSectionOrder = [
   '<PilotProof',
   '<PromoVideo',
   '<Features',
-  '<PoweredBy',
-  '<Press',
+  '<SupportedBy',
   '<CallToAction',
 ] as const
 
@@ -30,8 +29,10 @@ const landingPageSurfaces = [
   'components/home/pilot-proof.tsx',
   'components/video/promo-video.tsx',
   'components/home/features.tsx',
-  'components/home/powered-by.tsx',
-  'components/home/press.tsx',
+  'components/home/supported-by/supported-by.tsx',
+  'components/home/supported-by/strategic-partners.tsx',
+  'components/home/supported-by/clinical-partners.tsx',
+  'components/home/supported-by/press-logos.tsx',
   'components/home/call-to-action.tsx',
   'components/layout/navbar.tsx',
 ] as const
@@ -48,8 +49,7 @@ const landingContentModules = [
 const landingPageImports = [
   "from '@/components/home/benefits'",
   "from '@/components/home/pilot-proof'",
-  "from '@/components/home/powered-by'",
-  "from '@/components/home/press'",
+  "from '@/components/home/supported-by'",
 ] as const
 
 describe('PRD 133 clinic-owner landing page redesign', () => {

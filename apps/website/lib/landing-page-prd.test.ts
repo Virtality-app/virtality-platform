@@ -23,8 +23,10 @@ const landingPageSurfaces = [
   'components/video/promo-video.tsx',
   'components/home/hero-image-backdrop.tsx',
   'components/home/hero-title.tsx',
-  'components/home/powered-by.tsx',
-  'components/home/press.tsx',
+  'components/home/supported-by/supported-by.tsx',
+  'components/home/supported-by/strategic-partners.tsx',
+  'components/home/supported-by/clinical-partners.tsx',
+  'components/home/supported-by/press-logos.tsx',
 ]
 
 describe('PRD 135 landing page benefits and pilot-proof narrative', () => {
