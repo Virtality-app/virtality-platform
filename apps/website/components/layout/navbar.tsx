@@ -10,6 +10,7 @@ import {
   SiX,
 } from '@icons-pack/react-simple-icons'
 import ScrollToCtaButton from '@/components/shared/scroll-to-cta-button'
+import MobileNav from '@/components/layout/mobile-nav'
 import { NAV_BOOK_DEMO_LABEL } from '@/lib/hero-content'
 import { getConsoleUrl } from '@virtality/shared/types'
 
@@ -38,32 +39,32 @@ const Navbar = async () => {
       </Link>
 
       <div className='flex items-center gap-2'>
-        <div className='flex justify-center gap-6 text-slate-600'>
-          <Link href={FACEBOOK_URL} target='_blank'>
-            <SiFacebook
-              className={`size-4.5 hover:text-[#0866FF] hover:scale-110 transition-all`}
-            />
-          </Link>
-          <Link href={INSTAGRAM_URL} target='_blank'>
-            <SiInstagram
-              className={`size-4.5 hover:text-[#E4405F] hover:scale-110 transition-all`}
-            />
-          </Link>
-          <Link href={LINKEDIN_URL} target='_blank'>
-            <SiLinkedin
-              className={`size-4.5 hover:text-[#0A66C2] hover:scale-110 transition-all`}
-            />
-          </Link>
-          <Link href={X_URL} target='_blank'>
-            <SiX
-              className={`size-4.5 hover:text-[#000000] dark:hover:text-white hover:scale-110 transition-all`}
-            />
-          </Link>
-        </div>
+        <div className='hidden md:flex items-center gap-2'>
+          <div className='flex justify-center gap-6 text-slate-600'>
+            <Link href={FACEBOOK_URL} target='_blank'>
+              <SiFacebook
+                className={`size-4.5 hover:text-[#0866FF] hover:scale-110 transition-all`}
+              />
+            </Link>
+            <Link href={INSTAGRAM_URL} target='_blank'>
+              <SiInstagram
+                className={`size-4.5 hover:text-[#E4405F] hover:scale-110 transition-all`}
+              />
+            </Link>
+            <Link href={LINKEDIN_URL} target='_blank'>
+              <SiLinkedin
+                className={`size-4.5 hover:text-[#0A66C2] hover:scale-110 transition-all`}
+              />
+            </Link>
+            <Link href={X_URL} target='_blank'>
+              <SiX
+                className={`size-4.5 hover:text-[#000000] dark:hover:text-white hover:scale-110 transition-all`}
+              />
+            </Link>
+          </div>
 
-        <Separator orientation='vertical' className='h-6! ml-4' />
+          <Separator orientation='vertical' className='h-6! ml-4' />
 
-        <div className='flex items-center gap-2'>
           <Button
             asChild
             variant='link'
@@ -71,19 +72,27 @@ const Navbar = async () => {
           >
             <Link href='/blog'>Blog</Link>
           </Button>
-          <ScrollToCtaButton
-            variant='outline'
-            className='border-vital-blue-700 text-vital-blue-700 hover:bg-vital-blue-50 font-semibold'
-          >
-            {NAV_BOOK_DEMO_LABEL}
-          </ScrollToCtaButton>
-          <Button
-            asChild
-            className='bg-vital-blue-700 hover:bg-vital-blue-800 text-white font-semibold shadow-md shadow-vital-blue-700/20'
-          >
-            <Link href={consoleURL}>Login</Link>
-          </Button>
         </div>
+
+        <ScrollToCtaButton
+          variant='outline'
+          className='border-vital-blue-700 text-vital-blue-700 hover:bg-vital-blue-50 font-semibold'
+        >
+          {NAV_BOOK_DEMO_LABEL}
+        </ScrollToCtaButton>
+        <Button
+          asChild
+          className='bg-vital-blue-700 hover:bg-vital-blue-800 text-white font-semibold shadow-md shadow-vital-blue-700/20'
+        >
+          <Link href={consoleURL}>Login</Link>
+        </Button>
+
+        <MobileNav
+          facebookUrl={FACEBOOK_URL}
+          instagramUrl={INSTAGRAM_URL}
+          linkedinUrl={LINKEDIN_URL}
+          xUrl={X_URL}
+        />
       </div>
     </NavigationMenu>
   )
