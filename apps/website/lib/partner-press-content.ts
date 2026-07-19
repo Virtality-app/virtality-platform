@@ -36,33 +36,41 @@ export const PRESS_LOGO_ITEMS: PressLogoItem[] = [
   {
     src: '/press/kathimerini-logo.png',
     alt: 'Kathimerini',
+    href: 'https://www.ekathimerini.com/economy/1300194/crete-proves-fertile-ground-for-innovation/',
   },
   {
     src: '/press/anatolh-logo.png',
     alt: 'Anatolh',
+    href: 'https://www.anatolh.com/featured/vitality-allazei-to-mellon-tis-fysikotherapeias-meso-eikonikis-pragmatikotitas-kai-me-afetiria-ton-ag-nikolao/',
   },
   {
     src: '/press/startupper-logo.png',
     alt: 'Startupper',
+    href: 'https://startupper.gr/news/223504/piraeus-startup-accelerator-aftes-einai-oi-10-omades-tou-protou-kyklou/',
   },
   {
     src: '/press/beyondexpo-logo.png',
     alt: 'Beyond Expo',
+    href: 'https://www.youtube.com/watch?v=ZihOBeZiosY',
   },
   {
     src: '/press/bizrupt-logo.png',
     alt: 'Bizrupt',
+    href: 'https://bizrupt.gr/6-anerhomenes-startups-stin-kriti/',
   },
   {
     src: '/press/delphi-logo.png',
     alt: 'Delphi Economic Forum',
+    href: 'https://www.youtube.com/watch?v=44ds6YdtTuA',
   },
   {
     src: '/press/ionian-logo.png',
     alt: 'Ionian',
+    href: 'https://www.youtube.com/watch?v=qbViIQjOUNo',
   },
   {
     src: '/press/ena-channel-kavala-logo.png',
     alt: 'Ena Channel Kavala',
+    href: 'https://youtu.be/LSxk7x2QZJw?si=ACf_05SeX39G_fFk&t=348',
   },
 ]
