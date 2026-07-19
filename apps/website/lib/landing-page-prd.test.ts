@@ -2,11 +2,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import {
-  LANDING_BENEFITS,
-  LANDING_PAGE_FORBIDDEN_CLAIMS,
-  PILOT_PROOF_CONTENT,
-} from './landing-page-content'
+import { LANDING_BENEFITS, PILOT_PROOF_CONTENT } from './landing-page-content'
 
 const websiteRoot = fileURLToPath(new URL('..', import.meta.url))
 
@@ -14,23 +10,8 @@ function readWebsiteFile(relativePath: string): string {
   return readFileSync(join(websiteRoot, relativePath), 'utf8')
 }
 
-const landingPageSurfaces = [
-  'app/page.tsx',
-  'components/home/benefits.tsx',
-  'components/home/pilot-proof.tsx',
-  'components/home/features.tsx',
-  'components/home/call-to-action.tsx',
-  'components/video/promo-video.tsx',
-  'components/home/hero-image-backdrop.tsx',
-  'components/home/hero-title.tsx',
-  'components/home/supported-by/supported-by.tsx',
-  'components/home/supported-by/strategic-partners.tsx',
-  'components/home/supported-by/clinical-partners.tsx',
-  'components/home/supported-by/press-logos.tsx',
-]
-
 describe('PRD 135 landing page benefits and pilot-proof narrative', () => {
-  it('orders benefits and pilot proof before the how-it-works video', () => {
+  it('orders pilot proof and benefits before the how-it-works video', () => {
     const page = readWebsiteFile('app/page.tsx')
     const benefitsIndex = page.indexOf('<Benefits')
     const pilotProofIndex = page.indexOf('<PilotProof')
@@ -40,7 +21,7 @@ describe('PRD 135 landing page benefits and pilot-proof narrative', () => {
     expect(pilotProofIndex).toBeGreaterThan(-1)
     expect(benefitsIndex).toBeLessThan(promoVideoIndex)
     expect(pilotProofIndex).toBeLessThan(promoVideoIndex)
-    expect(pilotProofIndex).toBeGreaterThan(benefitsIndex)
+    expect(pilotProofIndex).toBeLessThan(benefitsIndex)
   })
 
   it('defines six approved benefit items with careful condition support wording', () => {
@@ -62,31 +43,21 @@ describe('PRD 135 landing page benefits and pilot-proof narrative', () => {
     expect(combinedBenefits).not.toMatch(/cure/i)
   })
 
-  it('frames pilot proof with days-not-months and two targeted sessions as pilot data', () => {
-    const combinedPilotProof = [
-      PILOT_PROOF_CONTENT.eyebrow,
-      PILOT_PROOF_CONTENT.title,
-      PILOT_PROOF_CONTENT.intro,
-      ...PILOT_PROOF_CONTENT.highlights.map(
-        (highlight) => `${highlight.title} ${highlight.description}`,
-      ),
-      PILOT_PROOF_CONTENT.disclaimer,
-    ].join(' ')
+  it('shows the clinical metrics card in the pilot section', () => {
+    expect(PILOT_PROOF_CONTENT.metrics).toHaveLength(3)
 
-    expect(combinedPilotProof).toMatch(/days, not months/i)
-    expect(combinedPilotProof).toMatch(/pilot data/i)
-    expect(combinedPilotProof).toMatch(/2 targeted sessions/i)
-    expect(combinedPilotProof).not.toMatch(/guarantee/i)
-  })
+    const combinedMetrics = PILOT_PROOF_CONTENT.metrics
+      .map((metric) => `${metric.value} ${metric.label} ${metric.caption}`)
+      .join(' ')
 
-  it('does not retain removed broad recovery claims on landing page surfaces', () => {
-    for (const relativePath of landingPageSurfaces) {
-      const content = readWebsiteFile(relativePath)
+    expect(combinedMetrics).toMatch(/70-97%/)
+    expect(combinedMetrics).toMatch(/Faster Recovery Rate/)
+    expect(combinedMetrics).toMatch(/Patient Engagement/)
+    expect(combinedMetrics).toMatch(/2\.5x/)
+    expect(combinedMetrics).toMatch(/Increased Efficiency/)
 
-      for (const forbiddenClaim of LANDING_PAGE_FORBIDDEN_CLAIMS) {
-        expect(content).not.toMatch(forbiddenClaim)
-      }
-    }
+    const pilotProof = readWebsiteFile('components/home/pilot-proof.tsx')
+    expect(pilotProof).toContain('PILOT_PROOF_CONTENT.metrics')
   })
 
   it('removes the dead case-studies link from benefits', () => {

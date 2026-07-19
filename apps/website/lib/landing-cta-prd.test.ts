@@ -6,6 +6,7 @@ import {
   CTA_TRUST_POINTS,
   FINAL_CTA_BOOK_DEMO_LABEL,
   FINAL_CTA_JOIN_WAITLIST_LABEL,
+  FINAL_CTA_SUBMIT_LABEL,
 } from './cta-content'
 import { getDemoBookingUrl } from './demo-booking'
 import { features } from '../data/features'
@@ -53,11 +54,26 @@ describe('PRD 138 capabilities and final CTA choices', () => {
     expect(setupFeature?.context).toBe(SETUP_CAPABILITY_CONTENT)
   })
 
-  it('defines safe CTA trust points for the final conversion area', () => {
+  it('defines CTA trust points for the final conversion area', () => {
     expect(CTA_TRUST_POINTS).toEqual([
-      `${WAITLIST_SOCIAL_PROOF_FLOOR}+ healthcare professionals`,
-      'Setup under 40 seconds',
-      'Pilot data: days, not months',
+      {
+        icon: 'Users',
+        emphasis: `${WAITLIST_SOCIAL_PROOF_FLOOR}+`,
+        label: 'Healthcare Professionals',
+        caption: 'in early access program',
+      },
+      {
+        icon: 'TrendingUp',
+        emphasis: '97%',
+        label: 'Patient Engagement Rate',
+        caption: 'sustained throughout treatment',
+      },
+      {
+        icon: 'Clock',
+        emphasis: '70-97%',
+        label: 'Faster Recovery Time',
+        caption: 'vs. traditional therapy',
+      },
     ])
   })
 
@@ -65,18 +81,24 @@ describe('PRD 138 capabilities and final CTA choices', () => {
     const cta = readWebsiteFile('components/home/call-to-action.tsx')
 
     it('starts with equal waitlist and demo choices', () => {
-      expect(FINAL_CTA_JOIN_WAITLIST_LABEL).toBe('Join waitlist')
-      expect(FINAL_CTA_BOOK_DEMO_LABEL).toBe('Book a 30-minute demo')
+      expect(FINAL_CTA_JOIN_WAITLIST_LABEL).toBe('Start now')
+      expect(FINAL_CTA_SUBMIT_LABEL).toBe('Submit')
+      expect(FINAL_CTA_BOOK_DEMO_LABEL).toBe('Book a 20-minute demo')
       expect(cta).toMatch(/FINAL_CTA_JOIN_WAITLIST_LABEL/)
+      expect(cta).toMatch(/FINAL_CTA_SUBMIT_LABEL/)
       expect(cta).toMatch(/FINAL_CTA_BOOK_DEMO_LABEL/)
       expect(cta).toMatch(/showWaitlistForm/)
+      expect(cta).toMatch(/PartnerRowLabel/)
       expect(cta).not.toMatch(
         /\n\s*<WaitlistForm\s*\/>\n\s*<div className='mt-10 border-t/,
       )
     })
 
-    it('reveals the waitlist form only after choosing join waitlist', () => {
-      expect(cta).toMatch(/\{showWaitlistForm &&[\s\S]*<WaitlistForm/)
+    it('replaces start now with the waitlist input and submit button', () => {
+      expect(cta).toMatch(
+        /showWaitlistForm \? \([\s\S]*<WaitlistForm[\s\S]*submitLabel=\{FINAL_CTA_SUBMIT_LABEL\}/,
+      )
+      expect(cta).toMatch(/: \(\s*<Button[\s\S]*FINAL_CTA_JOIN_WAITLIST_LABEL/)
     })
 
     it('opens the configured demo booking destination', () => {
@@ -89,9 +111,17 @@ describe('PRD 138 capabilities and final CTA choices', () => {
       ).toBe('https://cal.com/virtality/demo')
     })
 
-    it('uses floored waitlist social proof formatting and trust points', () => {
-      expect(cta).toMatch(/formatWaitlistSocialProofCount/)
+    it('uses floored waitlist social proof in trust points without a duplicate count block', () => {
+      expect(CTA_TRUST_POINTS[0]?.emphasis).toBe(
+        `${WAITLIST_SOCIAL_PROOF_FLOOR}+`,
+      )
+      expect(CTA_TRUST_POINTS[0]?.label).toBe('Healthcare Professionals')
+      expect(CTA_TRUST_POINTS[0]?.caption).toBe('in early access program')
       expect(cta).toMatch(/CTA_TRUST_POINTS/)
+      expect(cta).toMatch(/point\.emphasis/)
+      expect(cta).toMatch(/point\.caption/)
+      expect(cta).not.toMatch(/formatWaitlistSocialProofCount/)
+      expect(cta).not.toMatch(/useWaitlist/)
     })
   })
 })

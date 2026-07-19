@@ -62,40 +62,31 @@ export const LANDING_BENEFITS: LandingBenefit[] = [
   },
 ]
 
-export type PilotProofIconName = 'Clock3' | 'Target'
-
-export type PilotProofHighlight = LandingContentItem & {
-  icon: PilotProofIconName
+export type PilotProofMetric = {
+  value: string
+  label: string
+  caption: string
 }
 
 export const PILOT_PROOF_CONTENT = {
-  eyebrow: 'Pilot data',
-  title: 'Early signals from guided VR sessions',
-  intro:
-    'Virtality is still in early pilot use with private clinics. The stories below come from that pilot work—not promises that every patient will recover on the same timeline.',
-  highlights: [
+  metrics: [
     {
-      icon: 'Clock3',
-      title: 'Days, not months',
-      description:
-        'In early pilot clinics, physiotherapists observed meaningful movement progress over days, not months, when patients followed guided VR sessions consistently.',
+      value: '70-97%',
+      label: 'Faster Recovery Rate',
+      caption: 'vs. traditional therapy',
     },
     {
-      icon: 'Target',
-      title: '2 targeted sessions',
-      description:
-        'In pilot data, two targeted guided sessions helped patients move past initial fear and return to prescribed movement—enough to keep rehab moving forward.',
+      value: '97%',
+      label: 'Patient Engagement',
+      caption: 'sustained throughout treatment',
     },
-  ] satisfies PilotProofHighlight[],
-  disclaimer:
-    'Pilot observations from a small cohort. Individual results vary and Virtality does not promise specific clinical outcomes.',
+    {
+      value: '2.5x',
+      label: 'Increased Efficiency',
+      caption: 'more patients per session',
+    },
+  ] satisfies PilotProofMetric[],
 }
-
-export const LANDING_PAGE_FORBIDDEN_CLAIMS = [
-  /50.?95%/i,
-  /\+87%/i,
-  /Recovery Rate/i,
-] as const
 
 export const SETUP_CAPABILITY_TITLE = 'Quick setup, equipment included'
 

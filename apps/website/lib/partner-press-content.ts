@@ -78,6 +78,6 @@ export const PRESS_LOGO_ITEMS: PressLogoItem[] = [
     alt: 'Ena Channel Kavala',
     href: 'https://youtu.be/LSxk7x2QZJw?si=ACf_05SeX39G_fFk&t=348',
     wide: true,
-    // compact: true,
+    compact: true,
   },
 ]

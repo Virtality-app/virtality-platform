@@ -19,7 +19,11 @@ import { ArrowRight } from 'lucide-react'
 import { useCreateWaitlist } from '@virtality/react-query'
 import { useSendThankYouEmail } from '@virtality/react-query'
 
-const WaitlistForm = () => {
+type WaitlistFormProps = {
+  submitLabel?: string
+}
+
+const WaitlistForm = ({ submitLabel = 'Join Waitlist' }: WaitlistFormProps) => {
   const router = useRouter()
   const { mutate: createWaitlist, isPending: isCreating } = useCreateWaitlist()
   const { mutate: sendThankYouEmail, isPending: isSending } =
@@ -60,22 +64,20 @@ const WaitlistForm = () => {
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <div className='flex flex-col sm:flex-row gap-3'>
+                  <div className='flex flex-row overflow-hidden rounded-xl border-2 border-vital-blue-100 focus-within:border-vital-blue-700 focus-within:ring-2 focus-within:ring-vital-blue-700/20'>
                     <Input
                       type='email'
                       placeholder='Enter your professional email'
                       required
-                      className='flex-1 h-14 px-5 text-base border-2 border-vital-blue-100 focus:border-vital-blue-700 focus:ring-2 focus:ring-vital-blue-700/20 rounded-xl'
+                      className='h-14 min-w-0 flex-1 rounded-none border-0 px-5 text-base shadow-none focus-visible:ring-0'
                       {...field}
                     />
                     <Button
                       type='submit'
                       variant='primary'
-                      className='h-14 px-6 text-base font-semibold shadow-lg shadow-vital-blue-700/25 hover:shadow-xl hover:shadow-vital-blue-700/30 transition-all rounded-xl group'
+                      className='h-14 shrink-0 rounded-none px-6 text-base font-semibold shadow-none group'
                     >
-                      {isCreating || isSending
-                        ? 'Submitting...'
-                        : 'Join Waitlist'}
+                      {isCreating || isSending ? 'Submitting...' : submitLabel}
                       <ArrowRight className='size-4 ml-2 group-hover:translate-x-1 transition-transform' />
                     </Button>
                   </div>

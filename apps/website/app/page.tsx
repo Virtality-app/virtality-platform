@@ -16,9 +16,9 @@ const HomePage = () => {
       {/* <HeroImageBackdrop /> */}
       {/* <HeroImageBackdropScaled /> */}
       <HeroImageBackdropCtaCenter />
+      <PilotProof />
       <BenefitsGrid />
       <Testimonials />
-      <PilotProof />
       <PromoVideo />
       <Features />
       <Benefits />

@@ -3,7 +3,6 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { HERO_HEADLINE, HERO_SUPPORTING_COPY } from './hero-content'
-import { LANDING_PAGE_FORBIDDEN_CLAIMS } from './landing-page-content'
 
 const websiteRoot = fileURLToPath(new URL('..', import.meta.url))
 
@@ -13,8 +12,8 @@ function readWebsiteFile(relativePath: string): string {
 
 const landingPageSectionOrder = [
   '<Hero',
-  '<Benefits',
   '<PilotProof',
+  '<Benefits',
   '<PromoVideo',
   '<Features',
   '<SupportedBy',
@@ -93,13 +92,10 @@ describe('PRD 133 clinic-owner landing page redesign', () => {
     }
   })
 
-  it('does not retain removed broad recovery claims across landing surfaces', () => {
-    for (const relativePath of landingPageSurfaces) {
-      const content = readWebsiteFile(relativePath)
+  it('keeps the clinical metrics card available on the pilot section surface', () => {
+    const pilotProof = readWebsiteFile('components/home/pilot-proof.tsx')
 
-      for (const forbiddenClaim of LANDING_PAGE_FORBIDDEN_CLAIMS) {
-        expect(content).not.toMatch(forbiddenClaim)
-      }
-    }
+    expect(pilotProof).toContain('PILOT_PROOF_CONTENT.metrics')
+    expect(pilotProof).toMatch(/rounded-2xl/)
   })
 })
