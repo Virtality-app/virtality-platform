@@ -65,7 +65,7 @@ function tilePlacementKey(tile: MosaicTilePlacement): string {
   return `row ${tile.row}, col ${tile.col}, span ${formatSpan(tile.width, tile.height)}`
 }
 
-function getTileCells(
+export function getMosaicTileCells(
   tile: MosaicTilePlacement,
 ): Array<{ row: number; col: number }> {
   const cells: Array<{ row: number; col: number }> = []
@@ -114,7 +114,7 @@ export function validateMosaicTilePlacement(
     )
   }
 
-  const extendsOutsideGrid = getTileCells(tile).some(
+  const extendsOutsideGrid = getMosaicTileCells(tile).some(
     (cell) => !isInBounds(cell.row, cell.col),
   )
 
@@ -131,7 +131,7 @@ function collectBoardCoverageErrors(tiles: MosaicTilePlacement[]): string[] {
   const occupancy = new Map<string, number>()
 
   for (const tile of tiles) {
-    for (const cell of getTileCells(tile)) {
+    for (const cell of getMosaicTileCells(tile)) {
       const key = cellKey(cell.row, cell.col)
       occupancy.set(key, (occupancy.get(key) ?? 0) + 1)
     }

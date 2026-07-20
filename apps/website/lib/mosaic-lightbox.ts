@@ -24,34 +24,33 @@ export type MosaicLightboxContent =
 export function getMosaicLightboxContent(
   tile: MosaicTileListItem,
 ): MosaicLightboxContent | null {
-  if (tile.mediaKind === 'image') {
-    const image = getMosaicImageTileProps(tile)
+  switch (tile.mediaKind) {
+    case 'image': {
+      const image = getMosaicImageTileProps(tile)
 
-    if (!image) {
-      return null
+      if (!image) {
+        return null
+      }
+
+      return {
+        kind: 'image',
+        src: image.src,
+        alt: image.alt,
+      }
     }
+    case 'video': {
+      const video = getMosaicVideoTileProps(tile)
 
-    return {
-      kind: 'image',
-      src: image.src,
-      alt: image.alt,
+      if (!video) {
+        return null
+      }
+
+      return {
+        kind: 'video',
+        src: video.src,
+        alt: video.alt,
+        mimeType: video.mimeType,
+      }
     }
-  }
-
-  if (tile.mediaKind !== 'video') {
-    return null
-  }
-
-  const video = getMosaicVideoTileProps(tile)
-
-  if (!video) {
-    return null
-  }
-
-  return {
-    kind: 'video',
-    src: video.src,
-    alt: video.alt,
-    mimeType: video.mimeType,
   }
 }
