@@ -8,11 +8,13 @@ type MosaicImageTileProps = {
 }
 
 const MosaicImageTile = ({ tile }: MosaicImageTileProps) => {
-  const image = getMosaicImageTileProps(tile)
+  const tileImage = getMosaicImageTileProps(tile)
 
-  if (!image) {
+  if (!tileImage) {
     return null
   }
+
+  const { src, alt } = tileImage
 
   return (
     <div
@@ -20,8 +22,8 @@ const MosaicImageTile = ({ tile }: MosaicImageTileProps) => {
       style={getMosaicTileGridStyle(tile)}
     >
       <Image
-        src={image.src}
-        alt={image.alt}
+        src={src}
+        alt={alt}
         fill
         sizes='(max-width: 640px) 30vw, 240px'
         className='object-cover'

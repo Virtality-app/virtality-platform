@@ -2,7 +2,7 @@
 
 import { useMosaic } from '@virtality/react-query'
 import { MOSAIC_SECTION_CONTENT } from '@/lib/mosaic-content'
-import { MOSAIC_GRID_MOBILE_SCALE_CLASS } from '@/lib/mosaic-tile'
+import { MOSAIC_GRID_MOBILE_SCALE_CLASS } from '@/lib/mosaic-grid'
 import { shouldShowMosaicSection } from '@/lib/mosaic-visibility'
 import MosaicImageTile from './mosaic-image-tile'
 

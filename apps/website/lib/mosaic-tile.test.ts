@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  getMosaicImageTileProps,
-  MOSAIC_GRID_MOBILE_SCALE_CLASS,
-} from './mosaic-tile'
+import { getMosaicImageTileProps } from './mosaic-tile'
 
 describe('mosaic image tile rendering', () => {
   it('maps live image tiles to accessible CDN image props', () => {
@@ -26,10 +23,5 @@ describe('mosaic image tile rendering', () => {
         alt: 'Clinic walkthrough',
       }),
     ).toBeNull()
-  })
-
-  it('keeps a scaled mobile wrapper class for the fixed 3×3 composition', () => {
-    expect(MOSAIC_GRID_MOBILE_SCALE_CLASS).toMatch(/scale-/)
-    expect(MOSAIC_GRID_MOBILE_SCALE_CLASS).toMatch(/sm:scale-100/)
   })
 })

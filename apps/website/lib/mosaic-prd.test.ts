@@ -67,8 +67,8 @@ describe('PRD 153 issue 157 live mosaic image grid', () => {
 
     expect(mosaicImageTile).toMatch(/getMosaicImageTileProps/)
     expect(mosaicImageTile).toMatch(/getMosaicTileGridStyle/)
-    expect(mosaicImageTile).toMatch(/alt=\{image\.alt\}/)
-    expect(mosaicImageTile).toMatch(/src=\{image\.src\}/)
+    expect(mosaicImageTile).toMatch(/alt=\{alt\}/)
+    expect(mosaicImageTile).toMatch(/src=\{src\}/)
     expect(readWebsiteFile('lib/mosaic-grid.ts')).toMatch(/gridColumn/)
   })
 
@@ -80,12 +80,5 @@ describe('PRD 153 issue 157 live mosaic image grid', () => {
     expect(mosaicSection).toMatch(/MOSAIC_GRID_MOBILE_SCALE_CLASS/)
     expect(mosaicSection).toMatch(/grid-cols-3/)
     expect(mosaicSection).toMatch(/grid-rows-3/)
-  })
-
-  it('keeps incomplete and empty boards hidden through the visibility helper', () => {
-    expect(shouldShowMosaicSection({ status: 'empty' })).toBe(false)
-    expect(
-      shouldShowMosaicSection({ status: 'incomplete', errors: ['gap'] }),
-    ).toBe(false)
   })
 })

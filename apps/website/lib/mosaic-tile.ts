@@ -1,16 +1,13 @@
 import type { MosaicTileListItem } from '@virtality/shared/types'
 
-export type MosaicImageTileProps = {
+export type MosaicTileImage = {
   src: string
   alt: string
 }
 
-export const MOSAIC_GRID_MOBILE_SCALE_CLASS =
-  'mx-auto w-full max-w-3xl origin-top scale-[0.82] sm:scale-100'
-
 export function getMosaicImageTileProps(
   tile: Pick<MosaicTileListItem, 'mediaKind' | 'cdnUrl' | 'alt'>,
-): MosaicImageTileProps | null {
+): MosaicTileImage | null {
   if (tile.mediaKind !== 'image') {
     return null
   }
