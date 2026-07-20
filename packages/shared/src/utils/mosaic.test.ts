@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
+import { MOSAIC_EMPTY_SAVE_WARNING } from '../types/mosaic.ts'
 import {
   assessMosaicLiveEligibility,
   getMosaicBoard,
@@ -124,16 +125,30 @@ describe('mosaic domain', () => {
       }),
     ])
 
+    await expect(
+      saveMosaicBoard(
+        store,
+        { generateId: () => 'new' },
+        {
+          tiles: [],
+        },
+      ),
+    ).rejects.toBeInstanceOf(MosaicValidationError)
+
     const hidden = await saveMosaicBoard(
       store,
       { generateId: () => 'new' },
       {
         tiles: [],
+        acknowledgeEmptyHide: true,
       },
     )
 
     expect(hidden.eligibility).toEqual({ status: 'empty' })
+    expect(hidden.warnings).toEqual([MOSAIC_EMPTY_SAVE_WARNING])
     expect(store.records).toHaveLength(0)
+    expect(store.replaceAllTiles).toHaveBeenCalledWith([])
+    expect(store.replaceAllTiles).toHaveBeenCalledTimes(1)
 
     await expect(
       saveMosaicBoard(
@@ -154,6 +169,54 @@ describe('mosaic domain', () => {
         },
       ),
     ).rejects.toBeInstanceOf(MosaicValidationError)
+  })
+
+  it('rejects tiles with invalid object keys or empty alt text', async () => {
+    const store = createStore()
+
+    await expect(
+      saveMosaicBoard(
+        store,
+        { generateId: () => 'new' },
+        {
+          tiles: [
+            {
+              objectKey: '  ',
+              mediaKind: 'image',
+              alt: 'Missing key',
+              row: 0,
+              col: 0,
+              width: 1,
+              height: 1,
+            },
+          ],
+        },
+      ),
+    ).rejects.toMatchObject({
+      errors: [expect.stringMatching(/object key/i)],
+    })
+
+    await expect(
+      saveMosaicBoard(
+        store,
+        { generateId: () => 'new' },
+        {
+          tiles: [
+            {
+              objectKey: 'marketing/mosaic/no-alt.jpg',
+              mediaKind: 'image',
+              alt: '   ',
+              row: 0,
+              col: 0,
+              width: 1,
+              height: 1,
+            },
+          ],
+        },
+      ),
+    ).rejects.toMatchObject({
+      errors: ['Alt text cannot be empty.'],
+    })
   })
 
   it('saves a perfect tiling through the store seam', async () => {

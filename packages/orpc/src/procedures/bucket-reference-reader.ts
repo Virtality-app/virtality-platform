@@ -73,5 +73,24 @@ export function createPrismaBucketReferenceReader(
             image: objectKey,
           })),
         ),
+    findMosaicTileReferences: (lookupValues) =>
+      prisma.marketingMosaicTile
+        .findMany({
+          where: { objectKey: { in: lookupValues } },
+          select: {
+            id: true,
+            alt: true,
+            objectKey: true,
+            mediaKind: true,
+          },
+        })
+        .then((mosaicTiles) =>
+          mosaicTiles.map(({ id, alt, objectKey, mediaKind }) => ({
+            id,
+            alt,
+            image: objectKey,
+            mediaKind,
+          })),
+        ),
   }
 }

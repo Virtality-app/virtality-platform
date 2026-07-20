@@ -56,6 +56,20 @@ describe('PRD 153 issue 155 mosaic persistence and public get API', () => {
     expect(types).toMatch(/status: 'incomplete'/)
   })
 
+  it('warns the bucket browser when mosaic tile object keys are referenced', () => {
+    const references = readRepoFile(
+      'packages/shared/src/utils/bucket-references.ts',
+    )
+    const reader = readRepoFile(
+      'packages/orpc/src/procedures/bucket-reference-reader.ts',
+    )
+
+    expect(references).toMatch(/findMosaicTileReferences/)
+    expect(references).toMatch(/resourceType: 'mosaic'/)
+    expect(reader).toMatch(/findMosaicTileReferences/)
+    expect(reader).toMatch(/marketingMosaicTile/)
+  })
+
   it('ships a react-query hook for the public mosaic get', () => {
     const queries = readRepoFile(
       'packages/react-query/src/hooks/queries/index.ts',
@@ -65,6 +79,44 @@ describe('PRD 153 issue 155 mosaic persistence and public get API', () => {
     expect(
       repoFileExists(
         'packages/react-query/src/hooks/queries/mosaic/use-mosaic.ts',
+      ),
+    ).toBe(true)
+  })
+})
+
+describe('PRD 153 issue 158 mosaic save API', () => {
+  it('exposes an authenticated save procedure wired to shared domain validation', () => {
+    const procedures = readRepoFile('packages/orpc/src/procedures/mosaic.ts')
+    const router = readRepoFile('packages/orpc/src/router.ts')
+
+    expect(procedures).toMatch(/\/mosaic\/save.*method: 'POST'/)
+    expect(procedures).toMatch(/saveMosaicBoard/)
+    expect(procedures).toMatch(/saveMosaicInputSchema/)
+    expect(procedures).toMatch(/authed/)
+    expect(procedures).toMatch(/MosaicValidationError/)
+    expect(router).toMatch(/mosaic,/)
+  })
+
+  it('requires explicit empty-hide acknowledgment and returns a warning contract', () => {
+    const types = readRepoFile('packages/shared/src/types/mosaic.ts')
+    const domain = readRepoFile('packages/shared/src/utils/mosaic.ts')
+
+    expect(types).toMatch(/acknowledgeEmptyHide/)
+    expect(types).toMatch(/MOSAIC_EMPTY_SAVE_WARNING/)
+    expect(types).toMatch(/warnings\?: string\[\]/)
+    expect(domain).toMatch(/validateEmptySaveAcknowledgment/)
+    expect(domain).toMatch(/warnings: \[MOSAIC_EMPTY_SAVE_WARNING\]/)
+  })
+
+  it('ships a react-query mutation hook for mosaic save', () => {
+    const mutations = readRepoFile(
+      'packages/react-query/src/hooks/mutations/index.ts',
+    )
+
+    expect(mutations).toMatch(/useSaveMosaic/)
+    expect(
+      repoFileExists(
+        'packages/react-query/src/hooks/mutations/mosaic/use-save-mosaic.ts',
       ),
     ).toBe(true)
   })

@@ -7,6 +7,7 @@ import HeroImageBackdropCtaCenter from '@/components/home/hero-image-backdrop-ct
 // import HeroImageBackdropScaled from '@/components/home/hero-image-backdrop-scaled'
 import PilotProof from '@/components/home/pilot-proof'
 import SupportedBy from '@/components/home/supported-by'
+import MosaicSection from '@/components/home/mosaic'
 import Testimonials from '@/components/home/testimonials'
 import PromoVideo from '@/components/video/promo-video'
 
@@ -19,6 +20,7 @@ const HomePage = () => {
       <PilotProof />
       <BenefitsGrid />
       <Testimonials />
+      <MosaicSection />
       <PromoVideo />
       <Features />
       <Benefits />

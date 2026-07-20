@@ -31,8 +31,12 @@ export const mosaicTileInputSchema = mosaicTilePlacementSchema.extend({
 
 export type MosaicTileInput = z.infer<typeof mosaicTileInputSchema>
 
+export const MOSAIC_EMPTY_SAVE_WARNING =
+  'Saving an empty mosaic hides the landing section for all visitors.'
+
 export const saveMosaicInputSchema = z.object({
   tiles: z.array(mosaicTileInputSchema),
+  acknowledgeEmptyHide: z.boolean().optional().default(false),
 })
 
 export type SaveMosaicInput = z.infer<typeof saveMosaicInputSchema>
@@ -57,4 +61,8 @@ export type MosaicTileListItem = {
 export type MosaicBoardView = {
   tiles: MosaicTileListItem[]
   eligibility: MosaicLiveEligibility
+}
+
+export type SaveMosaicResult = MosaicBoardView & {
+  warnings?: string[]
 }

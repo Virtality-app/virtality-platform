@@ -72,6 +72,9 @@ export { useUpdatePartnerLogo } from './partner-logo/use-update-partner-logo.js'
 export { useReorderPartnerLogo } from './partner-logo/use-reorder-partner-logo.js'
 export { useRemovePartnerLogo } from './partner-logo/use-remove-partner-logo.js'
 
+// Mosaic mutations
+export { useSaveMosaic } from './mosaic/use-save-mosaic.js'
+
 // Bucket mutations
 export { useUploadBucketObjects } from './bucket/use-upload-bucket-objects.js'
 export { useMoveBucketObject } from './bucket/use-move-bucket-object.js'

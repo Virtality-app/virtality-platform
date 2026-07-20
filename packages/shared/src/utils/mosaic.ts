@@ -1,5 +1,6 @@
 import {
   MOSAIC_GRID_SIZE,
+  MOSAIC_EMPTY_SAVE_WARNING,
   type MosaicBoardView,
   type MosaicLiveEligibility,
   type MosaicMediaKind,
@@ -7,8 +8,11 @@ import {
   type MosaicTileListItem,
   type MosaicTilePlacement,
   type SaveMosaicInput,
+  type SaveMosaicResult,
 } from '../types/mosaic.ts'
 import { bucketCdnUrl, validateBucketObjectKey } from './bucket.ts'
+
+export { MOSAIC_EMPTY_SAVE_WARNING } from '../types/mosaic.ts'
 
 export const ALLOWED_MOSAIC_SPANS = [
   { width: 1, height: 1 },
@@ -209,6 +213,19 @@ function normalizeMosaicTileInput(tile: MosaicTileInput): MosaicTileInput {
   }
 }
 
+function validateEmptySaveAcknowledgment(
+  isEmpty: boolean,
+  acknowledgeEmptyHide: boolean,
+): string[] {
+  if (isEmpty && !acknowledgeEmptyHide) {
+    return [
+      'Empty mosaic saves require acknowledgeEmptyHide: true to hide the live section.',
+    ]
+  }
+
+  return []
+}
+
 function validateMosaicTilesForSave(tiles: MosaicTileInput[]): string[] {
   const eligibility = assessMosaicLiveEligibility(tiles)
 
@@ -270,9 +287,15 @@ export async function saveMosaicBoard(
   store: MosaicStore,
   deps: { generateId: () => string },
   input: SaveMosaicInput,
-): Promise<MosaicBoardView> {
+): Promise<SaveMosaicResult> {
   const normalizedTiles = input.tiles.map(normalizeMosaicTileInput)
-  const errors = validateMosaicTilesForSave(normalizedTiles)
+  const errors = [
+    ...validateEmptySaveAcknowledgment(
+      normalizedTiles.length === 0,
+      input.acknowledgeEmptyHide,
+    ),
+    ...validateMosaicTilesForSave(normalizedTiles),
+  ]
 
   if (errors.length > 0) {
     throw new MosaicValidationError(errors)
@@ -282,5 +305,14 @@ export async function saveMosaicBoard(
     normalizedTiles.map((tile) => toMosaicTileRecord(tile, deps.generateId())),
   )
 
-  return buildMosaicBoardView(records)
+  const board = buildMosaicBoardView(records)
+
+  if (normalizedTiles.length === 0) {
+    return {
+      ...board,
+      warnings: [MOSAIC_EMPTY_SAVE_WARNING],
+    }
+  }
+
+  return board
 }

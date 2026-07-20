@@ -7,6 +7,7 @@ export type BucketReferenceResourceType =
   | 'patient'
   | 'user'
   | 'partnerLogo'
+  | 'mosaic'
 
 export type BucketReferenceField = 'image' | 'video'
 
@@ -76,6 +77,14 @@ export type BucketReferenceReader = {
       image: string
     }>
   >
+  findMosaicTileReferences: (lookupValues: string[]) => Promise<
+    Array<{
+      id: string
+      alt: string
+      image: string
+      mediaKind: 'image' | 'video'
+    }>
+  >
 }
 
 const RESOURCE_TYPE_ORDER: BucketReferenceResourceType[] = [
@@ -85,6 +94,7 @@ const RESOURCE_TYPE_ORDER: BucketReferenceResourceType[] = [
   'patient',
   'user',
   'partnerLogo',
+  'mosaic',
 ]
 
 export function buildBucketReferenceLookupValues(objectKey: string): string[] {
@@ -130,7 +140,7 @@ export async function findKnownBucketObjectReferences({
   const lookupValues = buildBucketReferenceLookupValues(trimmedKey)
   const references: BucketObjectReference[] = []
 
-  const [exercises, avatars, maps, patients, users, partnerLogos] =
+  const [exercises, avatars, maps, patients, users, partnerLogos, mosaicTiles] =
     await Promise.all([
       reader.findExerciseReferences(lookupValues),
       reader.findAvatarReferences(lookupValues),
@@ -138,6 +148,7 @@ export async function findKnownBucketObjectReferences({
       reader.findPatientReferences(lookupValues),
       reader.findUserReferences(lookupValues),
       reader.findPartnerLogoReferences(lookupValues),
+      reader.findMosaicTileReferences(lookupValues),
     ])
 
   for (const exercise of exercises) {
@@ -211,6 +222,17 @@ export async function findKnownBucketObjectReferences({
         resourceId: partnerLogo.id,
         resourceLabel: partnerLogo.alt,
         field: 'image',
+      })
+    }
+  }
+
+  for (const mosaicTile of mosaicTiles) {
+    if (fieldMatchesReference(mosaicTile.image, lookupValues)) {
+      references.push({
+        resourceType: 'mosaic',
+        resourceId: mosaicTile.id,
+        resourceLabel: mosaicTile.alt,
+        field: mosaicTile.mediaKind,
       })
     }
   }

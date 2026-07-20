@@ -21,6 +21,7 @@ function createReader(
     findPatientReferences: async () => [],
     findUserReferences: async () => [],
     findPartnerLogoReferences: async () => [],
+    findMosaicTileReferences: async () => [],
     ...overrides,
   }
 }
@@ -115,6 +116,56 @@ describe('findKnownBucketObjectReferences', () => {
         resourceType: 'exercise',
         resourceId: 'ex-2',
         resourceLabel: 'Squat Demo',
+        field: 'video',
+      },
+    ])
+  })
+
+  it('detects mosaic tile references by object key', async () => {
+    const outcome = await findKnownBucketObjectReferences({
+      reader: createReader({
+        findMosaicTileReferences: async () => [
+          {
+            id: 'tile-1',
+            alt: 'Clinic session',
+            image: 'marketing/mosaic/clinic.jpg',
+            mediaKind: 'image',
+          },
+        ],
+      }),
+      objectKey: 'marketing/mosaic/clinic.jpg',
+    })
+
+    expect(outcome.references).toEqual([
+      {
+        resourceType: 'mosaic',
+        resourceId: 'tile-1',
+        resourceLabel: 'Clinic session',
+        field: 'image',
+      },
+    ])
+  })
+
+  it('detects mosaic tile video references separately from image references', async () => {
+    const outcome = await findKnownBucketObjectReferences({
+      reader: createReader({
+        findMosaicTileReferences: async () => [
+          {
+            id: 'tile-2',
+            alt: 'Ambient demo',
+            image: 'marketing/mosaic/demo.mp4',
+            mediaKind: 'video',
+          },
+        ],
+      }),
+      objectKey: 'marketing/mosaic/demo.mp4',
+    })
+
+    expect(outcome.references).toEqual([
+      {
+        resourceType: 'mosaic',
+        resourceId: 'tile-2',
+        resourceLabel: 'Ambient demo',
         field: 'video',
       },
     ])

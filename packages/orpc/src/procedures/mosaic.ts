@@ -1,9 +1,15 @@
+import { ORPCError } from '@orpc/server'
 import type { MarketingMosaicTile, PrismaClient } from '@virtality/db'
+import { saveMosaicInputSchema } from '@virtality/shared/types'
+import { generateUUID } from '@virtality/shared/utils'
 import {
   getMosaicBoard,
+  MosaicValidationError,
+  saveMosaicBoard,
   type MosaicStore,
   type MosaicTileRecord,
 } from '@virtality/shared/utils'
+import { authed } from '../middleware/auth.ts'
 import { base } from '../context.ts'
 
 const LANDING_MOSAIC_ID = 'landing'
@@ -73,13 +79,41 @@ function createPrismaMosaicStore(prisma: PrismaClient): MosaicStore {
   }
 }
 
+function throwMosaicOrpcError(error: unknown): never {
+  if (error instanceof MosaicValidationError) {
+    throw new ORPCError('BAD_REQUEST', { message: error.message })
+  }
+
+  throw error
+}
+
+async function withMosaicStore<T>(
+  prisma: PrismaClient,
+  operation: (store: MosaicStore) => Promise<T>,
+): Promise<T> {
+  try {
+    return await operation(createPrismaMosaicStore(prisma))
+  } catch (error) {
+    throwMosaicOrpcError(error)
+  }
+}
+
 const getMosaicProcedure = base
   .route({ path: '/mosaic/get', method: 'GET' })
-  .handler(async ({ context }) => {
-    const { prisma } = context
-    return getMosaicBoard(createPrismaMosaicStore(prisma))
-  })
+  .handler(({ context }) =>
+    getMosaicBoard(createPrismaMosaicStore(context.prisma)),
+  )
+
+const saveMosaicProcedure = authed
+  .route({ path: '/mosaic/save', method: 'POST' })
+  .input(saveMosaicInputSchema)
+  .handler(({ context, input }) =>
+    withMosaicStore(context.prisma, (store) =>
+      saveMosaicBoard(store, { generateId: generateUUID }, input),
+    ),
+  )
 
 export const mosaic = {
   get: getMosaicProcedure,
+  save: saveMosaicProcedure,
 }
