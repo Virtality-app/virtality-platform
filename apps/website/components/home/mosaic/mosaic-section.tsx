@@ -5,6 +5,7 @@ import { MOSAIC_SECTION_CONTENT } from '@/lib/mosaic-content'
 import { MOSAIC_GRID_MOBILE_SCALE_CLASS } from '@/lib/mosaic-grid'
 import { shouldShowMosaicSection } from '@/lib/mosaic-visibility'
 import MosaicImageTile from './mosaic-image-tile'
+import MosaicVideoTile from './mosaic-video-tile'
 
 const GRID_BACKDROP_STYLE = {
   backgroundImage: `
@@ -52,9 +53,13 @@ const MosaicSection = () => {
             className='grid aspect-square grid-cols-3 grid-rows-3 gap-2 md:gap-3'
             aria-label='Virtality in the wild media mosaic'
           >
-            {tiles.map((tile) => (
-              <MosaicImageTile key={tile.id} tile={tile} />
-            ))}
+            {tiles.map((tile) => {
+              if (tile.mediaKind === 'video') {
+                return <MosaicVideoTile key={tile.id} tile={tile} />
+              }
+
+              return <MosaicImageTile key={tile.id} tile={tile} />
+            })}
           </div>
         </div>
       </div>

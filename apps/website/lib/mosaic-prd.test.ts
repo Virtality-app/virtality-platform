@@ -82,3 +82,28 @@ describe('PRD 153 issue 157 live mosaic image grid', () => {
     expect(mosaicSection).toMatch(/grid-rows-3/)
   })
 })
+
+describe('PRD 153 issue 162 in-grid ambient video playback', () => {
+  it('renders video tiles with muted looping playback helpers and grid placement', () => {
+    const mosaicVideoTile = readWebsiteFile(
+      'components/home/mosaic/mosaic-video-tile.tsx',
+    )
+    const mosaicSection = readWebsiteFile(
+      'components/home/mosaic/mosaic-section.tsx',
+    )
+
+    expect(mosaicVideoTile).toMatch(/getMosaicVideoTileProps/)
+    expect(mosaicVideoTile).toMatch(/shouldPlayMosaicAmbientVideo/)
+    expect(mosaicVideoTile).toMatch(/prefers-reduced-motion/)
+    expect(mosaicVideoTile).toMatch(/IntersectionObserver/)
+    expect(mosaicVideoTile).toMatch(/muted/)
+    expect(mosaicVideoTile).toMatch(/loop/)
+    expect(mosaicVideoTile).toMatch(/playsInline/)
+    expect(mosaicVideoTile).toMatch(/aria-label=\{alt\}/)
+    expect(readWebsiteFile('lib/mosaic-tile.ts')).toMatch(
+      /inferMosaicVideoMimeType/,
+    )
+    expect(mosaicSection).toMatch(/MosaicVideoTile/)
+    expect(mosaicSection).toMatch(/mediaKind === 'video'/)
+  })
+})

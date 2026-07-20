@@ -10,6 +10,10 @@ export default defineConfig({
         __dirname,
         '../../packages/shared/src/utils/index.ts',
       ),
+      '@virtality/shared/types': path.resolve(
+        __dirname,
+        '../../packages/shared/src/types/index.ts',
+      ),
       '@virtality/react-query/legacy': path.resolve(
         __dirname,
         '../../packages/react-query/src/legacy/index.ts',

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getMosaicImageTileProps } from './mosaic-tile'
+import { getMosaicImageTileProps, getMosaicVideoTileProps } from './mosaic-tile'
 
 describe('mosaic image tile rendering', () => {
   it('maps live image tiles to accessible CDN image props', () => {
@@ -15,12 +15,60 @@ describe('mosaic image tile rendering', () => {
     })
   })
 
-  it('ignores non-image tiles until ambient video playback ships', () => {
+  it('ignores video tiles', () => {
     expect(
       getMosaicImageTileProps({
         mediaKind: 'video',
         cdnUrl: 'https://cdn.virtality.app/marketing/mosaic/clip.mp4',
         alt: 'Clinic walkthrough',
+      }),
+    ).toBeNull()
+  })
+})
+
+describe('mosaic video tile rendering', () => {
+  it('maps live video tiles to accessible CDN video props', () => {
+    expect(
+      getMosaicVideoTileProps({
+        mediaKind: 'video',
+        objectKey: 'marketing/mosaic/clip.mp4',
+        cdnUrl: 'https://cdn.virtality.app/marketing/mosaic/clip.mp4',
+        alt: 'Clinic walkthrough',
+      }),
+    ).toEqual({
+      src: 'https://cdn.virtality.app/marketing/mosaic/clip.mp4',
+      alt: 'Clinic walkthrough',
+      mimeType: 'video/mp4',
+    })
+  })
+
+  it('supports webm and mov video tiles', () => {
+    expect(
+      getMosaicVideoTileProps({
+        mediaKind: 'video',
+        objectKey: 'marketing/mosaic/clip.webm',
+        cdnUrl: 'https://cdn.virtality.app/marketing/mosaic/clip.webm',
+        alt: 'Therapy session',
+      })?.mimeType,
+    ).toBe('video/webm')
+
+    expect(
+      getMosaicVideoTileProps({
+        mediaKind: 'video',
+        objectKey: 'marketing/mosaic/clip.mov',
+        cdnUrl: 'https://cdn.virtality.app/marketing/mosaic/clip.mov',
+        alt: 'Clinic tour',
+      })?.mimeType,
+    ).toBe('video/quicktime')
+  })
+
+  it('ignores non-video tiles', () => {
+    expect(
+      getMosaicVideoTileProps({
+        mediaKind: 'image',
+        objectKey: 'marketing/mosaic/photo.jpg',
+        cdnUrl: 'https://cdn.virtality.app/marketing/mosaic/photo.jpg',
+        alt: 'Therapist guiding a patient',
       }),
     ).toBeNull()
   })

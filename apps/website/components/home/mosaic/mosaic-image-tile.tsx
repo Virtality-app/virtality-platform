@@ -1,6 +1,9 @@
 import Image from 'next/image'
 import type { MosaicTileListItem } from '@virtality/shared/types'
-import { getMosaicTileGridStyle } from '@/lib/mosaic-grid'
+import {
+  MOSAIC_TILE_FRAME_CLASS,
+  getMosaicTileGridStyle,
+} from '@/lib/mosaic-grid'
 import { getMosaicImageTileProps } from '@/lib/mosaic-tile'
 
 type MosaicImageTileProps = {
@@ -18,7 +21,7 @@ const MosaicImageTile = ({ tile }: MosaicImageTileProps) => {
 
   return (
     <div
-      className='relative overflow-hidden rounded-lg border border-vital-blue-100/80 bg-vital-blue-50/40'
+      className={MOSAIC_TILE_FRAME_CLASS}
       style={getMosaicTileGridStyle(tile)}
     >
       <Image

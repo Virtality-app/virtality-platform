@@ -9,7 +9,7 @@ const MosaicPage = () => {
         <h1 className='text-4xl font-bold tracking-tight'>Mosaic</h1>
         <p className='text-muted-foreground mt-2'>
           Compose the landing page photo and video mosaic between Testimonials
-          and Promo Video. Tray editing arrives in a later slice.
+          and Promo Video.
         </p>
       </div>
       <MosaicDashboard />

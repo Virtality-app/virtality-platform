@@ -58,3 +58,43 @@ describe('issue 159 mosaic adminboard slice', () => {
     expect(preview).toMatch(/No tiles saved|no tiles saved/i)
   })
 })
+
+describe('issue 160 mosaic tray and drag-place slice', () => {
+  it('stages media in a tray with pick-existing and upload flows', () => {
+    const editor = readAdminboardFile('components/mosaic/mosaic-editor.tsx')
+    const tray = readAdminboardFile('components/mosaic/mosaic-tray.tsx')
+    const addMedia = readAdminboardFile(
+      'components/mosaic/mosaic-add-media-dialog.tsx',
+    )
+    const picker = readAdminboardFile(
+      'components/mosaic/mosaic-media-picker-dialog.tsx',
+    )
+
+    expect(editor).toMatch(/MosaicTray/)
+    expect(editor).toMatch(/MosaicAddMediaDialog/)
+    expect(tray).toMatch(/Staging tray|staging tray/i)
+    expect(tray).toMatch(/draggable/)
+    expect(addMedia).toMatch(/MosaicMediaPickerDialog/)
+    expect(addMedia).toMatch(/useUploadBucketObjects/)
+    expect(addMedia).toMatch(/Alt text/)
+    expect(picker).toMatch(/useState\(''\)/)
+    expect(picker).not.toMatch(/marketing\/mosaic/)
+    expect(addMedia).not.toMatch(/marketing\/mosaic/)
+  })
+
+  it('places dragged tray items onto empty board cells as 1x1 tiles', () => {
+    const boardEditor = readAdminboardFile(
+      'components/mosaic/mosaic-board-editor.tsx',
+    )
+    const editorLib = readAdminboardFile('lib/mosaic-editor.ts')
+
+    expect(boardEditor).toMatch(/MOSAIC_TRAY_DRAG_MIME/)
+    expect(boardEditor).toMatch(/onDrop/)
+    expect(boardEditor).toMatch(/getEmptyMosaicCells/)
+    expect(editorLib).toMatch(/getEmptyMosaicCells/)
+    expect(editorLib).toMatch(/placeMosaicTileFromTray/)
+    expect(editorLib).toMatch(/width:\s*1/)
+    expect(editorLib).toMatch(/height:\s*1/)
+    expect(editorLib).toMatch(/reason:\s*'occupied'/)
+  })
+})
