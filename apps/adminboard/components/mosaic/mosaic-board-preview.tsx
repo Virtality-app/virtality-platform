@@ -15,51 +15,53 @@ type MosaicBoardPreviewProps = {
   isLoading?: boolean
 }
 
-function MosaicEligibilityBadge({
-  eligibility,
-}: {
+type MosaicEligibilityBadgeProps = {
   eligibility: MosaicLiveEligibility | undefined
-}) {
+}
+
+function MosaicEligibilityBadge({ eligibility }: MosaicEligibilityBadgeProps) {
   if (!eligibility) {
     return null
   }
 
-  if (eligibility.status === 'live') {
-    return <Badge variant='default'>Live on website</Badge>
+  switch (eligibility.status) {
+    case 'live':
+      return <Badge variant='default'>Live on website</Badge>
+    case 'empty':
+      return <Badge variant='secondary'>Hidden (empty board)</Badge>
+    case 'incomplete':
+      return <Badge variant='outline'>Incomplete (hidden on website)</Badge>
   }
-
-  if (eligibility.status === 'empty') {
-    return <Badge variant='secondary'>Hidden (empty board)</Badge>
-  }
-
-  return <Badge variant='outline'>Incomplete (hidden on website)</Badge>
 }
 
 function MosaicTilePreview({ tile }: { tile: MosaicTileListItem }) {
+  const media =
+    tile.mediaKind === 'image' ? (
+      <Image
+        src={tile.cdnUrl}
+        alt={tile.alt}
+        fill
+        className='object-cover'
+        sizes='(min-width: 768px) 200px, 120px'
+      />
+    ) : (
+      <video
+        src={tile.cdnUrl}
+        aria-label={tile.alt}
+        className='size-full object-cover'
+        muted
+        playsInline
+        loop
+        autoPlay
+      />
+    )
+
   return (
     <div
       className='relative overflow-hidden rounded-md border bg-zinc-100 dark:bg-zinc-900'
       style={getMosaicTileGridStyle(tile)}
     >
-      {tile.mediaKind === 'image' ? (
-        <Image
-          src={tile.cdnUrl}
-          alt={tile.alt}
-          fill
-          className='object-cover'
-          sizes='(min-width: 768px) 200px, 120px'
-        />
-      ) : (
-        <video
-          src={tile.cdnUrl}
-          aria-label={tile.alt}
-          className='size-full object-cover'
-          muted
-          playsInline
-          loop
-          autoPlay
-        />
-      )}
+      {media}
     </div>
   )
 }
@@ -110,11 +112,11 @@ const MosaicBoardPreview = ({ board, isLoading }: MosaicBoardPreviewProps) => {
         ))}
       </div>
 
-      {eligibility?.status === 'incomplete' ? (
+      {eligibility?.status === 'incomplete' && (
         <p className='text-muted-foreground max-w-xl text-sm'>
           This board is not live yet. Visitors only see a perfect 3×3 tiling.
         </p>
-      ) : null}
+      )}
     </div>
   )
 }

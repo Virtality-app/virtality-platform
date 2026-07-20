@@ -7,13 +7,13 @@ import { useMosaic } from '@virtality/react-query'
 
 const MosaicDashboard = () => {
   const isPhone = useMosaicPhoneGate()
-  const { data, isPending } = useMosaic()
+  const { data: board, isPending } = useMosaic()
 
   if (isPhone) {
     return <MosaicDesktopGate />
   }
 
-  return <MosaicBoardPreview board={data} isLoading={isPending} />
+  return <MosaicBoardPreview board={board} isLoading={isPending} />
 }
 
 export default MosaicDashboard

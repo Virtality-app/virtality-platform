@@ -5,19 +5,19 @@ import * as React from 'react'
 const PHONE_MAX_WIDTH_PX = 767
 
 export function useMosaicPhoneGate() {
-  const [isPhone, setIsPhone] = React.useState<boolean | undefined>(undefined)
+  const [isPhone, setIsPhone] = React.useState(false)
 
   React.useEffect(() => {
     const mediaQuery = window.matchMedia(`(max-width: ${PHONE_MAX_WIDTH_PX}px)`)
-    const onChange = () => {
+    const updateIsPhone = () => {
       setIsPhone(mediaQuery.matches)
     }
 
-    mediaQuery.addEventListener('change', onChange)
-    setIsPhone(mediaQuery.matches)
+    updateIsPhone()
+    mediaQuery.addEventListener('change', updateIsPhone)
 
-    return () => mediaQuery.removeEventListener('change', onChange)
+    return () => mediaQuery.removeEventListener('change', updateIsPhone)
   }, [])
 
-  return !!isPhone
+  return isPhone
 }
