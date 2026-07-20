@@ -6,6 +6,7 @@ import {
 } from '@virtality/shared/types'
 import {
   ALLOWED_MOSAIC_SPANS,
+  getMosaicTileCells,
   validateMosaicTilePlacement,
 } from '@virtality/shared/utils'
 
@@ -58,28 +59,6 @@ export function formatMosaicSpan({ width, height }: MosaicSpan): string {
 
 export function mosaicSpansEqual(a: MosaicSpan, b: MosaicSpan): boolean {
   return a.width === b.width && a.height === b.height
-}
-
-function cellsForPlacement(
-  placement: MosaicTilePlacement,
-): Array<{ row: number; col: number }> {
-  const cells: Array<{ row: number; col: number }> = []
-
-  for (
-    let row = placement.row;
-    row < placement.row + placement.height;
-    row += 1
-  ) {
-    for (
-      let col = placement.col;
-      col < placement.col + placement.width;
-      col += 1
-    ) {
-      cells.push({ row, col })
-    }
-  }
-
-  return cells
 }
 
 function cellIsInTile(
@@ -154,7 +133,7 @@ export function canPlaceMosaicTileAt(
     return false
   }
 
-  return cellsForPlacement(placement).every(
+  return getMosaicTileCells(placement).every(
     (cell) => !isMosaicCellOccupied(tiles, cell.row, cell.col),
   )
 }

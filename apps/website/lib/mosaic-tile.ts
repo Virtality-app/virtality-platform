@@ -31,13 +31,9 @@ export function inferMosaicVideoMimeType(
   ]
 }
 
-export function getMosaicImageTileProps(
-  tile: Pick<MosaicTileListItem, 'mediaKind' | 'cdnUrl' | 'alt'>,
+function getTrimmedMosaicMedia(
+  tile: Pick<MosaicTileListItem, 'cdnUrl' | 'alt'>,
 ): MosaicTileImage | null {
-  if (tile.mediaKind !== 'image') {
-    return null
-  }
-
   const src = tile.cdnUrl.trim()
   const alt = tile.alt.trim()
 
@@ -48,6 +44,16 @@ export function getMosaicImageTileProps(
   return { src, alt }
 }
 
+export function getMosaicImageTileProps(
+  tile: Pick<MosaicTileListItem, 'mediaKind' | 'cdnUrl' | 'alt'>,
+): MosaicTileImage | null {
+  if (tile.mediaKind !== 'image') {
+    return null
+  }
+
+  return getTrimmedMosaicMedia(tile)
+}
+
 export function getMosaicVideoTileProps(
   tile: Pick<MosaicTileListItem, 'mediaKind' | 'cdnUrl' | 'alt' | 'objectKey'>,
 ): MosaicTileVideo | null {
@@ -55,16 +61,14 @@ export function getMosaicVideoTileProps(
     return null
   }
 
-  const src = tile.cdnUrl.trim()
-  const alt = tile.alt.trim()
+  const media = getTrimmedMosaicMedia(tile)
 
-  if (!src || !alt) {
+  if (!media) {
     return null
   }
 
   return {
-    src,
-    alt,
+    ...media,
     mimeType: inferMosaicVideoMimeType(tile.objectKey),
   }
 }

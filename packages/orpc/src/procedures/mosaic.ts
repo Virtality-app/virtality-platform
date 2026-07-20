@@ -87,17 +87,6 @@ function throwMosaicOrpcError(error: unknown): never {
   throw error
 }
 
-async function withMosaicStore<T>(
-  prisma: PrismaClient,
-  operation: (store: MosaicStore) => Promise<T>,
-): Promise<T> {
-  try {
-    return await operation(createPrismaMosaicStore(prisma))
-  } catch (error) {
-    throwMosaicOrpcError(error)
-  }
-}
-
 const getMosaicProcedure = base
   .route({ path: '/mosaic/get', method: 'GET' })
   .handler(({ context }) =>
@@ -107,11 +96,17 @@ const getMosaicProcedure = base
 const saveMosaicProcedure = authed
   .route({ path: '/mosaic/save', method: 'POST' })
   .input(saveMosaicInputSchema)
-  .handler(({ context, input }) =>
-    withMosaicStore(context.prisma, (store) =>
-      saveMosaicBoard(store, { generateId: generateUUID }, input),
-    ),
-  )
+  .handler(async ({ context, input }) => {
+    try {
+      return await saveMosaicBoard(
+        createPrismaMosaicStore(context.prisma),
+        { generateId: generateUUID },
+        input,
+      )
+    } catch (error) {
+      throwMosaicOrpcError(error)
+    }
+  })
 
 export const mosaic = {
   get: getMosaicProcedure,
