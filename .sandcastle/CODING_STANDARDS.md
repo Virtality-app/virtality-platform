@@ -24,11 +24,11 @@ Integration-style tests that exercise real code paths through public APIs. They 
 
 ```typescript
 // GOOD: Tests observable behavior through the public interface
-test("createUser makes user retrievable", async () => {
-  const user = await createUser({ name: "Alice" });
-  const retrieved = await getUser(user.id);
-  expect(retrieved.name).toBe("Alice");
-});
+test('createUser makes user retrievable', async () => {
+  const user = await createUser({ name: 'Alice' })
+  const retrieved = await getUser(user.id)
+  expect(retrieved.name).toBe('Alice')
+})
 ```
 
 - Test behavior users/callers care about
@@ -40,25 +40,25 @@ test("createUser makes user retrievable", async () => {
 
 ```typescript
 // BAD: Mocks internal collaborator, tests HOW not WHAT
-test("checkout calls paymentService.process", async () => {
-  const mockPayment = jest.mock(paymentService);
-  await checkout(cart, payment);
-  expect(mockPayment.process).toHaveBeenCalledWith(cart.total);
-});
+test('checkout calls paymentService.process', async () => {
+  const mockPayment = jest.mock(paymentService)
+  await checkout(cart, payment)
+  expect(mockPayment.process).toHaveBeenCalledWith(cart.total)
+})
 
 // BAD: Bypasses the interface to verify via database
-test("createUser saves to database", async () => {
-  await createUser({ name: "Alice" });
-  const row = await db.query("SELECT * FROM users WHERE name = ?", ["Alice"]);
-  expect(row).toBeDefined();
-});
+test('createUser saves to database', async () => {
+  await createUser({ name: 'Alice' })
+  const row = await db.query('SELECT * FROM users WHERE name = ?', ['Alice'])
+  expect(row).toBeDefined()
+})
 ```
 
 ```typescript
 // BAD: Test restates the implementation — the function IS the spec
-test("pitchHref includes from param", () => {
-  expect(pitchHref("abc")).toBe("/pitches/abc?from=deliverables");
-});
+test('pitchHref includes from param', () => {
+  expect(pitchHref('abc')).toBe('/pitches/abc?from=deliverables')
+})
 ```
 
 Red flags:
