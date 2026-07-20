@@ -7,6 +7,7 @@ export type BucketReferenceResourceType =
   | 'patient'
   | 'user'
   | 'partnerLogo'
+  | 'promoVideo'
 
 export type BucketReferenceField = 'image' | 'video'
 
@@ -76,6 +77,13 @@ export type BucketReferenceReader = {
       image: string
     }>
   >
+  findPromoVideoReferences: (lookupValues: string[]) => Promise<
+    Array<{
+      id: string
+      label: string
+      video: string
+    }>
+  >
 }
 
 const RESOURCE_TYPE_ORDER: BucketReferenceResourceType[] = [
@@ -85,6 +93,7 @@ const RESOURCE_TYPE_ORDER: BucketReferenceResourceType[] = [
   'patient',
   'user',
   'partnerLogo',
+  'promoVideo',
 ]
 
 export function buildBucketReferenceLookupValues(objectKey: string): string[] {
@@ -130,7 +139,7 @@ export async function findKnownBucketObjectReferences({
   const lookupValues = buildBucketReferenceLookupValues(trimmedKey)
   const references: BucketObjectReference[] = []
 
-  const [exercises, avatars, maps, patients, users, partnerLogos] =
+  const [exercises, avatars, maps, patients, users, partnerLogos, promoVideos] =
     await Promise.all([
       reader.findExerciseReferences(lookupValues),
       reader.findAvatarReferences(lookupValues),
@@ -138,6 +147,7 @@ export async function findKnownBucketObjectReferences({
       reader.findPatientReferences(lookupValues),
       reader.findUserReferences(lookupValues),
       reader.findPartnerLogoReferences(lookupValues),
+      reader.findPromoVideoReferences(lookupValues),
     ])
 
   for (const exercise of exercises) {
@@ -211,6 +221,17 @@ export async function findKnownBucketObjectReferences({
         resourceId: partnerLogo.id,
         resourceLabel: partnerLogo.alt,
         field: 'image',
+      })
+    }
+  }
+
+  for (const promoVideo of promoVideos) {
+    if (fieldMatchesReference(promoVideo.video, lookupValues)) {
+      references.push({
+        resourceType: 'promoVideo',
+        resourceId: promoVideo.id,
+        resourceLabel: promoVideo.label,
+        field: 'video',
       })
     }
   }

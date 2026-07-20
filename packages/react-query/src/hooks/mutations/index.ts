@@ -72,6 +72,10 @@ export { useUpdatePartnerLogo } from './partner-logo/use-update-partner-logo.js'
 export { useReorderPartnerLogo } from './partner-logo/use-reorder-partner-logo.js'
 export { useRemovePartnerLogo } from './partner-logo/use-remove-partner-logo.js'
 
+// Promo video mutations
+export { useAssignPromoVideo } from './promo-video/use-assign-promo-video.js'
+export { useClearPromoVideo } from './promo-video/use-clear-promo-video.js'
+
 // Bucket mutations
 export { useUploadBucketObjects } from './bucket/use-upload-bucket-objects.js'
 export { useMoveBucketObject } from './bucket/use-move-bucket-object.js'

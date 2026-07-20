@@ -1,0 +1,8 @@
+// Marketing Promo Video Domain
+
+model MarketingPromoVideo {
+  id        String   @id
+  objectKey String   @unique
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  updatedAt DateTime @updatedAt @db.Timestamp(6)
+}

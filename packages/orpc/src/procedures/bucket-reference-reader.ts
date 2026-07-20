@@ -73,5 +73,21 @@ export function createPrismaBucketReferenceReader(
             image: objectKey,
           })),
         ),
+    findPromoVideoReferences: (lookupValues) =>
+      prisma.marketingPromoVideo
+        .findMany({
+          where: { objectKey: { in: lookupValues } },
+          select: {
+            id: true,
+            objectKey: true,
+          },
+        })
+        .then((promoVideos) =>
+          promoVideos.map(({ id, objectKey }) => ({
+            id,
+            label: 'Landing promo video',
+            video: objectKey,
+          })),
+        ),
   }
 }

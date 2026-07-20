@@ -1,6 +1,7 @@
 import { EFFECTIVENESS_REPORT_COPY } from '@/lib/effectiveness-report-copy'
 import type { LucideIcon } from 'lucide-react'
 import {
+  Film,
   Images,
   LayoutDashboard,
   LineChart,
@@ -40,6 +41,7 @@ export const sidebarNav: SidebarNavGroup[] = [
     label: 'Content',
     items: [
       { title: 'Partner logos', href: '/partner-logos', icon: Images },
+      { title: 'Promo video', href: '/promo-video', icon: Film },
       { title: 'Email', href: '/email', icon: Mail },
     ],
   },

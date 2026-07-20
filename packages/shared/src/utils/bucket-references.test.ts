@@ -21,6 +21,7 @@ function createReader(
     findPatientReferences: async () => [],
     findUserReferences: async () => [],
     findPartnerLogoReferences: async () => [],
+    findPromoVideoReferences: async () => [],
     ...overrides,
   }
 }
@@ -140,6 +141,30 @@ describe('findKnownBucketObjectReferences', () => {
         resourceId: 'logo-1',
         resourceLabel: 'NHS Trust',
         field: 'image',
+      },
+    ])
+  })
+
+  it('detects promo video references by object key', async () => {
+    const outcome = await findKnownBucketObjectReferences({
+      reader: createReader({
+        findPromoVideoReferences: async () => [
+          {
+            id: 'promo-1',
+            label: 'Landing promo video',
+            video: 'virtality-promo-web-001.mp4',
+          },
+        ],
+      }),
+      objectKey: 'virtality-promo-web-001.mp4',
+    })
+
+    expect(outcome.references).toEqual([
+      {
+        resourceType: 'promoVideo',
+        resourceId: 'promo-1',
+        resourceLabel: 'Landing promo video',
+        field: 'video',
       },
     ])
   })

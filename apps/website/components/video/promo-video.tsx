@@ -1,9 +1,11 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { usePromoVideo } from '@virtality/react-query'
 import { Play } from 'lucide-react'
+import { useRef, useState } from 'react'
 
 const PromoVideo = () => {
+  const { data: promoVideo, isPending } = usePromoVideo()
   const [isPlaying, setPlaying] = useState(false)
   const videoRef = useRef<HTMLVideoElement | null>(null)
 
@@ -22,6 +24,10 @@ const PromoVideo = () => {
     video.onpause = () => {
       setPlaying(false)
     }
+  }
+
+  if (isPending || !promoVideo?.cdnUrl) {
+    return null
   }
 
   return (
@@ -71,7 +77,7 @@ const PromoVideo = () => {
                 ref={videoRef}
                 controls
                 controlsList='nodownload'
-                src='https://cdn.virtality.app/virtality-promo-web-001.mp4'
+                src={promoVideo.cdnUrl}
                 className='w-full'
               />
               {!isPlaying && (

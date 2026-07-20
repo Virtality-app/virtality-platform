@@ -13,16 +13,20 @@ import {
   filterBucketImagePickerFolders,
   filterBucketImagePickerObjects,
 } from '@/lib/bucket-image-picker'
+import { filterBucketMp4PickerObjects } from '@/lib/promo-video'
 import { useBucket } from '@virtality/react-query'
 import { getBucketBreadcrumbs } from '@virtality/shared/utils'
-import { ChevronRight, Folder } from 'lucide-react'
+import { ChevronRight, Folder, Film } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect, useMemo, useState } from 'react'
+
+export type BucketObjectPickerKind = 'image' | 'mp4'
 
 type BucketObjectPickerDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSelect: (objectKey: string) => void
+  objectKind?: BucketObjectPickerKind
 }
 
 const pickerRowClassName =
@@ -32,6 +36,7 @@ export const BucketObjectPickerDialog = ({
   open,
   onOpenChange,
   onSelect,
+  objectKind = 'image',
 }: BucketObjectPickerDialogProps) => {
   const [query, setQuery] = useState('')
   const [prefix, setPrefix] = useState('')
@@ -51,22 +56,33 @@ export const BucketObjectPickerDialog = ({
     [data?.folders, query],
   )
 
-  const imageObjects = useMemo(
-    () => filterBucketImagePickerObjects(data?.objects ?? [], query),
-    [data?.objects, query],
-  )
+  const selectableObjects = useMemo(() => {
+    const objects = data?.objects ?? []
+    if (objectKind === 'mp4') {
+      return filterBucketMp4PickerObjects(objects, query)
+    }
 
-  const hasResults = folders.length > 0 || imageObjects.length > 0
+    return filterBucketImagePickerObjects(objects, query)
+  }, [data?.objects, objectKind, query])
+
+  const hasResults = folders.length > 0 || selectableObjects.length > 0
+  const emptyLabel =
+    objectKind === 'mp4'
+      ? 'No folders or MP4 objects found in this location.'
+      : 'No folders or image objects found in this location.'
+  const title =
+    objectKind === 'mp4' ? 'Select bucket video' : 'Select bucket image'
+  const description =
+    objectKind === 'mp4'
+      ? 'Browse folders in the platform media bucket and choose an MP4 video. External URLs are not supported.'
+      : 'Browse folders in the platform media bucket and choose an image. External URLs are not supported.'
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='max-h-[80vh] max-w-2xl overflow-hidden'>
         <DialogHeader>
-          <DialogTitle>Select bucket image</DialogTitle>
-          <DialogDescription>
-            Browse folders in the platform media bucket and choose an image.
-            External URLs are not supported.
-          </DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
         <nav
@@ -113,9 +129,7 @@ export const BucketObjectPickerDialog = ({
               Loading bucket objects...
             </p>
           ) : !hasResults ? (
-            <p className='text-muted-foreground text-sm'>
-              No folders or image objects found in this location.
-            </p>
+            <p className='text-muted-foreground text-sm'>{emptyLabel}</p>
           ) : (
             <>
               {folders.map((folder) => (
@@ -138,7 +152,7 @@ export const BucketObjectPickerDialog = ({
                 </button>
               ))}
 
-              {imageObjects.map((object) => (
+              {selectableObjects.map((object) => (
                 <button
                   key={object.objectKey}
                   type='button'
@@ -148,13 +162,19 @@ export const BucketObjectPickerDialog = ({
                   }}
                   className={pickerRowClassName}
                 >
-                  <Image
-                    src={object.cdnUrl}
-                    alt={object.name}
-                    width={48}
-                    height={48}
-                    className='size-12 rounded object-cover'
-                  />
+                  {objectKind === 'mp4' ? (
+                    <div className='bg-muted flex size-12 items-center justify-center rounded'>
+                      <Film className='text-muted-foreground size-6' />
+                    </div>
+                  ) : (
+                    <Image
+                      src={object.cdnUrl}
+                      alt={object.name}
+                      width={48}
+                      height={48}
+                      className='size-12 rounded object-cover'
+                    />
+                  )}
                   <div className='min-w-0 flex-1'>
                     <p className='truncate font-medium'>{object.name}</p>
                     <p className='text-muted-foreground truncate font-mono text-xs'>
