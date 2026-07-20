@@ -1,6 +1,7 @@
 import { EFFECTIVENESS_REPORT_COPY } from '@/lib/effectiveness-report-copy'
 import type { LucideIcon } from 'lucide-react'
 import {
+  Grid3x3,
   Images,
   LayoutDashboard,
   LineChart,
@@ -40,6 +41,7 @@ export const sidebarNav: SidebarNavGroup[] = [
     label: 'Content',
     items: [
       { title: 'Partner logos', href: '/partner-logos', icon: Images },
+      { title: 'Mosaic', href: '/mosaic', icon: Grid3x3 },
       { title: 'Email', href: '/email', icon: Mail },
     ],
   },
