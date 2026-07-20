@@ -50,7 +50,7 @@ export function ClearPromoVideoDialog({
     setValidationError(null)
 
     try {
-      await clearPromoVideo()
+      await clearPromoVideo(undefined)
       onOpenChange(false)
     } catch (error) {
       setValidationError(getErrorMessage(error, 'Clear failed.'))
