@@ -338,8 +338,8 @@ const BucketBrowser = () => {
   }
 
   return (
-    <div className='flex flex-col gap-4 p-8'>
-      <div>
+    <div className='flex min-w-0 flex-col gap-4 p-4 sm:p-8'>
+      <div className='min-w-0'>
         <h1 className='text-2xl font-semibold'>Bucket manager</h1>
         <p className='text-sm text-zinc-500'>
           Browse CDN-backed bucket objects one folder at a time.
@@ -348,16 +348,19 @@ const BucketBrowser = () => {
 
       <nav
         aria-label='Bucket breadcrumbs'
-        className='flex flex-wrap items-center gap-1 text-sm'
+        className='flex min-w-0 flex-wrap items-center gap-1 text-sm'
       >
         {breadcrumbs.map((crumb, index) => {
           const isLast = index === breadcrumbs.length - 1
 
           return (
-            <div key={crumb.prefix} className='flex items-center gap-1'>
+            <div
+              key={crumb.prefix}
+              className='flex max-w-full min-w-0 items-center gap-1'
+            >
               {index > 0 && (
                 <ChevronRight
-                  className='size-4 text-zinc-400'
+                  className='size-4 shrink-0 text-zinc-400'
                   aria-hidden='true'
                 />
               )}
@@ -365,11 +368,12 @@ const BucketBrowser = () => {
                 type='button'
                 className={
                   isLast
-                    ? 'font-medium text-zinc-950 dark:text-zinc-50'
-                    : 'text-zinc-600 hover:underline dark:text-zinc-300'
+                    ? 'max-w-full truncate font-medium text-zinc-950 dark:text-zinc-50'
+                    : 'max-w-full truncate text-zinc-600 hover:underline dark:text-zinc-300'
                 }
                 onClick={() => setPrefix(crumb.prefix)}
                 disabled={isLast}
+                title={crumb.label}
               >
                 {crumb.label}
               </button>
@@ -378,12 +382,12 @@ const BucketBrowser = () => {
         })}
       </nav>
 
-      <div className='flex flex-wrap items-center gap-3'>
+      <div className='flex min-w-0 flex-wrap items-center gap-3'>
         <Input
           placeholder='Search in this folder...'
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          className='max-w-sm'
+          className='w-full max-w-sm min-w-0'
         />
         <Button onClick={() => setIsUploadDialogOpen(true)}>
           <Upload />
@@ -395,7 +399,7 @@ const BucketBrowser = () => {
         <p className='text-sm text-red-500'>Failed to load bucket objects.</p>
       ) : null}
 
-      <div className='rounded-md border'>
+      <div className='min-w-0 overflow-x-auto rounded-md border'>
         <Table>
           <TableHeader>
             <TableRow>
@@ -444,12 +448,24 @@ const BucketBrowser = () => {
                     aria-hidden='true'
                   />
                 </TableCell>
-                <TableCell className='font-medium'>{folder.name}</TableCell>
+                <TableCell>
+                  <div
+                    className='max-w-[12rem] truncate font-medium sm:max-w-xs'
+                    title={folder.name}
+                  >
+                    {folder.name}
+                  </div>
+                </TableCell>
                 <TableCell>Folder</TableCell>
                 <TableCell>—</TableCell>
                 <TableCell>—</TableCell>
-                <TableCell className='font-mono text-xs text-zinc-500'>
-                  {folder.prefix}
+                <TableCell>
+                  <div
+                    className='max-w-[12rem] truncate font-mono text-xs text-zinc-500 sm:max-w-xs'
+                    title={folder.prefix}
+                  >
+                    {folder.prefix}
+                  </div>
                 </TableCell>
                 <TableCell className='text-right'>
                   <FolderActions
@@ -467,12 +483,24 @@ const BucketBrowser = () => {
                 <TableCell>
                   <ObjectPreview object={object} />
                 </TableCell>
-                <TableCell className='font-medium'>{object.name}</TableCell>
+                <TableCell>
+                  <div
+                    className='max-w-[12rem] truncate font-medium sm:max-w-xs'
+                    title={object.name}
+                  >
+                    {object.name}
+                  </div>
+                </TableCell>
                 <TableCell>{object.contentType}</TableCell>
                 <TableCell>{formatFileSize(object.size)}</TableCell>
                 <TableCell>{formatLastModified(object.lastModified)}</TableCell>
-                <TableCell className='max-w-xs truncate font-mono text-xs text-zinc-500'>
-                  {object.objectKey}
+                <TableCell>
+                  <div
+                    className='max-w-[12rem] truncate font-mono text-xs text-zinc-500 sm:max-w-xs'
+                    title={object.objectKey}
+                  >
+                    {object.objectKey}
+                  </div>
                 </TableCell>
                 <TableCell className='text-right'>
                   <ObjectActions

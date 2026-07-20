@@ -38,12 +38,9 @@ describe('hero conversion path (PRD 133 / issue 134)', () => {
     expect(HERO_SUPPORTING_COPY).toMatch(/evidence-based VR therapy/i)
   })
 
-  it('preserves the hero waitlist banner and CDN headset image', () => {
-    const hero = readWebsiteFile('components/home/hero-image-backdrop.tsx')
+  it('preserves the CDN headset image in the legacy hero', () => {
     const heroLegacy = readWebsiteFile('components/home/hero_legacy.tsx')
 
-    expect(hero).toMatch(/ButtonToAction/)
-    expect(heroLegacy).toMatch(/ButtonToAction/)
     expect(heroLegacy).toMatch(
       /https:\/\/cdn\.virtality\.app\/f0c18d8ef3258c8510bbf79bba1f3872241bdab6c8251c9724e4e766132a5b20/,
     )

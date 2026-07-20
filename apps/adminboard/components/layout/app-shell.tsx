@@ -23,9 +23,9 @@ const AppShell = ({
   return (
     <SidebarProvider defaultOpen={defaultSidebarOpen}>
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className='min-w-0'>
         <TopBar />
-        <div className='min-h-screen-with-header bg-background text-foreground h-full'>
+        <div className='min-h-screen-with-header bg-background text-foreground h-full min-w-0'>
           {children}
         </div>
       </SidebarInset>

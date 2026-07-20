@@ -10,7 +10,6 @@ import {
   HERO_SECONDARY_CTA_LABEL,
 } from '@/lib/hero-content'
 import { scrollToFinalCta } from '@/lib/scroll-to-cta'
-import ButtonToAction from './btn-to-action'
 import HeroTitle from './hero-title'
 
 const demoBookingUrl = getDemoBookingUrl()
@@ -47,14 +46,6 @@ const HeroImageBackdropScaled = () => {
             "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
         }}
       />
-
-      {/* Banner */}
-      <div className='relative z-10 flex min-h-11 w-full items-center justify-center bg-linear-to-r from-vital-blue-800 to-vital-blue-700 text-white shadow-md'>
-        <p className='px-4 text-center text-[13px] font-medium tracking-wide'>
-          Join our growing community of healthcare professionals by entering our{' '}
-          <ButtonToAction />
-        </p>
-      </div>
 
       <div className='relative z-1 container m-auto flex flex-1 flex-col justify-center px-4 py-16 pb-28 md:px-8 md:py-20 md:pb-32'>
         <div className='max-w-3xl'>
