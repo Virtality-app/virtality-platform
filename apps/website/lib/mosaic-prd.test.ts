@@ -58,3 +58,34 @@ describe('PRD 153 issue 156 landing mosaic section shell', () => {
     expect(mosaicSection).toMatch(/tiles\.map/)
   })
 })
+
+describe('PRD 153 issue 157 live mosaic image grid', () => {
+  it('renders image tiles with CDN src, alt text, and saved grid placement', () => {
+    const mosaicImageTile = readWebsiteFile(
+      'components/home/mosaic/mosaic-image-tile.tsx',
+    )
+
+    expect(mosaicImageTile).toMatch(/getMosaicImageTileProps/)
+    expect(mosaicImageTile).toMatch(/getMosaicTileGridStyle/)
+    expect(mosaicImageTile).toMatch(/alt=\{image\.alt\}/)
+    expect(mosaicImageTile).toMatch(/src=\{image\.src\}/)
+    expect(readWebsiteFile('lib/mosaic-grid.ts')).toMatch(/gridColumn/)
+  })
+
+  it('preserves the 3×3 composition on mobile via a scaled wrapper', () => {
+    const mosaicSection = readWebsiteFile(
+      'components/home/mosaic/mosaic-section.tsx',
+    )
+
+    expect(mosaicSection).toMatch(/MOSAIC_GRID_MOBILE_SCALE_CLASS/)
+    expect(mosaicSection).toMatch(/grid-cols-3/)
+    expect(mosaicSection).toMatch(/grid-rows-3/)
+  })
+
+  it('keeps incomplete and empty boards hidden through the visibility helper', () => {
+    expect(shouldShowMosaicSection({ status: 'empty' })).toBe(false)
+    expect(
+      shouldShowMosaicSection({ status: 'incomplete', errors: ['gap'] }),
+    ).toBe(false)
+  })
+})

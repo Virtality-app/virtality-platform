@@ -1,0 +1,33 @@
+import Image from 'next/image'
+import type { MosaicTileListItem } from '@virtality/shared/types'
+import { getMosaicTileGridStyle } from '@/lib/mosaic-grid'
+import { getMosaicImageTileProps } from '@/lib/mosaic-tile'
+
+type MosaicImageTileProps = {
+  tile: MosaicTileListItem
+}
+
+const MosaicImageTile = ({ tile }: MosaicImageTileProps) => {
+  const image = getMosaicImageTileProps(tile)
+
+  if (!image) {
+    return null
+  }
+
+  return (
+    <div
+      className='relative overflow-hidden rounded-lg border border-vital-blue-100/80 bg-vital-blue-50/40'
+      style={getMosaicTileGridStyle(tile)}
+    >
+      <Image
+        src={image.src}
+        alt={image.alt}
+        fill
+        sizes='(max-width: 640px) 30vw, 240px'
+        className='object-cover'
+      />
+    </div>
+  )
+}
+
+export default MosaicImageTile
