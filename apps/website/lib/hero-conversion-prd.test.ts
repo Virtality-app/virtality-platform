@@ -62,7 +62,7 @@ describe('hero conversion path (PRD 133 / issue 134)', () => {
     expect(heroTitle).toMatch(/HERO_SECONDARY_CTA_LABEL/)
     expect(heroTitle).toMatch(/getDemoBookingUrl/)
     expect(heroTitle).not.toMatch(/https:\/\/cal\.com\/virtality/)
-    expect(HERO_SECONDARY_CTA_LABEL).toBe('Book a 30-minute demo')
+    expect(HERO_SECONDARY_CTA_LABEL).toBe('Book a 20-minute demo')
   })
 
   it('adds navbar Book a demo action that scrolls to the final CTA', () => {

@@ -76,6 +76,9 @@ export { useRemovePartnerLogo } from './partner-logo/use-remove-partner-logo.js'
 export { useAssignPromoVideo } from './promo-video/use-assign-promo-video.js'
 export { useClearPromoVideo } from './promo-video/use-clear-promo-video.js'
 
+// Mosaic mutations
+export { useSaveMosaic } from './mosaic/use-save-mosaic.js'
+
 // Bucket mutations
 export { useUploadBucketObjects } from './bucket/use-upload-bucket-objects.js'
 export { useMoveBucketObject } from './bucket/use-move-bucket-object.js'

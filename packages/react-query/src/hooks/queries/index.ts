@@ -57,6 +57,8 @@ export { usePartnerLogos } from './partner-logo/use-partner-logos.js'
 
 // Promo video queries
 export { usePromoVideo } from './promo-video/use-promo-video.js'
+// Mosaic queries
+export { useMosaic } from './mosaic/use-mosaic.js'
 
 // Referral queries
 export { useReferralCodes } from './referral/use-referral-codes.js'

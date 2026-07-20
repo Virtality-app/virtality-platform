@@ -8,6 +8,7 @@ export type BucketReferenceResourceType =
   | 'user'
   | 'partnerLogo'
   | 'promoVideo'
+  | 'mosaic'
 
 export type BucketReferenceField = 'image' | 'video'
 
@@ -84,6 +85,14 @@ export type BucketReferenceReader = {
       video: string
     }>
   >
+  findMosaicTileReferences: (lookupValues: string[]) => Promise<
+    Array<{
+      id: string
+      alt: string
+      image: string
+      mediaKind: 'image' | 'video'
+    }>
+  >
 }
 
 const RESOURCE_TYPE_ORDER: BucketReferenceResourceType[] = [
@@ -94,6 +103,7 @@ const RESOURCE_TYPE_ORDER: BucketReferenceResourceType[] = [
   'user',
   'partnerLogo',
   'promoVideo',
+  'mosaic',
 ]
 
 export function buildBucketReferenceLookupValues(objectKey: string): string[] {
@@ -139,16 +149,25 @@ export async function findKnownBucketObjectReferences({
   const lookupValues = buildBucketReferenceLookupValues(trimmedKey)
   const references: BucketObjectReference[] = []
 
-  const [exercises, avatars, maps, patients, users, partnerLogos, promoVideos] =
-    await Promise.all([
-      reader.findExerciseReferences(lookupValues),
-      reader.findAvatarReferences(lookupValues),
-      reader.findMapReferences(lookupValues),
-      reader.findPatientReferences(lookupValues),
-      reader.findUserReferences(lookupValues),
-      reader.findPartnerLogoReferences(lookupValues),
-      reader.findPromoVideoReferences(lookupValues),
-    ])
+  const [
+    exercises,
+    avatars,
+    maps,
+    patients,
+    users,
+    partnerLogos,
+    promoVideos,
+    mosaicTiles,
+  ] = await Promise.all([
+    reader.findExerciseReferences(lookupValues),
+    reader.findAvatarReferences(lookupValues),
+    reader.findMapReferences(lookupValues),
+    reader.findPatientReferences(lookupValues),
+    reader.findUserReferences(lookupValues),
+    reader.findPartnerLogoReferences(lookupValues),
+    reader.findPromoVideoReferences(lookupValues),
+    reader.findMosaicTileReferences(lookupValues),
+  ])
 
   for (const exercise of exercises) {
     if (fieldMatchesReference(exercise.image, lookupValues)) {
@@ -232,6 +251,17 @@ export async function findKnownBucketObjectReferences({
         resourceId: promoVideo.id,
         resourceLabel: promoVideo.label,
         field: 'video',
+      })
+    }
+  }
+
+  for (const mosaicTile of mosaicTiles) {
+    if (fieldMatchesReference(mosaicTile.image, lookupValues)) {
+      references.push({
+        resourceType: 'mosaic',
+        resourceId: mosaicTile.id,
+        resourceLabel: mosaicTile.alt,
+        field: mosaicTile.mediaKind,
       })
     }
   }

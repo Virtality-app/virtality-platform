@@ -1,0 +1,30 @@
+// Marketing Landing Mosaic Domain
+
+enum MosaicMediaKind {
+  image
+  video
+}
+
+model MarketingLandingMosaic {
+  id        String                @id @default("landing")
+  createdAt DateTime              @default(now()) @db.Timestamp(6)
+  updatedAt DateTime              @updatedAt @db.Timestamp(6)
+  tiles     MarketingMosaicTile[]
+}
+
+model MarketingMosaicTile {
+  id         String                 @id
+  mosaicId   String                 @default("landing")
+  mosaic     MarketingLandingMosaic @relation(fields: [mosaicId], references: [id], onDelete: Cascade)
+  objectKey  String
+  mediaKind  MosaicMediaKind
+  alt        String
+  row        Int
+  col        Int
+  width      Int
+  height     Int
+  createdAt  DateTime               @default(now()) @db.Timestamp(6)
+  updatedAt  DateTime               @updatedAt @db.Timestamp(6)
+
+  @@index([mosaicId])
+}
