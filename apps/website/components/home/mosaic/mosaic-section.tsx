@@ -1,10 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import { useMosaic } from '@virtality/react-query'
+import type { MosaicTileListItem } from '@virtality/shared/types'
 import { MOSAIC_SECTION_CONTENT } from '@/lib/mosaic-content'
 import { MOSAIC_GRID_MOBILE_SCALE_CLASS } from '@/lib/mosaic-grid'
 import { shouldShowMosaicSection } from '@/lib/mosaic-visibility'
 import MosaicImageTile from './mosaic-image-tile'
+import MosaicLightbox from './mosaic-lightbox'
 import MosaicVideoTile from './mosaic-video-tile'
 
 const GRID_BACKDROP_STYLE = {
@@ -17,12 +20,37 @@ const GRID_BACKDROP_STYLE = {
 
 const MosaicSection = () => {
   const { data } = useMosaic()
+  const [lightboxTile, setLightboxTile] = useState<MosaicTileListItem | null>(
+    null,
+  )
 
   if (!data || !shouldShowMosaicSection(data.eligibility)) {
     return null
   }
 
   const { tiles } = data
+  const isLightboxOpen = lightboxTile !== null
+
+  const onOpenTile = (tile: MosaicTileListItem) => {
+    setLightboxTile(tile)
+  }
+
+  const renderTile = (tile: MosaicTileListItem) => {
+    const onOpen = () => onOpenTile(tile)
+
+    if (tile.mediaKind === 'video') {
+      return (
+        <MosaicVideoTile
+          key={tile.id}
+          tile={tile}
+          onOpen={onOpen}
+          isLightboxOpen={isLightboxOpen}
+        />
+      )
+    }
+
+    return <MosaicImageTile key={tile.id} tile={tile} onOpen={onOpen} />
+  }
 
   return (
     <section
@@ -53,16 +81,15 @@ const MosaicSection = () => {
             className='grid aspect-square grid-cols-3 grid-rows-3 gap-2 md:gap-3'
             aria-label='Virtality in the wild media mosaic'
           >
-            {tiles.map((tile) => {
-              if (tile.mediaKind === 'video') {
-                return <MosaicVideoTile key={tile.id} tile={tile} />
-              }
-
-              return <MosaicImageTile key={tile.id} tile={tile} />
-            })}
+            {tiles.map(renderTile)}
           </div>
         </div>
       </div>
+
+      <MosaicLightbox
+        tile={lightboxTile}
+        onClose={() => setLightboxTile(null)}
+      />
     </section>
   )
 }

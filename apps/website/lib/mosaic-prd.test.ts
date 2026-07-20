@@ -107,3 +107,33 @@ describe('PRD 153 issue 162 in-grid ambient video playback', () => {
     expect(mosaicSection).toMatch(/mediaKind === 'video'/)
   })
 })
+
+describe('PRD 153 issue 163 mosaic lightbox for photos and videos', () => {
+  it('opens enlarged photos and controlled videos from clickable tiles', () => {
+    const mosaicSection = readWebsiteFile(
+      'components/home/mosaic/mosaic-section.tsx',
+    )
+    const mosaicImageTile = readWebsiteFile(
+      'components/home/mosaic/mosaic-image-tile.tsx',
+    )
+    const mosaicVideoTile = readWebsiteFile(
+      'components/home/mosaic/mosaic-video-tile.tsx',
+    )
+    const mosaicLightbox = readWebsiteFile(
+      'components/home/mosaic/mosaic-lightbox.tsx',
+    )
+
+    expect(mosaicSection).toMatch(/MosaicLightbox/)
+    expect(mosaicSection).toMatch(/onOpenTile/)
+    expect(mosaicImageTile).toMatch(/onOpen/)
+    expect(mosaicImageTile).toMatch(/type='button'/)
+    expect(mosaicVideoTile).toMatch(/onOpen/)
+    expect(mosaicVideoTile).toMatch(/type='button'/)
+    expect(mosaicLightbox).toMatch(/getMosaicLightboxContent/)
+    expect(mosaicLightbox).toMatch(/aria-label=\{content\.alt\}/)
+    expect(mosaicLightbox).toMatch(/controls/)
+    expect(readWebsiteFile('lib/mosaic-lightbox.ts')).toMatch(
+      /getMosaicLightboxContent/,
+    )
+  })
+})

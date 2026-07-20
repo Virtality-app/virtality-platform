@@ -3,14 +3,23 @@
 import { Button } from '@/components/ui/button'
 import { MosaicAddMediaDialog } from '@/components/mosaic/mosaic-add-media-dialog'
 import MosaicBoardEditor from '@/components/mosaic/mosaic-board-editor'
+import { MosaicSaveEmptyDialog } from '@/components/mosaic/mosaic-save-empty-dialog'
 import MosaicTray from '@/components/mosaic/mosaic-tray'
+import { getErrorMessage } from '@/lib/get-error-message'
 import {
   addMosaicTrayItem,
+  clearMosaicEditorState,
   createEmptyMosaicEditorState,
+  mosaicEditorTilesToSaveInput,
   placeMosaicTileFromTray,
+  removeMosaicTileFromBoard,
+  resizeMosaicTile,
   type MosaicEditorState,
+  type MosaicSpan,
   type MosaicTrayItem,
 } from '@/lib/mosaic-editor'
+import { useSaveMosaic } from '@virtality/react-query'
+import { assessMosaicLiveEligibility } from '@virtality/shared/utils'
 import { PlusSquare } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -19,7 +28,10 @@ const MosaicEditor = () => {
   const [editorState, setEditorState] = useState<MosaicEditorState>(
     createEmptyMosaicEditorState,
   )
+  const [selectedTileId, setSelectedTileId] = useState<string | null>(null)
   const [addMediaOpen, setAddMediaOpen] = useState(false)
+  const [emptySaveOpen, setEmptySaveOpen] = useState(false)
+  const { mutateAsync: saveMosaic, isPending: isSaving } = useSaveMosaic()
 
   const handleAddToTray = (item: MosaicTrayItem) => {
     setEditorState((current) => addMosaicTrayItem(current, item))
@@ -51,36 +63,153 @@ const MosaicEditor = () => {
     }
   }
 
+  const handleResizeTile = (tileId: string, span: MosaicSpan) => {
+    let resizeFailed = false
+
+    setEditorState((current) => {
+      const result = resizeMosaicTile(current, tileId, span)
+
+      if (!result.ok) {
+        resizeFailed = true
+        return current
+      }
+
+      return result.state
+    })
+
+    if (resizeFailed) {
+      toast.error('That span does not fit from this tile origin.')
+    }
+  }
+
+  const handleRemoveTile = (tileId: string) => {
+    let removed = false
+
+    setEditorState((current) => {
+      const next = removeMosaicTileFromBoard(
+        current,
+        tileId,
+        crypto.randomUUID(),
+      )
+
+      if (!next) {
+        return current
+      }
+
+      removed = true
+      return next
+    })
+
+    if (removed) {
+      setSelectedTileId(null)
+      toast.success('Tile returned to the staging tray.')
+    }
+  }
+
+  const handleClear = () => {
+    setEditorState(clearMosaicEditorState())
+    setSelectedTileId(null)
+    toast.message('Editor cleared. The live saved board is unchanged.')
+  }
+
+  const persistBoard = async (acknowledgeEmptyHide = false) => {
+    try {
+      const result = await saveMosaic({
+        tiles: mosaicEditorTilesToSaveInput(editorState.tiles),
+        acknowledgeEmptyHide,
+      })
+
+      if (result.warnings?.length) {
+        for (const warning of result.warnings) {
+          toast.warning(warning)
+        }
+      }
+
+      toast.success('Mosaic saved.')
+      setEmptySaveOpen(false)
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Could not save the mosaic.'))
+    }
+  }
+
+  const handleSave = () => {
+    const eligibility = assessMosaicLiveEligibility(editorState.tiles)
+
+    switch (eligibility.status) {
+      case 'empty':
+        setEmptySaveOpen(true)
+        break
+      case 'incomplete':
+        toast.error(
+          'Fix gaps or overlaps before saving. See the validation notes below the board.',
+        )
+        break
+      case 'live':
+        void persistBoard()
+        break
+    }
+  }
+
   return (
     <div className='space-y-8'>
       <div className='flex flex-wrap items-center justify-between gap-4'>
         <div>
           <p className='text-muted-foreground max-w-2xl text-sm'>
-            Stage bucket media in the tray, then drag items onto the board as
-            1×1 tiles. Save and resize controls arrive in a later slice.
+            Stage bucket media in the tray, drag items onto the board, resize
+            tiles into legal spans, then save a perfect tiling to publish.
           </p>
         </div>
-        <Button
-          variant='primary'
-          className='ml-auto flex items-center'
-          onClick={() => setAddMediaOpen(true)}
-        >
-          <PlusSquare />
-          Add media
-        </Button>
+        <div className='ml-auto flex flex-wrap items-center gap-2'>
+          <Button
+            type='button'
+            variant='outline'
+            onClick={handleClear}
+            disabled={isSaving}
+          >
+            Clear editor
+          </Button>
+          <Button
+            type='button'
+            variant='default'
+            onClick={handleSave}
+            disabled={isSaving}
+          >
+            {isSaving ? 'Saving...' : 'Save mosaic'}
+          </Button>
+          <Button
+            variant='primary'
+            className='flex items-center'
+            onClick={() => setAddMediaOpen(true)}
+            disabled={isSaving}
+          >
+            <PlusSquare />
+            Add media
+          </Button>
+        </div>
       </div>
 
       <MosaicTray items={editorState.tray} />
 
       <MosaicBoardEditor
         tiles={editorState.tiles}
+        selectedTileId={selectedTileId}
+        onSelectTile={setSelectedTileId}
         onPlaceTile={handlePlaceTile}
+        onResizeTile={handleResizeTile}
+        onRemoveTile={handleRemoveTile}
       />
 
       <MosaicAddMediaDialog
         open={addMediaOpen}
         onOpenChange={setAddMediaOpen}
         onAddToTray={handleAddToTray}
+      />
+
+      <MosaicSaveEmptyDialog
+        open={emptySaveOpen}
+        onOpenChange={setEmptySaveOpen}
+        isSaving={isSaving}
+        onConfirm={() => void persistBoard(true)}
       />
     </div>
   )

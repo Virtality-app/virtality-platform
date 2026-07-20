@@ -1,9 +1,13 @@
 import {
   MOSAIC_GRID_SIZE,
   type MosaicMediaKind,
+  type MosaicTileInput,
   type MosaicTilePlacement,
 } from '@virtality/shared/types'
-import { validateMosaicTilePlacement } from '@virtality/shared/utils'
+import {
+  ALLOWED_MOSAIC_SPANS,
+  validateMosaicTilePlacement,
+} from '@virtality/shared/utils'
 
 export const MOSAIC_TRAY_DRAG_MIME =
   'application/x-virtality-mosaic-tray-item-id'
@@ -38,6 +42,23 @@ export type PlaceMosaicTileResult =
       ok: false
       reason: 'occupied' | 'out_of_bounds' | 'tray_item_missing' | 'invalid_alt'
     }
+
+export type ResizeMosaicTileResult =
+  | { ok: true; state: MosaicEditorState }
+  | { ok: false; reason: 'tile_missing' | 'illegal_span' }
+
+export type MosaicSpan = {
+  width: MosaicTilePlacement['width']
+  height: MosaicTilePlacement['height']
+}
+
+export function formatMosaicSpan({ width, height }: MosaicSpan): string {
+  return `${width}×${height}`
+}
+
+export function mosaicSpansEqual(a: MosaicSpan, b: MosaicSpan): boolean {
+  return a.width === b.width && a.height === b.height
+}
 
 function cellsForPlacement(
   placement: MosaicTilePlacement,
@@ -75,6 +96,10 @@ function cellIsInTile(
 
 export function createEmptyMosaicEditorState(): MosaicEditorState {
   return { tray: [], tiles: [] }
+}
+
+export function clearMosaicEditorState(): MosaicEditorState {
+  return createEmptyMosaicEditorState()
 }
 
 export function addMosaicTrayItem(
@@ -131,6 +156,116 @@ export function canPlaceMosaicTileAt(
 
   return cellsForPlacement(placement).every(
     (cell) => !isMosaicCellOccupied(tiles, cell.row, cell.col),
+  )
+}
+
+function tilesExcept(
+  tiles: readonly MosaicEditorTile[],
+  tileId: string,
+): MosaicEditorTile[] {
+  return tiles.filter((tile) => tile.id !== tileId)
+}
+
+export function canPlaceMosaicSpanAt(
+  tiles: readonly MosaicEditorTile[],
+  tileId: string,
+  placement: MosaicTilePlacement,
+): boolean {
+  return canPlaceMosaicTileAt(tilesExcept(tiles, tileId), placement)
+}
+
+export function getLegalMosaicSpansForTile(
+  tiles: readonly MosaicEditorTile[],
+  tileId: string,
+): MosaicSpan[] {
+  const tile = tiles.find((entry) => entry.id === tileId)
+
+  if (!tile) {
+    return []
+  }
+
+  return ALLOWED_MOSAIC_SPANS.filter((span) =>
+    canPlaceMosaicSpanAt(tiles, tileId, {
+      row: tile.row,
+      col: tile.col,
+      width: span.width,
+      height: span.height,
+    }),
+  )
+}
+
+export function resizeMosaicTile(
+  state: MosaicEditorState,
+  tileId: string,
+  span: MosaicSpan,
+): ResizeMosaicTileResult {
+  const tile = state.tiles.find((entry) => entry.id === tileId)
+
+  if (!tile) {
+    return { ok: false, reason: 'tile_missing' }
+  }
+
+  const { width, height } = span
+  const placement: MosaicTilePlacement = {
+    row: tile.row,
+    col: tile.col,
+    width,
+    height,
+  }
+
+  if (!canPlaceMosaicSpanAt(state.tiles, tileId, placement)) {
+    return { ok: false, reason: 'illegal_span' }
+  }
+
+  return {
+    ok: true,
+    state: {
+      ...state,
+      tiles: state.tiles.map((entry) =>
+        entry.id === tileId ? { ...entry, width, height } : entry,
+      ),
+    },
+  }
+}
+
+export function removeMosaicTileFromBoard(
+  state: MosaicEditorState,
+  tileId: string,
+  trayItemId: string,
+): MosaicEditorState | null {
+  const tile = state.tiles.find((entry) => entry.id === tileId)
+
+  if (!tile) {
+    return null
+  }
+
+  return {
+    tray: [
+      ...state.tray,
+      {
+        id: trayItemId,
+        objectKey: tile.objectKey,
+        mediaKind: tile.mediaKind,
+        alt: tile.alt,
+      },
+    ],
+    tiles: state.tiles.filter((entry) => entry.id !== tileId),
+  }
+}
+
+export function mosaicEditorTilesToSaveInput(
+  tiles: readonly MosaicEditorTile[],
+): MosaicTileInput[] {
+  return tiles.map(
+    ({ objectKey, mediaKind, alt, row, col, width, height }) => ({
+      objectKey,
+      mediaKind,
+      alt,
+      row,
+      col,
+      width,
+      height,
+    }),
   )
 }
 

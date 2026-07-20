@@ -3,10 +3,16 @@ import { describe, expect, it } from 'vitest'
 import {
   addMosaicTrayItem,
   canPlaceMosaicTileAt,
+  clearMosaicEditorState,
   createEmptyMosaicEditorState,
   getEmptyMosaicCells,
+  getLegalMosaicSpansForTile,
   isMosaicCellOccupied,
+  mosaicEditorTilesToSaveInput,
   placeMosaicTileFromTray,
+  removeMosaicTileFromBoard,
+  resizeMosaicTile,
+  type MosaicEditorTile,
 } from './mosaic-editor'
 
 const trayItem = {
@@ -114,5 +120,122 @@ describe('mosaic editor placement', () => {
     )
 
     expect(overlap).toEqual({ ok: false, reason: 'occupied' })
+  })
+})
+
+const placedTile = (
+  overrides: Partial<MosaicEditorTile> &
+    Pick<MosaicEditorTile, 'id' | 'row' | 'col'>,
+): MosaicEditorTile => ({
+  objectKey: 'marketing/photo.jpg',
+  mediaKind: 'image',
+  alt: 'Clinic scene',
+  width: 1,
+  height: 1,
+  ...overrides,
+})
+
+describe('mosaic editor resize, remove, and save helpers', () => {
+  it('offers only legal spans from the tile origin into free cells', () => {
+    const tiles = [
+      placedTile({ id: 'tile-1', row: 0, col: 0 }),
+      placedTile({
+        id: 'tile-2',
+        row: 0,
+        col: 1,
+        objectKey: 'marketing/photo-2.jpg',
+        alt: 'Second tile',
+      }),
+    ]
+
+    expect(getLegalMosaicSpansForTile(tiles, 'tile-1')).toEqual([
+      { width: 1, height: 1 },
+      { width: 1, height: 2 },
+    ])
+    expect(getLegalMosaicSpansForTile(tiles, 'tile-1')).not.toContainEqual({
+      width: 2,
+      height: 1,
+    })
+  })
+
+  it('resizes a tile when the requested span fits free cells', () => {
+    const state = {
+      tray: [],
+      tiles: [placedTile({ id: 'tile-1', row: 0, col: 0 })],
+    }
+
+    const result = resizeMosaicTile(state, 'tile-1', { width: 2, height: 1 })
+
+    expect(result).toEqual({
+      ok: true,
+      state: {
+        tray: [],
+        tiles: [
+          placedTile({ id: 'tile-1', row: 0, col: 0, width: 2, height: 1 }),
+        ],
+      },
+    })
+  })
+
+  it('rejects illegal resize spans', () => {
+    const state = {
+      tray: [],
+      tiles: [
+        placedTile({ id: 'tile-1', row: 0, col: 0 }),
+        placedTile({
+          id: 'tile-2',
+          row: 0,
+          col: 1,
+          objectKey: 'marketing/photo-2.jpg',
+          alt: 'Second tile',
+        }),
+      ],
+    }
+
+    expect(resizeMosaicTile(state, 'tile-1', { width: 2, height: 1 })).toEqual({
+      ok: false,
+      reason: 'illegal_span',
+    })
+  })
+
+  it('returns a removed tile to the tray', () => {
+    const state = {
+      tray: [],
+      tiles: [placedTile({ id: 'tile-1', row: 1, col: 1 })],
+    }
+
+    expect(removeMosaicTileFromBoard(state, 'tile-1', 'tray-returned')).toEqual(
+      {
+        tray: [
+          {
+            id: 'tray-returned',
+            objectKey: 'marketing/photo.jpg',
+            mediaKind: 'image',
+            alt: 'Clinic scene',
+          },
+        ],
+        tiles: [],
+      },
+    )
+  })
+
+  it('clears editor state without touching save payload helpers', () => {
+    const state = {
+      tray: [trayItem],
+      tiles: [placedTile({ id: 'tile-1', row: 0, col: 0 })],
+    }
+
+    expect(clearMosaicEditorState()).toEqual(createEmptyMosaicEditorState())
+    expect(mosaicEditorTilesToSaveInput(state.tiles)).toEqual([
+      {
+        objectKey: 'marketing/photo.jpg',
+        mediaKind: 'image',
+        alt: 'Clinic scene',
+        row: 0,
+        col: 0,
+        width: 1,
+        height: 1,
+      },
+    ])
   })
 })

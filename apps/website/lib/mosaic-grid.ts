@@ -6,6 +6,11 @@ export const MOSAIC_GRID_MOBILE_SCALE_CLASS =
 export const MOSAIC_TILE_FRAME_CLASS =
   'relative overflow-hidden rounded-lg border border-vital-blue-100/80 bg-vital-blue-50/40'
 
+export const MOSAIC_TILE_OPEN_HOVER_CLASS =
+  'cursor-pointer transition-opacity hover:opacity-95'
+
+export const MOSAIC_LIGHTBOX_MAX_HEIGHT_CLASS = 'max-h-[85vh]'
+
 export function getMosaicTileGridStyle(
   tile: Pick<MosaicTileListItem, 'row' | 'col' | 'width' | 'height'>,
 ) {

@@ -98,3 +98,38 @@ describe('issue 160 mosaic tray and drag-place slice', () => {
     expect(editorLib).toMatch(/reason:\s*'occupied'/)
   })
 })
+
+describe('issue 161 mosaic resize, remove, clear, and save UX', () => {
+  it('supports click-to-span, remove-to-tray, and clear-editor helpers', () => {
+    const editorLib = readAdminboardFile('lib/mosaic-editor.ts')
+    const boardEditor = readAdminboardFile(
+      'components/mosaic/mosaic-board-editor.tsx',
+    )
+    const editor = readAdminboardFile('components/mosaic/mosaic-editor.tsx')
+
+    expect(editorLib).toMatch(/getLegalMosaicSpansForTile/)
+    expect(editorLib).toMatch(/resizeMosaicTile/)
+    expect(editorLib).toMatch(/removeMosaicTileFromBoard/)
+    expect(editorLib).toMatch(/clearMosaicEditorState/)
+    expect(boardEditor).toMatch(/getLegalMosaicSpansForTile/)
+    expect(boardEditor).toMatch(/assessMosaicLiveEligibility/)
+    expect(boardEditor).toMatch(/Remove to tray/)
+    expect(editor).toMatch(/Clear editor/)
+    expect(editor).toMatch(/clearMosaicEditorState/)
+  })
+
+  it('wires save to the mosaic API with empty-hide warning and validation UX', () => {
+    const editor = readAdminboardFile('components/mosaic/mosaic-editor.tsx')
+    const emptyDialog = readAdminboardFile(
+      'components/mosaic/mosaic-save-empty-dialog.tsx',
+    )
+
+    expect(editor).toMatch(/useSaveMosaic/)
+    expect(editor).toMatch(/mosaicEditorTilesToSaveInput/)
+    expect(editor).toMatch(/assessMosaicLiveEligibility/)
+    expect(editor).toMatch(/MosaicSaveEmptyDialog/)
+    expect(emptyDialog).toMatch(/MOSAIC_EMPTY_SAVE_WARNING/)
+    expect(emptyDialog).toMatch(/acknowledged/)
+    expect(editor).toMatch(/persistBoard\(true\)/)
+  })
+})

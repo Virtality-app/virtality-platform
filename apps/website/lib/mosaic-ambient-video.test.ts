@@ -24,4 +24,14 @@ describe('mosaic ambient video playback', () => {
       }),
     ).toBe(false)
   })
+
+  it('pauses ambient playback while a lightbox is open', () => {
+    expect(
+      shouldPlayMosaicAmbientVideo({
+        prefersReducedMotion: false,
+        isIntersecting: true,
+        lightboxOpen: true,
+      }),
+    ).toBe(false)
+  })
 })
