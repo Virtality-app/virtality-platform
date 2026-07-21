@@ -1,0 +1,19 @@
+// Marketing Highlight Card Domain
+
+enum HighlightCardCollection {
+  benefits
+  features
+}
+
+model MarketingHighlightCard {
+  id         String                  @id
+  collection HighlightCardCollection
+  title      String
+  body       String
+  iconName   String
+  sortOrder  Int
+  createdAt  DateTime                @default(now()) @db.Timestamp(6)
+  updatedAt  DateTime                @updatedAt @db.Timestamp(6)
+
+  @@index([collection, sortOrder])
+}
