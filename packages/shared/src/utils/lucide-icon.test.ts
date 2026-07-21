@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { isRenderableLucideIcon } from './lucide-icon.ts'
+import {
+  isRenderableLucideIcon,
+  resolveLucideIconFromModule,
+} from './lucide-icon.ts'
 import {
   createMockLucideModule,
   mockLucideIcon,
@@ -33,6 +36,20 @@ describe('lucide icon resolvability', () => {
     })
 
     expect(isRenderableLucideIcon('Activity', lucideModule)).toBe(false)
+  })
+
+  it('resolves renderable icon components and rejects invalid names', () => {
+    const activity = mockLucideIcon()
+    const lucideModule = createMockLucideModule({ Activity: activity })
+
+    expect(resolveLucideIconFromModule('Activity', lucideModule)).toBe(activity)
+    expect(resolveLucideIconFromModule(undefined, lucideModule)).toBeNull()
+    expect(resolveLucideIconFromModule('NotARealIcon', lucideModule)).toBeNull()
+    expect(resolveLucideIconFromModule('icons', lucideModule)).toBeNull()
+    expect(
+      resolveLucideIconFromModule('createLucideIcon', lucideModule),
+    ).toBeNull()
+    expect(resolveLucideIconFromModule('Icon', lucideModule)).toBeNull()
   })
 
   it('accepts seed icon names from the website Lucide version when available', async () => {

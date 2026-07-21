@@ -1,6 +1,6 @@
 'use client'
 
-import { resolveHighlightCardIcon } from '@/components/shared/lib/highlight-card-icon'
+import { resolveLucideIconFromModule } from '@virtality/shared/utils'
 import { type ComponentType, type ReactNode, useEffect, useState } from 'react'
 
 type HighlightCardProps = {
@@ -31,7 +31,7 @@ const HighlightCard = ({
         return
       }
 
-      const IconComponent = resolveHighlightCardIcon(
+      const IconComponent = resolveLucideIconFromModule(
         iconName,
         mod,
       ) as ComponentType | null
@@ -48,7 +48,7 @@ const HighlightCard = ({
     <div
       className='group relative rounded-2xl border-2 border-vital-blue-100/50 bg-white p-8 shadow-sm hover:shadow-xl hover:shadow-vital-blue-700/5 transition-all duration-300 dark:border-zinc-700 dark:bg-zinc-800 hover:border-vital-blue-300 dark:hover:border-vital-blue-700'
       style={{
-        animation: `fadeInUp 0.6s ease-out ${(index || 0) * 0.1}s both`,
+        animation: `fadeInUp 0.6s ease-out ${(index ?? 0) * 0.1}s both`,
       }}
     >
       <div className='absolute top-0 right-0 w-20 h-20 bg-linear-to-br from-vital-blue-600/5 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity'></div>
