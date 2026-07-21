@@ -23,8 +23,6 @@ import {
 import { authed } from '../middleware/auth.ts'
 import { base } from '../context.ts'
 
-const highlightCardLucideModule = lucideReact
-
 function createPrismaHighlightCardStore(
   prisma: PrismaClient,
 ): HighlightCardStore {
@@ -60,28 +58,17 @@ function createPrismaHighlightCardStore(
   }
 }
 
-export function toHighlightCardOrpcError(
-  error: unknown,
-): ORPCError<string, unknown> | null {
+function throwHighlightCardOrpcError(error: unknown): never {
   if (error instanceof HighlightCardValidationError) {
-    return new ORPCError('BAD_REQUEST', { message: error.message })
+    throw new ORPCError('BAD_REQUEST', { message: error.message })
   }
 
   if (error instanceof HighlightCardCollectionFullError) {
-    return new ORPCError('CONFLICT', { message: error.message })
+    throw new ORPCError('CONFLICT', { message: error.message })
   }
 
   if (error instanceof HighlightCardNotFoundError) {
-    return new ORPCError('NOT_FOUND', { message: error.message })
-  }
-
-  return null
-}
-
-function throwHighlightCardOrpcError(error: unknown): never {
-  const orpcError = toHighlightCardOrpcError(error)
-  if (orpcError) {
-    throw orpcError
+    throw new ORPCError('NOT_FOUND', { message: error.message })
   }
 
   throw error
@@ -118,7 +105,7 @@ const createHighlightCardProcedure = authed
         store,
         {
           generateId: generateUUID,
-          lucideModule: highlightCardLucideModule,
+          lucideModule: lucideReact,
         },
         input,
       ),
@@ -130,11 +117,7 @@ const updateHighlightCardProcedure = authed
   .input(updateHighlightCardInputSchema)
   .handler(({ context, input }) =>
     withHighlightCardStore(context.prisma, (store) =>
-      updateHighlightCard(
-        store,
-        { lucideModule: highlightCardLucideModule },
-        input,
-      ),
+      updateHighlightCard(store, { lucideModule: lucideReact }, input),
     ),
   )
 

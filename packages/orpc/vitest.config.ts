@@ -12,10 +12,6 @@ export default defineConfig({
         __dirname,
         '../shared/src/utils/index.ts',
       ),
-      '@virtality/shared/types': path.resolve(
-        __dirname,
-        '../shared/src/types/index.ts',
-      ),
     },
   },
   test: {
