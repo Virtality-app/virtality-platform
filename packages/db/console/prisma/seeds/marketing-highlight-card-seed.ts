@@ -1,15 +1,26 @@
 export type HighlightCardCollection = 'benefits' | 'features'
 
-export type MarketingHighlightCardSeedRecord = {
-  id: string
-  collection: HighlightCardCollection
+export type MarketingHighlightCardSeedContent = {
   title: string
   body: string
   iconName: string
-  sortOrder: number
 }
 
-const BENEFIT_SEED_IDS = [
+export type MarketingHighlightCardSeedRecord =
+  MarketingHighlightCardSeedContent & {
+    id: string
+    collection: HighlightCardCollection
+    sortOrder: number
+  }
+
+const HIGHLIGHT_CARD_COLLECTIONS = [
+  'benefits',
+  'features',
+] as const satisfies readonly HighlightCardCollection[]
+
+const EXPECTED_COUNT_PER_COLLECTION = 6
+
+const BENEFITS_SEED_IDS = [
   'c3f8e2a1-4b5c-4d6e-8f70-000000000001',
   'c3f8e2a1-4b5c-4d6e-8f70-000000000002',
   'c3f8e2a1-4b5c-4d6e-8f70-000000000003',
@@ -18,7 +29,7 @@ const BENEFIT_SEED_IDS = [
   'c3f8e2a1-4b5c-4d6e-8f70-000000000006',
 ] as const
 
-const FEATURE_SEED_IDS = [
+const FEATURES_SEED_IDS = [
   'd4a9f3b2-5c6d-4e7f-9a81-000000000001',
   'd4a9f3b2-5c6d-4e7f-9a81-000000000002',
   'd4a9f3b2-5c6d-4e7f-9a81-000000000003',
@@ -58,7 +69,7 @@ const BENEFITS_SEED_CONTENT = [
     body: 'From lead physiotherapists to clinic owners, Virtality fits workflows where time, staffing, and throughput shape every treatment decision.',
     iconName: 'Building2',
   },
-] as const
+] as const satisfies readonly MarketingHighlightCardSeedContent[]
 
 const FEATURES_SEED_CONTENT = [
   {
@@ -91,16 +102,12 @@ const FEATURES_SEED_CONTENT = [
     body: 'Monitor patient engagement and adherence to prescribed exercises to ensure optimal therapeutic outcomes.',
     iconName: 'Clock',
   },
-] as const
+] as const satisfies readonly MarketingHighlightCardSeedContent[]
 
 function buildCollectionSeed(
   collection: HighlightCardCollection,
   ids: readonly string[],
-  content: readonly {
-    title: string
-    body: string
-    iconName: string
-  }[],
+  content: readonly MarketingHighlightCardSeedContent[],
 ): MarketingHighlightCardSeedRecord[] {
   return content.map((item, index) => ({
     id: ids[index]!,
@@ -114,52 +121,63 @@ function buildCollectionSeed(
 
 export const MARKETING_HIGHLIGHT_CARD_SEED: MarketingHighlightCardSeedRecord[] =
   [
-    ...buildCollectionSeed('benefits', BENEFIT_SEED_IDS, BENEFITS_SEED_CONTENT),
-    ...buildCollectionSeed('features', FEATURE_SEED_IDS, FEATURES_SEED_CONTENT),
+    ...buildCollectionSeed(
+      'benefits',
+      BENEFITS_SEED_IDS,
+      BENEFITS_SEED_CONTENT,
+    ),
+    ...buildCollectionSeed(
+      'features',
+      FEATURES_SEED_IDS,
+      FEATURES_SEED_CONTENT,
+    ),
   ]
 
-const COLLECTIONS: HighlightCardCollection[] = ['benefits', 'features']
-const EXPECTED_COUNT_PER_COLLECTION = 6
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+function validateCollectionRecords(
+  collection: HighlightCardCollection,
+  collectionRecords: MarketingHighlightCardSeedRecord[],
+): void {
+  if (collectionRecords.length !== EXPECTED_COUNT_PER_COLLECTION) {
+    throw new Error(
+      `Expected ${EXPECTED_COUNT_PER_COLLECTION} ${collection} highlight cards, received ${collectionRecords.length}`,
+    )
+  }
+
+  collectionRecords.forEach((record, index) => {
+    if (record.sortOrder !== index) {
+      throw new Error(
+        `Expected ${collection} sortOrder ${index}, received ${record.sortOrder}`,
+      )
+    }
+
+    if (!UUID_PATTERN.test(record.id)) {
+      throw new Error(`Expected stable UUID id for ${collection} card ${index}`)
+    }
+
+    if (
+      !record.title.trim() ||
+      !record.body.trim() ||
+      !record.iconName.trim()
+    ) {
+      throw new Error(
+        `Expected title, body, and iconName for ${collection} card ${index}`,
+      )
+    }
+  })
+}
 
 export function validateMarketingHighlightCardSeed(
   records: MarketingHighlightCardSeedRecord[],
 ): void {
-  for (const collection of COLLECTIONS) {
+  for (const collection of HIGHLIGHT_CARD_COLLECTIONS) {
     const collectionRecords = records
       .filter((record) => record.collection === collection)
       .sort((left, right) => left.sortOrder - right.sortOrder)
 
-    if (collectionRecords.length !== EXPECTED_COUNT_PER_COLLECTION) {
-      throw new Error(
-        `Expected six ${collection} highlight cards, received ${collectionRecords.length}`,
-      )
-    }
-
-    collectionRecords.forEach((record, index) => {
-      if (record.sortOrder !== index) {
-        throw new Error(
-          `Expected ${collection} sortOrder ${index}, received ${record.sortOrder}`,
-        )
-      }
-
-      if (!UUID_PATTERN.test(record.id)) {
-        throw new Error(
-          `Expected stable UUID id for ${collection} card ${index}`,
-        )
-      }
-
-      if (
-        !record.title.trim() ||
-        !record.body.trim() ||
-        !record.iconName.trim()
-      ) {
-        throw new Error(
-          `Expected title, body, and iconName for ${collection} card ${index}`,
-        )
-      }
-    })
+    validateCollectionRecords(collection, collectionRecords)
   }
 
   const ids = new Set(records.map((record) => record.id))
@@ -174,17 +192,18 @@ function escapeSqlString(value: string): string {
   return value.replaceAll("'", "''")
 }
 
+function formatSeedInsertValue(
+  record: MarketingHighlightCardSeedRecord,
+): string {
+  return `('${record.id}', '${record.collection}', '${escapeSqlString(record.title)}', '${escapeSqlString(record.body)}', '${escapeSqlString(record.iconName)}', ${record.sortOrder}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`
+}
+
 export function buildMarketingHighlightCardSeedSql(
   records: MarketingHighlightCardSeedRecord[] = MARKETING_HIGHLIGHT_CARD_SEED,
 ): string {
   validateMarketingHighlightCardSeed(records)
 
-  const values = records
-    .map(
-      (record) =>
-        `('${record.id}', '${record.collection}', '${escapeSqlString(record.title)}', '${escapeSqlString(record.body)}', '${escapeSqlString(record.iconName)}', ${record.sortOrder}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-    )
-    .join(',\n    ')
+  const values = records.map(formatSeedInsertValue).join(',\n    ')
 
   return `INSERT INTO "MarketingHighlightCard" ("id", "collection", "title", "body", "iconName", "sortOrder", "createdAt", "updatedAt")\nVALUES\n    ${values};`
 }
