@@ -1,13 +1,10 @@
 'use client'
 
-import HighlightCard from '@/components/shared/highlight-card'
-import { useHighlightCards } from '@virtality/react-query'
-import { shouldShowHighlightCardGrid } from '@/components/shared/lib/highlight-card-grid'
+import HighlightCardsGrid from '@/components/shared/highlight-cards-grid'
+import { useVisibleHighlightCards } from '@/components/shared/lib/use-visible-highlight-cards'
 
 const Features = () => {
-  const { data: highlightCards, isPending } = useHighlightCards('features')
-  const showHighlightCardGrid =
-    !isPending && shouldShowHighlightCardGrid(highlightCards)
+  const { cards } = useVisibleHighlightCards('features')
 
   return (
     <section
@@ -43,19 +40,7 @@ const Features = () => {
           </p>
         </div>
 
-        {showHighlightCardGrid ? (
-          <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto'>
-            {highlightCards?.map((card, index) => (
-              <HighlightCard
-                key={card.id}
-                title={card.title}
-                body={card.body}
-                iconName={card.iconName}
-                index={index}
-              />
-            ))}
-          </div>
-        ) : null}
+        {cards ? <HighlightCardsGrid cards={cards} /> : null}
       </div>
     </section>
   )

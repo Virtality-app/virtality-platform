@@ -1,26 +1,26 @@
 'use client'
 
 import { resolveHighlightCardIcon } from '@/components/shared/lib/highlight-card-icon'
-import { FC, ReactNode, useEffect, useState } from 'react'
+import { type ComponentType, type ReactNode, useEffect, useState } from 'react'
+
+type HighlightCardProps = {
+  title: string
+  body: string
+  iconName?: string
+  index?: number
+}
 
 const HighlightCard = ({
   title,
   body,
   iconName,
   index,
-}: {
-  title: string
-  body: string
-  iconName?: string
-  index?: number
-}) => {
-  const [importedComponent, setImportedComponent] = useState<ReactNode | null>(
-    null,
-  )
+}: HighlightCardProps) => {
+  const [icon, setIcon] = useState<ReactNode | null>(null)
 
   useEffect(() => {
     if (!iconName) {
-      setImportedComponent(null)
+      setIcon(null)
       return
     }
 
@@ -31,9 +31,12 @@ const HighlightCard = ({
         return
       }
 
-      const IconComponent = resolveHighlightCardIcon(iconName, mod) as FC | null
+      const IconComponent = resolveHighlightCardIcon(
+        iconName,
+        mod,
+      ) as ComponentType | null
 
-      setImportedComponent(IconComponent ? <IconComponent /> : null)
+      setIcon(IconComponent ? <IconComponent /> : null)
     })
 
     return () => {
@@ -52,7 +55,7 @@ const HighlightCard = ({
 
       <div className='flex flex-col h-full'>
         <div className='mb-5 flex size-14 items-center justify-center rounded-xl bg-linear-to-br from-vital-blue-700 to-vital-blue-600 shadow-lg shadow-vital-blue-700/20 group-hover:scale-110 transition-transform duration-300'>
-          <div className='*:size-6 text-white'>{importedComponent}</div>
+          <div className='*:size-6 text-white'>{icon}</div>
         </div>
 
         <h3 className='mb-4 text-xl font-bold text-slate-900 dark:text-white group-hover:text-vital-blue-700 transition-colors'>

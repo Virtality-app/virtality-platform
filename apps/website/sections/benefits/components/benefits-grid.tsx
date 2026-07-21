@@ -1,14 +1,11 @@
 'use client'
 
-import HighlightCard from '@/components/shared/highlight-card'
-import { useHighlightCards } from '@virtality/react-query'
+import HighlightCardsGrid from '@/components/shared/highlight-cards-grid'
+import { useVisibleHighlightCards } from '@/components/shared/lib/use-visible-highlight-cards'
 import { BENEFITS_SECTION_CONTENT, PILOT_PROOF_CONTENT } from '../content'
-import { shouldShowHighlightCardGrid } from '@/components/shared/lib/highlight-card-grid'
 
 const BenefitsGrid = () => {
-  const { data: highlightCards, isPending } = useHighlightCards('benefits')
-  const showHighlightCardGrid =
-    !isPending && shouldShowHighlightCardGrid(highlightCards)
+  const { cards } = useVisibleHighlightCards('benefits')
 
   return (
     <section
@@ -59,19 +56,7 @@ const BenefitsGrid = () => {
           </div>
         </div>
 
-        {showHighlightCardGrid ? (
-          <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto'>
-            {highlightCards?.map((card, index) => (
-              <HighlightCard
-                key={card.id}
-                title={card.title}
-                body={card.body}
-                iconName={card.iconName}
-                index={index}
-              />
-            ))}
-          </div>
-        ) : null}
+        {cards ? <HighlightCardsGrid cards={cards} /> : null}
       </div>
     </section>
   )

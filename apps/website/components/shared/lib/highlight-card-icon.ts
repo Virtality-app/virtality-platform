@@ -11,5 +11,5 @@ export function resolveHighlightCardIcon(
     return null
   }
 
-  return lucideModule[iconName] ?? null
+  return lucideModule[iconName]
 }

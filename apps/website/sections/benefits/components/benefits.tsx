@@ -2,14 +2,11 @@
 
 import { CheckCircle2 } from 'lucide-react'
 import Image from 'next/image'
-import { useHighlightCards } from '@virtality/react-query'
+import { useVisibleHighlightCards } from '@/components/shared/lib/use-visible-highlight-cards'
 import { BENEFITS_SECTION_CONTENT } from '../content'
-import { shouldShowHighlightCardGrid } from '@/components/shared/lib/highlight-card-grid'
 
 const Benefits = () => {
-  const { data: highlightCards, isPending } = useHighlightCards('benefits')
-  const showHighlightCardList =
-    !isPending && shouldShowHighlightCardGrid(highlightCards)
+  const { cards } = useVisibleHighlightCards('benefits')
 
   return (
     <section id='benefits' className='relative flex overflow-hidden'>
@@ -59,9 +56,9 @@ const Benefits = () => {
               </p>
             </div>
 
-            {showHighlightCardList ? (
+            {cards ? (
               <ul className='space-y-6'>
-                {highlightCards?.map((card) => (
+                {cards.map((card) => (
                   <li key={card.id} className='flex items-start group'>
                     <div className='mr-4 mt-0.5 shrink-0'>
                       <div className='flex size-10 items-center justify-center rounded-lg bg-linear-to-br from-vital-blue-700 to-vital-blue-600 shadow-md group-hover:scale-110 transition-transform'>
