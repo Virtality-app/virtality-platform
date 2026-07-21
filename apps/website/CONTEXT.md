@@ -1,6 +1,6 @@
 # Website
 
-Public marketing site — landing, pricing, blog, case studies, waitlist, and contact.
+Public marketing site — landing, blog, waitlist, and contact.
 
 ## Section layout
 
@@ -23,7 +23,7 @@ sections/<section>/
 4. **`index.ts` is the public API.** Pages import from `@/sections/<section>`. Internal `components/` and `lib/` stay private to the section.
 5. **Routes compose only.** `app/**/page.tsx` assembles sections; it does not own section markup or copy.
 6. **Shared across sections** → `components/shared/` (or app-wide `lib/` for non-UI helpers). Do not reach into another section’s internals except via that section’s `index.ts` when a deliberate public export exists. Example: `WaitlistForm` is exported from `sections/cta` for the waitlist page.
-7. **App-wide concerns stay outside `sections/`:** `components/layout/`, `components/ui/`, `lib/` (actions, utils, demo booking, legal, waitlist), `data/` for cross-page catalogs (e.g. pricing plans).
+7. **App-wide concerns stay outside `sections/`:** `components/layout/`, `components/ui/`, `lib/` (actions, utils, demo booking, legal, waitlist).
 
 ### Current landing sections
 

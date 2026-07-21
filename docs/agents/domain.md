@@ -17,7 +17,7 @@ If any of these files don't exist, **proceed silently**. Don't flag their absenc
 | ---------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
 | console    | `apps/console/`    | Clinician/practitioner web app — patients, programs, presets, devices, VR casting, organizations, clinical forms                 |
 | adminboard | `apps/adminboard/` | Internal admin dashboard — resource management (exercises, presets, maps, avatars, patients, users), referrals, email, S3 bucket |
-| website    | `apps/website/`    | Public marketing site — landing, pricing, blog, case studies, waitlist, contact                                                  |
+| website    | `apps/website/`    | Public marketing site — landing, blog, waitlist, contact                                                                         |
 | server     | `services/server/` | Platform API — Hono server with tRPC/oRPC, auth middleware, user/device data                                                     |
 | socket     | `services/socket/` | Real-time communication — Socket.IO bridge between console frontend and VR headsets                                              |
 
