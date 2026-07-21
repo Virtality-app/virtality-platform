@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { LucideIconPicker } from '@/components/highlight-cards/lucide-icon-picker'
+import { DEFAULT_HIGHLIGHT_CARD_ICON_NAME } from '@/lib/highlight-cards'
 import { getErrorMessage } from '@/lib/get-error-message'
 import { resolveLucideIconComponent } from '@/lib/lucide-icons'
 import { Input } from '@virtality/ui/components/input'
@@ -28,10 +29,12 @@ import {
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
+export type HighlightCardDialogMode = 'create' | 'edit' | null
+
 type HighlightCardFormDialogProps = {
   collection: HighlightCardCollection
   card: HighlightCardListItem | null
-  mode: 'create' | 'edit' | null
+  mode: HighlightCardDialogMode
   onClose: () => void
 }
 
@@ -43,7 +46,7 @@ export function HighlightCardFormDialog({
 }: HighlightCardFormDialogProps) {
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
-  const [iconName, setIconName] = useState('Activity')
+  const [iconName, setIconName] = useState(DEFAULT_HIGHLIGHT_CARD_ICON_NAME)
   const { mutate: createHighlightCard, isPending: isCreating } =
     useCreateHighlightCard()
   const { mutate: updateHighlightCard, isPending: isUpdating } =
@@ -66,7 +69,7 @@ export function HighlightCardFormDialog({
 
     setTitle('')
     setBody('')
-    setIconName('Activity')
+    setIconName(DEFAULT_HIGHLIGHT_CARD_ICON_NAME)
   }, [card, mode, open])
 
   const validateForm = () => {

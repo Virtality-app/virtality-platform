@@ -3,10 +3,7 @@ import {
   type HighlightCardCollection,
 } from '@virtality/shared/types'
 
-export const HIGHLIGHT_CARD_COLLECTIONS = [
-  'benefits',
-  'features',
-] as const satisfies readonly HighlightCardCollection[]
+export const DEFAULT_HIGHLIGHT_CARD_ICON_NAME = 'Activity'
 
 export const HIGHLIGHT_CARD_COLLECTION_LABELS: Record<
   HighlightCardCollection,
@@ -14,6 +11,14 @@ export const HIGHLIGHT_CARD_COLLECTION_LABELS: Record<
 > = {
   benefits: 'Benefits',
   features: 'Features',
+}
+
+export const HIGHLIGHT_CARD_PAGE_DESCRIPTIONS: Record<
+  HighlightCardCollection,
+  string
+> = {
+  benefits: 'Manage the highlight cards shown in the website Benefits section.',
+  features: 'Manage the highlight cards shown in the website Features section.',
 }
 
 export const HIGHLIGHT_CARD_COLLECTION_DESCRIPTIONS: Record<

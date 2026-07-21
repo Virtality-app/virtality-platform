@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { HighlightCardFormDialog } from '@/components/highlight-cards/highlight-card-form-dialog'
+import type { HighlightCardDialogMode } from '@/components/highlight-cards/highlight-card-form-dialog'
 import { HighlightCardList } from '@/components/highlight-cards/highlight-card-list'
 import {
   canAddHighlightCard,
@@ -13,18 +14,16 @@ import type {
 } from '@virtality/shared/types'
 import { useHighlightCards } from '@virtality/react-query'
 import { PlusSquare } from 'lucide-react'
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 
 type HighlightCardCollectionEditorProps = {
   collection: HighlightCardCollection
 }
 
-type DialogMode = 'create' | 'edit' | null
-
 export function HighlightCardCollectionEditor({
   collection,
 }: HighlightCardCollectionEditorProps) {
-  const [dialogMode, setDialogMode] = useState<DialogMode>(null)
+  const [dialogMode, setDialogMode] = useState<HighlightCardDialogMode>(null)
   const [editingCard, setEditingCard] = useState<HighlightCardListItem | null>(
     null,
   )
@@ -41,6 +40,34 @@ export function HighlightCardCollectionEditor({
     setEditingCard(null)
   }
 
+  const handleOpenCreate = () => {
+    setEditingCard(null)
+    setDialogMode('create')
+  }
+
+  let cardListContent: ReactNode
+  if (isPending) {
+    cardListContent = (
+      <p className='text-muted-foreground text-sm'>
+        Loading highlight cards...
+      </p>
+    )
+  } else if (cards.length === 0) {
+    cardListContent = (
+      <p className='text-muted-foreground rounded-lg border border-dashed p-6 text-sm'>
+        No cards yet. Empty collection hides the website grid.
+      </p>
+    )
+  } else {
+    cardListContent = (
+      <HighlightCardList
+        collection={collection}
+        cards={cards}
+        onEdit={handleEdit}
+      />
+    )
+  }
+
   return (
     <div className='space-y-6'>
       <div className='flex flex-wrap items-center justify-between gap-4'>
@@ -51,31 +78,14 @@ export function HighlightCardCollectionEditor({
           variant='primary'
           className='ml-auto flex items-center'
           disabled={!canAdd}
-          onClick={() => {
-            setEditingCard(null)
-            setDialogMode('create')
-          }}
+          onClick={handleOpenCreate}
         >
           <PlusSquare />
           Add card
         </Button>
       </div>
 
-      {isPending ? (
-        <p className='text-muted-foreground text-sm'>
-          Loading highlight cards...
-        </p>
-      ) : cards.length === 0 ? (
-        <p className='text-muted-foreground rounded-lg border border-dashed p-6 text-sm'>
-          No cards yet. Empty collection hides the website grid.
-        </p>
-      ) : (
-        <HighlightCardList
-          collection={collection}
-          cards={cards}
-          onEdit={handleEdit}
-        />
-      )}
+      {cardListContent}
 
       <HighlightCardFormDialog
         collection={collection}
