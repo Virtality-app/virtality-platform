@@ -9,11 +9,17 @@ import {
   type PressLogoItem,
 } from '../content'
 import { filterValidLogoItems, getPressLinkProps } from '../lib/partner-press'
+import {
+  initialMarqueeDragState,
+  isMarqueeAutoScrollPaused,
+  marqueeOffsetDuringPointer,
+  reduceMarqueeDrag,
+  type MarqueeDragState,
+} from '../lib/press-marquee-interaction'
 import { cn } from '@/lib/utils'
 
 const PRESS_MARQUEE_GAP_CLASS = 'gap-8 pe-8 md:gap-10 md:pe-10'
 const PRESS_MARQUEE_DURATION_MS = 40_000
-const PRESS_MARQUEE_DRAG_THRESHOLD_PX = 4
 
 function getPressLogoClassName(item: PressLogoItem): string {
   if (item.wide) {
@@ -71,12 +77,9 @@ function PressMarquee({ items }: { items: PressLogoItem[] }) {
   const trackRef = useRef<HTMLDivElement>(null)
   const offsetRef = useRef(0)
   const halfWidthRef = useRef(0)
-  const isDraggingRef = useRef(false)
+  const dragStateRef = useRef<MarqueeDragState>(initialMarqueeDragState)
   const isHoverPausedRef = useRef(false)
   const prefersReducedMotionRef = useRef(false)
-  const dragOriginXRef = useRef(0)
-  const dragOriginOffsetRef = useRef(0)
-  const didDragRef = useRef(false)
   const [isDragging, setIsDragging] = useState(false)
 
   useEffect(() => {
@@ -133,9 +136,11 @@ function PressMarquee({ items }: { items: PressLogoItem[] }) {
 
       if (
         halfWidth > 0 &&
-        !isDraggingRef.current &&
-        !isHoverPausedRef.current &&
-        !prefersReducedMotionRef.current
+        !isMarqueeAutoScrollPaused(
+          dragStateRef.current,
+          isHoverPausedRef.current,
+          prefersReducedMotionRef.current,
+        )
       ) {
         offsetRef.current = wrapMarqueeOffset(
           offsetRef.current - (halfWidth * dt) / PRESS_MARQUEE_DURATION_MS,
@@ -151,13 +156,61 @@ function PressMarquee({ items }: { items: PressLogoItem[] }) {
     return () => cancelAnimationFrame(frame)
   }, [])
 
-  const endDrag = () => {
-    if (!isDraggingRef.current) {
+  useEffect(() => {
+    // Opening target=_blank can drop pointerup; clear any stale gesture.
+    const resetStaleGesture = () => {
+      if (dragStateRef.current.phase === 'idle') {
+        return
+      }
+
+      dragStateRef.current = reduceMarqueeDrag(dragStateRef.current, {
+        type: 'pointercancel',
+      }).state
+      setIsDragging(false)
+    }
+
+    window.addEventListener('blur', resetStaleGesture)
+    document.addEventListener('visibilitychange', resetStaleGesture)
+    return () => {
+      window.removeEventListener('blur', resetStaleGesture)
+      document.removeEventListener('visibilitychange', resetStaleGesture)
+    }
+  }, [])
+
+  const applyDragResult = (
+    result: ReturnType<typeof reduceMarqueeDrag>,
+    options?: { target?: HTMLDivElement; pointerId?: number },
+  ) => {
+    dragStateRef.current = result.state
+    setIsDragging(result.state.phase === 'dragging')
+
+    if (
+      result.capturePointer &&
+      options?.target &&
+      options.pointerId !== undefined
+    ) {
+      options.target.setPointerCapture(options.pointerId)
+    }
+  }
+
+  const syncOffsetFromPointer = (clientX: number) => {
+    const nextOffset = marqueeOffsetDuringPointer(dragStateRef.current, clientX)
+    if (nextOffset === null) {
       return
     }
 
-    isDraggingRef.current = false
-    setIsDragging(false)
+    offsetRef.current = wrapMarqueeOffset(nextOffset, halfWidthRef.current)
+
+    const track = trackRef.current
+    if (track) {
+      track.style.transform = `translate3d(${offsetRef.current}px, 0, 0)`
+    }
+  }
+
+  const endPointerGesture = (
+    type: 'pointerup' | 'pointercancel' | 'lostcapture',
+  ) => {
+    applyDragResult(reduceMarqueeDrag(dragStateRef.current, { type }))
   }
 
   return (
@@ -171,43 +224,53 @@ function PressMarquee({ items }: { items: PressLogoItem[] }) {
           return
         }
 
-        isDraggingRef.current = true
-        setIsDragging(true)
-        didDragRef.current = false
-        dragOriginXRef.current = event.clientX
-        dragOriginOffsetRef.current = offsetRef.current
-        event.currentTarget.setPointerCapture(event.pointerId)
+        applyDragResult(
+          reduceMarqueeDrag(dragStateRef.current, {
+            type: 'pointerdown',
+            x: event.clientX,
+            offset: offsetRef.current,
+          }),
+        )
       }}
       onPointerMove={(event) => {
-        if (!isDraggingRef.current) {
+        if (dragStateRef.current.phase === 'idle') {
           return
         }
 
-        const deltaX = event.clientX - dragOriginXRef.current
-        if (Math.abs(deltaX) > PRESS_MARQUEE_DRAG_THRESHOLD_PX) {
-          didDragRef.current = true
+        // Dropped pointerup (e.g. new tab) can leave a stale pending gesture.
+        if (
+          dragStateRef.current.phase === 'pending' &&
+          (event.buttons & 1) === 0
+        ) {
+          endPointerGesture('pointercancel')
+          return
         }
 
-        offsetRef.current = wrapMarqueeOffset(
-          dragOriginOffsetRef.current + deltaX,
-          halfWidthRef.current,
-        )
-
-        const track = trackRef.current
-        if (track) {
-          track.style.transform = `translate3d(${offsetRef.current}px, 0, 0)`
-        }
+        const result = reduceMarqueeDrag(dragStateRef.current, {
+          type: 'pointermove',
+          x: event.clientX,
+        })
+        applyDragResult(result, {
+          target: event.currentTarget,
+          pointerId: event.pointerId,
+        })
+        syncOffsetFromPointer(event.clientX)
       }}
-      onPointerUp={endDrag}
-      onPointerCancel={endDrag}
+      onPointerUp={() => endPointerGesture('pointerup')}
+      onPointerCancel={() => endPointerGesture('pointercancel')}
+      onLostPointerCapture={() => endPointerGesture('lostcapture')}
       onClickCapture={(event) => {
-        if (!didDragRef.current) {
+        const result = reduceMarqueeDrag(dragStateRef.current, {
+          type: 'consumeClickGuard',
+        })
+        dragStateRef.current = result.state
+
+        if (!result.preventClick) {
           return
         }
 
         event.preventDefault()
         event.stopPropagation()
-        didDragRef.current = false
       }}
       onMouseEnter={() => {
         isHoverPausedRef.current = true
