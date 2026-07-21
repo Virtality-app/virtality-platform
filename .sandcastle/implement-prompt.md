@@ -33,6 +33,8 @@ If applicable, use RGR to complete the task.
 3. REPEAT until done
 4. REFACTOR the code
 
+Tests must follow `.sandcastle/CODING_STANDARDS.md`. Do not leave source-scanning or `*-prd.test.ts` implementation locks in the tree when the issue is done — keep only behavior tests through public interfaces.
+
 # FEEDBACK LOOPS
 
 Before committing, run `npm run typecheck` and `npm run test` to ensure the tests pass.

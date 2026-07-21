@@ -133,7 +133,7 @@ The following need explicit product or marketing owner answers before implementa
 
 ## Testing expectations for the implementation issue
 
-- Reuse and extend `apps/website/lib/partner-press-prd.test.ts` visibility and link behavior against API-mapped data.
+- Reuse and extend `apps/website/lib/partner-press.test.ts` visibility and link behavior against API-mapped data.
 - Add Adminboard CRUD and publish-state tests.
 - Add mapping tests from marketing records (`objectKey`) to website `CredibilityLogoItem` / `PressLogoItem` with `bucketCdnUrl`.
 - Verify referenced-object warnings when deleting or replacing bucket keys used by published logos.

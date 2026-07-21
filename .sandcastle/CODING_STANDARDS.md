@@ -71,6 +71,35 @@ Red flags:
 - Verifying through external means (e.g. querying a DB) instead of through the interface
 - Testing a trivial function (one-liner, simple mapping, string concatenation) where the test just mirrors the code — these tests add no confidence and break on any refactor
 - Thin delegation tests for route handlers — when a route's only job is to parse input and call a service method, testing that it "delegates correctly" by mocking the service duplicates the route code in the test. The real behavior lives in the service; test that instead.
+- Reading source files (`readFileSync`, `existsSync` on `.ts`/`.tsx`/docs) and asserting on string presence, import paths, component tags, function names, or section order in source
+- Asserting that a constant equals its own literal (copy strings, CSS class names, content arrays) without exercising a behavior that uses them
+- Permanent `*-prd.test.ts` suites that lock a PRD implementation shape rather than product behavior
+
+### PRD / RALPH loop tests
+
+During an implement loop, temporary red/green tests are fine. When the issue is done:
+
+- **Delete** source-scanning and wiring-lock tests (`readFileSync` of app/docs sources, “module X mentions symbol Y”, file-existence checks).
+- **Keep** only tests that call a public API/helper and assert observable outcomes; rename them to normal domain names (e.g. `partner-press.test.ts`), not `*-prd.test.ts`.
+- Do not commit PRD acceptance locks as long-lived CI. A PRD is a product brief; lasting tests encode behavior.
+
+```typescript
+// BAD: locks implementation shape / file layout
+test('page composes hero before benefits', () => {
+  const page = readFileSync('app/page.tsx', 'utf8')
+  expect(page.indexOf('<Hero')).toBeLessThan(page.indexOf('<Benefits'))
+})
+
+// BAD: restates a content constant
+test('hero headline', () => {
+  expect(HERO_HEADLINE).toBe('Because every move matters.')
+})
+
+// GOOD: exercises helper behavior callers rely on
+test('hides partner rows when logos are invalid', () => {
+  expect(getVisiblePartnerRows([{ src: ' ', alt: 'x' }], [])).toEqual([])
+})
+```
 
 ### Mocking
 
