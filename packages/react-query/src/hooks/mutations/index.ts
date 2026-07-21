@@ -79,6 +79,12 @@ export { useClearPromoVideo } from './promo-video/use-clear-promo-video.js'
 // Mosaic mutations
 export { useSaveMosaic } from './mosaic/use-save-mosaic.js'
 
+// Highlight card mutations
+export { useCreateHighlightCard } from './highlight-card/use-create-highlight-card.js'
+export { useUpdateHighlightCard } from './highlight-card/use-update-highlight-card.js'
+export { useReorderHighlightCard } from './highlight-card/use-reorder-highlight-card.js'
+export { useRemoveHighlightCard } from './highlight-card/use-remove-highlight-card.js'
+
 // Bucket mutations
 export { useUploadBucketObjects } from './bucket/use-upload-bucket-objects.js'
 export { useMoveBucketObject } from './bucket/use-move-bucket-object.js'
