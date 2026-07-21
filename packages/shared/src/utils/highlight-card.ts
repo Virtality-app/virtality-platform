@@ -31,9 +31,6 @@ export type HighlightCardUpdateData = {
 
 export type HighlightCardStore = {
   findById: (id: string) => Promise<HighlightCardRecord | null>
-  findMaxSortOrder: (
-    collection: HighlightCardCollection,
-  ) => Promise<number | null>
   create: (data: {
     id: string
     collection: HighlightCardCollection
@@ -166,11 +163,10 @@ export async function createHighlightCard(
     throw new HighlightCardCollectionFullError(input.collection)
   }
 
-  const maxSortOrder =
+  const sortOrder =
     existingCards.length === 0
-      ? null
-      : Math.max(...existingCards.map((record) => record.sortOrder))
-  const sortOrder = (maxSortOrder ?? -1) + 1
+      ? 0
+      : Math.max(...existingCards.map((record) => record.sortOrder)) + 1
 
   const created = await store.create({
     id: deps.generateId(),

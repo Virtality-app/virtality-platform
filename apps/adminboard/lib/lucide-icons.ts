@@ -1,4 +1,7 @@
-import { isRenderableLucideIcon } from '@virtality/shared/utils'
+import {
+  isRenderableLucideIcon,
+  resolveLucideIconFromModule,
+} from '@virtality/shared/utils'
 import * as LucideIcons from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -21,9 +24,8 @@ export function listRenderableLucideIconNames(): string[] {
 export function resolveLucideIconComponent(
   iconName: string,
 ): LucideIcon | null {
-  if (!isRenderableLucideIcon(iconName, lucideModule)) {
-    return null
-  }
-
-  return lucideModule[iconName] as LucideIcon
+  return resolveLucideIconFromModule(
+    iconName,
+    lucideModule,
+  ) as LucideIcon | null
 }

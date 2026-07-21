@@ -31,14 +31,6 @@ function createPrismaHighlightCardStore(
       prisma.marketingHighlightCard.findUnique({
         where: { id },
       }),
-    findMaxSortOrder: async (collection) => {
-      const aggregate = await prisma.marketingHighlightCard.aggregate({
-        where: { collection },
-        _max: { sortOrder: true },
-      })
-
-      return aggregate._max.sortOrder
-    },
     create: (data) => prisma.marketingHighlightCard.create({ data }),
     update: (id, data) =>
       prisma.marketingHighlightCard.update({

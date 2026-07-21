@@ -40,16 +40,6 @@ function createStore(
     findById: vi.fn(
       async (id: string) => records.find((record) => record.id === id) ?? null,
     ),
-    findMaxSortOrder: vi.fn(async (collection: HighlightCardCollection) => {
-      const collectionRecords = records.filter(
-        (record) => record.collection === collection,
-      )
-      if (collectionRecords.length === 0) {
-        return null
-      }
-
-      return Math.max(...collectionRecords.map((record) => record.sortOrder))
-    }),
     deleteById: vi.fn(async (id: string) => {
       const index = records.findIndex((record) => record.id === id)
       if (index === -1) {
