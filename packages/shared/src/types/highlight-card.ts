@@ -10,6 +10,14 @@ export type HighlightCardCollection = z.infer<
   typeof highlightCardCollectionSchema
 >
 
+export const listHighlightCardsInputSchema = z.object({
+  collection: highlightCardCollectionSchema,
+})
+
+export type ListHighlightCardsInput = z.infer<
+  typeof listHighlightCardsInputSchema
+>
+
 export const createHighlightCardInputSchema = z.object({
   collection: highlightCardCollectionSchema,
   title: z.string().min(1),
