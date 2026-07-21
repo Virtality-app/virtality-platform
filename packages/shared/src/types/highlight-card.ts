@@ -21,12 +21,11 @@ export type CreateHighlightCardInput = z.infer<
   typeof createHighlightCardInputSchema
 >
 
-export const updateHighlightCardInputSchema = z.object({
-  id: z.string().min(1),
-  title: z.string().min(1),
-  body: z.string().min(1),
-  iconName: z.string().min(1),
-})
+export const updateHighlightCardInputSchema = createHighlightCardInputSchema
+  .omit({ collection: true })
+  .extend({
+    id: z.string().min(1),
+  })
 
 export type UpdateHighlightCardInput = z.infer<
   typeof updateHighlightCardInputSchema

@@ -9,7 +9,7 @@ import {
   type ReorderHighlightCardInput,
   type UpdateHighlightCardInput,
 } from '../types/highlight-card.ts'
-import { isRenderableLucideIcon } from './lucide-icon.ts'
+import { isRenderableLucideIcon, type LucideModule } from './lucide-icon.ts'
 
 export type HighlightCardRecord = {
   id: string
@@ -53,8 +53,6 @@ export type HighlightCardStore = {
   ) => Promise<HighlightCardRecord[]>
 }
 
-export type HighlightCardLucideModule = Record<string, unknown>
-
 export class HighlightCardValidationError extends Error {
   constructor(message: string) {
     super(message)
@@ -91,23 +89,16 @@ export function mapHighlightCardToListItem(
   }
 }
 
-function compareHighlightCardsForList(
-  left: Pick<HighlightCardRecord, 'sortOrder'>,
-  right: Pick<HighlightCardRecord, 'sortOrder'>,
-): number {
-  return left.sortOrder - right.sortOrder
-}
-
-function getCollectionCardsOrdered(
+function sortHighlightCardsByOrder(
   records: readonly HighlightCardRecord[],
 ): HighlightCardRecord[] {
-  return [...records].sort(compareHighlightCardsForList)
+  return [...records].sort((left, right) => left.sortOrder - right.sortOrder)
 }
 
 function normalizeHighlightCardFields(
   input: Pick<CreateHighlightCardInput, 'title' | 'body' | 'iconName'>,
-  lucideModule: HighlightCardLucideModule,
-) {
+  lucideModule: LucideModule,
+): { title: string; body: string; iconName: string } {
   const title = input.title.trim()
   const body = input.body.trim()
   const iconName = input.iconName.trim()
@@ -157,14 +148,14 @@ export async function listHighlightCards(
     ? await store.listByCollection(collection)
     : await store.listAll()
 
-  return getCollectionCardsOrdered(records).map(mapHighlightCardToListItem)
+  return sortHighlightCardsByOrder(records).map(mapHighlightCardToListItem)
 }
 
 export async function createHighlightCard(
   store: HighlightCardStore,
   deps: {
     generateId: () => string
-    lucideModule: HighlightCardLucideModule
+    lucideModule: LucideModule
   },
   input: CreateHighlightCardInput,
 ): Promise<HighlightCardListItem> {
@@ -175,7 +166,10 @@ export async function createHighlightCard(
     throw new HighlightCardCollectionFullError(input.collection)
   }
 
-  const maxSortOrder = await store.findMaxSortOrder(input.collection)
+  const maxSortOrder =
+    existingCards.length === 0
+      ? null
+      : Math.max(...existingCards.map((record) => record.sortOrder))
   const sortOrder = (maxSortOrder ?? -1) + 1
 
   const created = await store.create({
@@ -191,7 +185,7 @@ export async function createHighlightCard(
 export async function updateHighlightCard(
   store: HighlightCardStore,
   deps: {
-    lucideModule: HighlightCardLucideModule
+    lucideModule: LucideModule
   },
   input: UpdateHighlightCardInput,
 ): Promise<HighlightCardListItem> {
@@ -218,18 +212,14 @@ export async function reorderHighlightCard(
     throw new HighlightCardNotFoundError(input.id)
   }
 
-  const collectionCards = getCollectionCardsOrdered(
+  const collectionCards = sortHighlightCardsByOrder(
     await store.listByCollection(existing.collection),
   )
   const currentIndex = collectionCards.findIndex(
     (record) => record.id === input.id,
   )
-  let targetIndex: number
-  if (input.direction === 'up') {
-    targetIndex = currentIndex - 1
-  } else {
-    targetIndex = currentIndex + 1
-  }
+  const offset = input.direction === 'up' ? -1 : 1
+  const targetIndex = currentIndex + offset
 
   if (
     currentIndex === -1 ||

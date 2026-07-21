@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { HighlightCardCollection } from '../types/highlight-card.ts'
-import { isRenderableLucideIcon } from './lucide-icon.ts'
+import {
+  HIGHLIGHT_CARD_BODY_MAX_LENGTH,
+  HIGHLIGHT_CARD_MAX_PER_COLLECTION,
+  HIGHLIGHT_CARD_TITLE_MAX_LENGTH,
+  type HighlightCardCollection,
+} from '../types/highlight-card.ts'
 import {
   createHighlightCard,
   HighlightCardCollectionFullError,
@@ -14,24 +18,17 @@ import {
   type HighlightCardStore,
   type HighlightCardUpdateData,
 } from './highlight-card.ts'
+import {
+  createMockLucideModule,
+  mockLucideIcon,
+} from './lucide-icon.testing.ts'
 
 const now = new Date('2026-07-21T12:00:00.000Z')
-const REACT_FORWARD_REF = Symbol.for('react.forward_ref')
 
-function mockLucideIcon() {
-  return {
-    $$typeof: REACT_FORWARD_REF,
-    render: () => null,
-  }
-}
-
-const lucideModule = {
-  icons: { Activity: mockLucideIcon() },
+const lucideModule = createMockLucideModule({
   Activity: mockLucideIcon(),
   Shield: mockLucideIcon(),
-  createLucideIcon: () => mockLucideIcon(),
-  Icon: mockLucideIcon(),
-}
+})
 
 function createStore(
   initialRecords: HighlightCardRecord[] = [],
@@ -136,7 +133,7 @@ describe('highlight card domain', () => {
         { generateId: () => 'card-1', lucideModule },
         {
           collection: 'benefits',
-          title: 'a'.repeat(81),
+          title: 'a'.repeat(HIGHLIGHT_CARD_TITLE_MAX_LENGTH + 1),
           body: 'Body',
           iconName: 'Activity',
         },
@@ -154,7 +151,7 @@ describe('highlight card domain', () => {
         {
           collection: 'benefits',
           title: 'Title',
-          body: 'a'.repeat(281),
+          body: 'a'.repeat(HIGHLIGHT_CARD_BODY_MAX_LENGTH + 1),
           iconName: 'Activity',
         },
       ),
@@ -193,7 +190,7 @@ describe('highlight card domain', () => {
 
   it('rejects create when a collection already has six cards', async () => {
     const store = createStore(
-      Array.from({ length: 6 }, (_, index) =>
+      Array.from({ length: HIGHLIGHT_CARD_MAX_PER_COLLECTION }, (_, index) =>
         card({
           id: `card-${index + 1}`,
           collection: 'benefits',
@@ -354,36 +351,5 @@ describe('highlight card domain', () => {
     await expect(
       removeHighlightCard(store, { id: 'missing-card' }),
     ).rejects.toBeInstanceOf(HighlightCardNotFoundError)
-  })
-})
-
-describe('highlight card lucide integration', () => {
-  it('accepts seed icon names from the website Lucide version when available', async () => {
-    let websiteLucide: Record<string, unknown> | null = null
-
-    try {
-      websiteLucide = await import('lucide-react')
-    } catch {
-      return
-    }
-
-    const seedIconNames = [
-      'PersonStanding',
-      'Shield',
-      'Users',
-      'Sparkles',
-      'ClipboardList',
-      'Building2',
-      'Activity',
-      'Brain',
-      'Package',
-      'BarChartBig',
-      'Sliders',
-      'Clock',
-    ]
-
-    for (const iconName of seedIconNames) {
-      expect(isRenderableLucideIcon(iconName, websiteLucide)).toBe(true)
-    }
   })
 })

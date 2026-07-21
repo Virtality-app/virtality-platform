@@ -1,25 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { isRenderableLucideIcon } from './lucide-icon.ts'
-
-const REACT_FORWARD_REF = Symbol.for('react.forward_ref')
-
-function mockLucideIcon() {
-  return {
-    $$typeof: REACT_FORWARD_REF,
-    render: () => null,
-  }
-}
-
-function createMockLucideModule(
-  entries: Record<string, unknown>,
-): Record<string, unknown> {
-  return {
-    icons: { Activity: mockLucideIcon() },
-    createLucideIcon: () => mockLucideIcon(),
-    Icon: mockLucideIcon(),
-    ...entries,
-  }
-}
+import {
+  createMockLucideModule,
+  mockLucideIcon,
+} from './lucide-icon.testing.ts'
 
 describe('lucide icon resolvability', () => {
   it('accepts names that resolve to forward-ref icon components', () => {
@@ -49,5 +33,34 @@ describe('lucide icon resolvability', () => {
     })
 
     expect(isRenderableLucideIcon('Activity', lucideModule)).toBe(false)
+  })
+
+  it('accepts seed icon names from the website Lucide version when available', async () => {
+    let websiteLucide: Record<string, unknown> | null = null
+
+    try {
+      websiteLucide = await import('lucide-react')
+    } catch {
+      return
+    }
+
+    const seedIconNames = [
+      'PersonStanding',
+      'Shield',
+      'Users',
+      'Sparkles',
+      'ClipboardList',
+      'Building2',
+      'Activity',
+      'Brain',
+      'Package',
+      'BarChartBig',
+      'Sliders',
+      'Clock',
+    ]
+
+    for (const iconName of seedIconNames) {
+      expect(isRenderableLucideIcon(iconName, websiteLucide)).toBe(true)
+    }
   })
 })
