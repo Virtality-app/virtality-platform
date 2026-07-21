@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { HighlightCardCollection } from '@virtality/shared/types'
 import { useORPC } from '../../../orpc-context.js'
+import { invalidateHighlightCardList } from './invalidate-highlight-card-list.js'
 
 export function useRemoveHighlightCard(collection: HighlightCardCollection) {
   const orpc = useORPC()
@@ -9,11 +10,7 @@ export function useRemoveHighlightCard(collection: HighlightCardCollection) {
   return useMutation(
     orpc.highlightCard.remove.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: orpc.highlightCard.list.key({
-            input: { collection },
-          }),
-        })
+        invalidateHighlightCardList(queryClient, orpc, collection)
       },
     }),
   )

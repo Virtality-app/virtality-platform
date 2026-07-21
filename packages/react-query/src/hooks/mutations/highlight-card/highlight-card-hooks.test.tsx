@@ -1,6 +1,7 @@
 import { createTanstackQueryUtils } from '@orpc/tanstack-query'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderHook, waitFor } from '@testing-library/react'
+import type { HighlightCardCollection } from '@virtality/shared/types'
 import type { ReactNode } from 'react'
 import { createElement } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -39,8 +40,27 @@ function createWrapper(queryClient: QueryClient) {
   }
 }
 
+function highlightCardListKey(collection: HighlightCardCollection) {
+  return orpcMock.highlightCard.list.key({ input: { collection } })
+}
+
 describe('highlight card hooks', () => {
   let queryClient: QueryClient
+
+  function seedHighlightCardList(collection: HighlightCardCollection) {
+    queryClient.setQueryData(highlightCardListKey(collection), [
+      highlightCardListItem,
+    ])
+  }
+
+  function expectCollectionListInvalidated(
+    collection: HighlightCardCollection,
+  ) {
+    expect(
+      queryClient.getQueryState(highlightCardListKey(collection))
+        ?.isInvalidated,
+    ).toBe(true)
+  }
 
   beforeEach(() => {
     queryClient = new QueryClient({
@@ -53,95 +73,55 @@ describe('highlight card hooks', () => {
   })
 
   it('useHighlightCards registers a features collection query', () => {
+    const featuresQueryKey = orpcMock.highlightCard.list.queryOptions({
+      input: { collection: 'features' },
+    }).queryKey
+
     renderHook(() => useHighlightCards('features'), {
       wrapper: createWrapper(queryClient),
     })
 
-    const featuresQuery = queryClient
-      .getQueryCache()
-      .getAll()
-      .find((query) =>
-        JSON.stringify(query.queryKey).includes('"collection":"features"'),
-      )
-
-    expect(featuresQuery).toBeDefined()
-  })
-
-  it('builds collection-scoped list query options', () => {
-    const options = orpcMock.highlightCard.list.queryOptions({
-      input: { collection: 'benefits' },
-    })
-
-    expect(options.queryKey).toEqual(
-      orpcMock.highlightCard.list.queryKey({
-        input: { collection: 'benefits' },
-      }),
-    )
-  })
-
-  it('scopes list query keys by collection', () => {
-    const benefitsKey = orpcMock.highlightCard.list.key({
-      input: { collection: 'benefits' },
-    })
-    const featuresKey = orpcMock.highlightCard.list.key({
-      input: { collection: 'features' },
-    })
-
-    expect(benefitsKey).not.toEqual(featuresKey)
+    expect(
+      queryClient.getQueryCache().find({ queryKey: featuresQueryKey }),
+    ).toBeDefined()
   })
 
   it('invalidates the benefits list after create', async () => {
-    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries')
+    seedHighlightCardList('benefits')
 
     const { result } = renderHook(() => useCreateHighlightCard(), {
       wrapper: createWrapper(queryClient),
     })
 
-    result.current.mutate({
-      collection: 'benefits',
-      title: 'Faster recovery',
-      body: 'Patients recover sooner with guided VR therapy.',
-      iconName: 'HeartPulse',
-    })
+    const { collection, title, body, iconName } = highlightCardListItem
+    result.current.mutate({ collection, title, body, iconName })
 
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true)
     })
 
-    expect(invalidateSpy).toHaveBeenCalledWith({
-      queryKey: orpcMock.highlightCard.list.key({
-        input: { collection: 'benefits' },
-      }),
-    })
+    expectCollectionListInvalidated('benefits')
   })
 
   it('invalidates the card collection after update', async () => {
-    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries')
+    seedHighlightCardList('benefits')
 
     const { result } = renderHook(() => useUpdateHighlightCard(), {
       wrapper: createWrapper(queryClient),
     })
 
-    result.current.mutate({
-      id: highlightCardListItem.id,
-      title: highlightCardListItem.title,
-      body: highlightCardListItem.body,
-      iconName: highlightCardListItem.iconName,
-    })
+    const { id, title, body, iconName } = highlightCardListItem
+    result.current.mutate({ id, title, body, iconName })
 
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true)
     })
 
-    expect(invalidateSpy).toHaveBeenCalledWith({
-      queryKey: orpcMock.highlightCard.list.key({
-        input: { collection: 'benefits' },
-      }),
-    })
+    expectCollectionListInvalidated('benefits')
   })
 
   it('invalidates the card collection after reorder', async () => {
-    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries')
+    seedHighlightCardList('benefits')
 
     const { result } = renderHook(() => useReorderHighlightCard(), {
       wrapper: createWrapper(queryClient),
@@ -156,15 +136,11 @@ describe('highlight card hooks', () => {
       expect(result.current.isSuccess).toBe(true)
     })
 
-    expect(invalidateSpy).toHaveBeenCalledWith({
-      queryKey: orpcMock.highlightCard.list.key({
-        input: { collection: 'benefits' },
-      }),
-    })
+    expectCollectionListInvalidated('benefits')
   })
 
   it('invalidates the scoped collection after remove', async () => {
-    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries')
+    seedHighlightCardList('features')
 
     const { result } = renderHook(() => useRemoveHighlightCard('features'), {
       wrapper: createWrapper(queryClient),
@@ -176,10 +152,6 @@ describe('highlight card hooks', () => {
       expect(result.current.isSuccess).toBe(true)
     })
 
-    expect(invalidateSpy).toHaveBeenCalledWith({
-      queryKey: orpcMock.highlightCard.list.key({
-        input: { collection: 'features' },
-      }),
-    })
+    expectCollectionListInvalidated('features')
   })
 })

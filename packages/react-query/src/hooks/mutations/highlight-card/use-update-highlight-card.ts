@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useORPC } from '../../../orpc-context.js'
+import { invalidateHighlightCardList } from './invalidate-highlight-card-list.js'
 
 export function useUpdateHighlightCard() {
   const orpc = useORPC()
@@ -8,11 +9,7 @@ export function useUpdateHighlightCard() {
   return useMutation(
     orpc.highlightCard.update.mutationOptions({
       onSuccess: (data) => {
-        queryClient.invalidateQueries({
-          queryKey: orpc.highlightCard.list.key({
-            input: { collection: data.collection },
-          }),
-        })
+        invalidateHighlightCardList(queryClient, orpc, data.collection)
       },
     }),
   )
