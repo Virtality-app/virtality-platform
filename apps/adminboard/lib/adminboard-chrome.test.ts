@@ -28,6 +28,8 @@ describe('adminboard sidebar chrome', () => {
     expect(nav).toMatch(/href: ['"]\/partner-logos['"]/)
     expect(nav).toMatch(/href: ['"]\/promo-video['"]/)
     expect(nav).toMatch(/href: ['"]\/mosaic['"]/)
+    expect(nav).toMatch(/href: ['"]\/benefits['"]/)
+    expect(nav).toMatch(/href: ['"]\/features['"]/)
     expect(nav).toMatch(/href: ['"]\/email['"]/)
     expect(nav).toMatch(/Admin/)
     expect(nav).toMatch(/href: ['"]\/referral['"]/)
