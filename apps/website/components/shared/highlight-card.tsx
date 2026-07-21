@@ -1,34 +1,48 @@
 'use client'
-import { FC, ReactNode, useEffect, useState } from 'react'
 
-const FeatureCard = ({
-  title,
-  ctx,
-  icon,
-  index,
-}: {
+import { resolveHighlightCardIcon } from '@/components/shared/lib/highlight-card-icon'
+import { type ComponentType, type ReactNode, useEffect, useState } from 'react'
+
+type HighlightCardProps = {
   title: string
-  ctx: string
-  icon?: keyof typeof import('lucide-react')
+  body: string
+  iconName?: string
   index?: number
-}) => {
-  const [importedComponent, setImportedComponent] = useState<ReactNode | null>(
-    null,
-  )
-  useEffect(() => {
-    if (!icon) return
+}
 
-    const importComponent = async () => {
-      import(`lucide-react`).then((mod) => {
-        if (mod) {
-          const IconComponent = mod[icon] as FC
-          setImportedComponent(<IconComponent />)
-        }
-      })
+const HighlightCard = ({
+  title,
+  body,
+  iconName,
+  index,
+}: HighlightCardProps) => {
+  const [icon, setIcon] = useState<ReactNode | null>(null)
+
+  useEffect(() => {
+    if (!iconName) {
+      setIcon(null)
+      return
     }
 
-    importComponent()
-  }, [icon])
+    let cancelled = false
+
+    import('lucide-react').then((mod) => {
+      if (cancelled) {
+        return
+      }
+
+      const IconComponent = resolveHighlightCardIcon(
+        iconName,
+        mod,
+      ) as ComponentType | null
+
+      setIcon(IconComponent ? <IconComponent /> : null)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [iconName])
 
   return (
     <div
@@ -37,12 +51,11 @@ const FeatureCard = ({
         animation: `fadeInUp 0.6s ease-out ${(index || 0) * 0.1}s both`,
       }}
     >
-      {/* Decorative corner accent */}
       <div className='absolute top-0 right-0 w-20 h-20 bg-linear-to-br from-vital-blue-600/5 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity'></div>
 
       <div className='flex flex-col h-full'>
         <div className='mb-5 flex size-14 items-center justify-center rounded-xl bg-linear-to-br from-vital-blue-700 to-vital-blue-600 shadow-lg shadow-vital-blue-700/20 group-hover:scale-110 transition-transform duration-300'>
-          <div className='*:size-6 text-white'>{importedComponent}</div>
+          <div className='*:size-6 text-white'>{icon}</div>
         </div>
 
         <h3 className='mb-4 text-xl font-bold text-slate-900 dark:text-white group-hover:text-vital-blue-700 transition-colors'>
@@ -50,10 +63,9 @@ const FeatureCard = ({
         </h3>
 
         <p className='text-slate-600 dark:text-gray-300 leading-relaxed flex-1'>
-          {ctx}
+          {body}
         </p>
 
-        {/* Bottom accent line */}
         <div className='mt-6 pt-4 border-t border-vital-blue-100 dark:border-zinc-700'>
           <div className='h-1 w-0 bg-linear-to-r from-vital-blue-700 to-vital-blue-600 rounded-full group-hover:w-full transition-all duration-500'></div>
         </div>
@@ -75,4 +87,4 @@ const FeatureCard = ({
   )
 }
 
-export default FeatureCard
+export default HighlightCard

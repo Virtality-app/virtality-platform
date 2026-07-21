@@ -1,17 +1,17 @@
-import FeatureCard from '@/components/shared/feature-card'
-import {
-  BENEFITS_SECTION_CONTENT,
-  LANDING_BENEFITS,
-  PILOT_PROOF_CONTENT,
-} from '../content'
+'use client'
+
+import HighlightCardsGrid from '@/components/shared/highlight-cards-grid'
+import { useVisibleHighlightCards } from '@/components/shared/lib/use-visible-highlight-cards'
+import { BENEFITS_SECTION_CONTENT, PILOT_PROOF_CONTENT } from '../content'
 
 const BenefitsGrid = () => {
+  const { cards } = useVisibleHighlightCards('benefits')
+
   return (
     <section
       id='benefits-grid'
       className='relative dark:bg-zinc-900 flex py-24 overflow-hidden'
     >
-      {/* Background with medical motif */}
       <div className='absolute inset-0 bg-linear-to-b from-slate-50 via-white to-vital-blue-50/20'></div>
       <div
         className='absolute inset-0 opacity-[0.02]'
@@ -56,17 +56,7 @@ const BenefitsGrid = () => {
           </div>
         </div>
 
-        <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto'>
-          {LANDING_BENEFITS.map((benefit, index) => (
-            <FeatureCard
-              key={benefit.title}
-              title={benefit.title}
-              ctx={benefit.description}
-              icon={benefit.icon}
-              index={index}
-            />
-          ))}
-        </div>
+        {cards ? <HighlightCardsGrid cards={cards} /> : null}
       </div>
     </section>
   )
