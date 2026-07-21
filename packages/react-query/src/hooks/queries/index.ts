@@ -60,6 +60,9 @@ export { usePromoVideo } from './promo-video/use-promo-video.js'
 // Mosaic queries
 export { useMosaic } from './mosaic/use-mosaic.js'
 
+// Highlight card queries
+export { useHighlightCards } from './highlight-card/use-highlight-cards.js'
+
 // Referral queries
 export { useReferralCodes } from './referral/use-referral-codes.js'
 
