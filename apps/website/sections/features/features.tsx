@@ -1,13 +1,19 @@
-import FeatureCard from '@/components/shared/feature-card'
-import { features } from './content'
+'use client'
+
+import HighlightCard from '@/components/shared/highlight-card'
+import { useHighlightCards } from '@virtality/react-query'
+import { shouldShowHighlightCardGrid } from '@/components/shared/lib/highlight-card-grid'
 
 const Features = () => {
+  const { data: highlightCards, isPending } = useHighlightCards('features')
+  const showHighlightCardGrid =
+    !isPending && shouldShowHighlightCardGrid(highlightCards)
+
   return (
     <section
       id='features'
       className='relative dark:bg-zinc-900 flex py-24 overflow-hidden'
     >
-      {/* Background with medical motif */}
       <div className='absolute inset-0 bg-linear-to-b from-slate-50 via-white to-vital-blue-50/20'></div>
       <div
         className='absolute inset-0 opacity-[0.02]'
@@ -37,17 +43,19 @@ const Features = () => {
           </p>
         </div>
 
-        <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto'>
-          {features.map((feature, index) => (
-            <FeatureCard
-              key={index}
-              title={feature.title}
-              ctx={feature.context}
-              icon={feature.icon}
-              index={index}
-            />
-          ))}
-        </div>
+        {showHighlightCardGrid ? (
+          <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto'>
+            {highlightCards?.map((card, index) => (
+              <HighlightCard
+                key={card.id}
+                title={card.title}
+                body={card.body}
+                iconName={card.iconName}
+                index={index}
+              />
+            ))}
+          </div>
+        ) : null}
       </div>
     </section>
   )
