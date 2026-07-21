@@ -20,7 +20,8 @@
     "migrate:deploy": "prisma migrate deploy --config ./console/prisma.config.ts",
     "studio": "prisma studio --config ./console/prisma.config.ts",
     "migrate:programs-presets": "tsx scripts/migrate-programs-and-presets.ts",
-    "migrate:programs-presets:dry-run": "tsx scripts/migrate-programs-and-presets.ts --dry-run"
+    "migrate:programs-presets:dry-run": "tsx scripts/migrate-programs-and-presets.ts --dry-run",
+    "test": "vitest run"
   },
   "dependencies": {
     "@noble/hashes": "2.0.1",
@@ -41,6 +42,7 @@
     "prisma": "7.2.0",
     "prisma-zod-generator": "2.1.4",
     "tsx": "4.21.0",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "3.2.4"
   }
 }
