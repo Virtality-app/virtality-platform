@@ -1,7 +1,7 @@
 'use client'
 import { Bell, Gift } from 'lucide-react'
 import { Card, CardContent } from '@virtality/ui/components/card'
-import WaitlistForm from '@/components/call-to-action/waitlist-form'
+import { WaitlistForm } from '@/sections/cta'
 
 const WaitlistPage = () => {
   return (

@@ -11,7 +11,7 @@ import {
 } from '@icons-pack/react-simple-icons'
 import ScrollToCtaButton from '@/components/shared/scroll-to-cta-button'
 import MobileNav from '@/components/layout/mobile-nav'
-import { NAV_BOOK_DEMO_LABEL } from '@/lib/hero-content'
+import { NAV_BOOK_DEMO_LABEL } from '@/sections/hero'
 import { getConsoleUrl } from '@virtality/shared/types'
 
 const consoleURL = getConsoleUrl()
