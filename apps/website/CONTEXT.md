@@ -2,6 +2,12 @@
 
 Public marketing site — landing, blog, waitlist, and contact.
 
+## Language
+
+**Highlight Card**:
+A landing-page content unit with a title, body copy, and a Lucide icon name. Website owns presentation; Adminboard owns the managed copy and icon.
+_Avoid_: Feature card, benefit card, info card
+
 ## Section layout
 
 Landing and marketing UI is organized by **section** (feature), not by technical layer. A section owns its UI, copy, and section-private helpers.

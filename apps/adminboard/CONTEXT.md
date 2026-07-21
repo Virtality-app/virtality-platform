@@ -8,6 +8,14 @@ When a dropdown menu item opens a dialog, follow `docs/adr/0002-dropdown-dialog-
 
 ## Language
 
+**Highlight Card**:
+A landing-page content unit with a title, body copy, and a Lucide icon name. Style is owned by the website; Adminboard manages copy and icon selection only.
+_Avoid_: Feature card, benefit card, info card
+
+**Highlight Card Collection**:
+An ordered set of Highlight Cards for one landing placement, such as Benefits or Features. Adminboard Content sections share one managing tool and differ only by which collection they edit.
+_Avoid_: Card list, feature set, benefit set
+
 **Bucket Object**:
 A file-like asset stored in the platform media bucket and served through the Virtality CDN.
 _Avoid_: S3 resource, file resource
