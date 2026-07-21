@@ -9,6 +9,16 @@ const lucideModule = LucideIcons as Record<string, unknown>
 
 let cachedIconNames: string[] | null = null
 
+/** Drop Lucide's `FooIcon` aliases when `Foo` is also exportable. */
+function isPrimaryLucideIconName(name: string): boolean {
+  if (!name.endsWith('Icon')) {
+    return true
+  }
+
+  const baseName = name.slice(0, -'Icon'.length)
+  return !baseName || !isRenderableLucideIcon(baseName, lucideModule)
+}
+
 export function listRenderableLucideIconNames(): string[] {
   if (cachedIconNames) {
     return cachedIconNames
@@ -16,6 +26,7 @@ export function listRenderableLucideIconNames(): string[] {
 
   cachedIconNames = Object.keys(LucideIcons)
     .filter((name) => isRenderableLucideIcon(name, lucideModule))
+    .filter(isPrimaryLucideIconName)
     .sort((left, right) => left.localeCompare(right))
 
   return cachedIconNames

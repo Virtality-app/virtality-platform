@@ -20,13 +20,32 @@ import {
 } from '@/lib/lucide-icons'
 import { cn } from '@/lib/utils'
 import { ChevronsUpDown } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type UIEvent } from 'react'
+
+/** How many icons to mount per page so opening stays responsive. */
+export const LUCIDE_ICON_PICKER_PAGE_SIZE = 80
+
+const LOAD_MORE_SCROLL_THRESHOLD_PX = 48
 
 type LucideIconPickerProps = {
   value: string
   onChange: (iconName: string) => void
   id?: string
   disabled?: boolean
+}
+
+function filterLucideIconNames(
+  iconNames: readonly string[],
+  query: string,
+): string[] {
+  const normalizedQuery = query.trim().toLowerCase()
+  if (!normalizedQuery) {
+    return [...iconNames]
+  }
+
+  return iconNames.filter((name) =>
+    name.toLowerCase().includes(normalizedQuery),
+  )
 }
 
 export function LucideIconPicker({
@@ -36,11 +55,60 @@ export function LucideIconPicker({
   disabled = false,
 }: LucideIconPickerProps) {
   const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const [visibleCount, setVisibleCount] = useState(LUCIDE_ICON_PICKER_PAGE_SIZE)
   const iconNames = useMemo(() => listRenderableLucideIconNames(), [])
   const SelectedIcon = useMemo(() => resolveLucideIconComponent(value), [value])
 
+  const matchedIconNames = useMemo(
+    () => filterLucideIconNames(iconNames, search),
+    [iconNames, search],
+  )
+
+  const visibleIconNames = useMemo(
+    () => matchedIconNames.slice(0, visibleCount),
+    [matchedIconNames, visibleCount],
+  )
+
+  const hasMoreIcons = visibleCount < matchedIconNames.length
+
+  const resetVisibleWindow = () => {
+    setVisibleCount(LUCIDE_ICON_PICKER_PAGE_SIZE)
+  }
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen)
+    if (!nextOpen) {
+      setSearch('')
+      resetVisibleWindow()
+    }
+  }
+
+  const handleSearchChange = (nextSearch: string) => {
+    setSearch(nextSearch)
+    resetVisibleWindow()
+  }
+
+  const handleListScroll = (event: UIEvent<HTMLDivElement>) => {
+    if (!hasMoreIcons) {
+      return
+    }
+
+    const list = event.currentTarget
+    const distanceFromBottom =
+      list.scrollHeight - list.scrollTop - list.clientHeight
+
+    if (distanceFromBottom > LOAD_MORE_SCROLL_THRESHOLD_PX) {
+      return
+    }
+
+    setVisibleCount((current) =>
+      Math.min(current + LUCIDE_ICON_PICKER_PAGE_SIZE, matchedIconNames.length),
+    )
+  }
+
   return (
-    <div className='flex items-center gap-3'>
+    <div className='flex min-w-0 items-center gap-3'>
       <div
         className='bg-muted flex size-12 shrink-0 items-center justify-center rounded-lg border'
         aria-hidden
@@ -51,7 +119,8 @@ export function LucideIconPicker({
           <span className='text-muted-foreground text-xs'>?</span>
         )}
       </div>
-      <Popover open={open} onOpenChange={setOpen}>
+      {/* modal: lets CommandList scroll under Dialog's RemoveScroll lock */}
+      <Popover modal open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
           <Button
             id={id}
@@ -59,9 +128,9 @@ export function LucideIconPicker({
             variant='outline'
             role='combobox'
             disabled={disabled}
-            className='w-full justify-between font-normal'
+            className='min-w-0 flex-1 justify-between font-normal'
           >
-            <span className={cn(!value && 'text-muted-foreground')}>
+            <span className={cn('truncate', !value && 'text-muted-foreground')}>
               {value || 'Select icon…'}
             </span>
             <ChevronsUpDown className='ml-2 size-4 shrink-0 opacity-50' />
@@ -70,13 +139,21 @@ export function LucideIconPicker({
         <PopoverContent
           className='w-(--radix-popover-trigger-width) p-0'
           align='start'
+          collisionPadding={8}
         >
-          <Command>
-            <CommandInput placeholder='Search Lucide icons…' />
-            <CommandList>
+          <Command shouldFilter={false}>
+            <CommandInput
+              placeholder='Search Lucide icons…'
+              value={search}
+              onValueChange={handleSearchChange}
+            />
+            <CommandList
+              className='max-h-72 overscroll-contain'
+              onScroll={handleListScroll}
+            >
               <CommandEmpty>No icon found.</CommandEmpty>
               <CommandGroup>
-                {iconNames.map((name) => {
+                {visibleIconNames.map((name) => {
                   const Icon = resolveLucideIconComponent(name)
                   return (
                     <CommandItem
@@ -84,7 +161,7 @@ export function LucideIconPicker({
                       value={name}
                       onSelect={() => {
                         onChange(name)
-                        setOpen(false)
+                        handleOpenChange(false)
                       }}
                     >
                       {Icon ? (
@@ -92,7 +169,7 @@ export function LucideIconPicker({
                       ) : (
                         <span className='mr-2 size-4' />
                       )}
-                      {name}
+                      <span className='truncate'>{name}</span>
                     </CommandItem>
                   )
                 })}

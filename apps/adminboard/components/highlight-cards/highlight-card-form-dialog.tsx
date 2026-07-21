@@ -156,8 +156,8 @@ export function HighlightCardFormDialog({
         }
       }}
     >
-      <DialogContent className='sm:max-w-lg'>
-        <DialogHeader>
+      <DialogContent className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-lg'>
+        <DialogHeader className='shrink-0'>
           <DialogTitle>
             {mode === 'create' ? 'Add highlight card' : 'Edit highlight card'}
           </DialogTitle>
@@ -167,7 +167,7 @@ export function HighlightCardFormDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className='space-y-4 py-2'>
+        <div className='min-h-0 min-w-0 flex-1 space-y-4 overflow-y-auto py-2'>
           <div className='space-y-2'>
             <Label htmlFor='highlight-card-title'>Title</Label>
             <Input
@@ -199,7 +199,7 @@ export function HighlightCardFormDialog({
             </p>
           </div>
 
-          <div className='space-y-2'>
+          <div className='min-w-0 space-y-2'>
             <Label htmlFor='highlight-card-icon'>Icon</Label>
             <LucideIconPicker
               id='highlight-card-icon'
@@ -210,7 +210,7 @@ export function HighlightCardFormDialog({
           </div>
         </div>
 
-        <DialogFooter className='gap-2 sm:justify-end'>
+        <DialogFooter className='shrink-0 gap-2 sm:justify-end'>
           <Button
             type='button'
             variant='outline'

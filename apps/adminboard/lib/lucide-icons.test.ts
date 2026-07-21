@@ -10,9 +10,14 @@ describe('lucide icon helpers', () => {
 
     expect(names.length).toBeGreaterThan(100)
     expect(names).toContain('Activity')
+    expect(names).not.toContain('ActivityIcon')
     expect(names).not.toContain('createLucideIcon')
     expect(names).not.toContain('icons')
     expect(names).not.toContain('Icon')
+  })
+
+  it('still resolves Lucide Icon-suffixed aliases', () => {
+    expect(resolveLucideIconComponent('ActivityIcon')).not.toBeNull()
   })
 
   it('resolves known icons and rejects invalid names', () => {
