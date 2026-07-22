@@ -69,7 +69,7 @@ export const PRESS_LOGO_ITEMS: PressLogoItem[] = [
   {
     src: '/press/ionian-logo.png',
     alt: 'Ionian',
-    href: 'https://www.youtube.com/watch?v=qbViIQjOUNo',
+    href: 'https://www.youtube.com/live/qbViIQjOUNo?si=Fj1SgXpp0Bi74LKd&t=3685',
     wide: true,
   },
   {

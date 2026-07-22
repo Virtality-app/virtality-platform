@@ -1,7 +1,8 @@
 import { Benefits, BenefitsGrid } from '@/sections/benefits'
 import CallToAction from '@/sections/cta'
 import Features from '@/sections/features'
-import Hero from '@/sections/hero'
+import Hero, { HeroVideoBackdropCtaCenter } from '@/sections/hero'
+// import { HeroVideoBackdropCtaCenter } from '@/sections/hero'
 import MosaicSection from '@/sections/mosaic'
 import PromoVideo from '@/sections/promo-video'
 import SupportedBy from '@/sections/supported-by'
@@ -10,7 +11,8 @@ import Testimonials from '@/sections/testimonials'
 const HomePage = () => {
   return (
     <div className='bg-white text-slate-900 dark:bg-zinc-900 dark:text-gray-100'>
-      <Hero />
+      {/* <Hero /> */}
+      <HeroVideoBackdropCtaCenter />
       <BenefitsGrid />
       <Testimonials />
       <MosaicSection />
