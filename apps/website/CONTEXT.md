@@ -33,16 +33,17 @@ sections/<section>/
 
 ### Current landing sections
 
-| Section        | Path                     |
-| -------------- | ------------------------ |
-| Hero           | `sections/hero/`         |
-| Benefits       | `sections/benefits/`     |
-| Features       | `sections/features/`     |
-| Testimonials   | `sections/testimonials/` |
-| Mosaic         | `sections/mosaic/`       |
-| Promo video    | `sections/promo-video/`  |
-| Supported by   | `sections/supported-by/` |
-| Call to action | `sections/cta/`          |
+| Section        | Path                      |
+| -------------- | ------------------------- |
+| Hero           | `sections/hero/`          |
+| Benefits grid  | `sections/benefits-grid/` |
+| Benefits       | `sections/benefits/`      |
+| Features       | `sections/features/`      |
+| Testimonials   | `sections/testimonials/`  |
+| Mosaic         | `sections/mosaic/`        |
+| Promo video    | `sections/promo-video/`   |
+| Supported by   | `sections/supported-by/`  |
+| Call to action | `sections/cta/`           |
 
 ### Adding a section
 

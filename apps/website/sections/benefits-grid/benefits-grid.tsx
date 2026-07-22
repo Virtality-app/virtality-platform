@@ -1,11 +1,12 @@
 'use client'
 
 import HighlightCardsGrid from '@/components/shared/highlight-cards-grid'
+import HighlightCardsGridSkeleton from '@/components/shared/highlight-cards-grid-skeleton'
 import { useVisibleHighlightCards } from '@/components/shared/lib/use-visible-highlight-cards'
-import { BENEFITS_SECTION_CONTENT, PILOT_PROOF_CONTENT } from '../content'
+import { BENEFITS_GRID_SECTION_CONTENT, PILOT_PROOF_CONTENT } from './content'
 
 const BenefitsGrid = () => {
-  const { cards } = useVisibleHighlightCards('benefits')
+  const { cards, isPending } = useVisibleHighlightCards('benefits')
 
   return (
     <section
@@ -27,12 +28,12 @@ const BenefitsGrid = () => {
         <div className='mx-auto mb-16 max-w-5xl'>
           <div className='mb-10 text-center'>
             <div className='inline-flex items-center gap-2 rounded-full bg-vital-blue-700/10 px-4 py-2 text-sm font-semibold text-vital-blue-700 mb-6'>
-              <span>{BENEFITS_SECTION_CONTENT.eyebrow}</span>
+              <span>{BENEFITS_GRID_SECTION_CONTENT.eyebrow}</span>
             </div>
             <h2 className='text-4xl font-bold md:text-5xl text-slate-900 dark:text-white'>
-              {BENEFITS_SECTION_CONTENT.titleLead}{' '}
+              {BENEFITS_GRID_SECTION_CONTENT.titleLead}{' '}
               <span className='bg-linear-to-r from-vital-blue-700 to-vital-blue-600 bg-clip-text text-transparent'>
-                {BENEFITS_SECTION_CONTENT.titleAccent}
+                {BENEFITS_GRID_SECTION_CONTENT.titleAccent}
               </span>
             </h2>
           </div>
@@ -56,7 +57,11 @@ const BenefitsGrid = () => {
           </div>
         </div>
 
-        {cards ? <HighlightCardsGrid cards={cards} /> : null}
+        {isPending ? (
+          <HighlightCardsGridSkeleton />
+        ) : cards ? (
+          <HighlightCardsGrid cards={cards} />
+        ) : null}
       </div>
     </section>
   )

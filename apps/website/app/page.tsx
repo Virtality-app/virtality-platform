@@ -1,4 +1,5 @@
-import { Benefits, BenefitsGrid } from '@/sections/benefits'
+import Benefits from '@/sections/benefits'
+import BenefitsGrid from '@/sections/benefits-grid'
 import CallToAction from '@/sections/cta'
 import Features from '@/sections/features'
 import Hero, { HeroVideoBackdropCtaCenter } from '@/sections/hero'

@@ -7,9 +7,8 @@ import { shouldShowHighlightCards } from './highlight-card-visibility'
 export function useVisibleHighlightCards(collection: HighlightCardCollection) {
   const { data, isPending } = useHighlightCards(collection)
 
-  if (isPending || !shouldShowHighlightCards(data)) {
-    return { cards: undefined }
+  return {
+    cards: shouldShowHighlightCards(data) ? data : undefined,
+    isPending,
   }
-
-  return { cards: data }
 }

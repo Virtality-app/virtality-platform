@@ -1,10 +1,11 @@
 'use client'
 
 import HighlightCardsGrid from '@/components/shared/highlight-cards-grid'
+import HighlightCardsGridSkeleton from '@/components/shared/highlight-cards-grid-skeleton'
 import { useVisibleHighlightCards } from '@/components/shared/lib/use-visible-highlight-cards'
 
 const Features = () => {
-  const { cards } = useVisibleHighlightCards('features')
+  const { cards, isPending } = useVisibleHighlightCards('features')
 
   return (
     <section
@@ -40,7 +41,11 @@ const Features = () => {
           </p>
         </div>
 
-        {cards ? <HighlightCardsGrid cards={cards} /> : null}
+        {isPending ? (
+          <HighlightCardsGridSkeleton />
+        ) : cards ? (
+          <HighlightCardsGrid cards={cards} />
+        ) : null}
       </div>
     </section>
   )

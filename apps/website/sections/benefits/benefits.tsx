@@ -1,13 +1,8 @@
-'use client'
-
 import { CheckCircle2 } from 'lucide-react'
 import Image from 'next/image'
-import { useVisibleHighlightCards } from '@/components/shared/lib/use-visible-highlight-cards'
-import { BENEFITS_SECTION_CONTENT } from '../content'
+import { BENEFITS_LIST_ITEMS, BENEFITS_SECTION_CONTENT } from './content'
 
 const Benefits = () => {
-  const { cards } = useVisibleHighlightCards('benefits')
-
   return (
     <section id='benefits' className='relative flex overflow-hidden'>
       <div className='absolute inset-0 bg-linear-to-br from-white via-vital-blue-50/30 to-slate-50'></div>
@@ -56,27 +51,25 @@ const Benefits = () => {
               </p>
             </div>
 
-            {cards ? (
-              <ul className='space-y-6'>
-                {cards.map((card) => (
-                  <li key={card.id} className='flex items-start group'>
-                    <div className='mr-4 mt-0.5 shrink-0'>
-                      <div className='flex size-10 items-center justify-center rounded-lg bg-linear-to-br from-vital-blue-700 to-vital-blue-600 shadow-md group-hover:scale-110 transition-transform'>
-                        <CheckCircle2 className='w-5 h-5 text-white' />
-                      </div>
+            <ul className='space-y-6'>
+              {BENEFITS_LIST_ITEMS.map((item) => (
+                <li key={item.title} className='flex items-start group'>
+                  <div className='mr-4 mt-0.5 shrink-0'>
+                    <div className='flex size-10 items-center justify-center rounded-lg bg-linear-to-br from-vital-blue-700 to-vital-blue-600 shadow-md group-hover:scale-110 transition-transform'>
+                      <CheckCircle2 className='w-5 h-5 text-white' />
                     </div>
-                    <div>
-                      <h3 className='text-lg font-bold text-slate-900 dark:text-white mb-2'>
-                        {card.title}
-                      </h3>
-                      <p className='text-slate-600 dark:text-gray-300 leading-relaxed'>
-                        {card.body}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
+                  </div>
+                  <div>
+                    <h3 className='text-lg font-bold text-slate-900 dark:text-white mb-2'>
+                      {item.title}
+                    </h3>
+                    <p className='text-slate-600 dark:text-gray-300 leading-relaxed'>
+                      {item.description}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>
