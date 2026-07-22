@@ -3,6 +3,7 @@
 import HighlightCardsGrid from '@/components/shared/highlight-cards-grid'
 import HighlightCardsGridSkeleton from '@/components/shared/highlight-cards-grid-skeleton'
 import { useVisibleHighlightCards } from '@/components/shared/lib/use-visible-highlight-cards'
+import { FEATURES_SECTION_CONTENT } from './content'
 
 const Features = () => {
   const { cards, isPending } = useVisibleHighlightCards('features')
@@ -26,18 +27,16 @@ const Features = () => {
       <div className='container relative z-10 m-auto px-4 md:px-8 py-16'>
         <div className='mx-auto mb-16 max-w-3xl text-center'>
           <div className='inline-flex items-center gap-2 rounded-full bg-vital-blue-700/10 px-4 py-2 text-sm font-semibold text-vital-blue-700 mb-6'>
-            <span>Platform Capabilities</span>
+            <span>{FEATURES_SECTION_CONTENT.eyebrow}</span>
           </div>
           <h2 className='mb-6 text-4xl font-bold md:text-5xl text-slate-900 dark:text-white'>
-            Clinical Features for{' '}
+            {FEATURES_SECTION_CONTENT.titleLead}{' '}
             <span className='bg-linear-to-r from-vital-blue-700 to-vital-blue-600 bg-clip-text text-transparent'>
-              Modern Healthcare
+              {FEATURES_SECTION_CONTENT.titleAccent}
             </span>
           </h2>
           <p className='text-lg leading-relaxed text-slate-600 dark:text-gray-300'>
-            Advanced VR platform equipped with comprehensive tools to enhance
-            rehabilitation therapy, accelerate patient recovery, and deliver
-            measurable clinical outcomes.
+            {FEATURES_SECTION_CONTENT.intro}
           </p>
         </div>
 

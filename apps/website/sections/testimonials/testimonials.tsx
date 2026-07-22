@@ -11,15 +11,22 @@ import {
 } from '@/components/ui/carousel'
 import { cn } from '@/lib/utils'
 import { PLACEHOLDER_TESTIMONIALS } from './content'
+import {
+  getClosestMiddleIndex,
+  scrollCarouselWithWrap,
+} from './lib/testimonial-carousel'
+
+const initialIndex = getClosestMiddleIndex(PLACEHOLDER_TESTIMONIALS.length)
 
 const Testimonials = () => {
   const [api, setApi] = useState<CarouselApi>()
-  const [current, setCurrent] = useState(0)
+  const [current, setCurrent] = useState(initialIndex)
 
   useEffect(() => {
     if (!api) return
 
     const sync = () => setCurrent(api.selectedScrollSnap())
+    api.scrollTo(initialIndex, true)
     sync()
     api.on('select', sync)
     api.on('reInit', sync)
@@ -107,8 +114,16 @@ const Testimonials = () => {
             })}
           </CarouselContent>
           <div className='mt-10 flex items-center justify-center gap-2'>
-            <CarouselPrevious className='static translate-none border-vital-blue-200' />
-            <CarouselNext className='static translate-none border-vital-blue-200' />
+            <CarouselPrevious
+              className='static translate-none border-vital-blue-200'
+              disabled={false}
+              onClick={() => scrollCarouselWithWrap(api, 'prev')}
+            />
+            <CarouselNext
+              className='static translate-none border-vital-blue-200'
+              disabled={false}
+              onClick={() => scrollCarouselWithWrap(api, 'next')}
+            />
           </div>
         </Carousel>
       </div>

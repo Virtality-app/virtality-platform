@@ -5,19 +5,15 @@ export type Testimonial = {
 
 export const PLACEHOLDER_TESTIMONIALS: Testimonial[] = [
   {
-    body: 'Patients who struggled to stay engaged in traditional rehab are asking for longer sessions. The immersion changes the entire dynamic of therapy.',
-    saidBy: 'Dr. Elena Vasquez, Physical Medicine',
+    body: 'Where was Virtality three months ago? I had been attending physiotherapy without seeing progress for 3 months, but after just two VR sessions, I could finally move my arm again.',
+    saidBy: 'George, a patient at Physio & Rehab PS',
   },
   {
-    body: 'We cut our average setup time dramatically. Clinicians spend less time configuring equipment and more time guiding recovery.',
-    saidBy: 'Marcus Okonkwo, Clinic Director',
+    body: 'Virtality made a real difference with one of my patients. We were working to gain the final degrees of shoulder movement, and after three VR sessions in a single week, we achieved the range of motion we were aiming for.',
+    saidBy: 'Dimitris, physiotherapist at PhysioTherapy Clinic George Trantas',
   },
   {
-    body: 'The feedback loops feel immediate and motivating. I finally have a tool that makes progress visible to both patient and therapist.',
-    saidBy: 'Priya Nair, Occupational Therapist',
-  },
-  {
-    body: 'Our pilot cohort showed stronger adherence week over week. That consistency is what we have been chasing for years.',
-    saidBy: 'Dr. Tomas Bergström, Neurorehab Lead',
+    body: 'One of my patients had undergone shoulder surgery and, after three months of physiotherapy, was still unable to raise his arm beyond 90 degrees. After just two sessions with Virtality, he achieved a full 180-degree range of motion. The progress was remarkable.',
+    saidBy: 'Panagiotis, physiotherapist at Physio & Rehab PS',
   },
 ]

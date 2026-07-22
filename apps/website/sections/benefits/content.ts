@@ -15,7 +15,7 @@ export const BENEFITS_LIST_ITEMS: BenefitsListItem[] = [
   {
     title: 'Faster Recovery Timelines',
     description:
-      'Help patients move past stalled progress. In pilot cases, Virtality restored end-range motion in as few as two targeted sessions—even when rehabilitation had shown little to no progress for months.',
+      'Help patients move past stalled progress. In pilot cases, Virtality restored end-range motion in as few as two targeted sessions even when rehabilitation had shown little to no progress for months.',
   },
   {
     title: 'Increase Clinic Capacity',
@@ -30,6 +30,6 @@ export const BENEFITS_LIST_ITEMS: BenefitsListItem[] = [
   {
     title: 'Stand Out from Other Clinics',
     description:
-      'Help every patient build better, higher-level movement skills. By bypassing pain fear and stopping muscle compensation, Virtality retrains the brain directly—accelerating neuroplasticity across all stages of rehab to give your clinic an unbeatable edge. ',
+      'Help every patient build better, higher-level movement skills. By bypassing pain fear and stopping muscle compensation, Virtality retrains the brain directly accelerating neuroplasticity across all stages of rehab to give your clinic an unbeatable edge. ',
   },
 ]
