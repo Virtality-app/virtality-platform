@@ -86,4 +86,9 @@ export const PRESS_LOGO_ITEMS: PressLogoItem[] = [
     wide: true,
     compact: true,
   },
+  {
+    src: '/press/elculture-logo.png',
+    alt: 'Elculture',
+    href: 'https://www.elculture.gr/i-trapeza-peiraios-sto-delphi-economic-forum-2026-tessera-chronia-equall-oi-thematikes-syzitiseis-kai-ta-kairia-zitimata/',
+  },
 ]
