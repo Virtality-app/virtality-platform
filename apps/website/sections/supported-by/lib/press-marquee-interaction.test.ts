@@ -2,8 +2,14 @@ import { describe, expect, it } from 'vitest'
 import {
   initialMarqueeDragState,
   isMarqueeAutoScrollPaused,
+  marqueeDragThresholdForPointer,
   marqueeOffsetDuringPointer,
+  PRESS_MARQUEE_DRAG_THRESHOLD_PX,
+  PRESS_MARQUEE_TOUCH_DRAG_THRESHOLD_PX,
   reduceMarqueeDrag,
+  shouldCancelStalePendingPointer,
+  shouldCaptureMarqueePointer,
+  shouldEndGestureOnLostCapture,
   shouldPauseMarqueeOnHover,
   shouldTrackMarqueeDragPointer,
 } from './press-marquee-interaction'
@@ -25,10 +31,44 @@ describe('press marquee pause policy', () => {
     expect(shouldPauseMarqueeOnHover(true)).toBe(true)
   })
 
-  it('does not track drag gestures from touch pointers', () => {
-    expect(shouldTrackMarqueeDragPointer('touch')).toBe(false)
+  it('tracks drag gestures for mouse, pen, and touch', () => {
+    expect(shouldTrackMarqueeDragPointer('touch')).toBe(true)
     expect(shouldTrackMarqueeDragPointer('mouse')).toBe(true)
     expect(shouldTrackMarqueeDragPointer('pen')).toBe(true)
+  })
+
+  it('uses a higher movement threshold for touch so taps do not become drags', () => {
+    expect(marqueeDragThresholdForPointer('mouse')).toBe(
+      PRESS_MARQUEE_DRAG_THRESHOLD_PX,
+    )
+    expect(marqueeDragThresholdForPointer('pen')).toBe(
+      PRESS_MARQUEE_DRAG_THRESHOLD_PX,
+    )
+    expect(marqueeDragThresholdForPointer('touch')).toBe(
+      PRESS_MARQUEE_TOUCH_DRAG_THRESHOLD_PX,
+    )
+    expect(PRESS_MARQUEE_TOUCH_DRAG_THRESHOLD_PX).toBeGreaterThan(
+      PRESS_MARQUEE_DRAG_THRESHOLD_PX,
+    )
+  })
+
+  it('only cancels stale pending mouse gestures when the primary button is up', () => {
+    expect(shouldCancelStalePendingPointer('pending', 'mouse', 0)).toBe(true)
+    expect(shouldCancelStalePendingPointer('pending', 'mouse', 1)).toBe(false)
+    // Touch engines often report buttons=0 while contact is still down.
+    expect(shouldCancelStalePendingPointer('pending', 'touch', 0)).toBe(false)
+    expect(shouldCancelStalePendingPointer('dragging', 'mouse', 0)).toBe(false)
+  })
+
+  it('does not end a gesture on lostpointercapture while contact is still down', () => {
+    expect(shouldEndGestureOnLostCapture(1)).toBe(false)
+    expect(shouldEndGestureOnLostCapture(0)).toBe(true)
+  })
+
+  it('skips pointer capture for touch to avoid spurious lostpointercapture', () => {
+    expect(shouldCaptureMarqueePointer('touch')).toBe(false)
+    expect(shouldCaptureMarqueePointer('mouse')).toBe(true)
+    expect(shouldCaptureMarqueePointer('pen')).toBe(true)
   })
 })
 
@@ -87,7 +127,59 @@ describe('press marquee drag interaction', () => {
     expect(dragStart.state.didDrag).toBe(true)
     expect(dragStart.capturePointer).toBe(true)
     expect(isMarqueeAutoScrollPaused(dragStart.state, false, false)).toBe(true)
-    expect(marqueeOffsetDuringPointer(dragStart.state, 8)).toBe(-2)
+    expect(dragStart.state.originX).toBe(8)
+    expect(dragStart.state.originOffset).toBe(-10)
+    expect(marqueeOffsetDuringPointer(dragStart.state, 8)).toBe(-10)
+  })
+
+  it('lets touch scrub after the touch threshold without pausing on tap wobble', () => {
+    const down = reduceMarqueeDrag(initialMarqueeDragState, {
+      type: 'pointerdown',
+      x: 0,
+      offset: -10,
+    })
+    const touchThreshold = marqueeDragThresholdForPointer('touch')
+
+    const wobble = reduceMarqueeDrag(down.state, {
+      type: 'pointermove',
+      x: touchThreshold,
+      threshold: touchThreshold,
+    })
+    expect(wobble.state.phase).toBe('pending')
+    expect(isMarqueeAutoScrollPaused(wobble.state, false, false)).toBe(false)
+
+    const dragStart = reduceMarqueeDrag(wobble.state, {
+      type: 'pointermove',
+      x: touchThreshold + 1,
+      threshold: touchThreshold,
+    })
+    expect(dragStart.state.phase).toBe('dragging')
+    expect(dragStart.capturePointer).toBe(true)
+    expect(
+      marqueeOffsetDuringPointer(dragStart.state, touchThreshold + 1),
+    ).toBe(-10)
+  })
+
+  it('rebases the drag origin to the live offset when scrubbing starts', () => {
+    // Auto-scroll keeps moving during pending; without rebase, the first scrub
+    // frame snaps the track back to the stale pointerdown offset.
+    const down = reduceMarqueeDrag(initialMarqueeDragState, {
+      type: 'pointerdown',
+      x: 0,
+      offset: -10,
+    })
+
+    const dragStart = reduceMarqueeDrag(down.state, {
+      type: 'pointermove',
+      x: 20,
+      currentOffset: -50,
+    })
+
+    expect(dragStart.state.phase).toBe('dragging')
+    expect(dragStart.state.originX).toBe(20)
+    expect(dragStart.state.originOffset).toBe(-50)
+    expect(marqueeOffsetDuringPointer(dragStart.state, 20)).toBe(-50)
+    expect(marqueeOffsetDuringPointer(dragStart.state, 30)).toBe(-40)
   })
 
   it('suppresses the click only after a real drag', () => {

@@ -1,4 +1,6 @@
 export const PRESS_MARQUEE_DRAG_THRESHOLD_PX = 4
+/** Touch contact wobbles more than a mouse; keep taps from becoming scrub drags. */
+export const PRESS_MARQUEE_TOUCH_DRAG_THRESHOLD_PX = 12
 
 export type MarqueeDragPhase = 'idle' | 'pending' | 'dragging'
 
@@ -11,7 +13,13 @@ export type MarqueeDragState = {
 
 export type MarqueeDragEvent =
   | { type: 'pointerdown'; x: number; offset: number }
-  | { type: 'pointermove'; x: number; threshold?: number }
+  | {
+      type: 'pointermove'
+      x: number
+      threshold?: number
+      /** Live track offset; used to rebase when pending → dragging. */
+      currentOffset?: number
+    }
   | { type: 'pointerup' }
   | { type: 'pointercancel' }
   | { type: 'lostcapture' }
@@ -41,12 +49,48 @@ export function shouldPauseMarqueeOnHover(canHover: boolean): boolean {
 }
 
 /**
- * Drag-to-scrub fights logo taps on touch: micro-moves cross the threshold,
- * and opening a new tab can drop pointerup — leaving auto-scroll paused.
- * Keep scrubbing for mouse/pen only.
+ * Mouse, pen, and touch can scrub the marquee. Touch uses a higher movement
+ * threshold so logo taps still activate links without stalling auto-scroll.
  */
-export function shouldTrackMarqueeDragPointer(pointerType: string): boolean {
+export function shouldTrackMarqueeDragPointer(_pointerType: string): boolean {
+  return true
+}
+
+export function marqueeDragThresholdForPointer(pointerType: string): number {
+  return pointerType === 'touch'
+    ? PRESS_MARQUEE_TOUCH_DRAG_THRESHOLD_PX
+    : PRESS_MARQUEE_DRAG_THRESHOLD_PX
+}
+
+export function shouldEndGestureOnLostCapture(buttons: number): boolean {
+  // Some engines (notably during setPointerCapture on touch) emit a spurious
+  // lostpointercapture while contact is still down. Aborting there kills scrub.
+  return (buttons & 1) === 0
+}
+
+/**
+ * Pointer capture helps mouse scrubbing leave the hit target; on touch it often
+ * races with the browser and immediately fires lostpointercapture.
+ */
+export function shouldCaptureMarqueePointer(pointerType: string): boolean {
   return pointerType !== 'touch'
+}
+
+/**
+ * Dropped pointerup after target=_blank can leave a stale pending mouse gesture.
+ * Do not apply the buttons check to touch — some engines report buttons=0
+ * while contact is still down, which would cancel every scrub attempt.
+ */
+export function shouldCancelStalePendingPointer(
+  phase: MarqueeDragPhase,
+  pointerType: string,
+  buttons: number,
+): boolean {
+  if (phase !== 'pending' || pointerType !== 'mouse') {
+    return false
+  }
+
+  return (buttons & 1) === 0
 }
 
 export function isMarqueeAutoScrollPaused(
@@ -96,8 +140,11 @@ export function reduceMarqueeDrag(
 
         return {
           state: {
-            ...state,
             phase: 'dragging',
+            // Rebase to the live pointer/offset so auto-scroll during pending
+            // does not snap the track when scrubbing begins.
+            originX: event.x,
+            originOffset: event.currentOffset ?? state.originOffset,
             didDrag: true,
           },
           capturePointer: true,

@@ -12,8 +12,12 @@ import { filterValidLogoItems, getPressLinkProps } from '../lib/partner-press'
 import {
   initialMarqueeDragState,
   isMarqueeAutoScrollPaused,
+  marqueeDragThresholdForPointer,
   marqueeOffsetDuringPointer,
   reduceMarqueeDrag,
+  shouldCancelStalePendingPointer,
+  shouldCaptureMarqueePointer,
+  shouldEndGestureOnLostCapture,
   shouldPauseMarqueeOnHover,
   shouldTrackMarqueeDragPointer,
   type MarqueeDragState,
@@ -205,7 +209,11 @@ function PressMarquee({ items }: { items: PressLogoItem[] }) {
 
   const applyDragResult = (
     result: ReturnType<typeof reduceMarqueeDrag>,
-    options?: { target?: HTMLDivElement; pointerId?: number },
+    options?: {
+      target?: HTMLDivElement
+      pointerId?: number
+      pointerType?: string
+    },
   ) => {
     dragStateRef.current = result.state
     setIsDragging(result.state.phase === 'dragging')
@@ -213,7 +221,8 @@ function PressMarquee({ items }: { items: PressLogoItem[] }) {
     if (
       result.capturePointer &&
       options?.target &&
-      options.pointerId !== undefined
+      options.pointerId !== undefined &&
+      shouldCaptureMarqueePointer(options.pointerType ?? 'mouse')
     ) {
       options.target.setPointerCapture(options.pointerId)
     }
@@ -242,7 +251,10 @@ function PressMarquee({ items }: { items: PressLogoItem[] }) {
   return (
     <div
       className={cn(
-        'relative mt-2 w-full touch-pan-y overflow-hidden select-none',
+        // pan-y on the region + anchors: horizontal scrub stays with JS,
+        // vertical page scroll still works. touch-action is hit-tested on the
+        // element under the finger (usually a logo link).
+        'relative mt-2 w-full touch-pan-y overflow-hidden select-none [&_a]:touch-pan-y',
         isDragging ? 'cursor-grabbing' : 'cursor-grab',
       )}
       onPointerDown={(event) => {
@@ -250,8 +262,6 @@ function PressMarquee({ items }: { items: PressLogoItem[] }) {
           return
         }
 
-        // Touch micro-moves + dropped pointerup after target=_blank stall the
-        // marquee; taps should only activate logo links.
         if (!shouldTrackMarqueeDragPointer(event.pointerType)) {
           return
         }
@@ -269,10 +279,13 @@ function PressMarquee({ items }: { items: PressLogoItem[] }) {
           return
         }
 
-        // Dropped pointerup (e.g. new tab) can leave a stale pending gesture.
+        // Dropped pointerup (e.g. new tab) can leave a stale pending mouse gesture.
         if (
-          dragStateRef.current.phase === 'pending' &&
-          (event.buttons & 1) === 0
+          shouldCancelStalePendingPointer(
+            dragStateRef.current.phase,
+            event.pointerType,
+            event.buttons,
+          )
         ) {
           endPointerGesture('pointercancel')
           return
@@ -281,16 +294,25 @@ function PressMarquee({ items }: { items: PressLogoItem[] }) {
         const result = reduceMarqueeDrag(dragStateRef.current, {
           type: 'pointermove',
           x: event.clientX,
+          threshold: marqueeDragThresholdForPointer(event.pointerType),
+          currentOffset: offsetRef.current,
         })
         applyDragResult(result, {
           target: event.currentTarget,
           pointerId: event.pointerId,
+          pointerType: event.pointerType,
         })
         syncOffsetFromPointer(event.clientX)
       }}
       onPointerUp={() => endPointerGesture('pointerup')}
       onPointerCancel={() => endPointerGesture('pointercancel')}
-      onLostPointerCapture={() => endPointerGesture('lostcapture')}
+      onLostPointerCapture={(event) => {
+        if (!shouldEndGestureOnLostCapture(event.buttons)) {
+          return
+        }
+
+        endPointerGesture('lostcapture')
+      }}
       onClickCapture={(event) => {
         // Clear sticky pause sources before the link navigates away.
         isHoverPausedRef.current = false
