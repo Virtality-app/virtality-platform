@@ -21,6 +21,10 @@ export type CalWebhookPayload = {
   }
 }
 
+/**
+ * Verifies Cal's `x-cal-signature-256` HMAC when a webhook secret is configured.
+ * Callers should skip this check when no secret is set (Cal allows unsigned webhooks).
+ */
 export function verifyCalWebhookSignature(
   rawBody: string,
   signatureHeader: string | null,

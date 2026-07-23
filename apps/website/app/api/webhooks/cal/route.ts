@@ -12,21 +12,17 @@ const logger = serverLogger.child({
 })
 
 export async function POST(request: Request) {
-  const secret = process.env.CAL_WEBHOOK_SECRET
-  if (!secret) {
-    logger.error('website.cal_webhook.secret_missing')
-    return NextResponse.json(
-      { error: 'Webhook secret is not configured' },
-      { status: 500 },
-    )
-  }
-
   const rawBody = await request.text()
-  const signature = request.headers.get('x-cal-signature-256')
+  const secret = process.env.CAL_WEBHOOK_SECRET?.trim()
 
-  if (!verifyCalWebhookSignature(rawBody, signature, secret)) {
-    logger.warn('website.cal_webhook.invalid_signature')
-    return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
+  // Cal allows webhooks without a signing secret. When configured, verify HMAC;
+  // when absent, accept the payload (unsigned).
+  if (secret) {
+    const signature = request.headers.get('x-cal-signature-256')
+    if (!verifyCalWebhookSignature(rawBody, signature, secret)) {
+      logger.warn('website.cal_webhook.invalid_signature')
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
+    }
   }
 
   let body: CalWebhookPayload
@@ -49,7 +45,7 @@ export async function POST(request: Request) {
 
   const parsed = parseCalBookingEvent(body)
   if (!parsed) {
-    // Valid signature + known trigger but no email: ack to avoid Cal retry storms.
+    // Known trigger but no email: ack to avoid Cal retry storms.
     logger.warn('website.cal_webhook.incomplete_payload', {
       trigger: body.triggerEvent,
     })
