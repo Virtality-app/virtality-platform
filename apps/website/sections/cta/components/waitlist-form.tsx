@@ -18,12 +18,20 @@ import { toast } from 'sonner'
 import { ArrowRight } from 'lucide-react'
 import { useCreateWaitlist } from '@virtality/react-query'
 import { useSendThankYouEmail } from '@virtality/react-query'
+import {
+  captureWebsiteEvent,
+  type WaitlistCtaLocation,
+} from '@/lib/analytics-contract'
 
 type WaitlistFormProps = {
   submitLabel?: string
+  ctaLocation: WaitlistCtaLocation
 }
 
-const WaitlistForm = ({ submitLabel = 'Join Waitlist' }: WaitlistFormProps) => {
+const WaitlistForm = ({
+  submitLabel = 'Join Waitlist',
+  ctaLocation,
+}: WaitlistFormProps) => {
   const router = useRouter()
   const { mutate: createWaitlist, isPending: isCreating } = useCreateWaitlist()
   const { mutate: sendThankYouEmail, isPending: isSending } =
@@ -42,6 +50,11 @@ const WaitlistForm = ({ submitLabel = 'Join Waitlist' }: WaitlistFormProps) => {
       {
         onSuccess: (data) => {
           if (data.success) {
+            captureWebsiteEvent(
+              'waitlist_joined',
+              { cta_location: ctaLocation },
+              { email: values.email },
+            )
             toast.success('Thank you for joining the waitlist!')
             form.reset()
             sendThankYouEmail({ email: values.email })

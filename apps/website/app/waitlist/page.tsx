@@ -63,7 +63,7 @@ const WaitlistPage = () => {
             </div>
             {/* Email Signup Form */}
             <div className='max-w-md mx-auto'>
-              <WaitlistForm />
+              <WaitlistForm ctaLocation='waitlist_page' />
             </div>
           </CardContent>
         </Card>

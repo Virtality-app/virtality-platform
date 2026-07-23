@@ -70,7 +70,10 @@ const CallToAction = () => {
               <div className='mx-auto max-w-xl space-y-8'>
                 <div className='flex flex-col'>
                   {showWaitlistForm ? (
-                    <WaitlistForm submitLabel={FINAL_CTA_SUBMIT_LABEL} />
+                    <WaitlistForm
+                      submitLabel={FINAL_CTA_SUBMIT_LABEL}
+                      ctaLocation='final_cta'
+                    />
                   ) : (
                     <Button
                       type='button'

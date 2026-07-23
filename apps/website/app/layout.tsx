@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/context/ThemeProvider'
 import Navbar from '@/components/layout/navbar'
 import { Toaster } from 'sonner'
 import Footer from '@/components/layout/footer'
+import CookieBanner from '@/components/layout/cookie-banner'
 import {
   getServerUrl,
   getWebsiteUrl,
@@ -68,6 +69,7 @@ export default function RootLayout({
               <Navbar />
               <main className='min-h-screen-with-nav'>{children}</main>
               <Footer />
+              <CookieBanner />
               <Toaster />
             </ORPCProvider>
           </QueryProvider>
