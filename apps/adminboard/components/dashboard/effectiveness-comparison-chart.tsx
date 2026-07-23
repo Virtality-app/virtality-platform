@@ -37,12 +37,12 @@ export function EffectivenessComparisonChart({
       </CardHeader>
       <CardContent>
         {data.length === 0 ? (
-          <div className='text-muted-foreground flex h-[320px] items-center justify-center text-sm'>
+          <div className='text-muted-foreground flex h-80 items-center justify-center text-sm'>
             {engagementCopy.emptyState}
           </div>
         ) : (
           <div className='overflow-x-auto'>
-            <table className='w-full min-w-[640px] text-left text-sm'>
+            <table className='w-full min-w-160 text-left text-sm'>
               <thead>
                 <tr className='border-b'>
                   <th className='text-muted-foreground px-3 py-2 font-medium'>

@@ -659,7 +659,7 @@ const DeviceSelector = ({ devices, connected }: DeviceSelectorProps) => {
       <PopoverContent
         align='center'
         side='bottom'
-        className='w-[432px] max-w-[calc(100vw-2rem)] overflow-hidden p-0'
+        className='w-108 max-w-[calc(100vw-2rem)] overflow-hidden p-0'
       >
         <div className='flex w-full p-2 pb-0'>
           <Button

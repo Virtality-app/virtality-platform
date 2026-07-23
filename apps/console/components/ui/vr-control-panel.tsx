@@ -232,7 +232,7 @@ const VRControlPanel = ({ devices, isOpen }: VRControlPanelProps) => {
           size='icon'
           variant='ghost'
           disabled={connected}
-          className='absolute top-[10px] right-[30px] size-4 rounded-sm hover:bg-zinc-200 hover:dark:bg-zinc-600'
+          className='absolute top-2.5 right-7.5 size-4 rounded-sm hover:bg-zinc-200 hover:dark:bg-zinc-600'
         >
           <X className='p-0.5' />
         </Button>

@@ -62,7 +62,7 @@ const InviteMember = ({
               value={invitationEmail}
               placeholder='Enter email'
               onChange={handleOnChange}
-              className='w-[250px]'
+              className='w-62.5'
             />
           </div>
           <div className='flex items-center gap-2'>

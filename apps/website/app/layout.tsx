@@ -52,7 +52,7 @@ export default function RootLayout({
     <html
       lang='en'
       suppressHydrationWarning
-      className='scroll-pt-[60px] scroll-smooth'
+      className='scroll-pt-15 scroll-smooth'
     >
       <body
         className={`${dmSans.variable} ${jetbrainsMono.variable} antialiased`}

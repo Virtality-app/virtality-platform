@@ -295,7 +295,7 @@ const ExerciseGrid = () => {
             {Array.from({ length: 15 }).map((_, i) => (
               <Skeleton
                 key={i}
-                className='aspect-4/5 w-full sm:max-w-[200px] md:max-w-[220px] lg:max-w-[240px] xl:max-w-[260px]'
+                className='aspect-4/5 w-full sm:max-w-50 md:max-w-55 lg:max-w-60 xl:max-w-65'
               />
             ))}
           </>

@@ -280,7 +280,7 @@ export const AdminAuthoredEmailsPanel = () => {
       <div>
         {!selection ? (
           <Card>
-            <CardContent className='flex min-h-[400px] items-center justify-center py-12'>
+            <CardContent className='flex min-h-100 items-center justify-center py-12'>
               <p className='text-muted-foreground'>
                 Select a draft or sent record to view details.
               </p>

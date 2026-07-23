@@ -27,7 +27,7 @@ const ChartCard = ({ className }: { className?: string }) => {
             : 'Exercise not found'}
         </CardTitle>
       </CardHeader>
-      <CardContent className='flex-1 [&_div]:min-[1280px]:max-[1526px]:max-h-[500px]'>
+      <CardContent className='flex-1 [&_div]:min-[1280px]:max-[1526px]:max-h-125'>
         <Chart data={plotData} />
       </CardContent>
     </Card>

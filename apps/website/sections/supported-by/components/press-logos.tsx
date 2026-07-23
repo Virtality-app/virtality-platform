@@ -14,6 +14,8 @@ import {
   isMarqueeAutoScrollPaused,
   marqueeOffsetDuringPointer,
   reduceMarqueeDrag,
+  shouldPauseMarqueeOnHover,
+  shouldTrackMarqueeDragPointer,
   type MarqueeDragState,
 } from '../lib/press-marquee-interaction'
 import { cn } from '@/lib/utils'
@@ -79,6 +81,7 @@ function PressMarquee({ items }: { items: PressLogoItem[] }) {
   const halfWidthRef = useRef(0)
   const dragStateRef = useRef<MarqueeDragState>(initialMarqueeDragState)
   const isHoverPausedRef = useRef(false)
+  const canHoverRef = useRef(false)
   const prefersReducedMotionRef = useRef(false)
   const [isDragging, setIsDragging] = useState(false)
 
@@ -105,15 +108,28 @@ function PressMarquee({ items }: { items: PressLogoItem[] }) {
   }, [items])
 
   useEffect(() => {
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
-    prefersReducedMotionRef.current = media.matches
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const hoverMedia = window.matchMedia('(hover: hover)')
 
-    const onChange = () => {
-      prefersReducedMotionRef.current = media.matches
+    prefersReducedMotionRef.current = reducedMotion.matches
+    canHoverRef.current = hoverMedia.matches
+
+    const onReducedMotionChange = () => {
+      prefersReducedMotionRef.current = reducedMotion.matches
+    }
+    const onHoverCapabilityChange = () => {
+      canHoverRef.current = hoverMedia.matches
+      if (!shouldPauseMarqueeOnHover(hoverMedia.matches)) {
+        isHoverPausedRef.current = false
+      }
     }
 
-    media.addEventListener('change', onChange)
-    return () => media.removeEventListener('change', onChange)
+    reducedMotion.addEventListener('change', onReducedMotionChange)
+    hoverMedia.addEventListener('change', onHoverCapabilityChange)
+    return () => {
+      reducedMotion.removeEventListener('change', onReducedMotionChange)
+      hoverMedia.removeEventListener('change', onHoverCapabilityChange)
+    }
   }, [])
 
   useEffect(() => {
@@ -157,8 +173,10 @@ function PressMarquee({ items }: { items: PressLogoItem[] }) {
   }, [])
 
   useEffect(() => {
-    // Opening target=_blank can drop pointerup; clear any stale gesture.
-    const resetStaleGesture = () => {
+    // Opening target=_blank can drop pointerup and leave sticky hover; clear both.
+    const forceResumeAutoScroll = () => {
+      isHoverPausedRef.current = false
+
       if (dragStateRef.current.phase === 'idle') {
         return
       }
@@ -169,11 +187,19 @@ function PressMarquee({ items }: { items: PressLogoItem[] }) {
       setIsDragging(false)
     }
 
-    window.addEventListener('blur', resetStaleGesture)
-    document.addEventListener('visibilitychange', resetStaleGesture)
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        forceResumeAutoScroll()
+      }
+    }
+
+    window.addEventListener('focus', forceResumeAutoScroll)
+    window.addEventListener('pageshow', forceResumeAutoScroll)
+    document.addEventListener('visibilitychange', onVisibilityChange)
     return () => {
-      window.removeEventListener('blur', resetStaleGesture)
-      document.removeEventListener('visibilitychange', resetStaleGesture)
+      window.removeEventListener('focus', forceResumeAutoScroll)
+      window.removeEventListener('pageshow', forceResumeAutoScroll)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
     }
   }, [])
 
@@ -224,6 +250,12 @@ function PressMarquee({ items }: { items: PressLogoItem[] }) {
           return
         }
 
+        // Touch micro-moves + dropped pointerup after target=_blank stall the
+        // marquee; taps should only activate logo links.
+        if (!shouldTrackMarqueeDragPointer(event.pointerType)) {
+          return
+        }
+
         applyDragResult(
           reduceMarqueeDrag(dragStateRef.current, {
             type: 'pointerdown',
@@ -260,10 +292,17 @@ function PressMarquee({ items }: { items: PressLogoItem[] }) {
       onPointerCancel={() => endPointerGesture('pointercancel')}
       onLostPointerCapture={() => endPointerGesture('lostcapture')}
       onClickCapture={(event) => {
+        // Clear sticky pause sources before the link navigates away.
+        isHoverPausedRef.current = false
+
         const result = reduceMarqueeDrag(dragStateRef.current, {
           type: 'consumeClickGuard',
         })
         dragStateRef.current = result.state
+
+        if (dragStateRef.current.phase !== 'idle') {
+          endPointerGesture('pointercancel')
+        }
 
         if (!result.preventClick) {
           return
@@ -273,6 +312,10 @@ function PressMarquee({ items }: { items: PressLogoItem[] }) {
         event.stopPropagation()
       }}
       onMouseEnter={() => {
+        if (!shouldPauseMarqueeOnHover(canHoverRef.current)) {
+          return
+        }
+
         isHoverPausedRef.current = true
       }}
       onMouseLeave={() => {

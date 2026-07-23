@@ -18,7 +18,7 @@ const GuideCard = ({ item }: GuideCardProps) => {
         <Video
           src={item.videoURL}
           controls
-          className='flex min-w-[300px] cursor-pointer overflow-hidden rounded-lg'
+          className='flex min-w-75 cursor-pointer overflow-hidden rounded-lg'
         />
         <section className='flex items-center'>
           <div>

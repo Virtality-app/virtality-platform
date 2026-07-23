@@ -77,7 +77,7 @@ const Testimonials = () => {
                 >
                   <figure
                     className={cn(
-                      'flex h-full min-h-[280px] flex-col justify-between gap-8 border border-vital-blue-100/80 bg-white/90 p-8 shadow-[0_20px_50px_-28px_rgba(8,137,154,0.35)] transition-[opacity,transform] duration-500 select-none',
+                      'flex h-full min-h-70 flex-col justify-between gap-8 border border-vital-blue-100/80 bg-white/90 p-8 shadow-[0_20px_50px_-28px_rgba(8,137,154,0.35)] transition-[opacity,transform] duration-500 select-none',
                       isActive
                         ? 'scale-100 opacity-100'
                         : 'scale-[0.96] opacity-35',

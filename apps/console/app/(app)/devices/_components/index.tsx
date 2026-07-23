@@ -98,7 +98,7 @@ const Devices = () => {
         <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent
             aria-describedby='Form to add a new device.'
-            className='sm:max-w-[425px] dark:border-zinc-400 dark:bg-zinc-950 dark:text-zinc-200'
+            className='sm:max-w-106.25 dark:border-zinc-400 dark:bg-zinc-950 dark:text-zinc-200'
           >
             <DialogHeader>
               <DialogTitle>Add New Device</DialogTitle>

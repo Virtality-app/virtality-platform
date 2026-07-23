@@ -97,7 +97,7 @@ const Editor = ({
       <div
         ref={containerRef}
         className={cn(
-          '[&_.ql-formats_button]:hover:bg-accent! [&_.ql-formats_button]:dark:hover:bg-accent/50! flex max-h-40 flex-col rounded-lg border text-black *:border-0 dark:text-zinc-200 [&_.ql-container]:flex-1 [&_.ql-container]:overflow-auto [&_.ql-container]:rounded-b-lg [&_.ql-editor>*]:break-all [&_.ql-formats_button]:rounded [&_.ql-toolbar]:rounded-t-lg [&_.ql-toolbar]:border-b [&_.ql-tooltip]:left-[calc(50%/2)]!',
+          '[&_.ql-formats_button]:hover:bg-accent! [&_.ql-formats_button]:dark:hover:bg-accent/50! flex max-h-40 flex-col rounded-lg border text-black *:border-0 dark:text-zinc-200 [&_.ql-container]:flex-1 [&_.ql-container]:overflow-auto [&_.ql-container]:rounded-b-lg [&_.ql-editor>*]:break-all [&_.ql-formats_button]:rounded [&_.ql-toolbar]:rounded-t-lg [&_.ql-toolbar]:border-b [&_.ql-tooltip]:left-[25%]!',
           state.isExpanded && 'h-80 max-h-none',
         )}
       ></div>

@@ -215,7 +215,7 @@ const SessionDialog = () => {
             outside VR.
           </DialogDescription>
 
-          <div className='min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]'>
+          <div className='scrollbar-gutter-stable min-h-0 flex-1 overflow-y-auto'>
             <div className='space-y-4 p-1 pr-3'>
               <div className='space-y-3'>
                 <p className='text-sm font-medium'>Program Library</p>

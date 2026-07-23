@@ -71,7 +71,7 @@ const OrganizationProfile = ({
                       height={100}
                       src={member.user.image}
                       alt='Member image'
-                      className='row-span-2 flex h-[35px] w-[35px] items-center justify-center rounded-full border-2'
+                      className='row-span-2 flex h-8.75 w-8.75 items-center justify-center rounded-full border-2'
                     />
                   ) : null}
                   <div className='col-start-2'>{member.user.name}</div>

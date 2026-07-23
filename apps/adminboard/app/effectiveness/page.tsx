@@ -201,7 +201,7 @@ const EffectivenessReportPage = () => {
             <Select value={selectedOwner} onValueChange={setSelectedOwner}>
               <SelectTrigger
                 id='owner-filter'
-                className='min-w-[220px] justify-between'
+                className='min-w-55 justify-between'
               >
                 <SelectValue placeholder='All owners' />
               </SelectTrigger>
@@ -229,12 +229,12 @@ const EffectivenessReportPage = () => {
             }}
           >
             <PopoverTrigger asChild>
-              <Button variant='outline' className='min-w-[180px] justify-start'>
+              <Button variant='outline' className='min-w-45 justify-start'>
                 <CalendarIcon className='size-4' />
                 {formatDateRangeLabel(rangeFrom, rangeTo)}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className='w-[450px] p-0' align='end'>
+            <PopoverContent className='w-112.5 p-0' align='end'>
               <Calendar
                 mode='range'
                 defaultMonth={rangeFrom}

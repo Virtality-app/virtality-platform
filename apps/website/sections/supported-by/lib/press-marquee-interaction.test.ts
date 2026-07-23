@@ -4,7 +4,33 @@ import {
   isMarqueeAutoScrollPaused,
   marqueeOffsetDuringPointer,
   reduceMarqueeDrag,
+  shouldPauseMarqueeOnHover,
+  shouldTrackMarqueeDragPointer,
 } from './press-marquee-interaction'
+
+describe('press marquee pause policy', () => {
+  it('does not apply hover-pause on devices without real hover (mobile sticky hover)', () => {
+    // iOS synthesizes mouseenter on tap and often never fires mouseleave after
+    // opening target=_blank — sticky hoverPaused would freeze the marquee.
+    expect(shouldPauseMarqueeOnHover(false)).toBe(false)
+    expect(
+      isMarqueeAutoScrollPaused(initialMarqueeDragState, false, false),
+    ).toBe(false)
+    expect(
+      isMarqueeAutoScrollPaused(initialMarqueeDragState, true, false),
+    ).toBe(true)
+  })
+
+  it('keeps hover-pause available for fine-pointer hover devices', () => {
+    expect(shouldPauseMarqueeOnHover(true)).toBe(true)
+  })
+
+  it('does not track drag gestures from touch pointers', () => {
+    expect(shouldTrackMarqueeDragPointer('touch')).toBe(false)
+    expect(shouldTrackMarqueeDragPointer('mouse')).toBe(true)
+    expect(shouldTrackMarqueeDragPointer('pen')).toBe(true)
+  })
+})
 
 describe('press marquee drag interaction', () => {
   it('does not pause auto-scroll on press alone (desktop click / mobile tap)', () => {

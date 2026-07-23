@@ -336,15 +336,12 @@ export function SessionsPerWeekChart() {
                 }}
               >
                 <PopoverTrigger asChild>
-                  <Button
-                    variant='outline'
-                    className='min-w-[180px] justify-start'
-                  >
+                  <Button variant='outline' className='min-w-45 justify-start'>
                     <CalendarIcon className='size-4' />
                     {formatDateRangeLabel(rangeFrom, rangeTo)}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className='w-[450px] p-0' align='end'>
+                <PopoverContent className='w-112.5 p-0' align='end'>
                   <Calendar
                     mode='range'
                     defaultMonth={rangeFrom ?? undefined}
@@ -390,7 +387,7 @@ export function SessionsPerWeekChart() {
             Failed to load chart data.
           </div>
         ) : visibleUsers.length === 0 ? (
-          <div className='text-muted-foreground flex h-[400px] items-center justify-center text-sm'>
+          <div className='text-muted-foreground flex h-100 items-center justify-center text-sm'>
             No user activity for the selected date range.
           </div>
         ) : (

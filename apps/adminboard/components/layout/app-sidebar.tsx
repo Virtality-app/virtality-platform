@@ -111,7 +111,7 @@ const AppSidebar = () => {
 
   return (
     <Sidebar collapsible='icon'>
-      <SidebarHeader className='h-[60px] shrink-0 rounded-none border-b' />
+      <SidebarHeader className='h-15 shrink-0 rounded-none border-b' />
       <SidebarContent>
         {sidebarNav.map((group) => {
           const groupKey = group.label ?? group.items[0]?.href

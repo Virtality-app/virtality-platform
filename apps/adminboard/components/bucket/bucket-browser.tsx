@@ -450,7 +450,7 @@ const BucketBrowser = () => {
                 </TableCell>
                 <TableCell>
                   <div
-                    className='max-w-[12rem] truncate font-medium sm:max-w-xs'
+                    className='max-w-48 truncate font-medium sm:max-w-xs'
                     title={folder.name}
                   >
                     {folder.name}
@@ -461,7 +461,7 @@ const BucketBrowser = () => {
                 <TableCell>—</TableCell>
                 <TableCell>
                   <div
-                    className='max-w-[12rem] truncate font-mono text-xs text-zinc-500 sm:max-w-xs'
+                    className='max-w-48 truncate font-mono text-xs text-zinc-500 sm:max-w-xs'
                     title={folder.prefix}
                   >
                     {folder.prefix}
@@ -485,7 +485,7 @@ const BucketBrowser = () => {
                 </TableCell>
                 <TableCell>
                   <div
-                    className='max-w-[12rem] truncate font-medium sm:max-w-xs'
+                    className='max-w-48 truncate font-medium sm:max-w-xs'
                     title={object.name}
                   >
                     {object.name}
@@ -496,7 +496,7 @@ const BucketBrowser = () => {
                 <TableCell>{formatLastModified(object.lastModified)}</TableCell>
                 <TableCell>
                   <div
-                    className='max-w-[12rem] truncate font-mono text-xs text-zinc-500 sm:max-w-xs'
+                    className='max-w-48 truncate font-mono text-xs text-zinc-500 sm:max-w-xs'
                     title={object.objectKey}
                   >
                     {object.objectKey}

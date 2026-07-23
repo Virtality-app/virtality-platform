@@ -98,7 +98,7 @@ const BasicInfo = ({ form, patient }: BasicInfoProps) => {
           <div
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            className='border-vital-blue-700 relative size-[200px] overflow-hidden rounded-full border-2 bg-slate-100 shadow-lg'
+            className='border-vital-blue-700 relative size-50 overflow-hidden rounded-full border-2 bg-slate-100 shadow-lg'
           >
             {isImageHovered && hasImage && (
               <Button
@@ -135,7 +135,7 @@ const BasicInfo = ({ form, patient }: BasicInfoProps) => {
             control={form.control}
             name='image'
             render={({ field }) => (
-              <FormItem className='absolute right-[82px] bottom-[82px] z-20 cursor-pointer'>
+              <FormItem className='absolute right-20.5 bottom-20.5 z-20 cursor-pointer'>
                 <FormLabel className='rounded-full bg-blue-600 p-2 text-white shadow-lg transition-colors hover:bg-blue-700'>
                   <Upload className='size-4' />
                 </FormLabel>

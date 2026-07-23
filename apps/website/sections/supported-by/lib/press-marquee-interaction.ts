@@ -32,6 +32,23 @@ export const initialMarqueeDragState: MarqueeDragState = {
   didDrag: false,
 }
 
+/**
+ * Touch taps synthesize mouseenter and often never mouseleave (esp. after
+ * target=_blank). Hover-pause must only apply when the device can truly hover.
+ */
+export function shouldPauseMarqueeOnHover(canHover: boolean): boolean {
+  return canHover
+}
+
+/**
+ * Drag-to-scrub fights logo taps on touch: micro-moves cross the threshold,
+ * and opening a new tab can drop pointerup — leaving auto-scroll paused.
+ * Keep scrubbing for mouse/pen only.
+ */
+export function shouldTrackMarqueeDragPointer(pointerType: string): boolean {
+  return pointerType !== 'touch'
+}
+
 export function isMarqueeAutoScrollPaused(
   state: MarqueeDragState,
   hoverPaused: boolean,

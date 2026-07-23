@@ -35,10 +35,10 @@ export const AdminEmailDraftPreviewDialog = ({
 
         <div className='space-y-3 overflow-y-auto'>
           <p className='text-lg font-medium'>{subject}</p>
-          <div className='bg-muted/50 min-h-[420px] rounded-lg border p-4'>
+          <div className='bg-muted/50 min-h-105 rounded-lg border p-4'>
             {html ? (
               <iframe
-                className='h-full min-h-[420px] w-full'
+                className='h-full min-h-105 w-full'
                 srcDoc={html}
                 title='Email preview'
               />

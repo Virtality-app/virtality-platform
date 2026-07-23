@@ -274,7 +274,7 @@ const PatientFormEdit = ({ patientId }: PatientFormEditProps) => {
       )}
     >
       <Tabs defaultValue='basic-info' className='flex-1'>
-        <TabsList className='h-[50px] gap-2 bg-zinc-200 p-2'>
+        <TabsList className='h-12.5 gap-2 bg-zinc-200 p-2'>
           <TabsTrigger value='basic-info' className='relative'>
             Basic Info
             {hasErrors && (

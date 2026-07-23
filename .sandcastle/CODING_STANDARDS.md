@@ -6,11 +6,21 @@
 
 ## Style
 
-<!-- Example:
-- Use camelCase for variables and functions
-- Use PascalCase for classes and types
-- Prefer named exports over default exports
--->
+### Tailwind CSS
+
+Follow the `tailwindcss(suggestCanonicalClasses)` lint rule. Prefer Tailwind’s canonical utility names (especially v4 renames) over legacy aliases.
+
+```tsx
+// ❌ BAD — legacy alias
+<div className="bg-gradient-to-r from-white to-transparent" />
+
+// ✅ GOOD — canonical class
+<div className="bg-linear-to-r from-white to-transparent" />
+```
+
+When the Tailwind language server or ESLint suggests a canonical class, apply it. Do not leave deprecated aliases in new or edited `className` strings.
+
+**Exceptions:** keep intentional arbitrary values when they do not match theme tokens (e.g. checkbox `rounded-[4px]` while `--radius-lg` is `0.625rem`), and keep dynamic CSS-variable utilities like `border-(--color-border)` that are not the theme `border` color.
 
 ## Testing
 

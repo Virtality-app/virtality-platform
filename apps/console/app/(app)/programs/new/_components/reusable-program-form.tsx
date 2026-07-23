@@ -244,7 +244,7 @@ const ReusableProgramFormView = ({
                   <FormItem>
                     <FormLabel>{capitalize(field.name)}</FormLabel>
                     <FormControl>
-                      <Input {...field} className='max-w-[250px]' />
+                      <Input {...field} className='max-w-62.5' />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

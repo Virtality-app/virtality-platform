@@ -57,7 +57,7 @@ export default function PresetPopover() {
         </Button>
       </PopoverTrigger>
       <PopoverContent asChild>
-        <Card className='w-[500px]'>
+        <Card className='w-125'>
           <CardHeader className='px-0'>
             <CardTitle>Create Preset</CardTitle>
           </CardHeader>

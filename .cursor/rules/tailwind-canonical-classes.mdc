@@ -1,0 +1,23 @@
+---
+description: Prefer Tailwind canonical utility class names (suggestCanonicalClasses)
+globs: **/*.{tsx,jsx,css}
+alwaysApply: false
+---
+
+# Tailwind canonical classes
+
+Follow `tailwindcss(suggestCanonicalClasses)`. Use Tailwind’s canonical utility names (especially v4 renames) instead of legacy aliases in `className` strings and CSS `@apply`.
+
+```tsx
+// ❌ BAD
+<div className="bg-gradient-to-r from-white to-transparent" />
+
+// ✅ GOOD
+<div className="bg-linear-to-r from-white to-transparent" />
+```
+
+When the Tailwind language server or linter suggests a canonical replacement, apply it. Do not introduce or leave deprecated aliases in edited files.
+
+Keep intentional exceptions:
+- Arbitrary radii that do not match theme `--radius-*` tokens (e.g. `rounded-[4px]`)
+- Dynamic CSS-variable utilities such as `border-(--color-border)` (not theme `border`)

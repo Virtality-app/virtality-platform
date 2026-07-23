@@ -308,7 +308,7 @@ export const AdminEmailDraftWorkspace = ({
               <Badge
                 variant='outline'
                 className={cn(
-                  'min-w-[8.5rem]',
+                  'min-w-34',
                   !isDirty && 'pointer-events-none invisible',
                 )}
               >

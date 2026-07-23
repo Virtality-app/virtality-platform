@@ -27,7 +27,7 @@ if (!X_URL || !LINKEDIN_URL || !FACEBOOK_URL || !INSTAGRAM_URL) {
 
 const Navbar = async () => {
   return (
-    <NavigationMenu className='h-[60px] max-w-full sticky top-0 z-20 backdrop-blur-md backdrop-saturate-180 bg-white/80 dark:bg-zinc-900/80 flex justify-between px-4 border-b border-vital-blue-100/50 dark:border-zinc-800'>
+    <NavigationMenu className='h-15 max-w-full sticky top-0 z-20 backdrop-blur-md backdrop-saturate-180 bg-white/80 dark:bg-zinc-900/80 flex justify-between px-4 border-b border-vital-blue-100/50 dark:border-zinc-800'>
       <Link href='/' className='hover:opacity-80 transition-opacity'>
         <Image
           src='/virtality_small_rounded.png'

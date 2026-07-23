@@ -53,7 +53,7 @@ const CredibilityLogo = ({
         />
       </div>
       {size === 'primary' ? (
-        <div className='w-2/3 h-[2px] rounded-full bg-linear-to-r from-transparent via-vital-blue-400 to-transparent opacity-0 group-hover:opacity-70 transition-opacity duration-300' />
+        <div className='w-2/3 h-0.5 rounded-full bg-linear-to-r from-transparent via-vital-blue-400 to-transparent opacity-0 group-hover:opacity-70 transition-opacity duration-300' />
       ) : null}
     </div>
   )

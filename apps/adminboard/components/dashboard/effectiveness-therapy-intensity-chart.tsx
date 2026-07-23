@@ -64,7 +64,7 @@ export function EffectivenessTherapyIntensityChart({
       </CardHeader>
       <CardContent>
         {!hasDose ? (
-          <div className='text-muted-foreground flex h-[320px] items-center justify-center text-sm'>
+          <div className='text-muted-foreground flex h-80 items-center justify-center text-sm'>
             {chartCopy.emptyState}
           </div>
         ) : (

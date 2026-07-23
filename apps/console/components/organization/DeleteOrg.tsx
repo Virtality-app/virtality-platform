@@ -100,7 +100,7 @@ const DeleteOrg = ({
         <Button
           onClick={handleDeleteWarning}
           variant='ghost'
-          className='absolute top-[16px] right-[16px]'
+          className='absolute top-4 right-4'
           size='icon'
         >
           <X />

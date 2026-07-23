@@ -121,7 +121,7 @@ export const BugReportForm = ({ children }: BugReportFormProps) => {
   return (
     <Dialog open={isDialogOpen} onOpenChange={handleDialogToggle}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className='max-h-[700px] overflow-auto sm:max-w-[525px] dark:bg-zinc-900'>
+      <DialogContent className='max-h-175 overflow-auto sm:max-w-131.25 dark:bg-zinc-900'>
         {isSuccess ? (
           <>
             <DialogHeader>

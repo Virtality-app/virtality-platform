@@ -44,11 +44,11 @@ const ThankYouPage = () => {
       />
       {/* Soft orbs */}
       <div
-        className='absolute top-1/4 right-0 w-[400px] h-[400px] rounded-full bg-vital-blue-400/10 blur-3xl pointer-events-none'
+        className='absolute top-1/4 right-0 w-100 h-100 rounded-full bg-vital-blue-400/10 blur-3xl pointer-events-none'
         style={{ animation: 'pulse 5s ease-in-out infinite' }}
       />
       <div
-        className='absolute bottom-1/4 left-0 w-[350px] h-[350px] rounded-full bg-vital-blue-600/8 blur-3xl pointer-events-none'
+        className='absolute bottom-1/4 left-0 w-87.5 h-87.5 rounded-full bg-vital-blue-600/8 blur-3xl pointer-events-none'
         style={{ animation: 'pulse 6s ease-in-out infinite 0.5s' }}
       />
 

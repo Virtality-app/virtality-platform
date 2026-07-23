@@ -344,10 +344,10 @@ const SessionCard = ({ session, patientId, onBack }: SessionCardProps) => {
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
                         placeholder='Add session notes...'
-                        className='min-h-[120px] resize-none'
+                        className='min-h-30 resize-none'
                       />
                     ) : (
-                      <div className='bg-muted/30 min-h-[120px] rounded-lg p-4'>
+                      <div className='bg-muted/30 min-h-30 rounded-lg p-4'>
                         {notes ? (
                           <p className='text-sm leading-relaxed whitespace-pre-wrap'>
                             {notes}
@@ -637,7 +637,7 @@ const MetricInfo = ({
       >
         <Info className='size-3.5' />
       </TooltipTrigger>
-      <TooltipContent side='top' className='max-w-[280px] px-3 py-2 text-left'>
+      <TooltipContent side='top' className='max-w-70 px-3 py-2 text-left'>
         <p className='font-medium'>{title}</p>
         <p className='mt-1 text-zinc-300 dark:text-zinc-600'>{description}</p>
         {options && (

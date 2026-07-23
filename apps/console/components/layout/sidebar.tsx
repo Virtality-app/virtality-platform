@@ -26,7 +26,7 @@ const RootSidebar = () => {
 
   return (
     <Sidebar collapsible='icon'>
-      <SidebarHeader className='flex h-[60px] justify-center gap-2 rounded-none border-b border-zinc-200'>
+      <SidebarHeader className='flex h-15 justify-center gap-2 rounded-none border-b border-zinc-200'>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>

@@ -144,12 +144,12 @@ export const SystemEmailsPanel = () => {
                       : (preview?.subject ?? templateDetail?.subject ?? '-')}
                   </p>
                 </div>
-                <div className='bg-muted/50 mt-2 min-h-[300px] flex-1 rounded-lg border p-4'>
+                <div className='bg-muted/50 mt-2 min-h-75 flex-1 rounded-lg border p-4'>
                   {detailLoading ? (
                     <p className='text-muted-foreground'>Loading preview...</p>
                   ) : preview?.html ? (
                     <iframe
-                      className='h-full min-h-[300px] w-full font-sans text-sm leading-relaxed'
+                      className='h-full min-h-75 w-full font-sans text-sm leading-relaxed'
                       srcDoc={preview.html}
                       title='Email preview'
                     />

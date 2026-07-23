@@ -29,7 +29,7 @@ const TabBar = ({ patientId, linkObject }: TabBarProps) => {
   const activeLink = pathname.split('/').pop()
 
   return (
-    <div className='sticky top-[60px] z-30 flex h-[40px] items-center border-b bg-zinc-200/80 px-2 shadow-sm backdrop-blur-xs backdrop-saturate-180 dark:border-b-zinc-600 dark:bg-zinc-950/80'>
+    <div className='sticky top-15 z-30 flex h-10 items-center border-b bg-zinc-200/80 px-2 shadow-sm backdrop-blur-xs backdrop-saturate-180 dark:border-b-zinc-600 dark:bg-zinc-950/80'>
       {links &&
         links.map((link, i) => {
           if (!link.featureAccess) return

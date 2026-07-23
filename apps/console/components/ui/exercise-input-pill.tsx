@@ -66,7 +66,7 @@ const ExerciseInputPill = ({
     }
   }
   return (
-    <div className='flex max-w-[108px]'>
+    <div className='flex max-w-27'>
       <Button
         type='button'
         size='icon'

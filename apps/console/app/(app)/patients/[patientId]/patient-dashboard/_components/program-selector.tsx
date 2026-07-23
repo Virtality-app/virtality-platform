@@ -98,7 +98,7 @@ const ProgramSelector = ({ className }: { className?: string }) => {
           variant='outline'
           role='combobox'
           className={cn(
-            'hover:bg-card justify-start text-zinc-900 md:max-lg:w-[204px]! dark:border-zinc-600 dark:text-zinc-200',
+            'hover:bg-card justify-start text-zinc-900 md:max-lg:w-51! dark:border-zinc-600 dark:text-zinc-200',
             className,
           )}
         >

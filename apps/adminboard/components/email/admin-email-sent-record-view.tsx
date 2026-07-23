@@ -115,9 +115,9 @@ export const AdminEmailSentRecordView = ({
           <p className='mb-3 text-lg font-medium'>
             {sentRecord.renderedSnapshot.subject}
           </p>
-          <div className='bg-muted/50 min-h-[300px] rounded-lg border p-4'>
+          <div className='bg-muted/50 min-h-75 rounded-lg border p-4'>
             <iframe
-              className='h-full min-h-[300px] w-full'
+              className='h-full min-h-75 w-full'
               srcDoc={sentRecord.renderedSnapshot.html}
               title='Sent email snapshot'
             />

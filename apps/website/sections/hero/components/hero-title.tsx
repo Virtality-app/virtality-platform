@@ -97,9 +97,7 @@ const HeroTitle = ({
           width={1368}
           height={138}
           priority
-          className={
-            isLarge ? 'h-[2.625rem] w-auto sm:h-12' : 'h-7 w-auto sm:h-8'
-          }
+          className={isLarge ? 'h-10.5 w-auto sm:h-12' : 'h-7 w-auto sm:h-8'}
         />
       ) : (
         <div className='inline-flex items-center gap-2 rounded-full border border-vital-blue-700/25 bg-white/70 px-4 py-1.5 text-[11px] font-semibold tracking-[0.22em] text-vital-blue-800 uppercase shadow-sm shadow-vital-blue-900/5 backdrop-blur-sm dark:bg-white/10 dark:text-vital-blue-200'>

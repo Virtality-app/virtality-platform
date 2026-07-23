@@ -56,7 +56,7 @@ const PresetView = ({ id }: { id: string }) => {
 
   return (
     <div className='h-screen-with-header flex flex-col gap-2 p-2'>
-      <Card className='h-fit w-[500px] min-w-[500px] px-6'>
+      <Card className='h-fit w-125 min-w-125 px-6'>
         <CardHeader className='px-0'>
           <CardTitle>Update Preset</CardTitle>
         </CardHeader>
