@@ -18,14 +18,14 @@ function getCredibilityLogoDimensions(
   }
 
   if (item.wide) {
-    return 'w-56 h-14'
+    return 'w-44 h-12 sm:w-56 sm:h-14'
   }
 
   if (item.compact) {
-    return 'w-24 h-14'
+    return 'w-20 h-12 sm:w-24 sm:h-14'
   }
 
-  return 'w-40 h-14'
+  return 'w-32 h-12 sm:w-40 sm:h-14'
 }
 
 const CredibilityLogo = ({

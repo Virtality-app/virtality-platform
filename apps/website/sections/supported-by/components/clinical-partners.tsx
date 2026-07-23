@@ -21,7 +21,7 @@ const ClinicalPartners = ({
       {showLabel ? (
         <PartnerRowLabel label={SUPPORTED_BY_CONTENT.clinicalPartnersLabel} />
       ) : null}
-      <div className='flex items-center justify-center gap-10'>
+      <div className='flex flex-wrap items-center justify-center gap-x-8 gap-y-6 sm:gap-10'>
         {logos.map((logo) => (
           <CredibilityLogo key={logo.alt} item={logo} size='secondary' />
         ))}
