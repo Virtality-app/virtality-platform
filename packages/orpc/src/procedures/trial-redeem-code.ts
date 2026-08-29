@@ -19,7 +19,7 @@ import { authed } from '../middleware/auth.ts'
 const trialRedeemDisplayStatusSchema = z.enum(TRIAL_REDEEM_DISPLAY_STATUSES)
 
 const createInputSchema = z.object({
-  trialDays: z.number().int().positive().optional(),
+  trialDays: z.number().int().min(0).optional(),
   note: z.string().trim().max(500).nullable().optional(),
 })
 

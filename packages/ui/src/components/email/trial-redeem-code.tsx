@@ -23,9 +23,22 @@ import {
   text,
 } from './styles/email.js'
 
-/** Delivery-only Trial Redeem System Email. Marketing strings stay [COPY]. */
+/** Delivery-only Free Redeem System Email. Marketing strings stay [COPY]. */
+export const FREE_REDEEM_CODE_TERM = 'Free Redeem Code'
 export const TRIAL_REDEEM_CODE_EMAIL_SUBJECT = '[COPY]'
 export const TRIAL_REDEEM_CODE_EMAIL_PREVIEW = '[COPY]'
+
+const FREE_REDEEM_MODE_LABELS = {
+  permanent: 'Permanent Free',
+  timed: 'Timed trial',
+} as const
+
+function formatAccessLabel(trialDays: number): string {
+  if (trialDays === 0) {
+    return `Access: ${FREE_REDEEM_MODE_LABELS.permanent}`
+  }
+  return `Trial length: ${trialDays} days`
+}
 
 export interface TrialRedeemCodeEmailProps {
   code: string
@@ -64,11 +77,11 @@ export const TrialRedeemCodeEmail = ({
         <Text style={text}>[COPY]</Text>
 
         <Text style={paragraph}>
-          Your Trial Redeem Code:{' '}
+          Your {FREE_REDEEM_CODE_TERM}:{' '}
           <strong style={{ letterSpacing: '0.04em' }}>{code}</strong>
         </Text>
 
-        <Text style={paragraph}>Trial length: {trialDays} days</Text>
+        <Text style={paragraph}>{formatAccessLabel(trialDays)}</Text>
 
         <Text style={text}>[COPY]</Text>
 

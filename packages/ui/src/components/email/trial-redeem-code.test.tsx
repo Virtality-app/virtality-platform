@@ -41,4 +41,17 @@ describe('TrialRedeemCodeEmail', () => {
     expect(TRIAL_REDEEM_CODE_EMAIL_SUBJECT).not.toContain('—')
     expect(TRIAL_REDEEM_CODE_EMAIL_PREVIEW).not.toContain('—')
   })
+
+  it('shows Permanent Free access when trialDays is zero', async () => {
+    const html = await reactToHTML(
+      TrialRedeemCodeEmail({
+        code: CODE,
+        trialDays: 0,
+        signUpUrl: SIGN_UP_URL,
+      }),
+    )
+
+    expect(html).toContain('Access: Permanent Free')
+    expect(html).not.toContain('Trial length:')
+  })
 })

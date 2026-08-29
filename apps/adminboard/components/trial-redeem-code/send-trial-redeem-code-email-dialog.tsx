@@ -12,6 +12,7 @@ import {
 import { getErrorMessage } from '@/lib/get-error-message'
 import { useSendTrialRedeemCodeEmail } from '@virtality/react-query'
 import type { TrialRedeemCodeListItem } from '@virtality/shared/utils'
+import { FREE_REDEEM_CODE_TERM } from '@virtality/shared/utils'
 import { Input } from '@virtality/ui/components/input'
 import { Label } from '@virtality/ui/components/label'
 import { useEffect, useState, type FormEvent } from 'react'
@@ -58,7 +59,10 @@ export function SendTrialRedeemCodeEmailDialog({
         },
         onError: (error: unknown) => {
           toast.error(
-            getErrorMessage(error, 'Failed to send Trial Redeem Code email'),
+            getErrorMessage(
+              error,
+              `Failed to send ${FREE_REDEEM_CODE_TERM} email`,
+            ),
           )
         },
       },
@@ -70,7 +74,7 @@ export function SendTrialRedeemCodeEmailDialog({
       <DialogContent>
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Send Trial Redeem Email</DialogTitle>
+            <DialogTitle>Send {FREE_REDEEM_CODE_TERM} Email</DialogTitle>
             <DialogDescription>
               Delivery-only System Email for{' '}
               <span className='font-mono'>{trialRedeemCode.code}</span>. The

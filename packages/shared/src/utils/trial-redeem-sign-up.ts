@@ -1,4 +1,10 @@
 import {
+  isFreeSubscriptionPlan,
+  isProSubscriptionPlan,
+} from './billing-plans.ts'
+import { isLiveEntitlementSubscriptionStatus } from './entitlement-extension.ts'
+import {
+  isPermanentFreeRedeemMode,
   TRIAL_REDEEM_CODE_PATTERN,
   getTrialRedeemDisplayStatus,
   type TrialRedeemCodeRecord,
@@ -124,13 +130,76 @@ export const TRIAL_REDEEM_ENTITLED_SUBSCRIPTION_STATUSES = [
   'active',
 ] as const
 
+export type CustomerRedeemSubscription = {
+  stripeSubscriptionId: string
+  status: string
+  plan: string | null
+}
+
+export type CustomerRedeemSeat =
+  | { kind: 'none' }
+  | { kind: 'free_active'; stripeSubscriptionId: string }
+  | { kind: 'entitled' }
+
+/**
+ * Classifies the clinician's live Stripe seat for Free Redeem Code redemption.
+ * Active Free (not entitled) is distinct from paid Pro and live trials.
+ */
+export function classifyCustomerRedeemSeatFromSubscriptions(
+  subscriptions: readonly CustomerRedeemSubscription[],
+): CustomerRedeemSeat {
+  const live = subscriptions.filter((sub) =>
+    isLiveEntitlementSubscriptionStatus(sub.status),
+  )
+
+  for (const sub of live) {
+    if (sub.status === 'trialing') {
+      return { kind: 'entitled' }
+    }
+    if (sub.status === 'active' && isProSubscriptionPlan(sub.plan)) {
+      return { kind: 'entitled' }
+    }
+  }
+
+  const freeActive = live.find(
+    (sub) => sub.status === 'active' && isFreeSubscriptionPlan(sub.plan),
+  )
+  if (freeActive) {
+    return {
+      kind: 'free_active',
+      stripeSubscriptionId: freeActive.stripeSubscriptionId,
+    }
+  }
+
+  return { kind: 'none' }
+}
+
+export function computeTrialRedeemEndUnix(
+  now: Date,
+  trialDays: number,
+): number {
+  const end = new Date(now.getTime() + trialDays * 24 * 60 * 60 * 1000)
+  return Math.floor(end.getTime() / 1000)
+}
+
 export type TrialRedeemStripeGateway = {
-  /** True when the Customer already has a trialing or active Subscription. */
-  customerHasEntitledSubscription: (customerId: string) => Promise<boolean>
+  classifyCustomerRedeemSeat: (
+    customerId: string,
+  ) => Promise<CustomerRedeemSeat>
   createNoCardTrialSubscription: (input: {
     customerId: string
     priceId: string
     trialPeriodDays: number
+    metadata: { trialRedeemCodeId: string }
+  }) => Promise<{ stripeSubscriptionId: string }>
+  createPermanentFreeSubscription: (input: {
+    customerId: string
+    priceId: string
+    metadata: { trialRedeemCodeId: string }
+  }) => Promise<{ stripeSubscriptionId: string }>
+  attachTrialToSubscription: (input: {
+    stripeSubscriptionId: string
+    trialEndUnix: number
     metadata: { trialRedeemCodeId: string }
   }) => Promise<{ stripeSubscriptionId: string }>
 }
@@ -150,9 +219,11 @@ export type RedeemTrialCodeResult =
 
 /**
  * Stripe-first redeem: entitled Customers consume as already_entitled without a
- * second Subscription; otherwise create a no-card Free Trial Subscription then
- * consume as redeemed. Does not write a local Subscription row (webhook-only).
- * Does not set the tester role. On Stripe failure the code stays unused.
+ * second Subscription; active Free + timed trial attaches trial on the seat;
+ * permanent Free creates a no-card Free Subscription; timed trial with no seat
+ * creates a no-card trial Subscription. Does not write a local Subscription row
+ * (webhook-only). Does not set the tester role. On Stripe failure the code
+ * stays unused.
  */
 export async function redeemTrialCodeAfterSignUp(
   store: TrialRedeemConsumeStore,
@@ -165,10 +236,9 @@ export async function redeemTrialCodeAfterSignUp(
   if (gate.action !== 'proceed') return { status: 'ignored' }
 
   const { id: codeId, trialDays } = gate.record
-  const alreadyEntitled = await stripe.customerHasEntitledSubscription(
-    input.stripeCustomerId,
-  )
-  if (alreadyEntitled) {
+  const seat = await stripe.classifyCustomerRedeemSeat(input.stripeCustomerId)
+
+  if (seat.kind === 'entitled') {
     const consumed = await store.consumeAsAlreadyEntitled(
       codeId,
       input.userId,
@@ -178,15 +248,60 @@ export async function redeemTrialCodeAfterSignUp(
     return { status: 'already_entitled', codeId }
   }
 
+  const permanentFree = isPermanentFreeRedeemMode(trialDays)
+
+  if (seat.kind === 'free_active') {
+    if (permanentFree) {
+      const consumed = await store.consumeAsAlreadyEntitled(
+        codeId,
+        input.userId,
+        now,
+      )
+      if (!consumed) return { status: 'failed' }
+      return { status: 'already_entitled', codeId }
+    }
+
+    const trialEndUnix = computeTrialRedeemEndUnix(now, trialDays)
+    let stripeSubscriptionId: string
+    try {
+      const attached = await stripe.attachTrialToSubscription({
+        stripeSubscriptionId: seat.stripeSubscriptionId,
+        trialEndUnix,
+        metadata: { trialRedeemCodeId: String(codeId) },
+      })
+      stripeSubscriptionId = attached.stripeSubscriptionId
+    } catch {
+      return { status: 'failed' }
+    }
+
+    const consumed = await store.consumeAsRedeemed(codeId, input.userId, now)
+    if (!consumed) return { status: 'failed' }
+
+    return {
+      status: 'redeemed',
+      stripeSubscriptionId,
+      codeId,
+    }
+  }
+
   let stripeSubscriptionId: string
   try {
-    const created = await stripe.createNoCardTrialSubscription({
-      customerId: input.stripeCustomerId,
-      priceId: input.priceId,
-      trialPeriodDays: trialDays,
-      metadata: { trialRedeemCodeId: String(codeId) },
-    })
-    stripeSubscriptionId = created.stripeSubscriptionId
+    if (permanentFree) {
+      const created = await stripe.createPermanentFreeSubscription({
+        customerId: input.stripeCustomerId,
+        priceId: input.priceId,
+        metadata: { trialRedeemCodeId: String(codeId) },
+      })
+      stripeSubscriptionId = created.stripeSubscriptionId
+    } else {
+      const created = await stripe.createNoCardTrialSubscription({
+        customerId: input.stripeCustomerId,
+        priceId: input.priceId,
+        trialPeriodDays: trialDays,
+        metadata: { trialRedeemCodeId: String(codeId) },
+      })
+      stripeSubscriptionId = created.stripeSubscriptionId
+    }
   } catch {
     return { status: 'failed' }
   }

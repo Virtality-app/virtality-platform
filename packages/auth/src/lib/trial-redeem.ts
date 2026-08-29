@@ -4,7 +4,13 @@ import { APIError } from 'better-auth/api'
 import type Stripe from 'stripe'
 import {
   buildFreeTrialSubscriptionCreateParams,
+  buildPermanentFreeSubscriptionCreateParams,
+  classifyCustomerRedeemSeatFromSubscriptions,
   evaluateTrialRedeemAtSignUp,
+  FREE_SUBSCRIPTION_PLAN,
+  isFreePlanPriceId,
+  isProPlanPriceId,
+  PRO_SUBSCRIPTION_PLAN,
   redeemTrialCodeAfterSignUp,
   routeSignUpCode,
   TRIAL_REDEEM_ENTITLED_SUBSCRIPTION_STATUSES,
@@ -12,6 +18,20 @@ import {
   type TrialRedeemConsumeStore,
   type TrialRedeemStripeGateway,
 } from '@virtality/shared/utils'
+
+export function planFromStripeSubscription(
+  subscription: Stripe.Subscription,
+): string | null {
+  const metadataPlan = subscription.metadata?.plan
+  if (metadataPlan === FREE_SUBSCRIPTION_PLAN) return FREE_SUBSCRIPTION_PLAN
+  if (metadataPlan === PRO_SUBSCRIPTION_PLAN) return PRO_SUBSCRIPTION_PLAN
+
+  const priceId = subscription.items.data[0]?.price?.id
+  if (!priceId) return null
+  if (isFreePlanPriceId(priceId)) return FREE_SUBSCRIPTION_PLAN
+  if (isProPlanPriceId(priceId)) return PRO_SUBSCRIPTION_PLAN
+  return null
+}
 
 export function createPrismaTrialRedeemConsumeStore(
   client: PrismaClient = prisma,
@@ -44,17 +64,24 @@ export function createStripeTrialRedeemGateway(
   stripeClient: Stripe,
 ): TrialRedeemStripeGateway {
   return {
-    customerHasEntitledSubscription: async (customerId) => {
-      const results = await Promise.all(
+    classifyCustomerRedeemSeat: async (customerId) => {
+      const pages = await Promise.all(
         TRIAL_REDEEM_ENTITLED_SUBSCRIPTION_STATUSES.map((status) =>
           stripeClient.subscriptions.list({
             customer: customerId,
             status,
-            limit: 1,
+            limit: 100,
           }),
         ),
       )
-      return results.some((page) => page.data.length > 0)
+      const subscriptions = pages.flatMap((page) =>
+        page.data.map((subscription) => ({
+          stripeSubscriptionId: subscription.id,
+          status: subscription.status,
+          plan: planFromStripeSubscription(subscription),
+        })),
+      )
+      return classifyCustomerRedeemSeatFromSubscriptions(subscriptions)
     },
     createNoCardTrialSubscription: async ({
       customerId,
@@ -71,6 +98,40 @@ export function createStripeTrialRedeemGateway(
         }),
       )
       return { stripeSubscriptionId: subscription.id }
+    },
+    createPermanentFreeSubscription: async ({
+      customerId,
+      priceId,
+      metadata,
+    }) => {
+      const subscription = await stripeClient.subscriptions.create(
+        buildPermanentFreeSubscriptionCreateParams({
+          customerId,
+          priceId,
+          metadata: {
+            trialRedeemCodeId: metadata.trialRedeemCodeId,
+          },
+        }),
+      )
+      return { stripeSubscriptionId: subscription.id }
+    },
+    attachTrialToSubscription: async ({
+      stripeSubscriptionId,
+      trialEndUnix,
+      metadata,
+    }) => {
+      const updated = await stripeClient.subscriptions.update(
+        stripeSubscriptionId,
+        {
+          trial_end: trialEndUnix,
+          proration_behavior: 'none',
+          metadata: {
+            plan: FREE_SUBSCRIPTION_PLAN,
+            trialRedeemCodeId: metadata.trialRedeemCodeId,
+          },
+        },
+      )
+      return { stripeSubscriptionId: updated.id }
     },
   }
 }

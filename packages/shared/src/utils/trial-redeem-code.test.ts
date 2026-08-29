@@ -1,12 +1,16 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
   DEFAULT_TRIAL_REDEEM_DAYS,
+  FREE_REDEEM_CODE_TERM,
+  FREE_REDEEM_MODE_LABELS,
   TRIAL_REDEEM_CODE_PREFIX,
   TRIAL_REDEEM_CODE_TTL_MS,
   createTrialRedeemCode,
   deleteTrialRedeemCode,
   generateTrialRedeemCode,
+  getFreeRedeemModeLabel,
   getTrialRedeemDisplayStatus,
+  isPermanentFreeRedeemMode,
   listTrialRedeemCodes,
   sendTrialRedeemCodeEmail,
   type TrialRedeemCodeRecord,
@@ -60,6 +64,26 @@ describe('generateTrialRedeemCode', () => {
     const code = generateTrialRedeemCode(() => 'ABCDEFGHIJ')
     expect(code).toBe(`${TRIAL_REDEEM_CODE_PREFIX}ABCDEFGHIJ`)
     expect(code).toMatch(/^PAY-[A-Z0-9]{10}$/)
+  })
+})
+
+describe('free redeem mode labels', () => {
+  it('labels trialDays=0 as Permanent Free and positive as Timed trial', () => {
+    expect(isPermanentFreeRedeemMode(0)).toBe(true)
+    expect(isPermanentFreeRedeemMode(14)).toBe(false)
+    expect(getFreeRedeemModeLabel(0)).toBe(FREE_REDEEM_MODE_LABELS.permanent)
+    expect(getFreeRedeemModeLabel(14)).toBe(FREE_REDEEM_MODE_LABELS.timed)
+  })
+
+  it('uses Free Redeem Code in validation errors', async () => {
+    const store = createMemoryStore()
+    await expect(
+      createTrialRedeemCode(store, { trialDays: -1 }),
+    ).rejects.toMatchObject({
+      name: 'TrialRedeemCodeValidationError',
+      message: 'trialDays must be a non-negative integer',
+    })
+    expect(FREE_REDEEM_CODE_TERM).toBe('Free Redeem Code')
   })
 })
 
@@ -143,6 +167,23 @@ describe('createTrialRedeemCode', () => {
     )
 
     expect(created.trialDays).toBe(30)
+  })
+
+  it('creates a permanent Free code when trialDays is zero', async () => {
+    const store = createMemoryStore()
+    const created = await createTrialRedeemCode(
+      store,
+      { trialDays: 0 },
+      {
+        now: () => NOW,
+        generateCode: () => 'PAY-PERMFREE01',
+      },
+    )
+
+    expect(created.trialDays).toBe(0)
+    expect(getFreeRedeemModeLabel(created.trialDays)).toBe(
+      FREE_REDEEM_MODE_LABELS.permanent,
+    )
   })
 })
 

@@ -1,5 +1,22 @@
 import { createRandomStringGenerator } from './random.ts'
 
+export const FREE_REDEEM_CODE_TERM = 'Free Redeem Code'
+
+export const FREE_REDEEM_MODE_LABELS = {
+  permanent: 'Permanent Free',
+  timed: 'Timed trial',
+} as const
+
+export function isPermanentFreeRedeemMode(trialDays: number): boolean {
+  return trialDays === 0
+}
+
+export function getFreeRedeemModeLabel(trialDays: number): string {
+  return isPermanentFreeRedeemMode(trialDays)
+    ? FREE_REDEEM_MODE_LABELS.permanent
+    : FREE_REDEEM_MODE_LABELS.timed
+}
+
 export const TRIAL_REDEEM_CODE_PREFIX = 'PAY-'
 export const TRIAL_REDEEM_CODE_BODY_LENGTH = 10
 export const DEFAULT_TRIAL_REDEEM_DAYS = 14
@@ -73,7 +90,7 @@ export class TrialRedeemCodeValidationError extends Error {
 
 export class TrialRedeemCodeNotFoundError extends Error {
   constructor(id: number) {
-    super(`Trial Redeem Code ${id} was not found.`)
+    super(`${FREE_REDEEM_CODE_TERM} ${id} was not found.`)
     this.name = 'TrialRedeemCodeNotFoundError'
   }
 }
@@ -81,7 +98,7 @@ export class TrialRedeemCodeNotFoundError extends Error {
 export class TrialRedeemCodeNotSendableError extends Error {
   constructor(id: number, displayStatus: TrialRedeemDisplayStatus) {
     super(
-      `Trial Redeem Code ${id} cannot be emailed while status is ${displayStatus}.`,
+      `${FREE_REDEEM_CODE_TERM} ${id} cannot be emailed while status is ${displayStatus}.`,
     )
     this.name = 'TrialRedeemCodeNotSendableError'
   }
@@ -146,7 +163,7 @@ export function generateTrialRedeemCode(
   const body = generateBody().toUpperCase()
   if (body.length !== TRIAL_REDEEM_CODE_BODY_LENGTH) {
     throw new Error(
-      `Trial Redeem Code body must be ${TRIAL_REDEEM_CODE_BODY_LENGTH} characters`,
+      `${FREE_REDEEM_CODE_TERM} body must be ${TRIAL_REDEEM_CODE_BODY_LENGTH} characters`,
     )
   }
   return `${TRIAL_REDEEM_CODE_PREFIX}${body}`
@@ -183,7 +200,7 @@ async function generateUniqueTrialRedeemCode(
     const existing = await store.findByCode(code)
     if (!existing) return code
   }
-  throw new Error('Failed to generate unique Trial Redeem Code')
+  throw new Error(`Failed to generate unique ${FREE_REDEEM_CODE_TERM}`)
 }
 
 export async function createTrialRedeemCode(
@@ -193,9 +210,9 @@ export async function createTrialRedeemCode(
 ): Promise<TrialRedeemCodeRecord> {
   const now = runtime.now?.() ?? new Date()
   const trialDays = input.trialDays ?? DEFAULT_TRIAL_REDEEM_DAYS
-  if (!Number.isInteger(trialDays) || trialDays < 1) {
+  if (!Number.isInteger(trialDays) || trialDays < 0) {
     throw new TrialRedeemCodeValidationError(
-      'trialDays must be a positive integer',
+      'trialDays must be a non-negative integer',
     )
   }
 

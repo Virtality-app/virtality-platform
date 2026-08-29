@@ -15,6 +15,8 @@ import { useDropdownMenu } from '@/hooks/use-dropdown-menu-action'
 import { useDeleteTrialRedeemCode } from '@virtality/react-query'
 import {
   TRIAL_REDEEM_DISPLAY_STATUS_LABELS,
+  FREE_REDEEM_CODE_TERM,
+  getFreeRedeemModeLabel,
   type TrialRedeemCodeListItem,
 } from '@virtality/shared/utils'
 import { ColumnDef } from '@tanstack/react-table'
@@ -76,8 +78,19 @@ export const columns: ColumnDef<TrialRedeemCodeListItem>[] = [
     },
   },
   {
+    id: 'mode',
+    header: ({ column }) => <ColumnHeader column={column} title='Mode' />,
+    cell: ({ row }) => (
+      <div>{getFreeRedeemModeLabel(row.original.trialDays)}</div>
+    ),
+  },
+  {
     accessorKey: 'trialDays',
     header: ({ column }) => <ColumnHeader column={column} title='Trial days' />,
+    cell: ({ row }) => {
+      const trialDays = row.original.trialDays
+      return <div>{trialDays === 0 ? '—' : trialDays}</div>
+    },
   },
   {
     accessorKey: 'note',
@@ -122,8 +135,9 @@ export const columns: ColumnDef<TrialRedeemCodeListItem>[] = [
         deleteTrialRedeemCodeMutation(
           { id: trialRedeemCode.id },
           {
-            onSuccess: () => toast.success('Trial Redeem Code deleted'),
-            onError: () => toast.error('Failed to delete Trial Redeem Code'),
+            onSuccess: () => toast.success(`${FREE_REDEEM_CODE_TERM} deleted`),
+            onError: () =>
+              toast.error(`Failed to delete ${FREE_REDEEM_CODE_TERM}`),
           },
         )
 

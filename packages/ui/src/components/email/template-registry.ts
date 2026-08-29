@@ -178,7 +178,7 @@ export const EMAIL_TEMPLATES: {
   {
     meta: {
       id: 'trial-redeem-code',
-      title: 'Trial Redeem Code',
+      title: 'Free Redeem Code',
       category: 'billing',
       subject: TRIAL_REDEEM_CODE_EMAIL_SUBJECT,
     },
