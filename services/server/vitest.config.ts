@@ -12,6 +12,11 @@ export default defineConfig({
         __dirname,
         '../../packages/shared/src/observability/index.ts',
       ),
+      '@virtality/shared/utils': path.resolve(
+        __dirname,
+        '../../packages/shared/src/utils/index.ts',
+      ),
+      '@virtality/db': path.resolve(__dirname, 'vitest-stubs/db.ts'),
     },
   },
   test: {

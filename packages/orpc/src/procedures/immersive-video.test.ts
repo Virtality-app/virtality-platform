@@ -7,6 +7,7 @@ import {
   abortImmersiveVideoUpload,
   deleteImmersiveVideo,
   discardImmersiveVideoIfEmpty,
+  listPublishedImmersiveVideos,
   publishImmersiveVideo,
   startImmersiveVideoUpload,
   uploadImmersiveVideoPart,
@@ -298,5 +299,154 @@ describe('immersive video catalog', () => {
       where: { videoId: 'video-1' },
     })
     expect(state.deleted).toBe(true)
+  })
+})
+
+function createListPrisma(rows: ImmersiveVideoRecord[]) {
+  return {
+    immersiveVideo: {
+      findMany: vi.fn(
+        async ({
+          where,
+          orderBy,
+        }: {
+          where?: { state?: { in: string[] } }
+          orderBy?: Array<{ activity?: 'asc'; title?: 'asc' }>
+        }) => {
+          let result = rows.filter((row) =>
+            where?.state?.in ? where.state.in.includes(row.state) : true,
+          )
+          if (orderBy) {
+            result = [...result].sort((left, right) => {
+              for (const key of orderBy) {
+                if (key.activity === 'asc') {
+                  const compared = left.activity.localeCompare(right.activity)
+                  if (compared !== 0) return compared
+                }
+                if (key.title === 'asc') {
+                  const compared = left.title.localeCompare(right.title)
+                  if (compared !== 0) return compared
+                }
+              }
+              return 0
+            })
+          }
+          return result
+        },
+      ),
+    },
+  } as unknown as ImmersiveVideoPrisma
+}
+
+describe('immersiveVideo.list', () => {
+  it('returns Published and Republishing at live version, omitting other states', async () => {
+    const videos = await listPublishedImmersiveVideos(
+      createListPrisma([
+        baseRow({
+          id: 'draft',
+          title: 'Draft trail',
+          state: 'Draft',
+          version: 1,
+          sizeBytes: 1n,
+        }),
+        baseRow({
+          id: 'uploading',
+          title: 'Uploading',
+          state: 'Uploading',
+        }),
+        baseRow({
+          id: 'verifying',
+          title: 'Verifying',
+          state: 'Verifying',
+        }),
+        baseRow({
+          id: 'unpublished',
+          title: 'Unpublished',
+          state: 'Unpublished',
+          version: 3,
+        }),
+        baseRow({
+          id: 'pub',
+          title: 'Zebra coast',
+          activity: 'WALKING',
+          description: 'A walk',
+          durationSec: 90,
+          state: 'Published',
+          version: 2,
+          sizeBytes: 1_024n,
+          objectKey: 'immersive-videos/pub/v2.mp4',
+          checksum: 'secret',
+          thumbnailKey: 'immersive-videos/pub/thumb.jpg',
+        }),
+        baseRow({
+          id: 'repub',
+          title: 'Alpha loop',
+          activity: 'CYCLING',
+          state: 'Republishing',
+          version: 4,
+          sizeBytes: 2_048n,
+          objectKey: 'immersive-videos/repub/v4.mp4',
+          checksum: 'live-sum',
+          thumbnailKey: 'immersive-videos/repub/thumb.jpg',
+          uploadObjectKey: 'immersive-videos/repub/v5.mp4',
+          uploadSizeBytes: 9_999n,
+        }),
+      ]),
+    )
+
+    expect(videos.map((video) => video.id)).toEqual(['repub', 'pub'])
+    expect(videos[0]).toEqual({
+      id: 'repub',
+      title: 'Alpha loop',
+      activity: 'CYCLING',
+      description: null,
+      durationSec: null,
+      sizeBytes: 2048,
+      version: 4,
+      thumbnailUrl:
+        'https://cdn.virtality.app/immersive-videos/repub/thumb.jpg',
+    })
+    expect(videos[1]).toMatchObject({
+      id: 'pub',
+      version: 2,
+      sizeBytes: 1024,
+      thumbnailUrl: 'https://cdn.virtality.app/immersive-videos/pub/thumb.jpg',
+    })
+    expect(videos[0]).not.toHaveProperty('url')
+    expect(videos[0]).not.toHaveProperty('checksum')
+    expect(videos[0]).not.toHaveProperty('objectKey')
+  })
+
+  it('orders by activity then title', async () => {
+    const videos = await listPublishedImmersiveVideos(
+      createListPrisma([
+        baseRow({
+          id: 'w-b',
+          title: 'B walk',
+          activity: 'WALKING',
+          state: 'Published',
+          thumbnailKey: 't.jpg',
+          sizeBytes: 1n,
+        }),
+        baseRow({
+          id: 'c-b',
+          title: 'B cycle',
+          activity: 'CYCLING',
+          state: 'Published',
+          thumbnailKey: 't.jpg',
+          sizeBytes: 1n,
+        }),
+        baseRow({
+          id: 'c-a',
+          title: 'A cycle',
+          activity: 'CYCLING',
+          state: 'Published',
+          thumbnailKey: 't.jpg',
+          sizeBytes: 1n,
+        }),
+      ]),
+    )
+
+    expect(videos.map((video) => video.id)).toEqual(['c-a', 'c-b', 'w-b'])
   })
 })

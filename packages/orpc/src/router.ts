@@ -41,6 +41,7 @@ import { pendingPasswordChange } from './procedures/pending-password-change/inde
 import { pendingAccountDeletion } from './procedures/pending-account-deletion/index.ts'
 import { devicePairing } from './procedures/device-pairing/index.ts'
 import { immersiveVideo } from './procedures/immersive-video.ts'
+import { deviceVideo } from './procedures/device-video.ts'
 
 export const router = {
   me,
@@ -86,6 +87,7 @@ export const router = {
   adminCustomer,
   account,
   immersiveVideo,
+  deviceVideo,
 }
 
 export type Router = typeof router

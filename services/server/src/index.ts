@@ -14,7 +14,9 @@ import { orpcMiddleware } from './middleware/orpc.ts'
 import { findDeviceByDeviceId } from './data/device.ts'
 import { ORPC_PREFIX } from '@virtality/shared/types'
 import { devicePairingRoutes } from './routes/device-pairing.ts'
+import { deviceVideoRoutes } from './routes/device-videos.ts'
 import { scheduleStripeSubscriptionReconciliation } from './lib/schedule-stripe-subscription-reconciliation.ts'
+import { scheduleImmersiveVideoCleanup } from './lib/schedule-immersive-video-cleanup.ts'
 import { scheduleImmersiveVideoVerify } from './lib/schedule-immersive-video-verify.ts'
 
 const ENV =
@@ -94,7 +96,7 @@ app.use(
       'https://preview-console.virtality.app',
     ], // replace with your origin
     allowHeaders: ['Content-Type', 'Authorization'],
-    allowMethods: ['POST', 'GET', 'OPTIONS'],
+    allowMethods: ['POST', 'GET', 'PUT', 'OPTIONS'],
     exposeHeaders: ['Content-Length'],
     maxAge: 600,
     credentials: true,
@@ -119,6 +121,7 @@ app.use('/api/v1/devices/:deviceId', async (c) => {
 })
 
 app.route('/api/v1/device-pairing', devicePairingRoutes)
+app.route('/api/v1/device-videos', deviceVideoRoutes)
 
 app.use(`${ORPC_PREFIX}/*`, authMiddleware, orpcMiddleware)
 
@@ -182,6 +185,7 @@ if (ENV === 'development' || process.env.LISTEN === 'true') {
   })
   server = serve({ fetch: app.fetch, port: 8080, hostname: '0.0.0.0' })
   scheduleStripeSubscriptionReconciliation(logger)
+  scheduleImmersiveVideoCleanup(logger)
   scheduleImmersiveVideoVerify(logger)
 }
 

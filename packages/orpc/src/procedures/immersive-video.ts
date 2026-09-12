@@ -1,5 +1,6 @@
 import { ORPCError } from '@orpc/server'
 import { z } from 'zod/v4'
+import { authed } from '../middleware/auth.ts'
 import { adminAuthed } from '../middleware/admin.ts'
 import {
   ImmersiveVideoError,
@@ -15,6 +16,7 @@ import {
   getImmersiveVideo,
   immersiveVideoUploadStatus,
   listImmersiveVideoCatalog,
+  listPublishedImmersiveVideos,
   publishImmersiveVideo,
   setImmersiveVideoThumbnail,
   startImmersiveVideoUpload,
@@ -80,6 +82,12 @@ function depsFromContext(context: {
     s3: createImmersiveVideoS3(context.s3),
   }
 }
+
+const list = authed
+  .route({ path: '/immersive-video/list', method: 'GET' })
+  .handler(async ({ context }) => ({
+    videos: await listPublishedImmersiveVideos(context.prisma),
+  }))
 
 const listCatalog = adminAuthed
   .route({ path: '/immersive-video/list-catalog', method: 'GET' })
@@ -209,6 +217,7 @@ const uploadAbort = adminAuthed
   )
 
 export const immersiveVideo = {
+  list,
   listCatalog,
   get,
   create,

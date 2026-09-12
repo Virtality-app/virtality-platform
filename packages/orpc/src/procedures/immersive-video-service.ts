@@ -115,6 +115,37 @@ export async function listImmersiveVideoCatalog(
   return Promise.all(rows.map((row) => withUploadProgress(deps.s3, row)))
 }
 
+export type ImmersiveVideoConsoleListItem = {
+  id: string
+  title: string
+  activity: ImmersiveVideoActivity
+  description: string | null
+  durationSec: number | null
+  sizeBytes: number
+  version: number
+  thumbnailUrl: string | null
+}
+
+export async function listPublishedImmersiveVideos(
+  prisma: ImmersiveVideoPrisma,
+): Promise<ImmersiveVideoConsoleListItem[]> {
+  const rows = await prisma.immersiveVideo.findMany({
+    where: { state: { in: ['Published', 'Republishing'] } },
+    orderBy: [{ activity: 'asc' }, { title: 'asc' }],
+  })
+
+  return rows.map((row) => ({
+    id: row.id,
+    title: row.title,
+    activity: row.activity,
+    description: row.description,
+    durationSec: row.durationSec,
+    sizeBytes: toSizeBytesNumber(row.sizeBytes) ?? 0,
+    version: row.version,
+    thumbnailUrl: row.thumbnailKey ? bucketCdnUrl(row.thumbnailKey) : null,
+  }))
+}
+
 export async function getImmersiveVideo(
   deps: ServiceDeps,
   id: string,
