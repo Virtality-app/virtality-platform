@@ -1,8 +1,9 @@
 import { Socket } from 'socket.io'
 import {
   PROGRAM_RELAY,
-  VIDEO_RELAY,
   CASTING_RELAY,
+  DEVICE_RELAY,
+  VIDEO_RELAY,
   CONNECTION_EVENT,
   ROOM_EVENT,
   ROOM_PEER_ROLE,
@@ -17,7 +18,6 @@ import {
   type VrPresenceRequest,
   type VrPresenceResponse,
   parseRoomPeerRole,
-  DEVICE_RELAY,
 } from '@virtality/shared/types'
 import { createAppLogger } from '@virtality/shared/observability'
 import {

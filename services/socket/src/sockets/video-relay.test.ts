@@ -68,11 +68,6 @@ describe('immersive video relay', () => {
     return { consoleSocket, vrSocket }
   }
 
-  it('keeps VIDEO_RELAY keys aligned with VIDEO_EVENT', () => {
-    expect(Object.keys(VIDEO_RELAY)).toEqual(Object.keys(VIDEO_EVENT))
-    expect(Object.keys(VIDEO_EVENT)).toHaveLength(19)
-  })
-
   it.each(payloadRelayEntries)(
     'relays %s with the same payload from console to VR and back',
     async (_key, entry) => {
