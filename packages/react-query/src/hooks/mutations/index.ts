@@ -138,6 +138,19 @@ export { useSaveExerciseDraft } from './exercise-draft/use-save-exercise-draft.j
 export { useDiscardExerciseDraft } from './exercise-draft/use-discard-exercise-draft.js'
 export { useCheckExerciseDraftOccupancy } from './exercise-draft/use-check-exercise-draft-occupancy.js'
 export { usePromoteExerciseDraft } from './exercise-draft/use-promote-exercise-draft.js'
+export {
+  useAbortImmersiveVideoUpload,
+  useCompleteImmersiveVideoUpload,
+  useCreateImmersiveVideo,
+  useDeleteImmersiveVideo,
+  useDiscardImmersiveVideoIfEmpty,
+  usePublishImmersiveVideo,
+  useSetImmersiveVideoThumbnail,
+  useStartImmersiveVideoUpload,
+  useUnpublishImmersiveVideo,
+  useUpdateImmersiveVideo,
+  useUploadImmersiveVideoPart,
+} from './immersive-video/use-immersive-video-mutations.js'
 
 // Partner logo mutations
 export { useCreatePartnerLogo } from './partner-logo/use-create-partner-logo.js'

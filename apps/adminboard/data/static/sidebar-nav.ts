@@ -63,6 +63,11 @@ export const sidebarNav: SidebarNavGroup[] = [
     label: 'Resources',
     items: [
       { title: 'Exercises', href: '/resources/exercises', icon: Dumbbell },
+      {
+        title: 'Immersive Videos',
+        href: '/resources/immersive-videos',
+        icon: Film,
+      },
     ],
   },
   {
