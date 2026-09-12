@@ -1,0 +1,206 @@
+import type { VideoPlaybackProgressPayload } from '@virtality/shared/types'
+import type { HeadsetDidNotConfirmReason } from './headset-did-not-confirm.js'
+
+export const PLAY_ACK_TIMEOUT_MS = 5_000
+export const REATTACH_WAIT_MS = 2_000
+export const RECENTER_HINT_MS = 1_000
+
+export type ImmersivePlaybackStatus = 'Idle' | 'Starting' | 'Playing' | 'Paused'
+
+export type { HeadsetDidNotConfirmReason }
+
+export type PendingPlayMarker = { videoId: string; kind: 'play' }
+
+export type ImmersivePlaybackState = {
+  status: ImmersivePlaybackStatus
+  videoId: string | null
+  positionSec: number
+  durationSec: number
+  pendingPlay: PendingPlayMarker | null
+  confirmReason: HeadsetDidNotConfirmReason | null
+  reattaching: boolean
+  lastProgress: VideoPlaybackProgressPayload | null
+  lastProgressAt: number | null
+  recenterHintUntil: number | null
+}
+
+export type ImmersivePlaybackAction =
+  | { type: 'playSent'; videoId: string }
+  | { type: 'playAck'; videoId: string }
+  | { type: 'playTimeout' }
+  | { type: 'memberLeft' }
+  | { type: 'roomComplete' }
+  | { type: 'reattachTimeout' }
+  | { type: 'progress'; payload: VideoPlaybackProgressPayload; now: number }
+  | { type: 'pause' }
+  | { type: 'resume' }
+  | { type: 'ended' }
+  | { type: 'recenter'; now: number }
+  | { type: 'dismissConfirm' }
+  | { type: 'enterImmersive'; now: number }
+
+export const initialImmersivePlaybackState: ImmersivePlaybackState = {
+  status: 'Idle',
+  videoId: null,
+  positionSec: 0,
+  durationSec: 0,
+  pendingPlay: null,
+  confirmReason: null,
+  reattaching: false,
+  lastProgress: null,
+  lastProgressAt: null,
+  recenterHintUntil: null,
+}
+
+export function isImmersivePlaybackBlocking(
+  status: ImmersivePlaybackStatus,
+): boolean {
+  return status === 'Starting' || status === 'Playing' || status === 'Paused'
+}
+
+function toIdle(
+  state: ImmersivePlaybackState,
+  keep: Pick<
+    ImmersivePlaybackState,
+    'confirmReason' | 'lastProgress' | 'lastProgressAt'
+  >,
+): ImmersivePlaybackState {
+  return {
+    ...state,
+    status: 'Idle',
+    videoId: null,
+    positionSec: 0,
+    durationSec: 0,
+    pendingPlay: null,
+    reattaching: false,
+    recenterHintUntil: null,
+    confirmReason: keep.confirmReason,
+    lastProgress: keep.lastProgress,
+    lastProgressAt: keep.lastProgressAt,
+  }
+}
+
+function attachFromProgress(
+  state: ImmersivePlaybackState,
+  payload: VideoPlaybackProgressPayload,
+  now: number,
+): ImmersivePlaybackState {
+  return {
+    ...state,
+    status: payload.paused ? 'Paused' : 'Playing',
+    videoId: payload.videoId,
+    positionSec: payload.positionSec,
+    durationSec: payload.durationSec,
+    pendingPlay: null,
+    reattaching: false,
+    lastProgress: payload,
+    lastProgressAt: now,
+  }
+}
+
+export function reduceImmersivePlayback(
+  state: ImmersivePlaybackState,
+  action: ImmersivePlaybackAction,
+): ImmersivePlaybackState {
+  switch (action.type) {
+    case 'playSent':
+      return {
+        ...state,
+        status: 'Starting',
+        videoId: action.videoId,
+        pendingPlay: { videoId: action.videoId, kind: 'play' },
+        confirmReason: null,
+        reattaching: false,
+        positionSec: 0,
+        durationSec: 0,
+      }
+    case 'playAck': {
+      if (state.pendingPlay?.videoId !== action.videoId) return state
+      return {
+        ...state,
+        status: 'Playing',
+        videoId: action.videoId,
+        pendingPlay: null,
+      }
+    }
+    case 'playTimeout': {
+      if (state.pendingPlay == null) return state
+      return toIdle(state, {
+        confirmReason: 'didnt-respond',
+        lastProgress: state.lastProgress,
+        lastProgressAt: state.lastProgressAt,
+      })
+    }
+    case 'memberLeft': {
+      if (state.pendingPlay != null) {
+        return toIdle(state, {
+          confirmReason: 'disconnected',
+          lastProgress: state.lastProgress,
+          lastProgressAt: state.lastProgressAt,
+        })
+      }
+      return { ...state, reattaching: false }
+    }
+    case 'roomComplete':
+      return { ...state, reattaching: true }
+    case 'reattachTimeout': {
+      if (!state.reattaching) return state
+      return toIdle(state, {
+        confirmReason: state.confirmReason,
+        lastProgress: state.lastProgress,
+        lastProgressAt: state.lastProgressAt,
+      })
+    }
+    case 'progress': {
+      const next: ImmersivePlaybackState = {
+        ...state,
+        lastProgress: action.payload,
+        lastProgressAt: action.now,
+      }
+      if (state.reattaching) {
+        return attachFromProgress(next, action.payload, action.now)
+      }
+      if (state.status === 'Playing' || state.status === 'Paused') {
+        return {
+          ...next,
+          status: action.payload.paused ? 'Paused' : 'Playing',
+          videoId: action.payload.videoId,
+          positionSec: action.payload.positionSec,
+          durationSec: action.payload.durationSec,
+        }
+      }
+      return next
+    }
+    case 'pause':
+      if (state.status !== 'Playing') return state
+      return { ...state, status: 'Paused' }
+    case 'resume':
+      if (state.status !== 'Paused') return state
+      return { ...state, status: 'Playing' }
+    case 'ended':
+      if (!isImmersivePlaybackBlocking(state.status)) return state
+      return toIdle(state, {
+        confirmReason: state.confirmReason,
+        lastProgress: state.lastProgress,
+        lastProgressAt: state.lastProgressAt,
+      })
+    case 'recenter':
+      if (state.status !== 'Playing' && state.status !== 'Paused') return state
+      return { ...state, recenterHintUntil: action.now + RECENTER_HINT_MS }
+    case 'dismissConfirm':
+      return { ...state, confirmReason: null }
+    case 'enterImmersive': {
+      const tick = state.lastProgress
+      if (
+        tick &&
+        state.lastProgressAt != null &&
+        action.now - state.lastProgressAt <= 3_000
+      ) {
+        return attachFromProgress(state, tick, action.now)
+      }
+      return state
+    }
+    default:
+      return state
+  }
+}

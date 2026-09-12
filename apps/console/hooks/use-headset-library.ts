@@ -9,7 +9,8 @@ import {
 } from '@virtality/shared/types'
 import useSocketConnection from '@/hooks/use-socket-connection'
 import { subscribe } from '@/lib/device-event-controller'
-import { CONSOLE_REPLACEMENT_NOTICE_MESSAGE } from '@/lib/socket-replacement-notice'
+import { isReplacementNoticeError } from '@/lib/socket-replacement-notice'
+import type { HeadsetDidNotConfirmReason } from '@/lib/headset-did-not-confirm'
 import {
   applyDownloadComplete,
   applyDownloadFailed,
@@ -21,9 +22,13 @@ import type { VRDevice } from '@/types/models'
 
 export const DOWNLOAD_ACK_TIMEOUT_MS = 5_000
 
-export type HeadsetDidNotConfirmReason = 'didnt-respond' | 'disconnected'
+export type { HeadsetDidNotConfirmReason }
 
-export function useHeadsetLibrary(device?: VRDevice | null) {
+export function useHeadsetLibrary(
+  device?: VRDevice | null,
+  options?: { autoConnect?: boolean },
+) {
+  const autoConnect = options?.autoConnect ?? true
   const { connect, disconnect, connectionState, connectionError } =
     useSocketConnection({ device })
   const [roomComplete, setRoomComplete] = useState(false)
@@ -50,7 +55,7 @@ export function useHeadsetLibrary(device?: VRDevice | null) {
   useEffect(() => {
     if (
       connectionState === 'failed' &&
-      connectionError === CONSOLE_REPLACEMENT_NOTICE_MESSAGE
+      isReplacementNoticeError(connectionError)
     ) {
       setReplaced(true)
       setReplacementDialogOpen(true)
@@ -67,7 +72,7 @@ export function useHeadsetLibrary(device?: VRDevice | null) {
   }, [clearPendingDownload, device?.data.id, replaced])
 
   useEffect(() => {
-    if (!device?.data.deviceId || replaced) return
+    if (!autoConnect || !device?.data.deviceId || replaced) return
 
     device.mutations.setDeviceRoomCode(device.data.deviceId)
     void connect()
@@ -77,7 +82,7 @@ export function useHeadsetLibrary(device?: VRDevice | null) {
     }
     // Connect/disconnect are not stable; join follows the selected headset.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [device, replaced])
+  }, [autoConnect, device, replaced])
 
   useEffect(() => {
     const socket = device?.socket
@@ -102,6 +107,7 @@ export function useHeadsetLibrary(device?: VRDevice | null) {
     const unsubscribeVideo = subscribe(socket, VIDEO_EVENT, {
       LibraryState: (payload: VideoLibraryStatePayload) => {
         setLibraryState(payload)
+        setRoomComplete(true)
       },
       DownloadAck: (payload: VideoIdPayload) => {
         if (pendingDownloadRef.current === payload.videoId) {
@@ -123,6 +129,10 @@ export function useHeadsetLibrary(device?: VRDevice | null) {
     })
 
     socket.on('disconnect', markIncomplete)
+
+    if (socket.connected) {
+      deviceRef.current?.events.video.LibraryStateRequest()
+    }
 
     return () => {
       unsubscribeRoom()

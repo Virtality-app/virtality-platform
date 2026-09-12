@@ -17,6 +17,10 @@ import { trackAnalyticsEvent } from '@/lib/analytics-contract'
 import useNow from '@/hooks/use-now'
 import { CastingPanel } from '@/components/ui/casting-panel'
 import { useLiveEntitlementStanding } from '@/hooks/use-live-entitlement-standing'
+import { useImmersiveVideoSession } from '@/context/immersive-video-session-context'
+import { ImmersiveVideoPanel } from './immersive-video-panel'
+import { VideoActiveBanner } from './video-active-banner'
+import { PatientDashboardVideoDialogs } from './patient-dashboard-video-dialogs'
 
 /** Extra grid rows reserved above the control panel for the VR access banner. */
 const BANNER_ROWS = 3
@@ -26,6 +30,35 @@ const PatientDashboard = () => {
   const [showCasting, setShowCasting] = useState(false)
   const { canLaunchVr } = useLiveEntitlementStanding()
   const showExpiredBanner = !canLaunchVr
+  const { state } = usePatientDashboard()
+  const { videoActive } = useImmersiveVideoSession()
+  const isImmersive = state.selectedMode === 'immersive'
+  const showVideoBanner = videoActive && !isImmersive
+
+  const exerciseListClassName = cn(
+    'col-span-3 col-start-1 row-span-20 row-start-1 max-[1526px]:col-span-full max-[1526px]:col-start-1',
+    showExpiredBanner
+      ? showCasting
+        ? 'max-[1526px]:row-start-31 max-[1526px]:row-end-44 lg:max-[1526px]:row-start-37 lg:max-[1526px]:row-end-51'
+        : 'max-[1526px]:row-start-28 max-[1526px]:row-end-41 lg:max-[1526px]:row-start-34 lg:max-[1526px]:row-end-48'
+      : showCasting
+        ? 'max-[1526px]:row-start-28 max-[1526px]:row-end-41 lg:max-[1526px]:row-start-34 lg:max-[1526px]:row-end-48'
+        : 'max-[1526px]:row-start-25 max-[1526px]:row-end-38 lg:max-[1526px]:row-start-31 lg:max-[1526px]:row-end-45',
+  )
+  const chartClassName = cn(
+    'relative col-span-full col-start-4 row-span-29 max-[1526px]:col-start-1',
+    showExpiredBanner ? 'row-start-8' : 'row-start-5',
+    showExpiredBanner
+      ? 'max-[1526px]:row-end-27 lg:max-[1526px]:row-end-33'
+      : 'max-[1526px]:row-end-24 lg:max-[1526px]:row-end-30',
+  )
+  const castingClassName = cn(
+    'relative col-span-full col-start-4 row-span-29 max-[1526px]:col-start-1',
+    showExpiredBanner ? 'row-start-8' : 'row-start-5',
+    showExpiredBanner
+      ? 'max-[1526px]:row-end-30 lg:max-[1526px]:row-end-36'
+      : 'max-[1526px]:row-end-27 lg:max-[1526px]:row-end-33',
+  )
 
   return (
     <div className='min-h-screen-with-nav flex justify-center'>
@@ -52,6 +85,7 @@ const PatientDashboard = () => {
           )}
         >
           <VrAccessExpiredBanner />
+          {showVideoBanner ? <VideoActiveBanner /> : null}
           <div className='bg-card rounded-xl border p-4 shadow'>
             <ControlPanel
               showCasting={showCasting}
@@ -60,39 +94,19 @@ const PatientDashboard = () => {
           </div>
         </div>
 
-        <ExerciseList
-          className={cn(
-            'col-span-3 col-start-1 row-span-20 row-start-1 max-[1526px]:col-span-full max-[1526px]:col-start-1',
-            showExpiredBanner
-              ? showCasting
-                ? 'max-[1526px]:row-start-31 max-[1526px]:row-end-44 lg:max-[1526px]:row-start-37 lg:max-[1526px]:row-end-51'
-                : 'max-[1526px]:row-start-28 max-[1526px]:row-end-41 lg:max-[1526px]:row-start-34 lg:max-[1526px]:row-end-48'
-              : showCasting
-                ? 'max-[1526px]:row-start-28 max-[1526px]:row-end-41 lg:max-[1526px]:row-start-34 lg:max-[1526px]:row-end-48'
-                : 'max-[1526px]:row-start-25 max-[1526px]:row-end-38 lg:max-[1526px]:row-start-31 lg:max-[1526px]:row-end-45',
-          )}
-        />
-
-        {showCasting ? (
-          <CastingContent
-            className={cn(
-              'relative col-span-full col-start-4 row-span-29 max-[1526px]:col-start-1',
-              showExpiredBanner ? 'row-start-8' : 'row-start-5',
-              showExpiredBanner
-                ? 'max-[1526px]:row-end-30 lg:max-[1526px]:row-end-36'
-                : 'max-[1526px]:row-end-27 lg:max-[1526px]:row-end-33',
-            )}
+        {isImmersive ? (
+          <ImmersiveVideoPanel
+            cardClassName={exerciseListClassName}
+            progressClassName={showCasting ? undefined : chartClassName}
           />
         ) : (
-          <ChartCard
-            className={cn(
-              'relative col-span-full col-start-4 row-span-29 max-[1526px]:col-start-1',
-              showExpiredBanner ? 'row-start-8' : 'row-start-5',
-              showExpiredBanner
-                ? 'max-[1526px]:row-end-27 lg:max-[1526px]:row-end-33'
-                : 'max-[1526px]:row-end-24 lg:max-[1526px]:row-end-30',
-            )}
-          />
+          <ExerciseList className={exerciseListClassName} />
+        )}
+
+        {showCasting ? (
+          <CastingContent className={castingClassName} />
+        ) : isImmersive ? null : (
+          <ChartCard className={chartClassName} />
         )}
 
         <SessionNotesCard
@@ -110,6 +124,7 @@ const PatientDashboard = () => {
         />
 
         <SessionDialog />
+        <PatientDashboardVideoDialogs />
         <ExerciseLibraryProvider>
           <QuickStartDialog />
         </ExerciseLibraryProvider>

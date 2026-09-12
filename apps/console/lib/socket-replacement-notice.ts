@@ -1,6 +1,10 @@
 export const CONSOLE_REPLACEMENT_NOTICE_MESSAGE =
   'This console was replaced by a newer connection. Use the active tab to continue treatment.'
 
+export function isReplacementNoticeError(error: string | null): boolean {
+  return error === CONSOLE_REPLACEMENT_NOTICE_MESSAGE
+}
+
 export type SocketReplacementConnectionMeta = {
   state: 'failed'
   attempt: 0

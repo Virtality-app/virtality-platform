@@ -8,6 +8,7 @@ import {
   PROGRAM_EVENT,
   ROOM_EVENT,
   SYSTEM_EVENT,
+  VIDEO_EVENT,
 } from '@virtality/shared/types'
 import { RefObject, useEffect, useRef } from 'react'
 import { Store } from 'tinybase'
@@ -609,7 +610,7 @@ const usePatientDashboardSocketSetup = ({
 
     return subscribe(
       socket,
-      { ...PROGRAM_EVENT, ...ROOM_EVENT, ...SYSTEM_EVENT },
+      { ...PROGRAM_EVENT, ...ROOM_EVENT, ...SYSTEM_EVENT, ...VIDEO_EVENT },
       {
         // PROGRAM_EVENT
         StartAck: handleStartAck,
@@ -627,6 +628,9 @@ const usePatientDashboardSocketSetup = ({
         SettingsChangeAck: handleSettingsChangeAck,
 
         // ROOM_EVENT
+        RoomComplete: () => {
+          selectedDevice?.events.video.LibraryStateRequest()
+        },
         MemberLeft: memberLeft,
 
         // SYSTEM_EVENT

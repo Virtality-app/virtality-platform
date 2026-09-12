@@ -27,7 +27,7 @@ type State = {
   programState: 'ready' | 'launching' | 'started' | 'paused'
   selectedDevice: VRDevice | null
   selectedProgram: CompleteReusableProgram | null
-  selectedMode: 'main' | 'free'
+  selectedMode: 'main' | 'free' | 'immersive'
   selectedAvatar: Avatar | null
   selectedMap: Map | null
   inQuickStart: boolean
@@ -148,7 +148,7 @@ const usePatientDashboardState = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [avatars, maps, patient?.sex, patientLocalData, dispatch, programs])
 
-  const setSelectedMode = (value: 'main' | 'free') => {
+  const setSelectedMode = (value: State['selectedMode']) => {
     dispatch({ type: 'setSelectedMode', payload: value })
   }
 

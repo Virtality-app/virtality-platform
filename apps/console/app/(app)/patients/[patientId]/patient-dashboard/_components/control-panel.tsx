@@ -9,6 +9,9 @@ import SceneSettings from './control-panel-scene-settings'
 import DeviceSelector from './control-panel-device-selector'
 import CastingButton from './control-panel-casting-button'
 import useControlPanel from './use-control-panel'
+import { ImmersiveVideoPicker } from './immersive-video-picker'
+import { ImmersiveVideoTransport } from './immersive-video-transport'
+import { useImmersiveVideoSession } from '@/context/immersive-video-session-context'
 
 interface ControlPanelProps {
   className?: string
@@ -47,7 +50,11 @@ const ControlPanel = ({
     selectedDevice,
     missingSettings,
     GuardDialog,
+    isStartBlockedByVideo,
+    frozen,
   } = useControlPanel()
+  const { playback } = useImmersiveVideoSession()
+  const isImmersive = selectedMode === 'immersive'
 
   return (
     <div className={cn('flex items-center gap-4', className)}>
@@ -57,25 +64,33 @@ const ControlPanel = ({
           selectedMode={selectedMode}
           setSelectedMode={setSelectedMode}
           programState={programState}
+          playbackStatus={playback.state.status}
+          frozen={frozen}
         />
         <Separator orientation='vertical' className='h-8!' />
-        <Controls
-          selectedMode={selectedMode}
-          isProgramPaused={isProgramPaused}
-          isProgramInactive={isProgramInactive}
-          isProgramActive={isProgramActive}
-          isProgramLaunching={isProgramLaunching}
-          treatmentLaunchReady={treatmentLaunchReady}
-          programStart={programStart}
-          programEnd={programEnd}
-          handleWarmupStart={handleWarmupStart}
-          skipExercise={skipExercise}
-          isForwardSkipDisabled={forwardSkipControl.isDisabled}
-          isBackSkipDisabled={backSkipControl.isDisabled}
-          forwardSkipTooltip={forwardSkipControl.tooltip}
-          backSkipTooltip={backSkipControl.tooltip}
-          isSkipBlockedByProgramState={isSkipBlockedByProgramState}
-        />
+        {isImmersive ? (
+          <ImmersiveVideoTransport />
+        ) : (
+          <Controls
+            selectedMode={selectedMode}
+            isProgramPaused={isProgramPaused}
+            isProgramInactive={isProgramInactive}
+            isProgramActive={isProgramActive}
+            isProgramLaunching={isProgramLaunching}
+            treatmentLaunchReady={
+              treatmentLaunchReady && !isStartBlockedByVideo && !frozen
+            }
+            programStart={programStart}
+            programEnd={programEnd}
+            handleWarmupStart={handleWarmupStart}
+            skipExercise={skipExercise}
+            isForwardSkipDisabled={forwardSkipControl.isDisabled}
+            isBackSkipDisabled={backSkipControl.isDisabled}
+            forwardSkipTooltip={forwardSkipControl.tooltip}
+            backSkipTooltip={backSkipControl.tooltip}
+            isSkipBlockedByProgramState={isSkipBlockedByProgramState}
+          />
+        )}
         <Separator orientation='vertical' className='h-8!' />
       </div>
 
@@ -106,6 +121,7 @@ const ControlPanel = ({
         />
 
         {isProgramInactive && isMain && <ProgramSelector className='flex-1' />}
+        {isImmersive && <ImmersiveVideoPicker className='flex-1' />}
 
         <SceneSettings
           selectedDevice={selectedDevice}

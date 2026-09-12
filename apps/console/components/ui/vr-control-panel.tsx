@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils'
 import { usePatientDashboard } from '@/context/patient-dashboard-context'
 import { useVrPresencePolling } from '@/hooks/use-vr-presence-polling'
 import { isDashboardDeviceSelectable } from '@/lib/patient-dashboard-device-selection'
+import { isReplacementNoticeError } from '@/lib/socket-replacement-notice'
 import { DevicePresenceStatus } from './device-presence-status'
 
 function isDashboardDeviceRowDisabled(device: VRDevice): boolean {
@@ -49,7 +50,9 @@ function getClientConnectionLabel(
     case 'reconnecting':
       return `Reconnecting (${reconnectAttempt}/5)...`
     case 'failed':
-      return connectionError ?? 'Connection failed'
+      return isReplacementNoticeError(connectionError)
+        ? 'Replaced'
+        : (connectionError ?? 'Connection failed')
     default:
       return connected ? 'Connected' : 'Disconnected'
   }
@@ -74,6 +77,7 @@ const VRControlPanel = ({ devices, isOpen }: VRControlPanelProps) => {
     connect,
     disconnect,
   } = useSocketConnection({ device: selectedDevice })
+  const replaced = isReplacementNoticeError(connectionError)
   const presenceByDeviceId = useVrPresencePolling({
     enabled: isOpen,
     devices: devices.map((device) => device.data),
@@ -149,7 +153,7 @@ const VRControlPanel = ({ devices, isOpen }: VRControlPanelProps) => {
         value={selectedDevice?.data.id ?? ''}
         onValueChange={handleDeviceSelection}
       >
-        <SelectTrigger className='w-full' disabled={connected}>
+        <SelectTrigger className='w-full' disabled={connected || replaced}>
           <SelectValue placeholder='Select a device' />
         </SelectTrigger>
 
@@ -177,7 +181,7 @@ const VRControlPanel = ({ devices, isOpen }: VRControlPanelProps) => {
           onClick={handleDeviceSelectionClear}
           size='icon'
           variant='ghost'
-          disabled={connected}
+          disabled={connected || replaced}
           className='absolute top-2.5 right-7.5 size-4 rounded-sm hover:bg-zinc-200 hover:dark:bg-zinc-600'
         >
           <X className='p-0.5' />
@@ -190,6 +194,7 @@ const VRControlPanel = ({ devices, isOpen }: VRControlPanelProps) => {
     <Button
       variant={connected ? 'destructive' : 'primary'}
       onClick={handleVRConnection}
+      disabled={replaced}
       className={cn('w-full', className)}
     >
       {connected

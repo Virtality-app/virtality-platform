@@ -1,5 +1,6 @@
 import PatientDashboard from './_components/patient-dashboard'
 import { PatientDashboardProvider } from '@/context/patient-dashboard-context'
+import { ImmersiveVideoSessionProvider } from '@/context/immersive-video-session-context'
 import { DeviceContextProvider } from '@/context/device-context'
 
 const PatientDashboardPage = async (props: {
@@ -10,7 +11,9 @@ const PatientDashboardPage = async (props: {
   return (
     <DeviceContextProvider>
       <PatientDashboardProvider patientId={patientId}>
-        <PatientDashboard />
+        <ImmersiveVideoSessionProvider>
+          <PatientDashboard />
+        </ImmersiveVideoSessionProvider>
       </PatientDashboardProvider>
     </DeviceContextProvider>
   )
