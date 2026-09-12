@@ -160,6 +160,7 @@ const EXTENSION_CONTENT_TYPES: Record<string, string> = {
   mp4: 'video/mp4',
   mov: 'video/quicktime',
   webm: 'video/webm',
+  bundle: 'application/octet-stream',
   pdf: 'application/pdf',
   json: 'application/json',
   txt: 'text/plain',

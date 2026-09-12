@@ -1,10 +1,10 @@
-import { Readable } from 'node:stream'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { IMMERSIVE_VIDEO_PART_SIZE_BYTES } from './immersive-video-constants.ts'
 import type { ImmersiveVideoRecord } from './immersive-video-constants.ts'
 import type { ImmersiveVideoS3 } from './immersive-video-s3.ts'
 import {
   abortImmersiveVideoUpload,
+  completeImmersiveVideoUpload,
   deleteImmersiveVideo,
   discardImmersiveVideoIfEmpty,
   listPublishedImmersiveVideos,
@@ -55,11 +55,22 @@ function createPrisma(initial: ImmersiveVideoRecord) {
 
   const prisma = {
     immersiveVideo: {
-      findUnique: vi.fn(async () => (state.deleted ? null : state.row)),
+      findUnique: vi.fn(async ({ where }: { where: { id: string } }) =>
+        state.deleted || where.id !== state.row.id ? null : state.row,
+      ),
       findMany: vi.fn(async () => (state.deleted ? [] : [state.row])),
       create: vi.fn(),
       update: vi.fn(
-        async ({ data }: { data: Partial<ImmersiveVideoRecord> }) => {
+        async ({
+          where,
+          data,
+        }: {
+          where: { id: string }
+          data: Partial<ImmersiveVideoRecord>
+        }) => {
+          if (where.id !== state.row.id) {
+            throw new Error(`update: no row ${where.id}`)
+          }
           state.row = { ...state.row, ...data, updatedAt: NOW }
           return state.row
         },
@@ -68,10 +79,6 @@ function createPrisma(initial: ImmersiveVideoRecord) {
         state.deleted = true
         return state.row
       }),
-    },
-    immersiveVideoRetiredObject: {
-      create: vi.fn(),
-      findMany: vi.fn(async () => []),
     },
     deviceVideo: {
       deleteMany: vi.fn(async (args: unknown) => {
@@ -96,7 +103,10 @@ function createS3(overrides: Partial<ImmersiveVideoS3> = {}): ImmersiveVideoS3 {
     abortMultipartUpload: vi.fn(async () => undefined),
     putObject: vi.fn(async () => undefined),
     deleteObject: vi.fn(async () => undefined),
-    getObjectStream: vi.fn(async () => Readable.from([])),
+    headObject: vi.fn(async () => ({
+      contentLength: 0,
+      checksumSha256: null,
+    })),
     ...overrides,
   }
 }
@@ -119,7 +129,7 @@ describe('immersive video catalog', () => {
     const { prisma } = createPrisma(
       baseRow({
         state: 'Uploading',
-        objectKey: 'immersive-videos/video-1/v1.mp4',
+        objectKey: 'immersive-videos/video-1.mp4',
         checksum: 'abc',
         thumbnailKey: 'immersive-videos/video-1/thumbnail-1.jpg',
       }),
@@ -136,7 +146,7 @@ describe('immersive video catalog', () => {
       baseRow({
         title: 'Trail',
         state: 'Draft',
-        objectKey: 'immersive-videos/video-1/v1.mp4',
+        objectKey: 'immersive-videos/video-1.mp4',
         checksum: 'abc',
         thumbnailKey: 'immersive-videos/video-1/thumbnail-1.jpg',
       }),
@@ -187,13 +197,13 @@ describe('immersive video catalog', () => {
     expect(state.deleted).toBe(false)
   })
 
-  it('upload.start from Published enters Republishing at v{version+1}', async () => {
+  it('upload.start from Published enters Republishing onto the live key', async () => {
     const { prisma, state } = createPrisma(
       baseRow({
         title: 'Trail',
         state: 'Published',
         version: 1,
-        objectKey: 'immersive-videos/video-1/v1.mp4',
+        objectKey: 'immersive-videos/video-1.mp4',
         checksum: 'abc',
         filename: 'trail.mp4',
       }),
@@ -206,18 +216,141 @@ describe('immersive video catalog', () => {
         id: 'video-1',
         filename: 'trail-v2.mp4',
         sizeBytes: IMMERSIVE_VIDEO_PART_SIZE_BYTES,
-        contentType: 'video/mp4',
       },
     )
 
     expect(result).toMatchObject({
+      id: 'video-1',
       uploadId: 'upload-1',
       partSizeBytes: IMMERSIVE_VIDEO_PART_SIZE_BYTES,
       partCount: 1,
     })
     expect(state.row.state).toBe('Republishing')
     expect(state.row.priorState).toBe('Published')
-    expect(state.row.uploadObjectKey).toBe('immersive-videos/video-1/v2.mp4')
+    expect(state.row.uploadObjectKey).toBe('immersive-videos/video-1.mp4')
+    expect(s3.createMultipartUpload).toHaveBeenCalledWith({
+      key: 'immersive-videos/video-1.mp4',
+      contentType: 'video/mp4',
+    })
+  })
+
+  it('upload.start accepts a Unity AssetBundle as an octet stream', async () => {
+    const { prisma, state } = createPrisma(baseRow())
+    const s3 = createS3()
+
+    await startImmersiveVideoUpload(
+      { prisma, s3 },
+      {
+        id: 'video-1',
+        filename: 'videos_assets_assets_videos_mono.mp4_fa26855d.bundle',
+        sizeBytes: 10,
+      },
+    )
+
+    expect(state.row.uploadObjectKey).toBe('immersive-videos/video-1.bundle')
+    expect(s3.createMultipartUpload).toHaveBeenCalledWith({
+      key: 'immersive-videos/video-1.bundle',
+      contentType: 'application/octet-stream',
+    })
+  })
+
+  it('upload.start rejects an extension outside the allowlist', async () => {
+    const { prisma } = createPrisma(baseRow())
+
+    await expect(
+      startImmersiveVideoUpload(
+        { prisma, s3: createS3() },
+        { id: 'video-1', filename: 'trail.exe', sizeBytes: 10 },
+      ),
+    ).rejects.toThrow('INVALID_FILENAME')
+  })
+
+  it('upload.start renames the row to the admin-chosen Video ID on the first upload', async () => {
+    const { prisma, state } = createPrisma(baseRow())
+    const s3 = createS3()
+
+    const result = await startImmersiveVideoUpload(
+      { prisma, s3 },
+      {
+        id: 'video-1',
+        videoId: '  cycle-coast_01  ',
+        filename: 'coast.bundle',
+        sizeBytes: 10,
+      },
+    )
+
+    expect(result.id).toBe('cycle-coast_01')
+    expect(state.row.id).toBe('cycle-coast_01')
+    expect(state.row.uploadObjectKey).toBe(
+      'immersive-videos/cycle-coast_01.bundle',
+    )
+  })
+
+  it('upload.start keeps the generated id when the Video ID is blank', async () => {
+    const { prisma, state } = createPrisma(baseRow())
+
+    const result = await startImmersiveVideoUpload(
+      { prisma, s3: createS3() },
+      {
+        id: 'video-1',
+        videoId: '   ',
+        filename: 'coast.bundle',
+        sizeBytes: 10,
+      },
+    )
+
+    expect(result.id).toBe('video-1')
+    expect(state.row.id).toBe('video-1')
+  })
+
+  it.each(['Coast 01', 'coast/01', '-coast', 'a'.repeat(65)])(
+    'upload.start rejects the Video ID %j',
+    async (videoId) => {
+      const { prisma } = createPrisma(baseRow())
+
+      await expect(
+        startImmersiveVideoUpload(
+          { prisma, s3: createS3() },
+          { id: 'video-1', videoId, filename: 'coast.bundle', sizeBytes: 10 },
+        ),
+      ).rejects.toThrow('INVALID_VIDEO_ID')
+    },
+  )
+
+  it('upload.start rejects a Video ID already in use', async () => {
+    const { prisma } = createPrisma(baseRow())
+    const findUnique = prisma.immersiveVideo.findUnique as unknown as {
+      mockImplementation: (fn: (args: unknown) => Promise<unknown>) => void
+    }
+    findUnique.mockImplementation(async (args) => {
+      const where = (args as { where: { id: string } }).where
+      if (where.id === 'taken') return baseRow({ id: 'taken' })
+      return where.id === 'video-1' ? baseRow() : null
+    })
+
+    await expect(
+      startImmersiveVideoUpload(
+        { prisma, s3: createS3() },
+        { id: 'video-1', videoId: 'taken', filename: 'a.bundle', sizeBytes: 1 },
+      ),
+    ).rejects.toThrow('VIDEO_ID_TAKEN')
+  })
+
+  it('upload.start refuses to rename once a file has been verified', async () => {
+    const { prisma } = createPrisma(
+      baseRow({
+        state: 'Unpublished',
+        version: 1,
+        objectKey: 'immersive-videos/video-1.bundle',
+      }),
+    )
+
+    await expect(
+      startImmersiveVideoUpload(
+        { prisma, s3: createS3() },
+        { id: 'video-1', videoId: 'other', filename: 'a.bundle', sizeBytes: 1 },
+      ),
+    ).rejects.toThrow('VIDEO_ID_LOCKED')
   })
 
   it('upload.start while uploadId is set is rejected', async () => {
@@ -225,7 +358,7 @@ describe('immersive video catalog', () => {
       baseRow({
         state: 'Uploading',
         uploadId: 'open-upload',
-        uploadObjectKey: 'immersive-videos/video-1/v1.mp4',
+        uploadObjectKey: 'immersive-videos/video-1.mp4',
       }),
     )
 
@@ -236,7 +369,6 @@ describe('immersive video catalog', () => {
           id: 'video-1',
           filename: 'trail.mp4',
           sizeBytes: 10,
-          contentType: 'video/mp4',
         },
       ),
     ).rejects.toThrow('UPLOAD_IN_PROGRESS')
@@ -247,7 +379,7 @@ describe('immersive video catalog', () => {
       baseRow({
         state: 'Uploading',
         uploadId: 'upload-1',
-        uploadObjectKey: 'immersive-videos/video-1/v1.mp4',
+        uploadObjectKey: 'immersive-videos/video-1.mp4',
         uploadSizeBytes: BigInt(IMMERSIVE_VIDEO_PART_SIZE_BYTES),
         uploadFilename: 'trail.mp4',
       }),
@@ -262,15 +394,52 @@ describe('immersive video catalog', () => {
     ).rejects.toThrow('BAD_PART_SIZE')
   })
 
+  it('upload.complete drops the dead uploadId while keeping the verify inputs', async () => {
+    const { prisma, state } = createPrisma(
+      baseRow({
+        state: 'Republishing',
+        priorState: 'Published',
+        version: 1,
+        objectKey: 'immersive-videos/video-1.mp4',
+        uploadId: 'upload-1',
+        uploadObjectKey: 'immersive-videos/video-1.mp4',
+        uploadFilename: 'next.mp4',
+        uploadSizeBytes: BigInt(10),
+      }),
+    )
+    const s3 = createS3({
+      listParts: vi.fn(async () => [
+        { partNumber: 1, etag: '"a"', checksumSha256: 'sum-a' },
+      ]),
+    })
+
+    const row = await completeImmersiveVideoUpload(
+      { prisma, s3 },
+      'video-1',
+      () => undefined,
+    )
+    expect(row.state).toBe('Verifying')
+    expect(state.row.uploadId).toBeNull()
+    expect(state.row.uploadObjectKey).toBe('immersive-videos/video-1.mp4')
+    expect(state.row.uploadSizeBytes).toBe(BigInt(10))
+
+    // A second complete/abort/status on the verifying row must not reach S3
+    // with the dead UploadId (S3 answers NoSuchUpload once Complete succeeds).
+    await expect(
+      abortImmersiveVideoUpload({ prisma, s3 }, 'video-1'),
+    ).rejects.toThrow('NO_UPLOAD')
+    expect(s3.abortMultipartUpload).not.toHaveBeenCalled()
+  })
+
   it('upload.abort restores priorState', async () => {
     const { prisma, state } = createPrisma(
       baseRow({
         state: 'Republishing',
         priorState: 'Published',
         version: 1,
-        objectKey: 'immersive-videos/video-1/v1.mp4',
+        objectKey: 'immersive-videos/video-1.mp4',
         uploadId: 'upload-1',
-        uploadObjectKey: 'immersive-videos/video-1/v2.mp4',
+        uploadObjectKey: 'immersive-videos/video-1.mp4',
         uploadFilename: 'next.mp4',
         uploadSizeBytes: BigInt(10),
       }),
@@ -288,7 +457,7 @@ describe('immersive video catalog', () => {
     const { prisma, state } = createPrisma(
       baseRow({
         title: 'Trail',
-        objectKey: 'immersive-videos/video-1/v1.mp4',
+        objectKey: 'immersive-videos/video-1.mp4',
         thumbnailKey: 'immersive-videos/video-1/thumbnail-1.jpg',
       }),
     )
@@ -374,7 +543,7 @@ describe('immersiveVideo.list', () => {
           state: 'Published',
           version: 2,
           sizeBytes: 1_024n,
-          objectKey: 'immersive-videos/pub/v2.mp4',
+          objectKey: 'immersive-videos/pub.mp4',
           checksum: 'secret',
           thumbnailKey: 'immersive-videos/pub/thumb.jpg',
         }),
@@ -385,10 +554,10 @@ describe('immersiveVideo.list', () => {
           state: 'Republishing',
           version: 4,
           sizeBytes: 2_048n,
-          objectKey: 'immersive-videos/repub/v4.mp4',
+          objectKey: 'immersive-videos/repub.mp4',
           checksum: 'live-sum',
           thumbnailKey: 'immersive-videos/repub/thumb.jpg',
-          uploadObjectKey: 'immersive-videos/repub/v5.mp4',
+          uploadObjectKey: 'immersive-videos/repub.mp4',
           uploadSizeBytes: 9_999n,
         }),
       ]),

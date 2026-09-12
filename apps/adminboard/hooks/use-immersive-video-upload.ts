@@ -4,9 +4,12 @@ import { getErrorMessage } from '@/lib/get-error-message'
 import type { ImmersiveVideoAdminRow } from '@/lib/immersive-video-admin-row'
 import { formatImmersiveVideoSize } from '@/lib/immersive-video-admin-row'
 import {
-  isAllowedImmersiveVideoFilename,
-  IMMERSIVE_VIDEO_UNSUPPORTED_FILE,
-} from '@/lib/immersive-video-admin-row'
+  immersiveVideoFileKindOf,
+  immersiveVideoFileKindSpec,
+  isValidImmersiveVideoId,
+  IMMERSIVE_VIDEO_ID_INVALID,
+  type ImmersiveVideoFileKind,
+} from '@/lib/immersive-video-file-kind'
 import {
   immersiveVideoPartSlice,
   planImmersiveVideoParts,
@@ -93,19 +96,33 @@ export function useImmersiveVideoUpload({ onCatalogChange }: UploadHookArgs) {
     async (
       videoId: string,
       file: File,
-      durationSec: number | null,
-      mode: 'start' | 'resume' = 'start',
-    ) => {
+      options: {
+        /** Kind the admin selected; the file must match it. Resume takes any kind. */
+        kind?: ImmersiveVideoFileKind
+        mode?: 'start' | 'resume'
+        /** Admin-chosen Video ID for the first upload; null keeps the generated one. */
+        requestedId?: string | null
+        /** Fires once the server accepted the upload, with the id the parts go to. */
+        onStarted?: (id: string) => void
+      } = {},
+    ): Promise<{ id: string } | null> => {
+      const mode = options.mode ?? 'start'
       if (activeVideoId && activeVideoId !== videoId) {
         toast.error('Finish or cancel the current upload first.')
-        return
+        return null
       }
-      if (
-        !isAllowedImmersiveVideoFilename(file.name) ||
-        !file.type.startsWith('video/')
-      ) {
-        toast.error(IMMERSIVE_VIDEO_UNSUPPORTED_FILE)
-        return
+      const fileKind = immersiveVideoFileKindOf(file.name)
+      const expectedKind = options.kind ?? fileKind
+      if (!fileKind || !expectedKind || fileKind !== expectedKind) {
+        toast.error(
+          immersiveVideoFileKindSpec(expectedKind ?? 'bundle').unsupported,
+        )
+        return null
+      }
+      const requestedId = options.requestedId ?? null
+      if (requestedId && !isValidImmersiveVideoId(requestedId)) {
+        toast.error(IMMERSIVE_VIDEO_ID_INVALID)
+        return null
       }
 
       try {
@@ -117,7 +134,7 @@ export function useImmersiveVideoUpload({ onCatalogChange }: UploadHookArgs) {
             toast.error(
               `Pick the same file you started with (${status.filename}, ${formatImmersiveVideoSize(status.sizeBytes)}), or cancel this upload.`,
             )
-            return
+            return null
           }
           if (file.name !== status.filename) {
             toast.warning(
@@ -135,26 +152,32 @@ export function useImmersiveVideoUpload({ onCatalogChange }: UploadHookArgs) {
             }, 0)
           setUploadedBytes(uploadedSoFar)
           await uploadParts(videoId, file, missing)
-          return
+          return { id: videoId }
         }
 
-        await orpc.immersiveVideo.upload.start.call({
+        // Bundles carry no readable stream; only raw video yields a duration.
+        const durationSec =
+          fileKind === 'video' ? await readVideoDurationSec(file) : null
+        const started = await orpc.immersiveVideo.upload.start.call({
           id: videoId,
+          videoId: requestedId,
           filename: file.name,
           sizeBytes: file.size,
-          contentType: file.type || 'video/mp4',
           durationSec,
         })
+        options.onStarted?.(started.id)
         onCatalogChange()
         const { parts } = planImmersiveVideoParts(file.size)
         await uploadParts(
-          videoId,
+          started.id,
           file,
           parts.map((part) => part.partNumber),
         )
+        return { id: started.id }
       } catch (error) {
         toast.error(getErrorMessage(error, 'Upload failed.'))
         setPartInFlight(false)
+        return null
       }
     },
     [activeVideoId, onCatalogChange, orpc, uploadParts],
@@ -186,7 +209,7 @@ export type ImmersiveVideoUploadController = ReturnType<
   typeof useImmersiveVideoUpload
 >
 
-export function readVideoDurationSec(file: File): Promise<number | null> {
+function readVideoDurationSec(file: File): Promise<number | null> {
   return new Promise((resolve) => {
     const video = document.createElement('video')
     video.preload = 'metadata'

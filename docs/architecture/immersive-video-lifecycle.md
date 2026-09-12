@@ -28,12 +28,13 @@ stateDiagram-v2
     Draft --> Uploading : admin picks a file\n(Video Upload starts)
     Uploading --> Verifying : CompleteMultipartUpload
     Uploading --> Draft : admin cancels the upload\n(prior state restored)
-    Verifying --> Draft : server SHA-256 matches\n(file, sizeBytes, checksum, version recorded)
-    Verifying --> Draft : checksum mismatch\n(object deleted, row notice, no file)
+    Verifying --> Draft : HeadObject length matches\n(file, sizeBytes, S3 checksum, version recorded)
+    Verifying --> Draft : length mismatch\n(object deleted, row notice, no file)
     Draft --> Published : admin publishes\n(requires file, checksum, thumbnail;\npublishedAt set)
     Published --> Published : metadata edit\n(title, activity, description, thumbnail)
-    Published --> Republishing : admin replaces the file\n(Video Upload at version + 1)
-    Republishing --> Published : verified: new objectKey,\nchecksum, version + 1
+    Published --> Republishing : admin replaces the file\n(Video Upload onto the live key)
+    Republishing --> Published : verified: same objectKey,\nnew checksum, version + 1
+    Republishing --> Unpublished : length mismatch on the live key\n(object deleted, no file)
     Republishing --> Published : admin cancels the replace\n(version unchanged)
     Published --> Unpublished : admin unpublishes\n(publishedAt cleared)
     Unpublished --> Published : admin republishes
@@ -46,11 +47,12 @@ stateDiagram-v2
 Rules:
 
 - **The adminboard never talks to S3.** A **Video Upload** goes browser → `services/server` → S3 as server-owned multipart in 64 MiB sequential parts, resumable via `ListParts`; one upload per browser tab.
-- **Verification is server-side.** After `CompleteMultipartUpload` the server streams the object back and computes its SHA-256 (hex); S3 cannot produce a full-object SHA-256 for a multipart upload. The row is `Verifying` until that finishes; on mismatch the object is deleted and the row returns to `Draft` with no file and a persistent row notice.
+- **Integrity is settled on ingest.** Every part is uploaded with `ChecksumAlgorithm: SHA256`, so S3 rejects a part whose bytes do not match what the server sent, and `CompleteMultipartUpload` records a composite checksum on the object. `Verifying` is one `HeadObject`: `ContentLength` must equal the size the admin's browser reported and the composite checksum must be present; the checksum is stored on the row as the record of that check. It never reaches a headset (ADR 0011). On mismatch the object is deleted and the row returns to `Draft` (or, for a republish that overwrote the live key, drops to `Unpublished`) with no file and a persistent row notice.
 - **A `Draft` may not yet have a file.** Publish requires `objectKey`, `checksum` and a thumbnail; the Publish action is disabled with a tooltip naming the missing precondition.
 - `version` starts at `0` (no verified object yet); the first successful verify writes `1`. It bumps **only** on a file replace, never on a metadata edit. This is what lets a headset tell "same video, newer file" from "same video, new title".
-- A replace writes to a **new** object key (`immersive-videos/{id}/v{version}.{ext}`, keeping the picked extension) rather than overwriting: an **Object Replacement**. Headsets mid-download of the previous version keep a valid URL until they finish; the old object is removed by the cleanup job once no `DeviceVideo` row references that `(videoId, version)`.
-- **No encoding, layout or codec constraint in v1.** The adminboard checks `video/*` plus the extension allowlist `mp4, m4v, mov, webm, mkv`; nothing on the platform inspects the stream.
+- **One object per video.** The key is `immersive-videos/{id}.{ext}` (the picked extension); a replace is a multipart upload onto the **same key**, and S3 swaps the bytes at `CompleteMultipartUpload`. A replace that changes extension deletes the previous key once the new one verifies. There are no retired objects and no object sweep; versioned keys return with versioned distribution. Because the URL is stable, the Download Descriptor appends `?v={version}` so CloudFront caches each version separately (ADR 0011). A headset mid-download of the previous version sees a length mismatch and reports `checksum_mismatch`; the physio's next Download starts the new version.
+- **Two File Kinds, no encoding constraint.** The adminboard picker defaults to **Unity AssetBundle** (`.bundle`, one video per bundle, built for Android from the headset project) and also accepts raw video (`mp4, m4v, mov, webm, mkv`). The kind is not stored; the object key's extension is what the headset branches on. Nothing on the platform inspects the file, and a bundle's Unity-version/target compatibility is the VR team's to keep. `durationSec` is read in the browser for raw video only; bundles leave it blank.
+- **The Video ID may be admin-chosen, once.** The first upload for a row may carry a `videoId` (`^[a-z0-9][a-z0-9._-]{0,63}$`, unique); the row is renamed before the multipart upload is created, so the object key, the console catalog and every headset agree on it. Blank keeps the generated cuid. Once a file has verified (`version ≥ 1`) the id is locked: headsets may hold files under it.
 - Only `Published` rows are returned by `immersiveVideo.list`, and the Download Descriptor is served for `Published` and `Republishing` (the last verified version). A video that is `Unpublished` or deleted disappears from the console catalog; a headset that already holds it reports it as before, and the console renders that entry as **Not in catalog**: Play disabled, Delete offered. Unpublished and deleted are deliberately indistinguishable to the physio. A republished **new version** is the ordinary **Update Available** path.
 - Deleting a video removes the row, its objects and the matching Library Mirror rows in the API (there is no foreign key from `DeviceVideo` to the catalog; a later headset report may re-insert the id). The console **never** auto-sends `videoDelete`; the physio removes the file from each headset from the **Not in catalog** row.
 
@@ -64,7 +66,7 @@ stateDiagram-v2
     Absent --> Downloading : videoDownloadStart
     Downloading --> Downloading : bytes arrive\n(videoDownloadProgress)
     Downloading --> Checking : all bytes received
-    Checking --> Ready : SHA-256 matches,\n.part renamed\n(videoDownloadComplete)
+    Checking --> Ready : byte count == sizeBytes,\n.part renamed\n(videoDownloadComplete)
     Checking --> Failed : checksum_mismatch\n(.part discarded)
     Downloading --> Downloading : connection lost\n(stalled, retry forever,\nresume from offset)
     Downloading --> Paused : videoDownloadPause\n(.part kept)
@@ -83,7 +85,7 @@ stateDiagram-v2
 
 Notes on the less obvious transitions:
 
-- **`Checking` is a sub-state of `downloading` on the wire.** The headset hashes while streaming and only compares at EOF; it reports `downloading` until the rename is done. It is named `Checking` here to keep it apart from the catalog's server-side `Verifying`.
+- **`Checking` is a sub-state of `downloading` on the wire.** The headset counts bytes while streaming and compares the total with `sizeBytes` at EOF (no content hash reaches it); it reports `downloading` until the rename is done. It is named `Checking` here to keep it apart from the catalog's server-side `Verifying`.
 - **`UpdateAvailable` is a console-derived state.** The headset only knows the `version` it has on disk; it never sees the catalog. The console computes `UpdateAvailable` by comparing Library State against `immersiveVideo.list`. On the wire the headset still reports `ready` with its version.
 - **Updating does not delete the old file first.** The new version downloads to a separate `.part`; only on `Ready` does the headset swap files. If the update fails, the old version is still `Ready` and playable. This costs temporary double storage, which is why the console must check `freeBytes` against `sizeBytes` before sending an update.
 - **Connection loss is not `Failed`.** Wifi drop, sleep, and relaunch all keep the entry `downloading`; the headset retries with capped backoff and resumes from the `.part` offset by itself, reporting `stalled: true` while a console is watching. `Failed(network)` is reserved for non-recoverable errors.
@@ -105,15 +107,15 @@ sequenceDiagram
     Console->>VR: videoDownloadStart {videoId}
     VR-->>Console: videoDownloadAck
     VR->>API: GET /api/v1/device-videos/{videoId}?deviceId=…
-    API-->>VR: Download Descriptor {version, url, sizeBytes, checksum}\n(404 → Failed(unavailable))
+    API-->>VR: Download Descriptor {version, url, sizeBytes}\n(404 → Failed(unavailable))
     VR->>VR: free space ≥ sizeBytes? else Failed(insufficient_storage)
-    VR->>VR: .part exists for same videoId + descriptor version?\n→ re-hash prefix, resume offset (else discard .part)
+    VR->>VR: .part exists for same videoId + descriptor version?\n→ resume offset = .part size (else discard .part)
     VR->>CDN: GET url, Range: bytes={offset}-
-    loop stream to .part, hash as bytes arrive
+    loop stream to .part
         CDN-->>VR: chunk
         VR-->>Console: videoDownloadProgress (≤1/s)
     end
-    VR->>VR: hash == checksum? rename .part → final
+    VR->>VR: .part size == sizeBytes? rename .part → final
     VR-->>Console: videoDownloadComplete {videoId, version}
 ```
 
@@ -225,7 +227,7 @@ Rules:
 - **When the headset is offline** the console renders Library Mirror rows with an explicit "as of {reportedAt}" and disables every action except viewing. A physio can see that Room 2 headset had three videos two days ago, but cannot send it a command.
 - **Access:** a user can read Library Mirror rows only for Headset Identities on their own non-deleted `Device` records (`deviceVideo.listForUser`). Same rule as presence polling.
 - **Re-pairing** a headset to another account does not touch the Library Mirror; the rows belong to the hardware, and the new owner sees them on their first (offline or online) view. This is correct: the files really are on the headset.
-- **Retention:** a `DeviceVideoReport` whose Headset Identity is on no live `Device` and whose `reportedAt` is older than 180 days is deleted by the nightly cleanup job (cascading its `DeviceVideo` rows). Nothing else ever deletes Library Mirror rows except the catalog delete.
+- **Retention:** a `DeviceVideoReport` whose Headset Identity is on no live `Device` and whose `reportedAt` is older than 180 days is deleted by the nightly cleanup job (cascading its `DeviceVideo` rows). That job's only other duty was retiring versioned objects, which no longer exist. Nothing else ever deletes Library Mirror rows except the catalog delete.
 
 ## 7. Failure copy, end to end
 
@@ -235,7 +237,7 @@ Every terminal failure the physio can see, and the action it offers. This is the
 | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
 | `insufficient_storage`                                                                       | Headset storage is full. Delete videos from this page to free space.                                                                                                                        | Delete buttons on `Ready` rows  |
 | `network`                                                                                    | The download failed. Try again.                                                                                                                                                             | Download (starts over)          |
-| `checksum_mismatch`                                                                          | The file was corrupted in transfer. Try again.                                                                                                                                              | Download (fresh)                |
+| `checksum_mismatch` (byte count ≠ `sizeBytes`)                                               | The file was corrupted in transfer. Try again.                                                                                                                                              | Download (fresh)                |
 | `url_expired`                                                                                | The download failed. Try again. _(same copy as `network`; the click resumes from the kept `.part`)_                                                                                         | Download                        |
 | `unavailable`                                                                                | This video is no longer available. _(unless the row is **Not in catalog**, which wins)_                                                                                                     | none                            |
 | Stalled (`stalled: true` or headset left the room mid-download)                              | Waiting for headset connection… The download continues automatically.                                                                                                                       | Pause · Cancel                  |

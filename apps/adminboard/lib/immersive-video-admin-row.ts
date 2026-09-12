@@ -130,30 +130,6 @@ export function formatImmersiveVideoUploadProgress(
   return `${formatImmersiveVideoSize(uploadedBytes)} of ${formatImmersiveVideoSize(totalBytes)} · ${percent} %`
 }
 
-export const IMMERSIVE_VIDEO_UNSUPPORTED_FILE =
-  "This file type isn't supported. Use MP4, M4V, MOV, WEBM or MKV."
-
-export const IMMERSIVE_VIDEO_FILE_HINT =
-  'MP4 (H.264/H.265) is the format the headset is tested with.'
-
-export const IMMERSIVE_VIDEO_ALLOWED_EXTENSIONS = [
-  'mp4',
-  'm4v',
-  'mov',
-  'webm',
-  'mkv',
-] as const
-
-export function isAllowedImmersiveVideoFilename(filename: string): boolean {
-  const extension = filename.split('.').pop()?.toLowerCase()
-  if (!extension || extension === filename.toLowerCase()) {
-    return false
-  }
-  return (IMMERSIVE_VIDEO_ALLOWED_EXTENSIONS as readonly string[]).includes(
-    extension,
-  )
-}
-
 export function publishPreconditionLabel(
   row: ImmersiveVideoAdminRow,
 ): string | null {

@@ -13,7 +13,7 @@ The headset-written Postgres cache of one headset's **Library State** (`DeviceVi
 _Avoid_: Mirror (as the term), device library table, server-owned library
 
 **Download Descriptor**:
-The server-issued description of one **Immersive Video** for a headset: the current verified version, its CDN URL, byte size and SHA-256. The headset fetches it for each **Download Request** and refreshes it when the URL is rejected. Issued only for a **Headset Identity** bound to a non-deleted Device, and only for a `Published` or `Republishing` catalog entry (the last verified version). The console never handles it.
+The server-issued description of one **Immersive Video** for a headset: the current verified version, its CDN URL (with `?v=<version>` as the per-version cache key) and byte size. It carries no checksum; integrity is verified when the file enters the platform, and the headset checks byte count only. The headset fetches it for each **Download Request** and refreshes it when the URL is rejected. Issued only for a **Headset Identity** bound to a non-deleted Device, and only for a `Published` or `Republishing` catalog entry (the last verified version). The console never handles it.
 _Avoid_: Manifest (the headset's on-disk file), download ticket, download link, presigned URL, `VideoDownloadStartPayload`
 
 ## Relationships

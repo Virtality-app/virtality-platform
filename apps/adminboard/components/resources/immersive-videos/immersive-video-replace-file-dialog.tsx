@@ -9,8 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { IMMERSIVE_VIDEO_FILE_HINT } from '@/lib/immersive-video-admin-row'
-import { Input } from '@virtality/ui/components/input'
+import { ImmersiveVideoFilePicker } from '@/components/resources/immersive-videos/immersive-video-file-picker'
+import type { ImmersiveVideoPickedFile } from '@/components/resources/immersive-videos/immersive-video-file-picker'
 
 export function ImmersiveVideoReplaceFileDialog({
   open,
@@ -25,7 +25,7 @@ export function ImmersiveVideoReplaceFileDialog({
   version: number
   disabled?: boolean
   disabledReason?: string
-  onFile: (file: File) => void
+  onFile: (picked: ImmersiveVideoPickedFile) => void
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -38,19 +38,12 @@ export function ImmersiveVideoReplaceFileDialog({
             upload finishes.
           </DialogDescription>
         </DialogHeader>
-        <p className='text-muted-foreground text-sm'>
-          {IMMERSIVE_VIDEO_FILE_HINT}
-        </p>
         {disabled ? (
           <p className='text-sm'>{disabledReason}</p>
         ) : (
-          <Input
-            type='file'
-            accept='video/*,.mp4,.m4v,.mov,.webm,.mkv'
-            onChange={(event) => {
-              const file = event.target.files?.[0]
-              if (!file) return
-              onFile(file)
+          <ImmersiveVideoFilePicker
+            onPicked={(picked) => {
+              onFile(picked)
               onOpenChange(false)
             }}
           />

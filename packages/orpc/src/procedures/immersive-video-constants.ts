@@ -1,12 +1,39 @@
 export const IMMERSIVE_VIDEO_PART_SIZE_BYTES = 67_108_864
 
-export const IMMERSIVE_VIDEO_ALLOWED_EXTENSIONS = [
+/** Unity AssetBundle built from the headset project; the headset loads it with `AssetBundle.LoadFromFile`. */
+export const IMMERSIVE_VIDEO_BUNDLE_EXTENSIONS = ['bundle'] as const
+
+/** Raw video the headset plays through `VideoPlayer.url`. */
+export const IMMERSIVE_VIDEO_RAW_EXTENSIONS = [
   'mp4',
   'm4v',
   'mov',
   'webm',
   'mkv',
 ] as const
+
+export const IMMERSIVE_VIDEO_ALLOWED_EXTENSIONS = [
+  ...IMMERSIVE_VIDEO_BUNDLE_EXTENSIONS,
+  ...IMMERSIVE_VIDEO_RAW_EXTENSIONS,
+] as const
+
+const IMMERSIVE_VIDEO_CONTENT_TYPES: Record<
+  (typeof IMMERSIVE_VIDEO_ALLOWED_EXTENSIONS)[number],
+  string
+> = {
+  bundle: 'application/octet-stream',
+  mp4: 'video/mp4',
+  m4v: 'video/x-m4v',
+  mov: 'video/quicktime',
+  webm: 'video/webm',
+  mkv: 'video/x-matroska',
+}
+
+/**
+ * Admin-chosen Video ID: safe as an S3 key segment, a headset filename and a
+ * URL path segment. Lowercase so the same id never differs only by case.
+ */
+export const IMMERSIVE_VIDEO_ID_PATTERN = /^[a-z0-9][a-z0-9._-]{0,63}$/
 
 export type ImmersiveVideoActivity = 'CYCLING' | 'WALKING'
 
@@ -103,6 +130,17 @@ export function isAllowedImmersiveVideoExtension(
   return (IMMERSIVE_VIDEO_ALLOWED_EXTENSIONS as readonly string[]).includes(
     extension,
   )
+}
+
+export function immersiveVideoContentType(extension: string): string {
+  return (
+    (IMMERSIVE_VIDEO_CONTENT_TYPES as Record<string, string>)[extension] ??
+    'application/octet-stream'
+  )
+}
+
+export function isValidImmersiveVideoId(id: string): boolean {
+  return IMMERSIVE_VIDEO_ID_PATTERN.test(id)
 }
 
 export function toSizeBytesNumber(

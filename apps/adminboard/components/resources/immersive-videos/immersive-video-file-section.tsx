@@ -1,14 +1,23 @@
 'use client'
 
+import { ImmersiveVideoFilePicker } from '@/components/resources/immersive-videos/immersive-video-file-picker'
+import type { ImmersiveVideoPickedFile } from '@/components/resources/immersive-videos/immersive-video-file-picker'
+import { ImmersiveVideoIdField } from '@/components/resources/immersive-videos/immersive-video-id-field'
 import { ImmersiveVideoUploadProgress } from '@/components/resources/immersive-videos/immersive-video-upload-progress'
 import { Button } from '@/components/ui/button'
-import {
-  IMMERSIVE_VIDEO_FILE_HINT,
-  immersiveVideoHasFile,
-} from '@/lib/immersive-video-admin-row'
+import { immersiveVideoHasFile } from '@/lib/immersive-video-admin-row'
 import type { ImmersiveVideoAdminRow } from '@/lib/immersive-video-admin-row'
+import {
+  canChooseImmersiveVideoId,
+  requestedImmersiveVideoId,
+} from '@/lib/immersive-video-file-kind'
 import type { ImmersiveVideoUploadController } from '@/hooks/use-immersive-video-upload'
-import { Input } from '@virtality/ui/components/input'
+import { useState } from 'react'
+
+export type ImmersiveVideoFileRequest = ImmersiveVideoPickedFile & {
+  /** Admin-chosen Video ID; null keeps the generated one. */
+  requestedId: string | null
+}
 
 export function ImmersiveVideoFileSection({
   row,
@@ -17,11 +26,13 @@ export function ImmersiveVideoFileSection({
 }: {
   row: ImmersiveVideoAdminRow
   upload: ImmersiveVideoUploadController
-  onPickedFile: (file: File) => void
+  onPickedFile: (request: ImmersiveVideoFileRequest) => void
 }) {
+  const [idInput, setIdInput] = useState('')
   const isThisUpload = upload.activeVideoId === row.id
   const otherUploadActive = upload.isUploading && !isThisUpload
   const verifying = row.state === 'Verifying'
+  const idEditable = canChooseImmersiveVideoId(row)
 
   if (verifying) {
     return (
@@ -50,25 +61,30 @@ export function ImmersiveVideoFileSection({
   }
 
   return (
-    <div className='space-y-2'>
+    <div className='space-y-4'>
+      <ImmersiveVideoIdField
+        currentId={row.id}
+        value={idInput}
+        editable={idEditable}
+        onChange={setIdInput}
+      />
       {immersiveVideoHasFile(row) ? (
         <p className='text-sm'>{row.filename}</p>
       ) : (
         <p className='text-muted-foreground text-sm'>No file yet.</p>
       )}
-      <p className='text-muted-foreground text-sm'>
-        {IMMERSIVE_VIDEO_FILE_HINT}
-      </p>
       {otherUploadActive ? (
         <p className='text-sm'>{upload.otherRowsDisabledMessage}</p>
       ) : (
-        <Input
-          type='file'
-          accept='video/*,.mp4,.m4v,.mov,.webm,.mkv'
-          onChange={(event) => {
-            const file = event.target.files?.[0]
-            if (file) onPickedFile(file)
-          }}
+        <ImmersiveVideoFilePicker
+          onPicked={(picked) =>
+            onPickedFile({
+              ...picked,
+              requestedId: idEditable
+                ? requestedImmersiveVideoId(idInput, row.id)
+                : null,
+            })
+          }
         />
       )}
     </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { ImmersiveVideoFileSection } from '@/components/resources/immersive-videos/immersive-video-file-section'
+import type { ImmersiveVideoFileRequest } from '@/components/resources/immersive-videos/immersive-video-file-section'
 import { ImmersiveVideoThumbnailSection } from '@/components/resources/immersive-videos/immersive-video-thumbnail-section'
 import { Button } from '@/components/ui/button'
 import {
@@ -50,7 +51,7 @@ export function ImmersiveVideoDialog({
   pendingFile: File | null
   upload: ImmersiveVideoUploadController
   onOpenChange: (open: boolean) => void
-  onFile: (file: File) => void
+  onFile: (request: ImmersiveVideoFileRequest) => void
 }) {
   const update = useUpdateImmersiveVideo()
   const publish = usePublishImmersiveVideo()

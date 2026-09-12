@@ -131,10 +131,10 @@ function catalogVideo(overrides: Partial<CatalogRow> = {}): CatalogRow {
     id: 'video-1',
     state: 'Published',
     version: 2,
-    objectKey: 'immersive-videos/video-1/v2.mp4',
+    objectKey: 'immersive-videos/video-1.mp4',
     sizeBytes: 1_024n,
     checksum: 'abc123',
-    uploadObjectKey: 'immersive-videos/video-1/v3.mp4',
+    uploadObjectKey: 'immersive-videos/video-1.bundle',
     uploadSizeBytes: 2_048n,
     ...overrides,
   }
@@ -327,21 +327,20 @@ describe('device-videos routes', () => {
     expect(await response.json()).toEqual({
       videoId: 'video-1',
       version: 2,
-      url: 'https://cdn.virtality.app/immersive-videos/video-1/v2.mp4',
+      url: 'https://cdn.virtality.app/immersive-videos/video-1.mp4?v=2',
       sizeBytes: 1024,
-      checksum: 'abc123',
     })
   })
 
-  it('GET Republishing serves live version and objectKey, not upload*', async () => {
+  it('GET Republishing serves live version and size, never upload* or the checksum', async () => {
     store.catalog = [
       catalogVideo({
         state: 'Republishing',
         version: 2,
-        objectKey: 'immersive-videos/video-1/v2.mp4',
+        objectKey: 'immersive-videos/video-1.mp4',
         sizeBytes: 1_024n,
         checksum: 'live-sum',
-        uploadObjectKey: 'immersive-videos/video-1/v3.mp4',
+        uploadObjectKey: 'immersive-videos/video-1.bundle',
         uploadSizeBytes: 9_999n,
       }),
     ]
@@ -352,13 +351,14 @@ describe('device-videos routes', () => {
     const body = await response.json()
 
     expect(response.status).toBe(200)
-    expect(body).toMatchObject({
+    expect(body).toEqual({
+      videoId: 'video-1',
       version: 2,
-      url: 'https://cdn.virtality.app/immersive-videos/video-1/v2.mp4',
+      url: 'https://cdn.virtality.app/immersive-videos/video-1.mp4?v=2',
       sizeBytes: 1024,
-      checksum: 'live-sum',
     })
-    expect(JSON.stringify(body)).not.toContain('v3.mp4')
+    expect(JSON.stringify(body)).not.toContain('bundle')
+    expect(JSON.stringify(body)).not.toContain('live-sum')
   })
 
   it.each(['Draft', 'Uploading', 'Verifying', 'Unpublished'] as const)(

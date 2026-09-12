@@ -43,9 +43,10 @@ const thumbnailInput = z.object({
 
 const uploadStartInput = z.object({
   id: z.string().min(1),
+  /** Admin-chosen Video ID; blank keeps the generated one. Only honoured on the first upload. */
+  videoId: z.string().max(64).nullable().optional(),
   filename: z.string().min(1),
   sizeBytes: z.number().int().nonnegative(),
-  contentType: z.string().min(1),
   durationSec: z.number().int().nonnegative().nullable().optional(),
 })
 

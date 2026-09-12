@@ -1,15 +1,16 @@
 import type { PrismaClient } from '@virtality/db'
-import { createHash } from 'node:crypto'
-import type { Readable } from 'node:stream'
 import { bucketCdnUrl, generateUUID } from '@virtality/shared/utils'
 import {
   expectedImmersiveVideoPartSize,
+  IMMERSIVE_VIDEO_PART_SIZE_BYTES,
+  immersiveVideoContentType,
   immersiveVideoFileExtension,
   immersiveVideoPartCount,
   ImmersiveVideoError,
   ImmersiveVideoNotFoundError,
   isAllowedImmersiveVideoExtension,
   isImmersiveVideoDiscardEmpty,
+  isValidImmersiveVideoId,
   LIVE_IMMERSIVE_VIDEO_STATES,
   toSizeBytesNumber,
   type ImmersiveVideoActivity,
@@ -97,6 +98,14 @@ async function withUploadProgress(
     uploadedParts: parts.length,
     partCount: immersiveVideoPartCount(uploadSize),
   })
+}
+
+const FILE_CLEAR = {
+  objectKey: null,
+  sizeBytes: null,
+  checksum: null,
+  filename: null,
+  durationSec: null,
 }
 
 const UPLOAD_CLEAR = {
@@ -282,10 +291,6 @@ export async function deleteImmersiveVideo(
   id: string,
 ): Promise<void> {
   const row = await loadVideo(deps.prisma, id)
-  const retired = await deps.prisma.immersiveVideoRetiredObject.findMany({
-    where: { videoId: id },
-    select: { objectKey: true },
-  })
 
   if (row.uploadId && row.uploadObjectKey) {
     await deps.s3.abortMultipartUpload({
@@ -298,9 +303,6 @@ export async function deleteImmersiveVideo(
   if (row.objectKey) keys.add(row.objectKey)
   if (row.uploadObjectKey) keys.add(row.uploadObjectKey)
   if (row.thumbnailKey) keys.add(row.thumbnailKey)
-  for (const item of retired) {
-    keys.add(item.objectKey)
-  }
 
   for (const key of keys) {
     await deps.s3.deleteObject({ key })
@@ -310,16 +312,62 @@ export async function deleteImmersiveVideo(
   await deps.prisma.immersiveVideo.delete({ where: { id } })
 }
 
+/**
+ * The Video ID is the key headsets, the console and the object key all share.
+ * It may be chosen once, on the first upload, while no file has ever been
+ * verified for the row; after that headsets may hold files under it.
+ */
+async function resolveUploadVideoId(
+  prisma: ImmersiveVideoPrisma,
+  row: ImmersiveVideoRecord,
+  requested: string | undefined,
+): Promise<string> {
+  const videoId = requested?.trim()
+  if (!videoId || videoId === row.id) {
+    return row.id
+  }
+  if (!isValidImmersiveVideoId(videoId)) {
+    throw new ImmersiveVideoError('INVALID_VIDEO_ID')
+  }
+  if (row.version > 0 || row.objectKey) {
+    throw new ImmersiveVideoError('VIDEO_ID_LOCKED')
+  }
+  const taken = await prisma.immersiveVideo.findUnique({
+    where: { id: videoId },
+    select: { id: true },
+  })
+  if (taken) {
+    throw new ImmersiveVideoError('VIDEO_ID_TAKEN')
+  }
+  await prisma.immersiveVideo.update({
+    where: { id: row.id },
+    data: { id: videoId },
+  })
+  return videoId
+}
+
+export function immersiveVideoObjectKey(
+  videoId: string,
+  extension: string,
+): string {
+  return `immersive-videos/${videoId}.${extension}`
+}
+
 export async function startImmersiveVideoUpload(
   deps: ServiceDeps,
   input: {
     id: string
+    videoId?: string | null
     filename: string
     sizeBytes: number
-    contentType: string
     durationSec?: number | null
   },
-): Promise<{ uploadId: string; partSizeBytes: number; partCount: number }> {
+): Promise<{
+  id: string
+  uploadId: string
+  partSizeBytes: number
+  partCount: number
+}> {
   const row = await loadVideo(deps.prisma, input.id)
   if (row.uploadId) {
     throw new ImmersiveVideoError('UPLOAD_IN_PROGRESS')
@@ -327,26 +375,30 @@ export async function startImmersiveVideoUpload(
   if (!UPLOADABLE_STATES.includes(row.state)) {
     throw new ImmersiveVideoError('UPLOAD_NOT_ALLOWED')
   }
-  if (!input.contentType.startsWith('video/')) {
-    throw new ImmersiveVideoError('INVALID_CONTENT_TYPE')
-  }
   const extension = immersiveVideoFileExtension(input.filename)
-  if (!isAllowedImmersiveVideoExtension(extension)) {
+  if (!extension || !isAllowedImmersiveVideoExtension(extension)) {
     throw new ImmersiveVideoError('INVALID_FILENAME')
   }
 
-  const nextVersion = row.version + 1
-  const uploadObjectKey = `immersive-videos/${row.id}/v${nextVersion}.${extension}`
+  const id = await resolveUploadVideoId(
+    deps.prisma,
+    row,
+    input.videoId ?? undefined,
+  )
+
+  // One object per video: a republish uploads onto the live key and S3 swaps
+  // the bytes at Complete. Versioned keys return with versioned distribution.
+  const uploadObjectKey = immersiveVideoObjectKey(id, extension)
   const { uploadId } = await deps.s3.createMultipartUpload({
     key: uploadObjectKey,
-    contentType: input.contentType,
+    contentType: immersiveVideoContentType(extension),
   })
 
   const nextState: ImmersiveVideoCatalogState =
     row.state === 'Published' ? 'Republishing' : 'Uploading'
 
   await deps.prisma.immersiveVideo.update({
-    where: { id: row.id },
+    where: { id },
     data: {
       priorState: row.state,
       state: nextState,
@@ -360,8 +412,9 @@ export async function startImmersiveVideoUpload(
   })
 
   return {
+    id,
     uploadId,
-    partSizeBytes: 67_108_864,
+    partSizeBytes: IMMERSIVE_VIDEO_PART_SIZE_BYTES,
     partCount: immersiveVideoPartCount(input.sizeBytes),
   }
 }
@@ -451,9 +504,11 @@ export async function completeImmersiveVideoUpload(
     parts,
   })
 
+  // The multipart upload no longer exists after Complete; drop the id so the
+  // NO_UPLOAD guards stop routing status/abort/delete at a dead UploadId.
   const updated = await deps.prisma.immersiveVideo.update({
     where: { id },
-    data: { state: 'Verifying' },
+    data: { state: 'Verifying', uploadId: null },
   })
   void runVerify(id)
   return toImmersiveVideoAdminRow(updated)
@@ -483,20 +538,11 @@ export async function abortImmersiveVideoUpload(
   return toImmersiveVideoAdminRow(updated)
 }
 
-async function hashReadable(stream: Readable): Promise<{
-  hex: string
-  bytes: number
-}> {
-  const hash = createHash('sha256')
-  let bytes = 0
-  for await (const chunk of stream) {
-    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)
-    bytes += buffer.length
-    hash.update(buffer)
-  }
-  return { hex: hash.digest('hex'), bytes }
-}
-
+/**
+ * Integrity is settled on ingest: S3 validated every part's SHA-256 as it
+ * arrived and recorded the composite checksum at Complete. Verify only
+ * confirms the object landed whole; nothing streams the bytes back.
+ */
 export async function runImmersiveVideoVerify(
   id: string,
   deps: ServiceDeps,
@@ -507,64 +553,67 @@ export async function runImmersiveVideoVerify(
   }
 
   const expectedBytes = toSizeBytesNumber(row.uploadSizeBytes)
-  const priorState = row.priorState
   const restoreState: ImmersiveVideoCatalogState =
-    priorState === 'Published' ? 'Published' : 'Draft'
+    row.priorState === 'Published' ? 'Published' : 'Draft'
 
-  let hex: string | null = null
-  let bytes = 0
-  let readFailed = false
+  let head: { contentLength: number; checksumSha256: string | null } | null =
+    null
   try {
-    const stream = await deps.s3.getObjectStream({ key: row.uploadObjectKey })
-    const hashed = await hashReadable(stream)
-    hex = hashed.hex
-    bytes = hashed.bytes
+    head = await deps.s3.headObject({ key: row.uploadObjectKey })
   } catch {
-    readFailed = true
+    head = null
   }
 
-  const verified =
-    !readFailed && expectedBytes != null && bytes === expectedBytes
+  const checksum =
+    head != null &&
+    head.checksumSha256 != null &&
+    expectedBytes != null &&
+    head.contentLength === expectedBytes
+      ? head.checksumSha256
+      : null
 
-  if (!verified) {
+  if (checksum == null) {
     await deps.s3.deleteObject({ key: row.uploadObjectKey })
+    // A republish uploads onto the live key, so a failed one has already
+    // replaced the published bytes: the row loses its file instead of
+    // returning to Published with an object it can no longer vouch for.
+    const liveObjectLost = row.objectKey === row.uploadObjectKey
     const updated = await deps.prisma.immersiveVideo.update({
       where: { id },
       data: {
-        state: restoreState,
+        state: liveObjectLost
+          ? restoreState === 'Published'
+            ? 'Unpublished'
+            : restoreState
+          : restoreState,
         priorState: null,
         verifyFailedAt: new Date(),
+        ...(liveObjectLost ? FILE_CLEAR : {}),
         ...UPLOAD_CLEAR,
       },
     })
     return toImmersiveVideoAdminRow(updated)
   }
 
-  const updated = await deps.prisma.$transaction(async (tx) => {
-    if (row.objectKey) {
-      await tx.immersiveVideoRetiredObject.create({
-        data: {
-          videoId: row.id,
-          version: row.version,
-          objectKey: row.objectKey,
-        },
-      })
-    }
-    return tx.immersiveVideo.update({
-      where: { id },
-      data: {
-        objectKey: row.uploadObjectKey,
-        sizeBytes: row.uploadSizeBytes,
-        checksum: hex,
-        filename: row.uploadFilename,
-        durationSec: row.uploadDurationSec,
-        version: row.version + 1,
-        state: restoreState,
-        priorState: null,
-        ...UPLOAD_CLEAR,
-      },
-    })
+  const updated = await deps.prisma.immersiveVideo.update({
+    where: { id },
+    data: {
+      objectKey: row.uploadObjectKey,
+      sizeBytes: row.uploadSizeBytes,
+      checksum,
+      filename: row.uploadFilename,
+      durationSec: row.uploadDurationSec,
+      version: row.version + 1,
+      state: restoreState,
+      priorState: null,
+      ...UPLOAD_CLEAR,
+    },
   })
+
+  // A replace that changed extension leaves the previous key behind.
+  if (row.objectKey && row.objectKey !== row.uploadObjectKey) {
+    await deps.s3.deleteObject({ key: row.objectKey })
+  }
 
   return toImmersiveVideoAdminRow(updated)
 }

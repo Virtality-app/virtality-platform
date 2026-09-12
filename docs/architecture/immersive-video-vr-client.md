@@ -36,7 +36,7 @@ A socket disconnect must never abort a download or stop playback.
 
 ## 2. Local storage and manifest
 
-- Directory `<persistentDataPath>/videos/`. Files: `{videoId}.{ext}` (final; `ext` taken from the Download Descriptor URL; the catalog accepts `mp4, m4v, mov, webm, mkv` and applies no encoding constraint), `{videoId}.part` (in progress or paused).
+- Directory `<persistentDataPath>/videos/`. Files: `{videoId}.{ext}` (final; `ext` taken from the Download Descriptor URL's path, ignoring the query string: `bundle` for a Unity AssetBundle, or one of `mp4, m4v, mov, webm, mkv` for raw video; the catalog applies no encoding constraint), `{videoId}.part` (in progress or paused).
 - `videos/manifest.json` is the on-disk source of truth. One entry per video:
 
   ```json
@@ -46,15 +46,14 @@ A socket disconnect must never abort a download or stop playback.
         "status": "downloading | paused | ready | failed",
         "version": 3,
         "sizeBytes": 4831838208,
-        "checksum": "sha256 hex",
-        "url": "https://cdn.virtality.app/immersive-videos/<id>/v3.mp4",
+        "url": "https://cdn.virtality.app/immersive-videos/<id>.bundle?v=3",
         "reason": "insufficient_storage | network | checksum_mismatch | url_expired | unavailable"
       }
     }
   }
   ```
 
-  The Download Descriptor (`version`, `sizeBytes`, `checksum`, `url`) is stored so a silent resume after wake or relaunch needs neither the console nor the API.
+  The Download Descriptor (`version`, `sizeBytes`, `url`) is stored so a silent resume after wake or relaunch needs neither the console nor the API.
 
 - Write the manifest atomically (temp file → rename) on every transition.
 - **Reconcile on launch and on wake:** `ready` with no final file → entry removed; `.part` with no entry → deleted; `downloading` → resume (§3.4); `paused` → left alone.
@@ -69,13 +68,13 @@ Single worker, FIFO. Queued entries report `downloading` with `bytesDownloaded: 
 
 ### 3.2 One download, start to finish
 
-0. **Descriptor:** `GET {apiBase}/api/v1/device-videos/{videoId}?deviceId={Headset Identity}`. `200` → store `{version, url, sizeBytes, checksum}` in the manifest. `404` (any `error`) → `videoDownloadFailed {unavailable}`, discard any `.part`, done. `5xx` / no answer → treat as transient loss (§3.3): entry stays `downloading`, `stalled: true` ticks, retry with backoff. Runs on every `videoDownloadStart`, including resume-from-`paused` and already-`ready`; **not** on wake/relaunch resumes (§3.4 uses the stored descriptor).
+0. **Descriptor:** `GET {apiBase}/api/v1/device-videos/{videoId}?deviceId={Headset Identity}`. `200` → store `{version, url, sizeBytes}` in the manifest. The `url` carries `?v={version}`; send it verbatim (it is the CDN cache key for that version). `404` (any `error`) → `videoDownloadFailed {unavailable}`, discard any `.part`, done. `5xx` / no answer → treat as transient loss (§3.3): entry stays `downloading`, `stalled: true` ticks, retry with backoff. Runs on every `videoDownloadStart`, including resume-from-`paused` and already-`ready`; **not** on wake/relaunch resumes (§3.4 uses the stored descriptor).
 1. **Free-space precheck:** `freeBytes − (sizeBytes − partSize) > margin` (**open**: margin, suggested 500 MB). Otherwise `videoDownloadFailed {insufficient_storage}` immediately, `.part` discarded.
-2. **Resume decision:** `.part` exists **and** manifest `version == descriptor version` → re-hash the existing prefix sequentially to prime the SHA-256, then `offset = partSize`. Otherwise delete the `.part`, `offset = 0`.
-3. **Request:** `GET url` with `Range: bytes={offset}-` when `offset > 0`. Expect `206`: CloudFront forwards `Range` to S3 and this is verified on the live distribution. Keep a defensive branch for a `200` to a ranged request (truncate the `.part`, reset the hash, consume from 0) but do not treat it as an expected path. Also verify `Content-Length`/`Content-Range` against `sizeBytes`; a mismatch is `checksum_mismatch` territory: discard and fail.
-4. **Stream:** append chunks to the `.part`; feed every chunk to the incremental hash; never hold the file in memory. Runs on a background thread; must not touch the render loop.
+2. **Resume decision:** `.part` exists **and** manifest `version == descriptor version` → `offset = partSize`. Otherwise delete the `.part`, `offset = 0`.
+3. **Request:** `GET url` with `Range: bytes={offset}-` when `offset > 0`. Expect `206`: CloudFront forwards `Range` to S3 and this is verified on the live distribution. Keep a defensive branch for a `200` to a ranged request (truncate the `.part`, consume from 0) but do not treat it as an expected path. Also verify `Content-Length`/`Content-Range` against `sizeBytes`; a mismatch is `checksum_mismatch` territory: discard and fail.
+4. **Stream:** append chunks to the `.part`; never hold the file in memory. Runs on a background thread; must not touch the render loop.
 5. **Progress:** `videoDownloadProgress {bytesDownloaded, sizeBytes, stalled: false}` ≤ 1/s.
-6. **Finish:** on EOF compare hash with `checksum`. Match → rename `.part` → `{videoId}.{ext}` atomically, manifest `ready`, `videoDownloadComplete {videoId, version}`. Mismatch → delete `.part`, `videoDownloadFailed {checksum_mismatch}`.
+6. **Finish:** on EOF compare the `.part` size with `sizeBytes`. Match → rename `.part` → `{videoId}.{ext}` atomically, manifest `ready`, `videoDownloadComplete {videoId, version}`. Mismatch → delete `.part`, `videoDownloadFailed {checksum_mismatch}`. There is no content hash to compare: integrity is verified when the file enters the platform (S3 part checksums), and the byte count is the headset's only check.
 7. **Report** (§4.3) at start, pause, completion, failure.
 
 ### 3.3 Transient loss is not failure
@@ -209,6 +208,7 @@ None in v1. Both `PUT /api/v1/device-videos` and `GET /api/v1/device-videos/:vid
 
 ## 5. Playback
 
+- **Two file kinds, by extension.** `{videoId}.bundle` is a Unity AssetBundle built from the headset project (Android target, same Unity version as the app, one `VideoClip` per bundle): `AssetBundle.LoadFromFileAsync(path)` → `LoadAllAssetsAsync<VideoClip>()` → `videoPlayer.clip`; unload the bundle on `videoStop`/`videoEnded`. Any other extension is raw video: `videoPlayer.source = VideoSource.Url`, `videoPlayer.url = file://{path}`. Neither path needs the Addressables catalog or a remote load path; the platform is the distribution layer. A bundle built for the wrong Unity version or target loads as null: log it and report `videoEnded` so the console does not hang in Starting.
 - Player for 180° stereoscopic video: hemisphere mesh (or SDK sky renderer), inside-out UVs, per-eye layout. **(open, with content team):** SBS vs. top-bottom, resolution, codec and bitrate. Prefer H.265 hardware decode; keep the bitrate within what the device decoder sustains at the target resolution. The platform applies **no encoding constraint in v1** (the catalog accepts any `mp4, m4v, mov, webm, mkv` file and nothing server-side inspects the stream), so playback compatibility is agreed between the VR and content teams, not enforced by upload.
 - Head tracking is rotation only. No translation, no locomotion, no controller requirement.
 - `videoRecenter`: rotate the hemisphere so the video's forward aligns with the current head yaw. Stateless; safe to send repeatedly.
@@ -225,31 +225,31 @@ None in v1. Both `PUT /api/v1/device-videos` and `GET /api/v1/device-videos/:vid
 
 ## 7. Failure reason mapping
 
-| Situation on the headset                                                 | Reason                           | `.part` |
-| ------------------------------------------------------------------------ | -------------------------------- | ------- |
-| Precheck fails, or disk fills while streaming                            | `insufficient_storage`           | deleted |
-| Hash mismatch at EOF, or length mismatch                                 | `checksum_mismatch`              | deleted |
-| HTTP 403 / 410 after one descriptor refresh                              | `url_expired`                    | kept    |
-| Descriptor endpoint 404 (video unpublished/deleted, or headset unpaired) | `unavailable`                    | deleted |
-| Other 4xx, disk I/O, permission, anything unexpected                     | `network`                        | deleted |
-| `videoDownloadCancel`                                                    | `cancelled`                      | deleted |
-| Transport loss, timeout, reset, wifi off, sleep                          | _not a failure_: `stalled` retry | kept    |
+| Situation on the headset                                                        | Reason                           | `.part` |
+| ------------------------------------------------------------------------------- | -------------------------------- | ------- |
+| Precheck fails, or disk fills while streaming                                   | `insufficient_storage`           | deleted |
+| Byte count ≠ `sizeBytes` (`Content-Length`/`Content-Range` up front, or at EOF) | `checksum_mismatch`              | deleted |
+| HTTP 403 / 410 after one descriptor refresh                                     | `url_expired`                    | kept    |
+| Descriptor endpoint 404 (video unpublished/deleted, or headset unpaired)        | `unavailable`                    | deleted |
+| Other 4xx, disk I/O, permission, anything unexpected                            | `network`                        | deleted |
+| `videoDownloadCancel`                                                           | `cancelled`                      | deleted |
+| Transport loss, timeout, reset, wifi off, sleep                                 | _not a failure_: `stalled` retry | kept    |
 
 Log the underlying exception for every `network` so it can be triaged from headset logs.
 
 ## 8. Test matrix
 
-1. Fresh download → hash matches, final file present, `videoDownloadComplete`, API row `ready`.
-2. Wifi off mid-download → `stalled: true` ticks; wifi on → resumes from offset without any console action; final hash matches.
+1. Fresh download → byte count matches, final file present, `videoDownloadComplete`, API row `ready`.
+2. Wifi off mid-download → `stalled: true` ticks; wifi on → resumes from offset without any console action; final size matches.
 3. Headset sleeps mid-download → on wake resumes silently; console sees offline then `downloading` at the resumed byte count.
 4. Kill the app mid-download → relaunch resumes silently, API report shows `downloading` before any console connects.
 5. Pause → `.part` kept, `paused` on socket and API; relaunch does **not** resume; `videoDownloadStart` resumes from offset.
 6. Pause while queued; Cancel while queued, running, and paused.
 7. Storage full → `insufficient_storage` before the first byte; no `.part` left.
-8. Corrupt the `.part` before resume → `checksum_mismatch`, file removed.
+8. Truncate or pad the `.part` before resume so the total misses `sizeBytes` → `checksum_mismatch`, file removed.
 9. Re-request an already-`ready` video → ack + immediate complete, no I/O.
 10. Version bump: `.part` for v1, request v2 → restarts from 0.
-11. Edge returns `200` to a ranged request (defensive; not expected from CloudFront) → restart from 0, hash still matches.
+11. Edge returns `200` to a ranged request (defensive; not expected from CloudFront) → restart from 0, size still matches.
 12. Console disconnects mid-download and mid-playback → both unaffected; a new console gets `videoLibraryState` on join.
 13. Regular program started with a download running → program unaffected; entry remains `downloading`.
 14. API unreachable → report retried on the next transition; socket state still correct throughout.
@@ -257,7 +257,8 @@ Log the underlying exception for every `network` so it can be triaged from heads
 16. Delete three videos in a row → a single (or coalesced) `PUT` with the final state; server rows match the manifest.
 17. `videoDelete` while that video plays.
 18. Descriptor 404 → `videoDownloadFailed {unavailable}`, no `.part` left.
-19. CDN 403 → descriptor re-fetched, resumes with the new URL at the same offset; hash matches.
+19. CDN 403 → descriptor re-fetched, resumes with the new URL at the same offset; size matches.
 20. CDN 403 and descriptor now a newer version → `.part` discarded, new version downloaded from 0.
 21. API unreachable on `videoDownloadStart` → ack still sent within 5 s; `stalled` ticks; resumes when the API returns.
 22. `videoPause` → `videoPlaybackProgress` keeps ticking with `paused: true`; a console joining the room re-attaches as Paused.
+23. A `.bundle` and a raw `.mp4` both download and play through their own path; a bundle built for another Unity version reports `videoEnded` instead of hanging in Starting.

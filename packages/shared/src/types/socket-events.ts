@@ -397,6 +397,7 @@ export const VIDEO_DOWNLOAD_FAILURE_REASON = {
   InsufficientStorage: 'insufficient_storage',
   /** Non-recoverable transport or I/O error (4xx other than 403/410, disk I/O). Transient loss is retried, not failed. */
   Network: 'network',
+  /** Bytes received differ from the descriptor's `sizeBytes` (`Content-Length`/`Content-Range` or EOF). No content hash reaches the headset. */
   ChecksumMismatch: 'checksum_mismatch',
   Cancelled: 'cancelled',
   /** CDN still answered 403/410 after the headset refreshed the Download Descriptor once. `.part` kept. */

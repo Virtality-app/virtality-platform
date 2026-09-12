@@ -3,17 +3,24 @@ import {
   CompleteMultipartUploadCommand,
   CreateMultipartUploadCommand,
   DeleteObjectCommand,
-  GetObjectCommand,
+  HeadObjectCommand,
   ListPartsCommand,
   PutObjectCommand,
   UploadPartCommand,
 } from '@aws-sdk/client-s3'
-import { Readable } from 'node:stream'
 import type { VirtalityS3Client } from '../s3/index.ts'
 
 export type ImmersiveVideoListedPart = {
   partNumber: number
   etag: string
+  /** Base64 SHA-256 S3 computed for the part; required to complete a checksummed upload. */
+  checksumSha256: string | null
+}
+
+export type ImmersiveVideoObjectHead = {
+  contentLength: number
+  /** Composite SHA-256 S3 recorded at Complete (`<base64>-<partCount>`); null when the object was not checksummed. */
+  checksumSha256: string | null
 }
 
 export type ImmersiveVideoS3 = {
@@ -47,7 +54,7 @@ export type ImmersiveVideoS3 = {
     contentType: string
   }) => Promise<void>
   deleteObject: (input: { key: string }) => Promise<void>
-  getObjectStream: (input: { key: string }) => Promise<Readable>
+  headObject: (input: { key: string }) => Promise<ImmersiveVideoObjectHead>
 }
 
 function requireBucket(): string {
@@ -70,6 +77,7 @@ export function createImmersiveVideoS3(
           Bucket,
           Key: key,
           ContentType: contentType,
+          ChecksumAlgorithm: 'SHA256',
         }),
       )
       if (!response.UploadId) {
@@ -87,6 +95,7 @@ export function createImmersiveVideoS3(
           PartNumber: partNumber,
           Body: body,
           ContentLength: contentLength,
+          ChecksumAlgorithm: 'SHA256',
         }),
       )
     },
@@ -109,7 +118,11 @@ export function createImmersiveVideoS3(
           if (part.PartNumber == null || part.ETag == null) {
             continue
           }
-          parts.push({ partNumber: part.PartNumber, etag: part.ETag })
+          parts.push({
+            partNumber: part.PartNumber,
+            etag: part.ETag,
+            checksumSha256: part.ChecksumSHA256 ?? null,
+          })
         }
 
         if (!response.IsTruncated) {
@@ -134,6 +147,9 @@ export function createImmersiveVideoS3(
               .map((part) => ({
                 PartNumber: part.partNumber,
                 ETag: part.etag,
+                ...(part.checksumSha256
+                  ? { ChecksumSHA256: part.checksumSha256 }
+                  : {}),
               })),
           },
         }),
@@ -170,26 +186,18 @@ export function createImmersiveVideoS3(
       )
     },
 
-    async getObjectStream({ key }) {
+    async headObject({ key }) {
       const response = await client.send(
-        new GetObjectCommand({
+        new HeadObjectCommand({
           Bucket,
           Key: key,
+          ChecksumMode: 'ENABLED',
         }),
       )
-      const body = response.Body
-      if (!body) {
-        throw new Error(`S3 object ${key} has no body`)
+      return {
+        contentLength: response.ContentLength ?? 0,
+        checksumSha256: response.ChecksumSHA256 ?? null,
       }
-      if (body instanceof Readable) {
-        return body
-      }
-      if (typeof body.transformToWebStream === 'function') {
-        return Readable.fromWeb(
-          body.transformToWebStream() as import('node:stream/web').ReadableStream,
-        )
-      }
-      throw new Error(`S3 object ${key} body is not a readable stream`)
     },
   }
 }

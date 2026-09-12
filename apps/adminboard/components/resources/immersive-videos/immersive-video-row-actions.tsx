@@ -125,7 +125,11 @@ export function ImmersiveVideoRowActions({
         version={row.version}
         disabled={otherUploadActive}
         disabledReason={handlers.upload.otherRowsDisabledMessage}
-        onFile={(file) => void handlers.upload.startUpload(row.id, file, null)}
+        onFile={(picked) =>
+          void handlers.upload.startUpload(row.id, picked.file, {
+            kind: picked.kind,
+          })
+        }
       />
     </>
   )

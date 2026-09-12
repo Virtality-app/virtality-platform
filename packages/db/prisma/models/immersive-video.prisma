@@ -57,22 +57,8 @@ model ImmersiveVideo {
   createdAt      DateTime  @default(now()) @db.Timestamp(6)
   updatedAt      DateTime  @updatedAt @db.Timestamp(6)
 
-  retiredObjects ImmersiveVideoRetiredObject[]
-
   @@index([state])
   @@index([updatedAt])
-}
-
-model ImmersiveVideoRetiredObject {
-  id        String   @id @default(cuid())
-  videoId   String
-  version   Int
-  objectKey String   @unique
-  retiredAt DateTime @default(now()) @db.Timestamp(6)
-
-  video ImmersiveVideo @relation(fields: [videoId], references: [id], onDelete: Cascade)
-
-  @@unique([videoId, version])
 }
 
 /// Header of one headset's Library Mirror. Keyed by Headset Identity

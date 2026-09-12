@@ -1,7 +1,6 @@
 import cron, { type ScheduledTask } from 'node-cron'
 import type { AppLogger } from '@virtality/shared/observability'
 import { prisma } from '@virtality/db'
-import { virtalityS3 } from '@virtality/orpc/s3'
 import { runImmersiveVideoCleanup } from './immersive-video-cleanup.ts'
 
 const CLEANUP_CRON = '0 3 * * *'
@@ -23,7 +22,6 @@ export function scheduleImmersiveVideoCleanup(
     () => {
       void runImmersiveVideoCleanup({
         prisma,
-        s3: virtalityS3,
         logger: jobLogger,
       }).catch((error) => {
         jobLogger.error(

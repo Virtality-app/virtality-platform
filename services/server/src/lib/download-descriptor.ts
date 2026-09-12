@@ -23,12 +23,15 @@ type DescriptorPrisma = PairingPrisma & {
   }
 }
 
+/**
+ * Integrity is the platform's concern (S3 validated the upload); the headset
+ * only checks that it received `sizeBytes`. The checksum stays server-side.
+ */
 export type DownloadDescriptor = {
   videoId: string
   version: number
   url: string
   sizeBytes: number
-  checksum: string
 }
 
 function isServableVideo(video: {
@@ -50,6 +53,15 @@ function isServableVideo(video: {
   )
 }
 
+/**
+ * One object key serves every version of a video, so the CDN URL alone would
+ * let CloudFront hand back the previous bytes after a republish. The version
+ * in the query string makes each version its own cache entry.
+ */
+export function descriptorUrl(objectKey: string, version: number): string {
+  return `${bucketCdnUrl(objectKey)}?v=${version}`
+}
+
 export async function getDownloadDescriptor(
   prisma: DescriptorPrisma,
   input: { deviceId: string; videoId: string },
@@ -69,8 +81,7 @@ export async function getDownloadDescriptor(
   return {
     videoId: video.id,
     version: video.version,
-    url: bucketCdnUrl(video.objectKey),
+    url: descriptorUrl(video.objectKey, video.version),
     sizeBytes: Number(video.sizeBytes),
-    checksum: video.checksum,
   }
 }

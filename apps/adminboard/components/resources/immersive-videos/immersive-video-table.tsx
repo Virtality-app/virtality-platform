@@ -2,16 +2,15 @@
 
 import { createImmersiveVideoColumns } from '@/components/resources/immersive-videos/columns'
 import { ImmersiveVideoDialog } from '@/components/resources/immersive-videos/immersive-video-dialog'
+import type { ImmersiveVideoFileRequest } from '@/components/resources/immersive-videos/immersive-video-file-section'
 import FilterBadge from '@/components/ui/filter-badge'
 import { Button } from '@/components/ui/button'
 import { getErrorMessage } from '@/lib/get-error-message'
 import type { ImmersiveVideoAdminRow } from '@/lib/immersive-video-admin-row'
 import type { ImmersiveVideoCatalogState } from '@/lib/immersive-video-admin-row'
 import { publishPreconditionLabel } from '@/lib/immersive-video-admin-row'
-import {
-  readVideoDurationSec,
-  useImmersiveVideoUpload,
-} from '@/hooks/use-immersive-video-upload'
+import { immersiveVideoAcceptAll } from '@/lib/immersive-video-file-kind'
+import { useImmersiveVideoUpload } from '@/hooks/use-immersive-video-upload'
 import {
   DataTableBody,
   DataTableFooter,
@@ -47,20 +46,33 @@ export default function ImmersiveVideoTable() {
   })
   const [dialogRowId, setDialogRowId] = useState<string | null>(null)
   const [pendingFile, setPendingFile] = useState<File | null>(null)
-  const [fileTarget, setFileTarget] = useState<{
-    id: string
-    mode: 'start' | 'resume'
-  } | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [resumeTargetId, setResumeTargetId] = useState<string | null>(null)
+  const resumeInputRef = useRef<HTMLInputElement>(null)
 
   const data = catalog.data ?? []
   const dialogRow = data.find((row) => row.id === dialogRowId) ?? null
 
-  const handlePickedFile = async (row: ImmersiveVideoAdminRow, file: File) => {
+  // The first upload may rename the row; the open dialog follows the new id
+  // so closing it does not discard-if-empty against an id that is gone.
+  const handleFileRequest = async (
+    row: ImmersiveVideoAdminRow,
+    request: ImmersiveVideoFileRequest,
+  ) => {
+    setPendingFile(request.file)
+    await upload.startUpload(row.id, request.file, {
+      kind: request.kind,
+      requestedId: request.requestedId,
+      onStarted: (id) => {
+        if (id !== row.id) {
+          setDialogRowId((current) => (current === row.id ? id : current))
+        }
+      },
+    })
+  }
+
+  const handleResumeFile = async (row: ImmersiveVideoAdminRow, file: File) => {
     setPendingFile(file)
-    const durationSec = await readVideoDurationSec(file)
-    const mode = row.state === 'Uploading' ? 'resume' : 'start'
-    await upload.startUpload(row.id, file, durationSec, mode)
+    await upload.startUpload(row.id, file, { mode: 'resume' })
   }
 
   const columns = useMemo(
@@ -68,13 +80,11 @@ export default function ImmersiveVideoTable() {
       createImmersiveVideoColumns({
         upload,
         onEdit: (row) => setDialogRowId(row.id),
-        onUploadFile: (row) => {
-          setFileTarget({ id: row.id, mode: 'start' })
-          fileInputRef.current?.click()
-        },
+        // Kind and Video ID are chosen in the dialog's file section.
+        onUploadFile: (row) => setDialogRowId(row.id),
         onResumeUpload: (row) => {
-          setFileTarget({ id: row.id, mode: 'resume' })
-          fileInputRef.current?.click()
+          setResumeTargetId(row.id)
+          resumeInputRef.current?.click()
         },
         onPublish: (row) => {
           const reason = publishPreconditionLabel(row)
@@ -105,17 +115,17 @@ export default function ImmersiveVideoTable() {
   return (
     <div className='p-8'>
       <input
-        ref={fileInputRef}
+        ref={resumeInputRef}
         type='file'
-        accept='video/*,.mp4,.m4v,.mov,.webm,.mkv'
+        accept={immersiveVideoAcceptAll()}
         className='hidden'
         onChange={(event) => {
           const file = event.target.files?.[0]
-          const target = fileTarget
+          const targetId = resumeTargetId
           event.target.value = ''
-          if (!file || !target) return
-          const row = data.find((item) => item.id === target.id)
-          if (row) void handlePickedFile(row, file)
+          if (!file || !targetId) return
+          const row = data.find((item) => item.id === targetId)
+          if (row) void handleResumeFile(row, file)
         }}
       />
       <DataTableHeader
@@ -178,8 +188,8 @@ export default function ImmersiveVideoTable() {
         row={dialogRow}
         pendingFile={pendingFile}
         upload={upload}
-        onFile={(file) => {
-          if (dialogRow) void handlePickedFile(dialogRow, file)
+        onFile={(request) => {
+          if (dialogRow) void handleFileRequest(dialogRow, request)
         }}
         onOpenChange={(open) => {
           if (open) return

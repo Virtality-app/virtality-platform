@@ -117,8 +117,16 @@ _Avoid_: Publish, go live
 ### Immersive Video
 
 **Immersive Video**:
-A catalog entry for one 180° FPV clip (cycling or walking) that physios push to headsets from the console. Owns title, activity, description, thumbnail and one bucket object per version.
+A catalog entry for one 180° FPV clip (cycling or walking) that physios push to headsets from the console. Owns title, activity, description, thumbnail and one bucket object at `immersive-videos/<Video ID>.<ext>`, replaced in place.
 _Avoid_: FPV video, 360 video, movie, clip (as the entity name)
+
+**Video ID**:
+The identifier headsets, the console and the object key share for an Immersive Video. Chosen by the admin on the first Video Upload (lowercase letters, digits, `.`, `_`, `-`; up to 64) or generated when left blank; fixed once a file has verified.
+_Avoid_: Slug, key, name (as the id), row id (in copy)
+
+**File Kind**:
+What the admin hands the catalog: a **Unity AssetBundle** (`.bundle`, the default; one video per bundle, built for Android from the headset project) or a raw video (`mp4, m4v, mov, webm, mkv`). A picker-side choice only; the stored extension is what the headset branches on. Duration is read for raw video only.
+_Avoid_: Format, codec, asset type, "bundle" for a raw video
 
 **Catalog State**:
 Where an Immersive Video is in its lifecycle: `Draft` (may not yet have a file), `Uploading`, `Verifying`, `Published`, `Republishing`, `Unpublished`. Only `Published` rows reach the console.
@@ -133,7 +141,7 @@ The closed enum (`Cycling`, `Walking`) naming the scene an Immersive Video is fi
 _Avoid_: Category, type, tag
 
 **Video Upload**:
-The server-owned multipart transfer of an Immersive Video's file in 64 MiB parts, resumable after a page reload by re-picking the same file. One per browser tab. Replacing the file is an **Object Replacement**.
+The server-owned multipart transfer of an Immersive Video's file in 64 MiB parts with S3 per-part SHA-256 checksums, resumable after a page reload by re-picking the same file. One per browser tab. Replacing the file uploads onto the same object key (not an **Object Replacement**); the Download Descriptor's `?v=` keeps CDN caches per version.
 _Avoid_: Multipart (user-facing), bucket upload
 
 ### Access and billing
