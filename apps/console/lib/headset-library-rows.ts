@@ -1,5 +1,5 @@
 import type { VideoDownloadFailureReason } from '@virtality/shared/types'
-import { downloadPercent } from './headset-library-format.js'
+import { downloadPercent } from './headset-library-format'
 
 export type HeadsetCatalogVideo = {
   id: string

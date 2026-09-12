@@ -3,8 +3,8 @@
  * Covers browser verification for each target flow after rollout.
  */
 
-import { CATALOG_FIRST_CATALOG_CONTINUE_LABEL } from './catalog-first-authoring-flow.js'
-import { QUICKSTART_FINALIZE_LABEL } from './quickstart-authoring-flow.js'
+import { CATALOG_FIRST_CATALOG_CONTINUE_LABEL } from './catalog-first-authoring-flow'
+import { QUICKSTART_FINALIZE_LABEL } from './quickstart-authoring-flow'
 
 export type CatalogFirstAuthoringManualQaFlow = {
   id: string

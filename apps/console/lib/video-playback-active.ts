@@ -1,7 +1,7 @@
 import {
   VIDEO_ACTIVE_WINDOW_MS,
   type ImmersivePlaybackStatus,
-} from './immersive-video-playback-reducer.js'
+} from './immersive-video-playback-reducer'
 
 export { VIDEO_ACTIVE_WINDOW_MS }
 

@@ -2,7 +2,7 @@
  * Shared path and source-reading seams for password surface regression tests.
  */
 
-import { readConsoleFile } from './catalog-first-authoring-surface-seams.js'
+import { readConsoleFile } from './catalog-first-authoring-surface-seams'
 
 export const CONFIRM_FORM_PATH =
   'app/(auth)/password-setup/confirm/confirm-form.tsx'

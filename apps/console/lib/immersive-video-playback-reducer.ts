@@ -1,5 +1,5 @@
 import type { VideoPlaybackProgressPayload } from '@virtality/shared/types'
-import type { HeadsetDidNotConfirmReason } from './headset-did-not-confirm.js'
+import type { HeadsetDidNotConfirmReason } from './headset-did-not-confirm'
 
 export const PLAY_ACK_TIMEOUT_MS = 5_000
 export const REATTACH_WAIT_MS = 2_000
