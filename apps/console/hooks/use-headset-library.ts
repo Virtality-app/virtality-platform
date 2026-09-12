@@ -22,8 +22,6 @@ import type { VRDevice } from '@/types/models'
 
 export const DOWNLOAD_ACK_TIMEOUT_MS = 5_000
 
-export type { HeadsetDidNotConfirmReason }
-
 export function useHeadsetLibrary(
   device?: VRDevice | null,
   options?: { autoConnect?: boolean },

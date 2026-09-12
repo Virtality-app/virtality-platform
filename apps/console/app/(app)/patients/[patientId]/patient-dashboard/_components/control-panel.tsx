@@ -51,9 +51,8 @@ const ControlPanel = ({
     missingSettings,
     GuardDialog,
     isStartBlockedByVideo,
-    frozen,
   } = useControlPanel()
-  const { playback } = useImmersiveVideoSession()
+  const { playback, frozen } = useImmersiveVideoSession()
   const isImmersive = selectedMode === 'immersive'
 
   return (

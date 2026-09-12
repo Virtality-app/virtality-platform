@@ -16,8 +16,10 @@ import {
 } from '@/components/ui/tooltip'
 import {
   canEnterImmersiveMode,
+  isDashboardMode,
   isLeavingImmersiveLocked,
   isProgramModeSwitchLocked,
+  LEAVE_IMMERSIVE_MODE_HINT,
 } from '@/lib/control-panel-mode'
 import type { ImmersivePlaybackStatus } from '@/lib/immersive-video-playback-reducer'
 
@@ -42,7 +44,7 @@ const ModeSelector = ({
   const triggerDisabled = programLocked || leavingLocked || frozen
 
   const handleModeChange = (value: string) => {
-    if (value !== 'main' && value !== 'free' && value !== 'immersive') return
+    if (!isDashboardMode(value)) return
     if (value === 'immersive' && !canEnterImmersiveMode(programState)) return
     if (leavingLocked && value !== 'immersive') return
     setSelectedMode(value)
@@ -65,10 +67,10 @@ const ModeSelector = ({
             <TooltipTrigger asChild>
               <span className='inline-flex'>
                 {trigger}
-                <span className='sr-only'>Stop the video to change mode.</span>
+                <span className='sr-only'>{LEAVE_IMMERSIVE_MODE_HINT}</span>
               </span>
             </TooltipTrigger>
-            <TooltipContent>Stop the video to change mode.</TooltipContent>
+            <TooltipContent>{LEAVE_IMMERSIVE_MODE_HINT}</TooltipContent>
           </Tooltip>
         ) : (
           trigger

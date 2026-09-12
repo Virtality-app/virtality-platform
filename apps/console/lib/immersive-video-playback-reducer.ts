@@ -4,10 +4,9 @@ import type { HeadsetDidNotConfirmReason } from './headset-did-not-confirm.js'
 export const PLAY_ACK_TIMEOUT_MS = 5_000
 export const REATTACH_WAIT_MS = 2_000
 export const RECENTER_HINT_MS = 1_000
+export const VIDEO_ACTIVE_WINDOW_MS = 3_000
 
 export type ImmersivePlaybackStatus = 'Idle' | 'Starting' | 'Playing' | 'Paused'
-
-export type { HeadsetDidNotConfirmReason }
 
 export type PendingPlayMarker = { videoId: string; kind: 'play' }
 
@@ -52,10 +51,14 @@ export const initialImmersivePlaybackState: ImmersivePlaybackState = {
   recenterHintUntil: null,
 }
 
+export function isPlayingOrPaused(status: ImmersivePlaybackStatus): boolean {
+  return status === 'Playing' || status === 'Paused'
+}
+
 export function isImmersivePlaybackBlocking(
   status: ImmersivePlaybackStatus,
 ): boolean {
-  return status === 'Starting' || status === 'Playing' || status === 'Paused'
+  return status === 'Starting' || isPlayingOrPaused(status)
 }
 
 function toIdle(
@@ -160,7 +163,7 @@ export function reduceImmersivePlayback(
       if (state.reattaching) {
         return attachFromProgress(next, action.payload, action.now)
       }
-      if (state.status === 'Playing' || state.status === 'Paused') {
+      if (isPlayingOrPaused(state.status)) {
         return {
           ...next,
           status: action.payload.paused ? 'Paused' : 'Playing',
@@ -185,7 +188,7 @@ export function reduceImmersivePlayback(
         lastProgressAt: state.lastProgressAt,
       })
     case 'recenter':
-      if (state.status !== 'Playing' && state.status !== 'Paused') return state
+      if (!isPlayingOrPaused(state.status)) return state
       return { ...state, recenterHintUntil: action.now + RECENTER_HINT_MS }
     case 'dismissConfirm':
       return { ...state, confirmReason: null }
@@ -194,7 +197,7 @@ export function reduceImmersivePlayback(
       if (
         tick &&
         state.lastProgressAt != null &&
-        action.now - state.lastProgressAt <= 3_000
+        action.now - state.lastProgressAt <= VIDEO_ACTIVE_WINDOW_MS
       ) {
         return attachFromProgress(state, tick, action.now)
       }

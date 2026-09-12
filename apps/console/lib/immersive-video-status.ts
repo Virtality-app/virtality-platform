@@ -1,5 +1,8 @@
 import { formatDurationLabel } from '@/lib/headset-library-format'
-import type { ImmersivePlaybackStatus } from '@/lib/immersive-video-playback-reducer'
+import {
+  isPlayingOrPaused,
+  type ImmersivePlaybackStatus,
+} from '@/lib/immersive-video-playback-reducer'
 
 export function formatPlaybackClock(
   positionSec: number,
@@ -36,7 +39,7 @@ export function immersiveHintLine(input: {
   if (input.recenterHintUntil != null && input.now < input.recenterHintUntil) {
     return 'View recentred on the patient'
   }
-  if (input.status === 'Playing' || input.status === 'Paused') {
+  if (isPlayingOrPaused(input.status)) {
     return 'Press recentre if the patient turned away from the road.'
   }
   return 'Ask the patient to face forward, then press play.'

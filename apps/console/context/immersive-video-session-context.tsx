@@ -15,11 +15,13 @@ import { useImmersiveVideoPlayback } from '@/hooks/use-immersive-video-playback'
 import { useVrPresencePolling } from '@/hooks/use-vr-presence-polling'
 import { isVideoPlaybackActive } from '@/lib/video-playback-active'
 import { isImmersivePlaybackBlocking } from '@/lib/immersive-video-playback-reducer'
-import { buildHeadsetLibraryRows } from '@/lib/headset-library-rows'
+import {
+  buildHeadsetLibraryRows,
+  type HeadsetLibraryRow,
+} from '@/lib/headset-library-rows'
 import { toCatalogVideos } from '@/lib/vr-video-page-state'
 import { isReplacementNoticeError } from '@/lib/socket-replacement-notice'
 import useSocketConnection from '@/hooks/use-socket-connection'
-import type { HeadsetLibraryRow } from '@/lib/headset-library-rows'
 
 export type ImmersiveVideoSessionValue = {
   rows: HeadsetLibraryRow[]
@@ -77,18 +79,20 @@ export function ImmersiveVideoSessionProvider({
       : [],
   })
 
-  const liveSnapshot = library.libraryState
-    ? {
-        videos: library.libraryState.videos,
-        freeBytes: library.libraryState.freeBytes,
-      }
-    : { videos: [], freeBytes: 0 }
+  const rows = useMemo(() => {
+    const liveSnapshot = library.libraryState
+      ? {
+          videos: library.libraryState.videos,
+          freeBytes: library.libraryState.freeBytes,
+        }
+      : { videos: [], freeBytes: 0 }
 
-  const rows = buildHeadsetLibraryRows(
-    catalog,
-    liveSnapshot,
-    library.roomComplete && !replaced,
-  ).filter((row) => row.inCatalog)
+    return buildHeadsetLibraryRows(
+      catalog,
+      liveSnapshot,
+      library.roomComplete && !replaced,
+    ).filter((row) => row.inCatalog)
+  }, [catalog, library.libraryState, library.roomComplete, replaced])
 
   const selectedRow = rows.find((row) => row.videoId === selectedVideoId)
 
@@ -121,11 +125,13 @@ export function ImmersiveVideoSessionProvider({
     return () => clearInterval(id)
   }, [playback.state.status, playback.state.lastProgressAt])
 
-  const videoActive = isVideoPlaybackActive({
+  const recentProgressActive = isVideoPlaybackActive({
     status: playback.state.status,
     lastProgressAt: playback.state.lastProgressAt,
     now: Date.now(),
   })
+  const videoActive =
+    recentProgressActive || isImmersivePlaybackBlocking(playback.state.status)
 
   const replacementDialogOpen = replaced && !replacementAcked
 
@@ -143,8 +149,7 @@ export function ImmersiveVideoSessionProvider({
       library.dismissReplacementDialog()
     },
     pollOnline: presenceByDeviceId[selectedDevice?.data.id ?? ''] === 'online',
-    videoActive:
-      videoActive || isImmersivePlaybackBlocking(playback.state.status),
+    videoActive,
     frozen: replaced,
   }
 

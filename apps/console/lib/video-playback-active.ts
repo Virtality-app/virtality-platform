@@ -1,6 +1,9 @@
-import type { ImmersivePlaybackStatus } from '@/lib/immersive-video-playback-reducer'
+import {
+  VIDEO_ACTIVE_WINDOW_MS,
+  type ImmersivePlaybackStatus,
+} from './immersive-video-playback-reducer.js'
 
-export const VIDEO_ACTIVE_WINDOW_MS = 3_000
+export { VIDEO_ACTIVE_WINDOW_MS }
 
 export function isVideoPlaybackActive(input: {
   status: ImmersivePlaybackStatus

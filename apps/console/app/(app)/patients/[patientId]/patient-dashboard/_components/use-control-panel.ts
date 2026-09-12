@@ -59,7 +59,7 @@ const useControlPanel = () => {
 
   const { connected } = useSocketConnection({ device: selectedDevice })
   const headsetPresent = useVrHeadsetPresence(selectedDevice)
-  const { videoActive, frozen } = useImmersiveVideoSession()
+  const { videoActive } = useImmersiveVideoSession()
   const { canLaunchVr } = useLiveEntitlementStanding()
   const treatmentLaunchReady = canLaunchTreatment({
     consoleConnected: connected,
@@ -240,10 +240,8 @@ const useControlPanel = () => {
     defaultExercises,
     selectedDevice,
     missingSettings,
-    GuardDialog,
-    videoActive,
-    frozen,
     isStartBlockedByVideo,
+    GuardDialog,
   }
 }
 

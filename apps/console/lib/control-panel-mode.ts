@@ -1,8 +1,20 @@
 import type { PatientDashboardValue } from '@/context/patient-dashboard-context'
-import type { ImmersivePlaybackStatus } from '@/lib/immersive-video-playback-reducer'
+import {
+  isImmersivePlaybackBlocking,
+  type ImmersivePlaybackStatus,
+} from '@/lib/immersive-video-playback-reducer'
 
 export type DashboardProgramState =
   PatientDashboardValue['state']['programState']
+
+export type DashboardSelectedMode =
+  PatientDashboardValue['state']['selectedMode']
+
+export const LEAVE_IMMERSIVE_MODE_HINT = 'Stop the video to change mode.'
+
+export function isDashboardMode(value: string): value is DashboardSelectedMode {
+  return value === 'main' || value === 'free' || value === 'immersive'
+}
 
 export function isProgramModeSwitchLocked(
   programState: DashboardProgramState,
@@ -23,9 +35,5 @@ export function canEnterImmersiveMode(
 export function isLeavingImmersiveLocked(
   playbackStatus: ImmersivePlaybackStatus,
 ): boolean {
-  return (
-    playbackStatus === 'Starting' ||
-    playbackStatus === 'Playing' ||
-    playbackStatus === 'Paused'
-  )
+  return isImmersivePlaybackBlocking(playbackStatus)
 }
