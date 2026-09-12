@@ -1,0 +1,97 @@
+enum ImmersiveVideoActivity {
+  CYCLING
+  WALKING
+}
+
+enum ImmersiveVideoCatalogState {
+  Draft
+  Uploading
+  Verifying
+  Published
+  Republishing
+  Unpublished
+}
+
+enum DeviceVideoStatus {
+  downloading
+  paused
+  ready
+  failed
+}
+
+enum DeviceVideoFailureReason {
+  insufficient_storage
+  network
+  checksum_mismatch
+  cancelled
+  url_expired
+  unavailable
+}
+
+model ImmersiveVideo {
+  id          String                     @id @default(cuid())
+  title       String                     @default("")
+  activity    ImmersiveVideoActivity     @default(CYCLING)
+  description String?
+  state       ImmersiveVideoCatalogState @default(Draft)
+  priorState  ImmersiveVideoCatalogState?
+
+  version      Int     @default(0)
+  objectKey    String? @unique
+  sizeBytes    BigInt?
+  checksum     String?
+  durationSec  Int?
+  filename     String?
+  thumbnailKey String?
+
+  uploadId          String? @unique
+  uploadObjectKey   String?
+  uploadFilename    String?
+  uploadSizeBytes   BigInt?
+  uploadDurationSec Int?
+
+  verifyFailedAt DateTime? @db.Timestamp(6)
+  publishedAt    DateTime? @db.Timestamp(6)
+  createdAt      DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt      DateTime  @updatedAt @db.Timestamp(6)
+
+  retiredObjects ImmersiveVideoRetiredObject[]
+
+  @@index([state])
+  @@index([updatedAt])
+}
+
+model ImmersiveVideoRetiredObject {
+  id        String   @id @default(cuid())
+  videoId   String
+  version   Int
+  objectKey String   @unique
+  retiredAt DateTime @default(now()) @db.Timestamp(6)
+
+  video ImmersiveVideo @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@unique([videoId, version])
+}
+
+model DeviceVideoReport {
+  deviceId   String   @id
+  freeBytes  BigInt
+  reportedAt DateTime @db.Timestamp(6)
+
+  videos DeviceVideo[]
+}
+
+model DeviceVideo {
+  deviceId        String
+  videoId         String
+  status          DeviceVideoStatus
+  version         Int?
+  bytesDownloaded BigInt?
+  sizeBytes       BigInt?
+  reason          DeviceVideoFailureReason?
+
+  report DeviceVideoReport @relation(fields: [deviceId], references: [deviceId], onDelete: Cascade)
+
+  @@id([deviceId, videoId])
+  @@index([videoId, version])
+}
