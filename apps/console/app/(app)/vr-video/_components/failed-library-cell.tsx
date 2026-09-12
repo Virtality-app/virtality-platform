@@ -4,6 +4,13 @@ import { Button } from '@virtality/ui/components/button'
 import { videoDownloadFailureCopy } from '@/lib/video-download-failure-copy'
 import type { VideoDownloadFailureReason } from '@virtality/shared/types'
 
+const TRY_AGAIN_REASONS = new Set<VideoDownloadFailureReason>([
+  'network',
+  'checksum_mismatch',
+  'url_expired',
+  'insufficient_storage',
+])
+
 export function FailedLibraryCell({
   reason,
   disabled,
@@ -14,11 +21,7 @@ export function FailedLibraryCell({
   onDownload?: () => void
 }) {
   const failure = videoDownloadFailureCopy(reason)
-  const retry =
-    reason === 'network' ||
-    reason === 'checksum_mismatch' ||
-    reason === 'url_expired' ||
-    reason === 'insufficient_storage'
+  const retry = TRY_AGAIN_REASONS.has(reason)
 
   return (
     <div className='max-w-xs text-right'>

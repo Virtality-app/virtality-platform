@@ -34,10 +34,7 @@ export function useHeadsetLibrary(device?: VRDevice | null) {
   const [replacementDialogOpen, setReplacementDialogOpen] = useState(false)
   const [confirmReason, setConfirmReason] =
     useState<HeadsetDidNotConfirmReason | null>(null)
-  const pendingDownloadRef = useRef<{
-    videoId: string
-    kind: 'download'
-  } | null>(null)
+  const pendingDownloadRef = useRef<string | null>(null)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const deviceRef = useRef(device)
   deviceRef.current = device
@@ -87,7 +84,7 @@ export function useHeadsetLibrary(device?: VRDevice | null) {
     if (!socket) return
 
     const markIncomplete = () => {
-      if (pendingDownloadRef.current) {
+      if (pendingDownloadRef.current != null) {
         clearPendingDownload()
         setConfirmReason('disconnected')
       }
@@ -107,7 +104,7 @@ export function useHeadsetLibrary(device?: VRDevice | null) {
         setLibraryState(payload)
       },
       DownloadAck: (payload: VideoIdPayload) => {
-        if (pendingDownloadRef.current?.videoId === payload.videoId) {
+        if (pendingDownloadRef.current === payload.videoId) {
           clearPendingDownload()
         }
       },
@@ -134,46 +131,47 @@ export function useHeadsetLibrary(device?: VRDevice | null) {
     }
   }, [clearPendingDownload, device])
 
+  const readyDevice = useCallback((): VRDevice | null => {
+    if (!device || !roomComplete || replaced) return null
+    return device
+  }, [device, replaced, roomComplete])
+
   const sendDownloadStart = useCallback(
     (videoId: string) => {
-      if (!device || !roomComplete || replaced || pendingDownloadRef.current) {
-        return
-      }
+      const target = readyDevice()
+      if (!target || pendingDownloadRef.current != null) return
 
-      pendingDownloadRef.current = { videoId, kind: 'download' }
-      device.events.video.DownloadStart({ videoId })
+      pendingDownloadRef.current = videoId
+      target.events.video.DownloadStart({ videoId })
       timeoutRef.current = setTimeout(() => {
-        if (pendingDownloadRef.current?.videoId === videoId) {
+        if (pendingDownloadRef.current === videoId) {
           clearPendingDownload()
           setConfirmReason('didnt-respond')
         }
       }, DOWNLOAD_ACK_TIMEOUT_MS)
     },
-    [clearPendingDownload, device, replaced, roomComplete],
+    [clearPendingDownload, readyDevice],
   )
 
   const sendDownloadPause = useCallback(
     (videoId: string) => {
-      if (!device || !roomComplete || replaced) return
-      device.events.video.DownloadPause({ videoId })
+      readyDevice()?.events.video.DownloadPause({ videoId })
     },
-    [device, replaced, roomComplete],
+    [readyDevice],
   )
 
   const sendDownloadCancel = useCallback(
     (videoId: string) => {
-      if (!device || !roomComplete || replaced) return
-      device.events.video.DownloadCancel({ videoId })
+      readyDevice()?.events.video.DownloadCancel({ videoId })
     },
-    [device, replaced, roomComplete],
+    [readyDevice],
   )
 
   const sendDelete = useCallback(
     (videoId: string) => {
-      if (!device || !roomComplete || replaced) return
-      device.events.video.Delete({ videoId })
+      readyDevice()?.events.video.Delete({ videoId })
     },
-    [device, replaced, roomComplete],
+    [readyDevice],
   )
 
   return {

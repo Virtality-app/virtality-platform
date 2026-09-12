@@ -1,7 +1,8 @@
 'use client'
 
-import { X } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
+import { stalledSuffix } from '@/lib/headset-library-format'
+import { LibraryCellCancelButton } from './library-cell-cancel-button'
 
 export function LibraryCellDownloading({
   percent,
@@ -22,18 +23,9 @@ export function LibraryCellDownloading({
         <div className='bg-primary h-full' style={{ width: `${percent}%` }} />
       </div>
       <span className='text-muted-foreground text-xs whitespace-nowrap'>
-        {percent} %{stalled ? ' · stalled' : ''}
+        {percent} %{stalledSuffix(stalled)}
       </span>
-      <Button
-        type='button'
-        variant='ghost'
-        size='icon-sm'
-        disabled={disabled}
-        aria-label='Cancel'
-        onClick={onCancel}
-      >
-        <X />
-      </Button>
+      <LibraryCellCancelButton disabled={disabled} onCancel={onCancel} />
       <Button
         type='button'
         variant='outline'

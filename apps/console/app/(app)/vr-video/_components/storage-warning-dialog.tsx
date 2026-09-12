@@ -46,6 +46,13 @@ export function StorageWarningDialog({
   )
 }
 
+export function needsStorageWarning(
+  sizeBytes: number,
+  freeBytes: number | null,
+): boolean {
+  return freeBytes != null && sizeBytes > freeBytes
+}
+
 export function storageWarningCopy(
   freeLabel: string,
   sizeLabel: string,

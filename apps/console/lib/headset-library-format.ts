@@ -59,6 +59,22 @@ export function storageUsedRatio(usedBytes: number, freeBytes: number): number {
   return Math.min(1, Math.max(0, usedBytes / total))
 }
 
+export function stalledSuffix(stalled: boolean): string {
+  return stalled ? ' · stalled' : ''
+}
+
+export function pausedProgressLabel(
+  bytesDownloaded: number,
+  sizeBytes: number,
+): string {
+  return `Paused · ${formatByteSize(bytesDownloaded)} of ${formatByteSize(sizeBytes)}`
+}
+
+export function formatReportedAgo(reportedAt?: string | null): string | null {
+  if (!reportedAt) return null
+  return formatDistanceToNow(new Date(reportedAt), { addSuffix: true })
+}
+
 export function headsetStorageSubtitle(input: {
   online: boolean
   freeBytes: number | null
@@ -67,8 +83,9 @@ export function headsetStorageSubtitle(input: {
   if (input.online && input.freeBytes != null) {
     return `${formatByteSize(input.freeBytes)} free`
   }
-  if (!input.online && input.reportedAt) {
-    return `Offline · last seen ${formatDistanceToNow(new Date(input.reportedAt), { addSuffix: true })}`
+  const reportedAgo = formatReportedAgo(input.reportedAt)
+  if (!input.online && reportedAgo) {
+    return `Offline · last seen ${reportedAgo}`
   }
   if (!input.online) {
     return 'Offline · never connected'

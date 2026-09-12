@@ -1,30 +1,24 @@
 'use client'
 
-import { useState } from 'react'
-import { Trash2, X } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
 import { Button } from '@virtality/ui/components/button'
 import { Badge } from '@virtality/ui/components/badge'
-import { formatByteSize } from '@/lib/headset-library-format'
+import {
+  formatByteSize,
+  formatReportedAgo,
+  pausedProgressLabel,
+  stalledSuffix,
+} from '@/lib/headset-library-format'
 import type { HeadsetLibraryCell } from '@/lib/headset-library-rows'
+import { DeleteFromHeadsetButton } from './delete-from-headset-button'
 import { FailedLibraryCell } from './failed-library-cell'
 import { LibraryCellDownloading } from './library-cell-downloading'
+import { LibraryCellPaused } from './library-cell-paused'
 import {
   StorageWarningDialog,
+  needsStorageWarning,
   storageWarningCopy,
 } from './storage-warning-dialog'
-import { formatDistanceToNow } from 'date-fns'
-
-export function needsStorageWarning(
-  sizeBytes: number,
-  freeBytes: number | null,
-): boolean {
-  return freeBytes != null && sizeBytes > freeBytes
-}
-
-function formatReportedAt(reportedAt?: string): string | null {
-  if (!reportedAt) return null
-  return formatDistanceToNow(new Date(reportedAt), { addSuffix: true })
-}
 
 export function LibraryCell({
   cell,
@@ -59,30 +53,18 @@ export function LibraryCell({
     onDownload()
   }
 
-  const confirmDownload = () => {
-    setWarningOpen(false)
-    onDownload()
-  }
-
-  return (
-    <div className='flex flex-col items-end gap-1'>
-      {cell.type === 'on-headset' ? (
+  let content: ReactNode = null
+  switch (cell.type) {
+    case 'on-headset':
+      content = (
         <div className='flex items-center gap-2'>
           <Badge variant='secondary'>On headset</Badge>
-          <Button
-            type='button'
-            variant='ghost'
-            size='icon-sm'
-            disabled={disabled}
-            aria-label='Delete from headset'
-            onClick={onDelete}
-          >
-            <Trash2 />
-          </Button>
+          <DeleteFromHeadsetButton disabled={disabled} onDelete={onDelete} />
         </div>
-      ) : null}
-
-      {cell.type === 'update-available' ? (
+      )
+      break
+    case 'update-available':
+      content = (
         <div className='flex items-center gap-2'>
           <Badge>Update available</Badge>
           <Button
@@ -94,9 +76,10 @@ export function LibraryCell({
             Update
           </Button>
         </div>
-      ) : null}
-
-      {cell.type === 'downloading' ? (
+      )
+      break
+    case 'downloading':
+      content = (
         <LibraryCellDownloading
           percent={cell.percent}
           stalled={cell.stalled}
@@ -104,44 +87,30 @@ export function LibraryCell({
           onPause={onPause}
           onCancel={onCancel}
         />
-      ) : null}
-
-      {cell.type === 'paused' ? (
-        <div className='flex flex-wrap items-center justify-end gap-2'>
-          <Badge variant='secondary'>
-            Paused · {formatByteSize(cell.bytesDownloaded)} of{' '}
-            {formatByteSize(cell.sizeBytes)}
-          </Badge>
-          <Button
-            type='button'
-            size='sm'
-            disabled={disabled}
-            onClick={requestDownload}
-          >
-            Resume
-          </Button>
-          <Button
-            type='button'
-            variant='ghost'
-            size='icon-sm'
-            disabled={disabled}
-            aria-label='Cancel'
-            onClick={onCancel}
-          >
-            <X />
-          </Button>
-        </div>
-      ) : null}
-
-      {cell.type === 'failed' ? (
+      )
+      break
+    case 'paused':
+      content = (
+        <LibraryCellPaused
+          bytesDownloaded={cell.bytesDownloaded}
+          sizeBytes={cell.sizeBytes}
+          disabled={disabled}
+          onResume={requestDownload}
+          onCancel={onCancel}
+        />
+      )
+      break
+    case 'failed':
+      content = (
         <FailedLibraryCell
           reason={cell.reason}
           disabled={disabled}
           onDownload={requestDownload}
         />
-      ) : null}
-
-      {cell.type === 'absent' ? (
+      )
+      break
+    case 'absent':
+      content = (
         <Button
           type='button'
           size='sm'
@@ -150,59 +119,57 @@ export function LibraryCell({
         >
           Download ({formatByteSize(sizeBytes)})
         </Button>
-      ) : null}
-
-      {cell.type === 'offline-on-headset' ? (
+      )
+      break
+    case 'offline-on-headset': {
+      const reportedAgo = formatReportedAgo(cell.reportedAt)
+      content = (
         <Badge variant='secondary'>
-          On headset
-          {formatReportedAt(cell.reportedAt)
-            ? ` · ${formatReportedAt(cell.reportedAt)}`
-            : ''}
+          On headset{reportedAgo ? ` · ${reportedAgo}` : ''}
         </Badge>
-      ) : null}
-
-      {cell.type === 'offline-absent' ? (
+      )
+      break
+    }
+    case 'offline-absent':
+      content = (
         <div className='text-right'>
           <Badge variant='outline'>Not on headset</Badge>
           <p className='text-muted-foreground mt-1 text-xs'>
             Turn the headset on to download
           </p>
         </div>
-      ) : null}
-
-      {cell.type === 'not-in-catalog' ? (
+      )
+      break
+    case 'not-in-catalog':
+      content = (
         <div className='flex items-center gap-2'>
           <Badge variant='outline'>Not in catalog</Badge>
-          <Button
-            type='button'
-            variant='ghost'
-            size='icon-sm'
-            disabled={disabled}
-            aria-label='Delete from headset'
-            onClick={onDelete}
-          >
-            <Trash2 />
-          </Button>
+          <DeleteFromHeadsetButton disabled={disabled} onDelete={onDelete} />
         </div>
-      ) : null}
-
-      {cell.type === 'offline-downloading' ? (
+      )
+      break
+    case 'offline-downloading':
+      content = (
         <Badge variant='secondary'>
-          Downloading {cell.percent}%{cell.stalled ? ' · stalled' : ''}
+          Downloading {cell.percent}%{stalledSuffix(cell.stalled)}
         </Badge>
-      ) : null}
-
-      {cell.type === 'offline-paused' ? (
+      )
+      break
+    case 'offline-paused':
+      content = (
         <Badge variant='secondary'>
-          Paused · {formatByteSize(cell.bytesDownloaded)} of{' '}
-          {formatByteSize(cell.sizeBytes)}
+          {pausedProgressLabel(cell.bytesDownloaded, cell.sizeBytes)}
         </Badge>
-      ) : null}
+      )
+      break
+    case 'offline-failed':
+      content = <FailedLibraryCell reason={cell.reason} disabled />
+      break
+  }
 
-      {cell.type === 'offline-failed' ? (
-        <FailedLibraryCell reason={cell.reason} disabled />
-      ) : null}
-
+  return (
+    <div className='flex flex-col items-end gap-1'>
+      {content}
       <StorageWarningDialog
         open={warningOpen}
         description={storageWarningCopy(
@@ -210,7 +177,10 @@ export function LibraryCell({
           formatByteSize(sizeBytes),
         )}
         onCancel={() => setWarningOpen(false)}
-        onConfirm={confirmDownload}
+        onConfirm={() => {
+          setWarningOpen(false)
+          onDownload()
+        }}
       />
     </div>
   )

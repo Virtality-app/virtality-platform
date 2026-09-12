@@ -117,42 +117,41 @@ function pausedCell(
   }
 }
 
+function isCancelledOrAbsent(entry: HeadsetLibraryEntry): boolean {
+  return (
+    entry.status === 'absent' ||
+    (entry.status === 'failed' && entry.reason === 'cancelled')
+  )
+}
+
 function cellForCatalogEntry(
   entry: HeadsetLibraryEntry | undefined,
   catalog: HeadsetCatalogVideo,
   online: boolean,
   reportedAt: string | undefined,
 ): HeadsetLibraryCell {
-  if (
-    !entry ||
-    entry.status === 'absent' ||
-    (entry.status === 'failed' && entry.reason === 'cancelled')
-  ) {
+  if (!entry || isCancelledOrAbsent(entry)) {
     return online ? { type: 'absent' } : { type: 'offline-absent' }
   }
 
-  if (entry.status === 'ready') {
-    const onHeadset = online
-      ? { type: 'on-headset' as const }
-      : { type: 'offline-on-headset' as const, reportedAt }
-    if ((entry.version ?? 0) < catalog.version) {
-      return online ? { type: 'update-available' } : onHeadset
+  switch (entry.status) {
+    case 'ready': {
+      const needsUpdate = (entry.version ?? 0) < catalog.version
+      if (online && needsUpdate) return { type: 'update-available' }
+      if (online) return { type: 'on-headset' }
+      return { type: 'offline-on-headset', reportedAt }
     }
-    return onHeadset
+    case 'downloading':
+      return downloadingCell(entry, catalog.sizeBytes, online)
+    case 'paused':
+      return pausedCell(entry, catalog.sizeBytes, online)
+    case 'failed':
+      return online
+        ? { type: 'failed', reason: entry.reason ?? 'network' }
+        : { type: 'offline-failed', reason: entry.reason ?? 'network' }
+    case 'absent':
+      return online ? { type: 'absent' } : { type: 'offline-absent' }
   }
-
-  if (entry.status === 'downloading') {
-    return downloadingCell(entry, catalog.sizeBytes, online)
-  }
-
-  if (entry.status === 'paused') {
-    return pausedCell(entry, catalog.sizeBytes, online)
-  }
-
-  if (online) {
-    return { type: 'failed', reason: entry.reason ?? 'network' }
-  }
-  return { type: 'offline-failed', reason: entry.reason ?? 'network' }
 }
 
 export function buildHeadsetLibraryRows(

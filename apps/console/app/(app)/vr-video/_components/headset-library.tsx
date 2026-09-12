@@ -32,8 +32,12 @@ export function HeadsetLibrary({
   onCancel: (videoId: string) => void
   onDelete: (videoId: string) => void
 }) {
-  const catalogRows = rows.filter((row) => row.inCatalog)
-  const extraRows = rows.filter((row) => !row.inCatalog)
+  const catalogRows: HeadsetLibraryRow[] = []
+  const extraRows: HeadsetLibraryRow[] = []
+  for (const row of rows) {
+    if (row.inCatalog) catalogRows.push(row)
+    else extraRows.push(row)
+  }
 
   return (
     <div>
