@@ -1,16 +1,24 @@
-import type { DeviceVideoReportBody } from '@virtality/shared/types'
+import type { DeviceVideoFailureReason, DeviceVideoStatus } from '@virtality/db'
 import { unpairedHeadsetError } from './device-video-errors.ts'
-import { findPairedDeviceByHeadsetIdentity } from './device-video-pairing.ts'
+import {
+  findPairedDeviceByHeadsetIdentity,
+  type PairingPrisma,
+} from './device-video-pairing.ts'
 
-type DeviceVideoStatus = 'downloading' | 'paused' | 'ready' | 'failed'
+export type DeviceVideoReportInput = {
+  deviceId: string
+  freeBytes: number
+  videos: Array<{
+    videoId: string
+    status: DeviceVideoStatus
+    version?: number
+    bytesDownloaded?: number
+    sizeBytes?: number
+    reason?: DeviceVideoFailureReason
+  }>
+}
 
-type ReportPrisma = {
-  device: {
-    findFirst: (args: {
-      where: { deviceId: string; AND: [{ deletedAt: null }] }
-      select: { id: true }
-    }) => Promise<{ id: string } | null>
-  }
+type ReportPrisma = PairingPrisma & {
   deviceVideoReport: {
     upsert: (args: {
       where: { deviceId: string }
@@ -28,7 +36,7 @@ type ReportPrisma = {
         version: number | null
         bytesDownloaded: bigint | null
         sizeBytes: bigint | null
-        reason: DeviceVideoReportBody['videos'][number]['reason'] | null
+        reason: DeviceVideoFailureReason | null
       }>
     }) => Promise<unknown>
   }
@@ -44,7 +52,7 @@ function toOptionalBigInt(value: number | undefined): bigint | null {
 
 export async function replaceDeviceVideoReport(
   prisma: ReportPrisma,
-  body: DeviceVideoReportBody,
+  body: DeviceVideoReportInput,
 ): Promise<void> {
   const paired = await findPairedDeviceByHeadsetIdentity(prisma, body.deviceId)
   if (!paired) {
@@ -75,7 +83,7 @@ export async function replaceDeviceVideoReport(
       data: body.videos.map((video) => ({
         deviceId: body.deviceId,
         videoId: video.videoId,
-        status: video.status as DeviceVideoStatus,
+        status: video.status,
         version: video.version ?? null,
         bytesDownloaded: toOptionalBigInt(video.bytesDownloaded),
         sizeBytes: toOptionalBigInt(video.sizeBytes),

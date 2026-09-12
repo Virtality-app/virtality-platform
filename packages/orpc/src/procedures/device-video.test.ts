@@ -1,3 +1,4 @@
+import type { PrismaClient } from '@virtality/db'
 import { describe, expect, it, vi } from 'vitest'
 import { listDeviceVideosForUser } from './device-video.ts'
 
@@ -84,7 +85,7 @@ function createPrisma(devices: DeviceRow[], reports: ReportRow[]) {
           ),
       ),
     },
-  }
+  } as unknown as PrismaClient
 }
 
 describe('deviceVideo.listForUser', () => {

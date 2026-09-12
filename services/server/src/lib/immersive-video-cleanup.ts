@@ -1,4 +1,5 @@
 import type { AppLogger } from '@virtality/shared/observability'
+import { findPairedDeviceByHeadsetIdentity } from './device-video-pairing.ts'
 
 const RETENTION_MS = 180 * 24 * 60 * 60 * 1000
 
@@ -29,23 +30,22 @@ export type ImmersiveVideoCleanupPrisma = {
   }
   device: {
     findFirst: (args: {
-      where: { deviceId: string; deletedAt: null }
-    }) => Promise<object | null>
+      where: { deviceId: string; AND: [{ deletedAt: null }] }
+      select: { id: true }
+    }) => Promise<{ id: string } | null>
   }
 }
 
-export async function runImmersiveVideoCleanup(input: {
+type CleanupLogger = Pick<AppLogger, 'info' | 'error'>
+
+async function deleteUnusedRetiredObjects(input: {
   prisma: ImmersiveVideoCleanupPrisma
   s3: ImmersiveVideoCleanupS3
-  logger: Pick<AppLogger, 'info' | 'error'>
-  now?: () => Date
-}): Promise<void> {
+  logger: CleanupLogger
+}): Promise<{ deleted: number; kept: number; failures: number }> {
   const { prisma, s3, logger } = input
-  const now = input.now?.() ?? new Date()
-
-  let retiredDeleted = 0
-  let retiredKept = 0
-  let reportsDeleted = 0
+  let deleted = 0
+  let kept = 0
   let failures = 0
 
   const retired = await prisma.immersiveVideoRetiredObject.findMany()
@@ -55,17 +55,17 @@ export async function runImmersiveVideoCleanup(input: {
         where: { videoId: row.videoId, version: row.version },
       })
       if (inUse) {
-        retiredKept += 1
+        kept += 1
         continue
       }
-      const deleted = await s3.deleteFile({ Key: row.objectKey })
-      if (deleted == null) {
+      const removed = await s3.deleteFile({ Key: row.objectKey })
+      if (removed == null) {
         throw new Error('S3 deleteFile returned null')
       }
       await prisma.immersiveVideoRetiredObject.delete({
         where: { id: row.id },
       })
-      retiredDeleted += 1
+      deleted += 1
     } catch (error) {
       failures += 1
       logger.error(
@@ -76,23 +76,35 @@ export async function runImmersiveVideoCleanup(input: {
     }
   }
 
-  const cutoff = new Date(now.getTime() - RETENTION_MS)
+  return { deleted, kept, failures }
+}
+
+async function deleteStaleUnpairedReports(input: {
+  prisma: ImmersiveVideoCleanupPrisma
+  logger: CleanupLogger
+  cutoff: Date
+}): Promise<{ deleted: number; failures: number }> {
+  const { prisma, logger, cutoff } = input
+  let deleted = 0
+  let failures = 0
+
   const reports = await prisma.deviceVideoReport.findMany()
   for (const report of reports) {
     try {
       if (report.reportedAt.getTime() >= cutoff.getTime()) {
         continue
       }
-      const paired = await prisma.device.findFirst({
-        where: { deviceId: report.deviceId, deletedAt: null },
-      })
+      const paired = await findPairedDeviceByHeadsetIdentity(
+        prisma,
+        report.deviceId,
+      )
       if (paired) {
         continue
       }
       await prisma.deviceVideoReport.delete({
         where: { deviceId: report.deviceId },
       })
-      reportsDeleted += 1
+      deleted += 1
     } catch (error) {
       failures += 1
       logger.error(
@@ -103,10 +115,29 @@ export async function runImmersiveVideoCleanup(input: {
     }
   }
 
+  return { deleted, failures }
+}
+
+export async function runImmersiveVideoCleanup(input: {
+  prisma: ImmersiveVideoCleanupPrisma
+  s3: ImmersiveVideoCleanupS3
+  logger: CleanupLogger
+  now?: () => Date
+}): Promise<void> {
+  const { prisma, s3, logger } = input
+  const now = input.now?.() ?? new Date()
+
+  const retired = await deleteUnusedRetiredObjects({ prisma, s3, logger })
+  const reports = await deleteStaleUnpairedReports({
+    prisma,
+    logger,
+    cutoff: new Date(now.getTime() - RETENTION_MS),
+  })
+
   logger.info('immersive-video.cleanup.completed', {
-    retiredDeleted,
-    retiredKept,
-    reportsDeleted,
-    failures,
+    retiredDeleted: retired.deleted,
+    retiredKept: retired.kept,
+    reportsDeleted: reports.deleted,
+    failures: retired.failures + reports.failures,
   })
 }

@@ -3,17 +3,14 @@ import {
   unpairedHeadsetError,
   videoUnavailableError,
 } from './device-video-errors.ts'
-import { findPairedDeviceByHeadsetIdentity } from './device-video-pairing.ts'
+import {
+  findPairedDeviceByHeadsetIdentity,
+  type PairingPrisma,
+} from './device-video-pairing.ts'
 
 const SERVABLE_STATES = new Set(['Published', 'Republishing'])
 
-type DescriptorPrisma = {
-  device: {
-    findFirst: (args: {
-      where: { deviceId: string; AND: [{ deletedAt: null }] }
-      select: { id: true }
-    }) => Promise<{ id: string } | null>
-  }
+type DescriptorPrisma = PairingPrisma & {
   immersiveVideo: {
     findUnique: (args: { where: { id: string } }) => Promise<{
       id: string
@@ -34,6 +31,25 @@ export type DownloadDescriptor = {
   checksum: string
 }
 
+function isServableVideo(video: {
+  state: string
+  objectKey: string | null
+  checksum: string | null
+  sizeBytes: bigint | number | null
+}): video is {
+  state: string
+  objectKey: string
+  checksum: string
+  sizeBytes: bigint | number
+} {
+  return (
+    SERVABLE_STATES.has(video.state) &&
+    video.objectKey != null &&
+    video.checksum != null &&
+    video.sizeBytes != null
+  )
+}
+
 export async function getDownloadDescriptor(
   prisma: DescriptorPrisma,
   input: { deviceId: string; videoId: string },
@@ -46,13 +62,7 @@ export async function getDownloadDescriptor(
   const video = await prisma.immersiveVideo.findUnique({
     where: { id: input.videoId },
   })
-  if (
-    !video ||
-    !SERVABLE_STATES.has(video.state) ||
-    video.objectKey == null ||
-    video.checksum == null ||
-    video.sizeBytes == null
-  ) {
+  if (!video || !isServableVideo(video)) {
     throw videoUnavailableError()
   }
 

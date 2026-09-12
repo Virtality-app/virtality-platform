@@ -10,6 +10,7 @@ import {
   ImmersiveVideoNotFoundError,
   isAllowedImmersiveVideoExtension,
   isImmersiveVideoDiscardEmpty,
+  LIVE_IMMERSIVE_VIDEO_STATES,
   toSizeBytesNumber,
   type ImmersiveVideoActivity,
   type ImmersiveVideoAdminRow,
@@ -130,7 +131,7 @@ export async function listPublishedImmersiveVideos(
   prisma: ImmersiveVideoPrisma,
 ): Promise<ImmersiveVideoConsoleListItem[]> {
   const rows = await prisma.immersiveVideo.findMany({
-    where: { state: { in: ['Published', 'Republishing'] } },
+    where: { state: { in: [...LIVE_IMMERSIVE_VIDEO_STATES] } },
     orderBy: [{ activity: 'asc' }, { title: 'asc' }],
   })
 

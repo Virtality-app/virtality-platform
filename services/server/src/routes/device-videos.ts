@@ -2,24 +2,15 @@ import { Hono, type Context } from 'hono'
 import { z } from 'zod/v4'
 import { prisma } from '@virtality/db'
 import {
+  VIDEO_DEVICE_STATUS,
   VIDEO_DOWNLOAD_FAILURE_REASON,
-  type DeviceVideoReportBody,
 } from '@virtality/shared/types'
-import { DeviceVideoRouteError } from '../lib/device-video-errors.ts'
+import {
+  DeviceVideoRouteError,
+  invalidRequestError,
+} from '../lib/device-video-errors.ts'
 import { replaceDeviceVideoReport } from '../lib/device-video-report.ts'
 import { getDownloadDescriptor } from '../lib/download-descriptor.ts'
-
-const VIDEO_REPORT_STATUS = [
-  'downloading',
-  'paused',
-  'ready',
-  'failed',
-] as const
-
-const failureReasons = Object.values(VIDEO_DOWNLOAD_FAILURE_REASON) as [
-  (typeof VIDEO_DOWNLOAD_FAILURE_REASON)[keyof typeof VIDEO_DOWNLOAD_FAILURE_REASON],
-  ...(typeof VIDEO_DOWNLOAD_FAILURE_REASON)[keyof typeof VIDEO_DOWNLOAD_FAILURE_REASON][],
-]
 
 const DeviceVideoReportSchema = z.object({
   deviceId: z.string().trim().min(1).max(128),
@@ -28,11 +19,25 @@ const DeviceVideoReportSchema = z.object({
     .array(
       z.object({
         videoId: z.string().min(1),
-        status: z.enum(VIDEO_REPORT_STATUS),
+        status: z.enum([
+          VIDEO_DEVICE_STATUS.Downloading,
+          VIDEO_DEVICE_STATUS.Paused,
+          VIDEO_DEVICE_STATUS.Ready,
+          VIDEO_DEVICE_STATUS.Failed,
+        ]),
         version: z.number().int().nonnegative().optional(),
         bytesDownloaded: z.number().finite().nonnegative().optional(),
         sizeBytes: z.number().finite().nonnegative().optional(),
-        reason: z.enum(failureReasons).optional(),
+        reason: z
+          .enum([
+            VIDEO_DOWNLOAD_FAILURE_REASON.InsufficientStorage,
+            VIDEO_DOWNLOAD_FAILURE_REASON.Network,
+            VIDEO_DOWNLOAD_FAILURE_REASON.ChecksumMismatch,
+            VIDEO_DOWNLOAD_FAILURE_REASON.Cancelled,
+            VIDEO_DOWNLOAD_FAILURE_REASON.UrlExpired,
+            VIDEO_DOWNLOAD_FAILURE_REASON.Unavailable,
+          ])
+          .optional(),
       }),
     )
     .max(64),
@@ -52,25 +57,26 @@ function jsonError(c: Context, error: DeviceVideoRouteError) {
   return c.json({ error: error.code, message: error.message }, error.status)
 }
 
+function catchDeviceVideoError(c: Context, error: unknown) {
+  if (error instanceof DeviceVideoRouteError) {
+    return jsonError(c, error)
+  }
+  throw error
+}
+
 deviceVideoRoutes.put('/', async (c) => {
   const body = await c.req.json().catch(() => null)
   const parsed = DeviceVideoReportSchema.safeParse(body)
 
   if (!parsed.success) {
-    return c.json(
-      { error: 'INVALID_REQUEST', message: 'Invalid device videos report.' },
-      400,
-    )
+    return jsonError(c, invalidRequestError('Invalid device videos report.'))
   }
 
   try {
-    await replaceDeviceVideoReport(prisma, parsed.data as DeviceVideoReportBody)
+    await replaceDeviceVideoReport(prisma, parsed.data)
     return c.body(null, 204)
   } catch (error) {
-    if (error instanceof DeviceVideoRouteError) {
-      return jsonError(c, error)
-    }
-    throw error
+    return catchDeviceVideoError(c, error)
   }
 })
 
@@ -79,10 +85,7 @@ deviceVideoRoutes.get('/:videoId', async (c) => {
   const deviceIdParsed = DeviceIdQuerySchema.safeParse(c.req.query('deviceId'))
 
   if (!videoIdParsed.success || !deviceIdParsed.success) {
-    return c.json(
-      { error: 'INVALID_REQUEST', message: 'Invalid download request.' },
-      400,
-    )
+    return jsonError(c, invalidRequestError('Invalid download request.'))
   }
 
   try {
@@ -92,9 +95,6 @@ deviceVideoRoutes.get('/:videoId', async (c) => {
     })
     return c.json(descriptor)
   } catch (error) {
-    if (error instanceof DeviceVideoRouteError) {
-      return jsonError(c, error)
-    }
-    throw error
+    return catchDeviceVideoError(c, error)
   }
 })

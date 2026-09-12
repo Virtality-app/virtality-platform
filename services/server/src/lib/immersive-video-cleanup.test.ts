@@ -59,13 +59,12 @@ function createCleanupState(input?: {
       }),
     },
     device: {
-      findFirst: vi.fn(
-        async ({ where }: { where: { deviceId: string; deletedAt: null } }) =>
-          devices.find(
-            (device) =>
-              device.deviceId === where.deviceId && device.deletedAt == null,
-          ) ?? null,
-      ),
+      findFirst: vi.fn(async ({ where }: { where: { deviceId: string } }) => {
+        const device = devices.find(
+          (row) => row.deviceId === where.deviceId && row.deletedAt == null,
+        )
+        return device ? { id: device.deviceId } : null
+      }),
     },
   }
 

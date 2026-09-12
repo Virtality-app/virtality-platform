@@ -1,4 +1,4 @@
-type PairingPrisma = {
+export type PairingPrisma = {
   device: {
     findFirst: (args: {
       where: { deviceId: string; AND: [{ deletedAt: null }] }

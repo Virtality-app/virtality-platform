@@ -15,6 +15,10 @@ export class DeviceVideoRouteError extends Error {
   }
 }
 
+export function invalidRequestError(message: string): DeviceVideoRouteError {
+  return new DeviceVideoRouteError(400, 'INVALID_REQUEST', message)
+}
+
 export function unpairedHeadsetError(): DeviceVideoRouteError {
   return new DeviceVideoRouteError(404, 'UNPAIRED', 'Headset is not paired.')
 }

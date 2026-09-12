@@ -18,6 +18,11 @@ export type ImmersiveVideoCatalogState =
   | 'Republishing'
   | 'Unpublished'
 
+export const LIVE_IMMERSIVE_VIDEO_STATES = [
+  'Published',
+  'Republishing',
+] as const satisfies readonly ImmersiveVideoCatalogState[]
+
 export type ImmersiveVideoRecord = {
   id: string
   title: string

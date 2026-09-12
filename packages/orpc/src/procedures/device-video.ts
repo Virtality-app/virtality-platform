@@ -1,9 +1,11 @@
+import type { DeviceVideoStatus, PrismaClient } from '@virtality/db'
 import type { VideoDownloadFailureReason } from '@virtality/shared/types'
 import { authed } from '../middleware/auth.ts'
+import { toSizeBytesNumber } from './immersive-video-constants.ts'
 
 export type DeviceVideoListItem = {
   videoId: string
-  status: 'downloading' | 'paused' | 'ready' | 'failed'
+  status: DeviceVideoStatus
   version: number | null
   bytesDownloaded: number | null
   sizeBytes: number | null
@@ -23,52 +25,57 @@ export type DeviceVideoListForUserResult = {
   }>
 }
 
-type DeviceVideoListPrisma = {
-  device: {
-    findMany: (args: {
-      where: {
-        userId: string
-        AND: [{ deletedAt: null }]
-        deviceId: { not: null }
-      }
-      orderBy: { name: 'asc' }
-      select: { id: true; name: true; deviceId: true }
-    }) => Promise<Array<{ id: string; name: string; deviceId: string | null }>>
-  }
-  deviceVideoReport: {
-    findMany: (args: {
-      where: { deviceId: { in: string[] } }
-      include: { videos: true }
-    }) => Promise<
-      Array<{
-        deviceId: string
-        freeBytes: bigint | number
-        reportedAt: Date
-        videos: Array<{
-          videoId: string
-          status: DeviceVideoListItem['status']
-          version: number | null
-          bytesDownloaded: bigint | number | null
-          sizeBytes: bigint | number | null
-          reason: VideoDownloadFailureReason | null
-        }>
-      }>
-    >
-  }
+type DeviceVideoReportRow = {
+  deviceId: string
+  freeBytes: bigint | number
+  reportedAt: Date
+  videos: Array<{
+    videoId: string
+    status: DeviceVideoStatus
+    version: number | null
+    bytesDownloaded: bigint | number | null
+    sizeBytes: bigint | number | null
+    reason: VideoDownloadFailureReason | null
+  }>
 }
 
-function toOptionalNumber(value: bigint | number | null): number | null {
-  if (value == null) {
+function toBoundDevice(device: {
+  id: string
+  name: string
+  deviceId: string | null
+}): { id: string; name: string; deviceId: string } | null {
+  if (device.deviceId == null) {
     return null
   }
-  return Number(value)
+  return { id: device.id, name: device.name, deviceId: device.deviceId }
+}
+
+function toListReport(
+  report: DeviceVideoReportRow | undefined,
+): DeviceVideoListForUserResult['devices'][number]['report'] {
+  if (!report) {
+    return null
+  }
+
+  return {
+    reportedAt: report.reportedAt.toISOString(),
+    freeBytes: Number(report.freeBytes),
+    videos: report.videos.map((video) => ({
+      videoId: video.videoId,
+      status: video.status,
+      version: video.version,
+      bytesDownloaded: toSizeBytesNumber(video.bytesDownloaded),
+      sizeBytes: toSizeBytesNumber(video.sizeBytes),
+      reason: video.reason,
+    })),
+  }
 }
 
 export async function listDeviceVideosForUser(
-  prisma: DeviceVideoListPrisma,
+  prisma: PrismaClient,
   userId: string,
 ): Promise<DeviceVideoListForUserResult> {
-  const devices = await prisma.device.findMany({
+  const rows = await prisma.device.findMany({
     where: {
       userId,
       AND: [{ deletedAt: null }],
@@ -78,11 +85,13 @@ export async function listDeviceVideosForUser(
     select: { id: true, name: true, deviceId: true },
   })
 
-  const identities = devices
-    .map((device) => device.deviceId)
-    .filter((deviceId): deviceId is string => deviceId != null)
+  const devices = rows.flatMap((device) => {
+    const bound = toBoundDevice(device)
+    return bound ? [bound] : []
+  })
 
-  const reports =
+  const identities = devices.map((device) => device.deviceId)
+  const reports: DeviceVideoReportRow[] =
     identities.length === 0
       ? []
       : await prisma.deviceVideoReport.findMany({
@@ -95,29 +104,12 @@ export async function listDeviceVideosForUser(
   )
 
   return {
-    devices: devices.map((device) => {
-      const deviceId = device.deviceId as string
-      const report = reportsByIdentity.get(deviceId)
-      return {
-        id: device.id,
-        name: device.name,
-        deviceId,
-        report: report
-          ? {
-              reportedAt: report.reportedAt.toISOString(),
-              freeBytes: Number(report.freeBytes),
-              videos: report.videos.map((video) => ({
-                videoId: video.videoId,
-                status: video.status,
-                version: video.version,
-                bytesDownloaded: toOptionalNumber(video.bytesDownloaded),
-                sizeBytes: toOptionalNumber(video.sizeBytes),
-                reason: video.reason,
-              })),
-            }
-          : null,
-      }
-    }),
+    devices: devices.map((device) => ({
+      id: device.id,
+      name: device.name,
+      deviceId: device.deviceId,
+      report: toListReport(reportsByIdentity.get(device.deviceId)),
+    })),
   }
 }
 
