@@ -11,7 +11,7 @@ Immersive Video files are multi-GB and must reach a paired headset while a physi
 3. **Control: the existing Socket.IO relay, in the device room.** Console → VR commands and VR → console reports travel as relay events in the room addressed by Headset Identity. The relay stays a dumb forwarder registered from one `RelayEventMap`; no new server-side state or logic.
 4. **Only the physio initiates**, from the console, with the file size visible. No auto-download, no manifest polling, no preload. The single autonomous headset behaviour is finishing a `downloading` `.part` it was already asked for; a `paused` `.part` is never resumed without a console command.
 
-Deferrals that are not decisions of this ADR — public CDN URL in v1, no session tracking in v1 — live in the contract's out-of-scope section.
+Deferrals that are not decisions of this ADR (public CDN URL in v1, no session tracking in v1) live in the contract's out-of-scope section.
 
 ## Rejected alternatives
 

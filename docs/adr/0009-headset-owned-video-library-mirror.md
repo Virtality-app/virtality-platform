@@ -30,4 +30,4 @@ The 180° FPV **Immersive Video** mode (map: issue #283) puts multi-GB files on 
 
 - Map: [Immersive Video (180° FPV)](https://github.com/Virtality-app/virtality-platform/issues/283)
 - Contract and lifecycles: `docs/architecture/immersive-video-shared-contract.md`, `docs/architecture/immersive-video-lifecycle.md` §6
-- Domain language: `apps/console/CONTEXT.md` (**Headset Library**, **Library State**), `services/server/CONTEXT.md` (**Library Mirror**), `apps/console/CONTEXT.md` (**Headset Identity**)
+- Domain language: `apps/console/CONTEXT.md` (**Headset Library**, **Library State**, **Headset Identity**), `services/server/CONTEXT.md` (**Library Mirror**)

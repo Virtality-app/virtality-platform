@@ -214,6 +214,10 @@ _Avoid_: Push, sync, auto-download, preload
 The console-derived state of a `ready` **Headset Library** entry whose version is older than the catalog's. The old file stays playable until the newer one is `ready`; the headset never knows it is out of date.
 _Avoid_: Outdated, stale, needs sync, error
 
+**Not in catalog**:
+A **Headset Library** entry whose `videoId` is not in `immersiveVideo.list` (unpublished or deleted). Play is disabled; Delete is offered. Unpublished and deleted are indistinguishable to the physio. The console never auto-sends `videoDelete`.
+_Avoid_: Missing, orphaned, unknown video, unpublished (as physio-facing copy)
+
 ### Access and billing
 
 **Tester Code**:
