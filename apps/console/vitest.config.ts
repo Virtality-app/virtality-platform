@@ -5,6 +5,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, '.'),
+      '@virtality/ui': path.resolve(__dirname, '../../packages/ui/src'),
       '@virtality/shared/utils': path.resolve(
         __dirname,
         '../../packages/shared/src/utils/index.ts',
@@ -17,6 +18,8 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    include: ['lib/**/*.test.ts'],
+    include: ['lib/**/*.test.ts', 'app/**/*.test.tsx'],
+    environmentMatchGlobs: [['**/*.test.tsx', 'jsdom']],
+    setupFiles: ['./vitest.setup.ts'],
   },
 })

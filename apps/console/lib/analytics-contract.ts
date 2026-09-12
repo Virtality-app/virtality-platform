@@ -39,6 +39,7 @@ export type AnalyticsEventName = (typeof analyticsEventNames)[number]
 type AuthRole = 'admin' | 'tester' | 'clinician' | 'other'
 type NavItem =
   | 'devices'
+  | 'VR video'
   | 'patients'
   | 'programs'
   | 'guides'

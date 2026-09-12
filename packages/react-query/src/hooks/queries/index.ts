@@ -36,6 +36,8 @@ export { useExerciseDraft } from './exercise-draft/use-exercise-draft.js'
 export { useExerciseDrafts } from './exercise-draft/use-exercise-drafts.js'
 export { useExerciseDraftClassificationVocabulary } from './exercise-draft/use-exercise-draft-classification-vocabulary.js'
 export { useImmersiveVideoCatalog } from './immersive-video/use-immersive-video-catalog.js'
+export { useImmersiveVideoList } from './immersive-video/use-immersive-video-list.js'
+export { useDeviceVideosForUser } from './device-video/use-device-videos-for-user.js'
 
 // Medical history queries
 export { useMedicalHistory } from './use-medical-history.js'

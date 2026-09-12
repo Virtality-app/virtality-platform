@@ -5,10 +5,12 @@ import {
   GAME_EVENT,
   CASTING_EVENT,
   CONNECTION_EVENT,
+  VIDEO_EVENT,
   type ProgramEventPayloads,
   type DeviceEventPayloads,
   type GameEventPayloads,
   type CastingEventPayloads,
+  type VideoEventPayloads,
   type DeviceStatusResponse,
 } from '@virtality/shared/types'
 
@@ -75,6 +77,7 @@ export type DeviceEmitter = {
   device: EmitterGroup<typeof DEVICE_EVENT, DeviceEventPayloads>
   game: EmitterGroup<typeof GAME_EVENT, GameEventPayloads>
   casting: EmitterGroup<typeof CASTING_EVENT, CastingEventPayloads>
+  video: EmitterGroup<typeof VIDEO_EVENT, VideoEventPayloads>
   checkDeviceStatus: (ack: (res: DeviceStatusResponse) => void) => void
 }
 
@@ -105,6 +108,7 @@ export function createDeviceEmitter(socket: Socket): DeviceEmitter {
     device: createEmitterGroup(socket, DEVICE_EVENT),
     game: createEmitterGroup(socket, GAME_EVENT),
     casting: createEmitterGroup(socket, CASTING_EVENT),
+    video: createEmitterGroup(socket, VIDEO_EVENT),
     checkDeviceStatus: (ack) =>
       socket.emit(CONNECTION_EVENT.DEVICE_STATUS, null, ack),
   } as DeviceEmitter

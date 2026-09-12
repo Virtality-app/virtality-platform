@@ -4,6 +4,7 @@ import {
   CircleQuestionMark,
   ScrollText,
   RectangleGogglesIcon,
+  Film,
   LucideProps,
 } from 'lucide-react'
 import { ForwardRefExoticComponent, RefAttributes } from 'react'
@@ -18,6 +19,7 @@ type SidebarLink = {
 
 const sidebarLinks: SidebarLink[] = [
   { title: 'devices', url: '/devices', icon: RectangleGogglesIcon },
+  { title: 'VR video', url: '/vr-video', icon: Film },
   {
     title: 'patients',
     url: '/patients',

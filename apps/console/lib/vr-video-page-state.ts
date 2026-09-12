@@ -1,0 +1,80 @@
+import type { VideoDownloadFailureReason } from '@virtality/shared/types'
+import type {
+  HeadsetCatalogVideo,
+  HeadsetLibrarySnapshot,
+} from '@/lib/headset-library-rows'
+
+export type DeviceVideoReportView = {
+  reportedAt: string
+  freeBytes: number
+  videos: Array<{
+    videoId: string
+    status: 'downloading' | 'paused' | 'ready' | 'failed'
+    version: number | null
+    bytesDownloaded: number | null
+    sizeBytes: number | null
+    reason: VideoDownloadFailureReason | null
+  }>
+}
+
+export type HeadsetListItem = {
+  id: string
+  name: string
+  online: boolean
+  readyCount: number
+  totalCount: number
+  freeBytes: number | null
+  reportedAt: string | null
+  usedBytes: number
+}
+
+export function toLibrarySnapshot(
+  report: DeviceVideoReportView | null | undefined,
+): HeadsetLibrarySnapshot | null {
+  if (!report) return null
+  return {
+    freeBytes: report.freeBytes,
+    reportedAt: report.reportedAt,
+    videos: report.videos.map((video) => ({
+      videoId: video.videoId,
+      status: video.status,
+      version: video.version,
+      bytesDownloaded: video.bytesDownloaded,
+      sizeBytes: video.sizeBytes,
+      reason: video.reason ?? undefined,
+    })),
+  }
+}
+
+export function vrVideoBanner(input: {
+  roomComplete: boolean
+  replaced: boolean
+  pollOnline: boolean
+}): string | null {
+  if (input.replaced || input.roomComplete) return null
+  if (input.pollOnline) return 'Connecting to headset…'
+  return 'Turn the headset on and open the app to download videos.'
+}
+
+export function selectedHeadsetOnline(input: {
+  roomComplete: boolean
+  pollOnline: boolean
+}): boolean {
+  return input.roomComplete || input.pollOnline
+}
+
+export function toCatalogVideos(
+  videos:
+    | Array<{
+        id: string
+        title: string
+        activity: 'CYCLING' | 'WALKING'
+        durationSec: number | null
+        sizeBytes: number
+        version: number
+        thumbnailUrl: string | null
+      }>
+    | undefined,
+): HeadsetCatalogVideo[] {
+  return videos ?? []
+}

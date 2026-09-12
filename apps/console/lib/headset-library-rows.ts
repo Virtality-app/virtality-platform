@@ -1,0 +1,215 @@
+import type { VideoDownloadFailureReason } from '@virtality/shared/types'
+import { downloadPercent } from './headset-library-format.js'
+
+export type HeadsetCatalogVideo = {
+  id: string
+  title: string
+  activity: 'CYCLING' | 'WALKING'
+  durationSec: number | null
+  sizeBytes: number
+  version: number
+  thumbnailUrl: string | null
+}
+
+export type HeadsetLibraryEntry = {
+  videoId: string
+  status: 'downloading' | 'paused' | 'ready' | 'failed' | 'absent'
+  version?: number | null
+  bytesDownloaded?: number | null
+  sizeBytes?: number | null
+  reason?: VideoDownloadFailureReason | null
+  stalled?: boolean
+}
+
+export type HeadsetLibrarySnapshot = {
+  videos: HeadsetLibraryEntry[]
+  freeBytes: number
+  reportedAt?: string
+}
+
+export type HeadsetLibraryCell =
+  | { type: 'on-headset' }
+  | { type: 'update-available' }
+  | {
+      type: 'downloading'
+      percent: number
+      stalled: boolean
+    }
+  | {
+      type: 'paused'
+      bytesDownloaded: number
+      sizeBytes: number
+    }
+  | { type: 'failed'; reason: VideoDownloadFailureReason }
+  | { type: 'absent' }
+  | { type: 'offline-on-headset'; reportedAt?: string }
+  | { type: 'offline-absent' }
+  | { type: 'not-in-catalog' }
+  | {
+      type: 'offline-downloading'
+      percent: number
+      stalled: boolean
+    }
+  | {
+      type: 'offline-paused'
+      bytesDownloaded: number
+      sizeBytes: number
+    }
+  | { type: 'offline-failed'; reason: VideoDownloadFailureReason }
+
+export type HeadsetLibraryRow = {
+  videoId: string
+  title: string
+  activity: HeadsetCatalogVideo['activity'] | null
+  durationSec: number | null
+  sizeBytes: number
+  version: number | null
+  thumbnailUrl: string | null
+  inCatalog: boolean
+  cell: HeadsetLibraryCell
+}
+
+function entryByVideoId(
+  snapshot: HeadsetLibrarySnapshot | null,
+): Map<string, HeadsetLibraryEntry> {
+  const map = new Map<string, HeadsetLibraryEntry>()
+  if (!snapshot) return map
+  for (const entry of snapshot.videos) {
+    map.set(entry.videoId, entry)
+  }
+  return map
+}
+
+function downloadingCell(
+  entry: HeadsetLibraryEntry,
+  catalogSize: number,
+  online: boolean,
+): HeadsetLibraryCell {
+  const sizeBytes = entry.sizeBytes ?? catalogSize
+  const percent = downloadPercent(entry.bytesDownloaded ?? 0, sizeBytes)
+  if (online) {
+    return { type: 'downloading', percent, stalled: entry.stalled === true }
+  }
+  return {
+    type: 'offline-downloading',
+    percent,
+    stalled: entry.stalled === true,
+  }
+}
+
+function pausedCell(
+  entry: HeadsetLibraryEntry,
+  catalogSize: number,
+  online: boolean,
+): HeadsetLibraryCell {
+  const sizeBytes = entry.sizeBytes ?? catalogSize
+  if (online) {
+    return {
+      type: 'paused',
+      bytesDownloaded: entry.bytesDownloaded ?? 0,
+      sizeBytes,
+    }
+  }
+  return {
+    type: 'offline-paused',
+    bytesDownloaded: entry.bytesDownloaded ?? 0,
+    sizeBytes,
+  }
+}
+
+function cellForCatalogEntry(
+  entry: HeadsetLibraryEntry | undefined,
+  catalog: HeadsetCatalogVideo,
+  online: boolean,
+  reportedAt: string | undefined,
+): HeadsetLibraryCell {
+  if (
+    !entry ||
+    entry.status === 'absent' ||
+    (entry.status === 'failed' && entry.reason === 'cancelled')
+  ) {
+    return online ? { type: 'absent' } : { type: 'offline-absent' }
+  }
+
+  if (entry.status === 'ready') {
+    const onHeadset = online
+      ? { type: 'on-headset' as const }
+      : { type: 'offline-on-headset' as const, reportedAt }
+    if ((entry.version ?? 0) < catalog.version) {
+      return online ? { type: 'update-available' } : onHeadset
+    }
+    return onHeadset
+  }
+
+  if (entry.status === 'downloading') {
+    return downloadingCell(entry, catalog.sizeBytes, online)
+  }
+
+  if (entry.status === 'paused') {
+    return pausedCell(entry, catalog.sizeBytes, online)
+  }
+
+  if (online) {
+    return { type: 'failed', reason: entry.reason ?? 'network' }
+  }
+  return { type: 'offline-failed', reason: entry.reason ?? 'network' }
+}
+
+export function buildHeadsetLibraryRows(
+  catalog: HeadsetCatalogVideo[],
+  snapshot: HeadsetLibrarySnapshot | null,
+  online: boolean,
+): HeadsetLibraryRow[] {
+  const entries = entryByVideoId(snapshot)
+  const catalogIds = new Set(catalog.map((video) => video.id))
+  const reportedAt = snapshot?.reportedAt
+
+  const catalogRows: HeadsetLibraryRow[] = catalog.map((video) => ({
+    videoId: video.id,
+    title: video.title,
+    activity: video.activity,
+    durationSec: video.durationSec,
+    sizeBytes: video.sizeBytes,
+    version: video.version,
+    thumbnailUrl: video.thumbnailUrl,
+    inCatalog: true,
+    cell: cellForCatalogEntry(entries.get(video.id), video, online, reportedAt),
+  }))
+
+  const extras: HeadsetLibraryRow[] = []
+  for (const entry of snapshot?.videos ?? []) {
+    if (catalogIds.has(entry.videoId)) continue
+    extras.push({
+      videoId: entry.videoId,
+      title: 'Not in catalog',
+      activity: null,
+      durationSec: null,
+      sizeBytes: entry.sizeBytes ?? 0,
+      version: entry.version ?? null,
+      thumbnailUrl: null,
+      inCatalog: false,
+      cell: { type: 'not-in-catalog' },
+    })
+  }
+
+  return [...catalogRows, ...extras]
+}
+
+export function countReadyOnHeadset(
+  catalog: HeadsetCatalogVideo[],
+  snapshot: HeadsetLibrarySnapshot | null,
+): number {
+  const entries = entryByVideoId(snapshot)
+  return catalog.filter((video) => entries.get(video.id)?.status === 'ready')
+    .length
+}
+
+export function usedBytesOnHeadset(
+  snapshot: HeadsetLibrarySnapshot | null,
+): number {
+  if (!snapshot) return 0
+  return snapshot.videos.reduce((sum, entry) => {
+    if (entry.status !== 'ready') return sum
+    return sum + (entry.sizeBytes ?? 0)
+  }, 0)
+}
