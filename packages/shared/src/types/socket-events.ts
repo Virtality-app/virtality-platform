@@ -163,6 +163,148 @@ export const CASTING_RELAY: RelayEventMap = {
   Candidate: { name: CASTING_EVENT.Candidate, payload: true },
 } as const
 
+// ── Immersive Video events ─────────────────────────────────────────────────
+
+export const VIDEO_EVENT = {
+  LibraryStateRequest: 'videoLibraryStateRequest',
+  LibraryState: 'videoLibraryState',
+  DownloadStart: 'videoDownloadStart',
+  DownloadAck: 'videoDownloadAck',
+  DownloadProgress: 'videoDownloadProgress',
+  DownloadComplete: 'videoDownloadComplete',
+  DownloadFailed: 'videoDownloadFailed',
+  DownloadPause: 'videoDownloadPause',
+  DownloadPaused: 'videoDownloadPaused',
+  DownloadCancel: 'videoDownloadCancel',
+  Delete: 'videoDelete',
+  Play: 'videoPlay',
+  PlayAck: 'videoPlayAck',
+  Pause: 'videoPause',
+  Resume: 'videoResume',
+  Stop: 'videoStop',
+  Recenter: 'videoRecenter',
+  PlaybackProgress: 'videoPlaybackProgress',
+  Ended: 'videoEnded',
+} as const
+
+export type VideoEventKey = keyof typeof VIDEO_EVENT
+
+export const VIDEO_RELAY: RelayEventMap = {
+  LibraryStateRequest: {
+    name: VIDEO_EVENT.LibraryStateRequest,
+    payload: false,
+  },
+  LibraryState: { name: VIDEO_EVENT.LibraryState, payload: true },
+  DownloadStart: { name: VIDEO_EVENT.DownloadStart, payload: true },
+  DownloadAck: { name: VIDEO_EVENT.DownloadAck, payload: true },
+  DownloadProgress: { name: VIDEO_EVENT.DownloadProgress, payload: true },
+  DownloadComplete: { name: VIDEO_EVENT.DownloadComplete, payload: true },
+  DownloadFailed: { name: VIDEO_EVENT.DownloadFailed, payload: true },
+  DownloadPause: { name: VIDEO_EVENT.DownloadPause, payload: true },
+  DownloadPaused: { name: VIDEO_EVENT.DownloadPaused, payload: true },
+  DownloadCancel: { name: VIDEO_EVENT.DownloadCancel, payload: true },
+  Delete: { name: VIDEO_EVENT.Delete, payload: true },
+  Play: { name: VIDEO_EVENT.Play, payload: true },
+  PlayAck: { name: VIDEO_EVENT.PlayAck, payload: true },
+  Pause: { name: VIDEO_EVENT.Pause, payload: false },
+  Resume: { name: VIDEO_EVENT.Resume, payload: false },
+  Stop: { name: VIDEO_EVENT.Stop, payload: false },
+  Recenter: { name: VIDEO_EVENT.Recenter, payload: false },
+  PlaybackProgress: { name: VIDEO_EVENT.PlaybackProgress, payload: true },
+  Ended: { name: VIDEO_EVENT.Ended, payload: true },
+} as const
+
+export type VideoIdPayload = {
+  videoId: string
+}
+
+export const VIDEO_DEVICE_STATUS = {
+  Absent: 'absent',
+  Downloading: 'downloading',
+  /** Physio paused it. `.part` kept; resumed only by a new `DownloadStart`. */
+  Paused: 'paused',
+  Ready: 'ready',
+  Failed: 'failed',
+} as const
+
+export type VideoDeviceStatus =
+  (typeof VIDEO_DEVICE_STATUS)[keyof typeof VIDEO_DEVICE_STATUS]
+
+export type VideoLibraryEntry = {
+  videoId: string
+  status: VideoDeviceStatus
+  /** Version of the file on disk. Present when status is `ready`; also for a resumable `.part`. */
+  version?: number
+  /** Present while `downloading` or `paused`. */
+  bytesDownloaded?: number
+  sizeBytes?: number
+  /** Present when status is `failed`. */
+  reason?: VideoDownloadFailureReason
+}
+
+export type VideoLibraryStatePayload = {
+  videos: VideoLibraryEntry[]
+  /** Free bytes on the volume that stores videos. Console uses this to warn before a download. */
+  freeBytes: number
+}
+
+/**
+ * Body of `PUT /api/v1/device-videos` (headset → API). Same shape as the socket
+ * payload plus the Headset Identity; the server replaces all DeviceVideo rows
+ * for that Headset Identity with `videos` and stamps `reportedAt`.
+ */
+export type DeviceVideoReportBody = VideoLibraryStatePayload & {
+  deviceId: string
+}
+
+export type VideoDownloadProgressPayload = {
+  videoId: string
+  bytesDownloaded: number
+  sizeBytes: number
+  /** True while the headset is retrying after a lost connection; bytes are not advancing. */
+  stalled: boolean
+}
+
+export type VideoDownloadPausedPayload = {
+  videoId: string
+  bytesDownloaded: number
+}
+
+export type VideoDownloadCompletePayload = {
+  videoId: string
+  version: number
+}
+
+export const VIDEO_DOWNLOAD_FAILURE_REASON = {
+  InsufficientStorage: 'insufficient_storage',
+  /** Non-recoverable transport or I/O error (4xx other than 403/410, disk I/O). Transient loss is retried, not failed. */
+  Network: 'network',
+  ChecksumMismatch: 'checksum_mismatch',
+  Cancelled: 'cancelled',
+  /** CDN still answered 403/410 after the headset refreshed the Download Descriptor once. `.part` kept. */
+  UrlExpired: 'url_expired',
+  /** The API returned 404 for the descriptor: video unpublished/deleted, or this headset is no longer paired. */
+  Unavailable: 'unavailable',
+} as const
+
+export type VideoDownloadFailureReason =
+  (typeof VIDEO_DOWNLOAD_FAILURE_REASON)[keyof typeof VIDEO_DOWNLOAD_FAILURE_REASON]
+
+export type VideoDownloadFailedPayload = {
+  videoId: string
+  reason: VideoDownloadFailureReason
+}
+
+export type VideoPlayPayload = VideoIdPayload
+
+export type VideoPlaybackProgressPayload = {
+  videoId: string
+  positionSec: number
+  durationSec: number
+  /** True while playback is paused; progress keeps emitting so a (re)joining console can re-attach. */
+  paused: boolean
+}
+
 // ── Payload types (wire‑format, dependency‑free) ───────────────────────────
 
 export type ExercisePayload = {

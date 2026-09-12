@@ -1,6 +1,7 @@
 import { Socket } from 'socket.io'
 import {
   PROGRAM_RELAY,
+  VIDEO_RELAY,
   CASTING_RELAY,
   CONNECTION_EVENT,
   ROOM_EVENT,
@@ -386,6 +387,7 @@ function registerSocketHandlers(
   registerRelayEvents(PROGRAM_RELAY, roomCode, socket)
   registerRelayEvents(CASTING_RELAY, roomCode, socket)
   registerRelayEvents(DEVICE_RELAY, roomCode, socket)
+  registerRelayEvents(VIDEO_RELAY, roomCode, socket)
 }
 
 // ── Public API ─────────────────────────────────────────────────────────────
