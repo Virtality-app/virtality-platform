@@ -49,6 +49,8 @@ CREATE TABLE "ImmersiveVideoRetiredObject" (
     CONSTRAINT "ImmersiveVideoRetiredObject_pkey" PRIMARY KEY ("id")
 );
 
+-- Library Mirror header. deviceId is Headset Identity (Device.deviceId), not
+-- Device.id. No FK to Device: rows belong to the hardware across re-pairing.
 -- CreateTable
 CREATE TABLE "DeviceVideoReport" (
     "deviceId" TEXT NOT NULL,
@@ -58,6 +60,8 @@ CREATE TABLE "DeviceVideoReport" (
     CONSTRAINT "DeviceVideoReport_pkey" PRIMARY KEY ("deviceId")
 );
 
+-- Library Mirror rows. No FK to ImmersiveVideo: a headset may still report a
+-- videoId the catalog has unpublished or deleted.
 -- CreateTable
 CREATE TABLE "DeviceVideo" (
     "deviceId" TEXT NOT NULL,

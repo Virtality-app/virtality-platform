@@ -1,3 +1,5 @@
+// Immersive Video catalog and headset-written Library Mirror.
+
 enum ImmersiveVideoActivity {
   CYCLING
   WALKING
@@ -29,11 +31,11 @@ enum DeviceVideoFailureReason {
 }
 
 model ImmersiveVideo {
-  id          String                     @id @default(cuid())
-  title       String                     @default("")
-  activity    ImmersiveVideoActivity     @default(CYCLING)
+  id          String                      @id @default(cuid())
+  title       String                      @default("")
+  activity    ImmersiveVideoActivity      @default(CYCLING)
   description String?
-  state       ImmersiveVideoCatalogState @default(Draft)
+  state       ImmersiveVideoCatalogState  @default(Draft)
   priorState  ImmersiveVideoCatalogState?
 
   version      Int     @default(0)
@@ -73,6 +75,9 @@ model ImmersiveVideoRetiredObject {
   @@unique([videoId, version])
 }
 
+/// Header of one headset's Library Mirror. Keyed by Headset Identity
+/// (`Device.deviceId`), not `Device.id`, and has no FK to Device: re-pairing
+/// must not move or clear the rows, and the retention job owns deletion.
 model DeviceVideoReport {
   deviceId   String   @id
   freeBytes  BigInt
@@ -81,6 +86,8 @@ model DeviceVideoReport {
   videos DeviceVideo[]
 }
 
+/// One Library State entry in a Library Mirror snapshot. No FK to
+/// ImmersiveVideo: a headset may still hold a file the catalog no longer has.
 model DeviceVideo {
   deviceId        String
   videoId         String
