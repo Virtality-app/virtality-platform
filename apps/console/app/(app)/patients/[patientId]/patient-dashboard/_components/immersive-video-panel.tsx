@@ -1,21 +1,14 @@
 'use client'
 
+import { cn } from '@/lib/utils'
 import { ImmersiveVideoProgress } from './immersive-video-progress'
 import { ImmersiveVideoSelectedCard } from './immersive-video-selected-card'
 
-export function ImmersiveVideoPanel({
-  cardClassName,
-  progressClassName,
-}: {
-  cardClassName?: string
-  progressClassName?: string
-}) {
+export function ImmersiveVideoPanel({ className }: { className?: string }) {
   return (
-    <>
-      <ImmersiveVideoSelectedCard className={cardClassName} />
-      {progressClassName ? (
-        <ImmersiveVideoProgress className={progressClassName} />
-      ) : null}
-    </>
+    <div className={cn('flex flex-col gap-3', className)}>
+      <ImmersiveVideoSelectedCard />
+      <ImmersiveVideoProgress />
+    </div>
   )
 }

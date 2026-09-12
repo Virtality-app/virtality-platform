@@ -38,16 +38,28 @@ const PatientDashboard = () => {
   const { videoActive } = useImmersiveVideoSession()
   const isImmersive = state.selectedMode === 'immersive'
   const showVideoBanner = videoActive && !isImmersive
-  const gridFlags = { showExpiredBanner, showCasting }
+  const gridFlags = {
+    showExpiredBanner,
+    showCasting,
+    hideExerciseList: isImmersive,
+  }
   const exerciseListClassName = dashboardExerciseListClassName(gridFlags)
-  const chartClassName = dashboardChartClassName(showExpiredBanner)
-  const castingClassName = dashboardCastingClassName(showExpiredBanner)
+  const chartClassName = dashboardChartClassName(showExpiredBanner, isImmersive)
+  const castingClassName = dashboardCastingClassName(
+    showExpiredBanner,
+    isImmersive,
+  )
 
   return (
     <div className='min-h-screen-with-nav flex justify-center'>
       <div className={dashboardGridClassName(gridFlags)}>
         {/* INFO PANEL */}
-        <div className={dashboardInfoPanelClassName(showExpiredBanner)}>
+        <div
+          className={dashboardInfoPanelClassName(
+            showExpiredBanner,
+            isImmersive,
+          )}
+        >
           <VrAccessExpiredBanner />
           {showVideoBanner ? <VideoActiveBanner /> : null}
           <div className='bg-card rounded-xl border p-4 shadow'>
@@ -58,14 +70,13 @@ const PatientDashboard = () => {
           </div>
         </div>
 
-        {isImmersive ? (
-          <ImmersiveVideoPanel
-            cardClassName={exerciseListClassName}
-            progressClassName={showCasting ? undefined : chartClassName}
-          />
-        ) : (
+        {isImmersive ? null : (
           <ExerciseList className={exerciseListClassName} />
         )}
+
+        {isImmersive && !showCasting ? (
+          <ImmersiveVideoPanel className={chartClassName} />
+        ) : null}
 
         {showCasting ? (
           <CastingContent className={castingClassName} />
