@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils'
 import { storageUsedRatio } from '@/lib/headset-library-format'
-import { HeadsetPresenceDot } from './headset-presence-dot'
+import { HeadsetStatusLine } from './headset-status-line'
 
 export function HeadsetListRow({
   name,
@@ -36,20 +36,21 @@ export function HeadsetListRow({
         selected && 'bg-muted',
       )}
     >
-      <div className='flex items-start gap-2'>
-        <HeadsetPresenceDot online={online} />
-        <div className='min-w-0 flex-1'>
-          <p className='truncate font-medium'>{name}</p>
-          <p className='text-muted-foreground text-xs'>
-            {readyCount} of {totalCount} videos
-          </p>
-          <p className='text-muted-foreground text-xs'>{subtitle}</p>
-          <div className='bg-muted mt-1.5 h-1 overflow-hidden rounded-full'>
-            <div
-              className='bg-primary h-full'
-              style={{ width: `${usedRatio * 100}%` }}
-            />
-          </div>
+      <div className='min-w-0'>
+        <p className='truncate font-medium'>{name}</p>
+        <p className='text-muted-foreground text-xs'>
+          {readyCount} of {totalCount} videos
+        </p>
+        <HeadsetStatusLine
+          online={online}
+          subtitle={subtitle}
+          className='text-xs'
+        />
+        <div className='bg-muted mt-1.5 h-1 overflow-hidden rounded-full'>
+          <div
+            className='bg-primary h-full'
+            style={{ width: `${usedRatio * 100}%` }}
+          />
         </div>
       </div>
     </button>

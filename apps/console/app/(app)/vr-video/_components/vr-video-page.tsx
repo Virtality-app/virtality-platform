@@ -8,7 +8,6 @@ import {
 } from '@virtality/ui/components/card'
 import { HeadsetReplacementDialog } from '@/components/headset-replacement-dialog'
 import { useVrVideoPage } from '@/hooks/use-vr-video-page'
-import { H1, P } from '@/components/ui/typography'
 import { headsetStorageSubtitle } from '@/lib/headset-library-format'
 import { HeadsetDidNotConfirmDialog } from './headset-did-not-confirm-dialog'
 import { HeadsetLibrary } from './headset-library'
@@ -28,13 +27,6 @@ export function VrVideoPage() {
 
   return (
     <div className='flex flex-col gap-6 p-8'>
-      <div>
-        <H1>VR video</H1>
-        <P className='text-muted-foreground'>
-          Download immersive videos to your headsets before the session. Keep
-          the headset on and the app open; you can leave this page.
-        </P>
-      </div>
       <div className='grid gap-4 lg:grid-cols-3'>
         <Card className='lg:col-span-1'>
           <CardHeader>
