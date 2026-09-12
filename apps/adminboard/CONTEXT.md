@@ -114,7 +114,7 @@ _Avoid_: Thumbnail tool, frame grabber
 The Review action that promotes a complete Exercise Draft to Enabled Exercise row(s) for the family.
 _Avoid_: Publish, go live
 
-### Immersive Videos
+### Immersive Video
 
 **Immersive Video**:
 A catalog entry for one 180° FPV clip (cycling or walking) that physios push to headsets from the console. Owns title, activity, description, thumbnail and one bucket object per version.
