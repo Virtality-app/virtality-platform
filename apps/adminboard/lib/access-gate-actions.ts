@@ -56,7 +56,10 @@ export function formatSetAccessGateTrialSuccessMessage(
   result: SetAccessGateTrialResult,
 ): string {
   const verb = result.mode === 'extended' ? 'Extended' : 'Issued'
-  return `${verb} trial access through ${formatExtensionClockEnd(result.trialEnd)}.`
+  const through = formatExtensionClockEnd(result.trialEnd)
+  return result.testerDemoted
+    ? `${verb} trial access through ${through} and changed the account role to user.`
+    : `${verb} trial access through ${through}.`
 }
 
 export function formatRevokeAccessGateSuccessMessage(

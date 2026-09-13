@@ -95,6 +95,7 @@ export type SetAccessGateTrialResult = {
   previousTrialEnd: Date | null
   trialStart: Date
   trialEnd: Date
+  testerDemoted: boolean
   auditId: string
 }
 
@@ -313,12 +314,14 @@ export async function setAccessGateTrialForCustomer(
   let previousTrialEnd: Date | null = null
   let hadOpenTrial = false
   let trialEndFallback: Date = now
+  let testerDemoted = false
 
   const { result: saved, auditId } = await performAuditedStaffAction(
     store,
     input,
     'set_access_gate_trial',
     async (user) => {
+      testerDemoted = await demoteTesterIfNeeded(store, user)
       const open = await store.findOpenAccessGateByUserId(user.id)
       previousTrialEnd = open?.trialEnd ?? null
       hadOpenTrial = open?.trialEnd != null
@@ -360,6 +363,7 @@ export async function setAccessGateTrialForCustomer(
     previousTrialEnd,
     trialStart: saved.trialStart ?? now,
     trialEnd: saved.trialEnd ?? trialEndFallback,
+    testerDemoted,
     auditId,
   }
 }

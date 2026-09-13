@@ -8,6 +8,7 @@ import {
   StaffAccessGateOpenNotFoundError,
   StaffAccessGateValidationError,
   type StaffAccessGateStore,
+  type StaffAccessGateTargetUser,
 } from './staff-access-gate.ts'
 
 const NOW = new Date('2026-08-10T12:00:00.000Z')
@@ -51,7 +52,7 @@ function openGate(
 
 function createStore(
   overrides: Partial<{
-    user: typeof USER | null
+    user: StaffAccessGateTargetUser | null
     openGate: ReturnType<typeof openGate> | null
     converted: boolean
   }> = {},
@@ -186,6 +187,47 @@ describe('setAccessGateTrialForCustomer', () => {
     expect(store.recordAudit).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'set_access_gate_trial' }),
     )
+  })
+
+  it('changes a tester to user when issuing trial access', async () => {
+    const store = createStore({
+      openGate: null,
+      user: { ...USER, role: 'tester' },
+    })
+
+    const result = await setAccessGateTrialForCustomer(
+      store,
+      {
+        userId: USER.id,
+        actorUserId: ACTOR_ID,
+        reason: 'Issue timed access',
+        amount: 7,
+        unit: 'days',
+      },
+      { now: () => NOW },
+    )
+
+    expect(store.updateRoleToUser).toHaveBeenCalledWith(USER.id)
+    expect(result.testerDemoted).toBe(true)
+  })
+
+  it('leaves a non-tester role alone when issuing trial access', async () => {
+    const store = createStore({ openGate: null })
+
+    const result = await setAccessGateTrialForCustomer(
+      store,
+      {
+        userId: USER.id,
+        actorUserId: ACTOR_ID,
+        reason: 'Issue timed access',
+        amount: 7,
+        unit: 'days',
+      },
+      { now: () => NOW },
+    )
+
+    expect(store.updateRoleToUser).not.toHaveBeenCalled()
+    expect(result.testerDemoted).toBe(false)
   })
 
   it('extends an existing timed gate from the current clock end', async () => {
