@@ -70,7 +70,9 @@ export function ImmersiveVideoFileSection({
         onChange={setIdInput}
       />
       {immersiveVideoHasFile(row) ? (
-        <p className='text-sm'>{row.filename}</p>
+        // Filenames have no spaces to wrap at; without break-all a long one
+        // widens the dialog past the viewport.
+        <p className='text-sm break-all'>{row.filename}</p>
       ) : (
         <p className='text-muted-foreground text-sm'>No file yet.</p>
       )}
