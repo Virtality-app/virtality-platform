@@ -32,10 +32,11 @@ export function toLibrarySnapshot(
   report: DeviceVideoReportView | null | undefined,
 ): HeadsetLibrarySnapshot | null {
   if (!report) return null
+  const videos = Array.isArray(report.videos) ? report.videos : []
   return {
     freeBytes: report.freeBytes,
     reportedAt: report.reportedAt,
-    videos: report.videos.map((video) => ({
+    videos: videos.map((video) => ({
       videoId: video.videoId,
       status: video.status,
       version: video.version,
@@ -76,5 +77,5 @@ export function toCatalogVideos(
       }>
     | undefined,
 ): HeadsetCatalogVideo[] {
-  return videos ?? []
+  return Array.isArray(videos) ? videos : []
 }

@@ -69,12 +69,18 @@ export type HeadsetLibraryRow = {
   cell: HeadsetLibraryCell
 }
 
+function snapshotVideos(
+  snapshot: HeadsetLibrarySnapshot | null,
+): HeadsetLibraryEntry[] {
+  const videos = snapshot?.videos
+  return Array.isArray(videos) ? videos : []
+}
+
 function entryByVideoId(
   snapshot: HeadsetLibrarySnapshot | null,
 ): Map<string, HeadsetLibraryEntry> {
   const map = new Map<string, HeadsetLibraryEntry>()
-  if (!snapshot) return map
-  for (const entry of snapshot.videos) {
+  for (const entry of snapshotVideos(snapshot)) {
     map.set(entry.videoId, entry)
   }
   return map
@@ -176,7 +182,7 @@ export function buildHeadsetLibraryRows(
   }))
 
   const extras: HeadsetLibraryRow[] = []
-  for (const entry of snapshot?.videos ?? []) {
+  for (const entry of snapshotVideos(snapshot)) {
     if (catalogIds.has(entry.videoId)) continue
     extras.push({
       videoId: entry.videoId,
@@ -206,8 +212,7 @@ export function countReadyOnHeadset(
 export function usedBytesOnHeadset(
   snapshot: HeadsetLibrarySnapshot | null,
 ): number {
-  if (!snapshot) return 0
-  return snapshot.videos.reduce((sum, entry) => {
+  return snapshotVideos(snapshot).reduce((sum, entry) => {
     if (entry.status !== 'ready') return sum
     return sum + (entry.sizeBytes ?? 0)
   }, 0)

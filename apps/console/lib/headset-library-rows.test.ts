@@ -174,4 +174,15 @@ describe('buildHeadsetLibraryRows', () => {
     expect(rows).toHaveLength(1)
     expect(rows[0].cell).toEqual({ type: 'offline-absent' })
   })
+
+  it('does not crash when the headset omits videos', () => {
+    const rows = buildHeadsetLibraryRows(
+      [trail],
+      { freeBytes: 8 } as HeadsetLibrarySnapshot,
+      true,
+    )
+
+    expect(rows).toHaveLength(1)
+    expect(rows[0].cell).toEqual({ type: 'absent' })
+  })
 })

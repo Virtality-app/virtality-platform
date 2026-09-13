@@ -16,6 +16,7 @@ import {
   applyDownloadFailed,
   applyDownloadPaused,
   applyDownloadProgress,
+  normalizeLiveLibraryState,
   type LiveLibraryState,
 } from '@/lib/headset-library-live'
 import type { VRDevice } from '@/types/models'
@@ -104,7 +105,7 @@ export function useHeadsetLibrary(
 
     const unsubscribeVideo = subscribe(socket, VIDEO_EVENT, {
       LibraryState: (payload: VideoLibraryStatePayload) => {
-        setLibraryState(payload)
+        setLibraryState(normalizeLiveLibraryState(payload))
         setRoomComplete(true)
       },
       DownloadAck: (payload: VideoIdPayload) => {

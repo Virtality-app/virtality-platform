@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { selectedHeadsetOnline, vrVideoBanner } from './vr-video-page-state.js'
+import {
+  selectedHeadsetOnline,
+  toLibrarySnapshot,
+  vrVideoBanner,
+} from './vr-video-page-state.js'
 
 describe('vrVideoBanner', () => {
   it('asks the physio to turn the headset on when the poll is offline', () => {
@@ -38,5 +42,21 @@ describe('selectedHeadsetOnline', () => {
     expect(
       selectedHeadsetOnline({ roomComplete: true, pollOnline: false }),
     ).toBe(true)
+  })
+})
+
+describe('toLibrarySnapshot', () => {
+  it('returns an empty video list when the mirror omits videos', () => {
+    expect(
+      toLibrarySnapshot({
+        reportedAt: '2026-09-13T10:00:00.000Z',
+        freeBytes: 8,
+        videos: undefined as unknown as [],
+      }),
+    ).toEqual({
+      reportedAt: '2026-09-13T10:00:00.000Z',
+      freeBytes: 8,
+      videos: [],
+    })
   })
 })
