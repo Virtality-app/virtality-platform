@@ -23,9 +23,13 @@ const FilterBadge = ({
   return (
     <div>
       <Badge
+        variant={checked ? 'default' : 'outline'}
+        aria-pressed={checked}
         className={cn(
-          'cursor-pointer rounded-full px-2 py-1',
-          checked ? 'bg-foreground' : '',
+          'cursor-pointer rounded-full px-2 py-1 select-none',
+          checked
+            ? 'ring-primary/40 ring-2 ring-offset-1'
+            : 'hover:bg-accent hover:text-accent-foreground',
         )}
         onClick={handleClick}
       >
