@@ -57,6 +57,11 @@ app.use('*', async (c, next) => {
   try {
     await next()
 
+    if (ENV === 'development') {
+      console.log(`${c.req.method} ${c.req.path} ${c.res.status}`)
+      return
+    }
+
     httpLogger.info('http.request.completed', {
       requestId,
       method: c.req.method,
