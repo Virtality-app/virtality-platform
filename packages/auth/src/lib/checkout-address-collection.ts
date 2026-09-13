@@ -5,6 +5,10 @@
  * Subscribe path (assigned-variant-subscribe-checkout.ts), which calls
  * `stripeClient.checkout.sessions.create` directly and bypasses that hook.
  *
+ * Tax ID is required wherever Stripe supports collecting one, so business
+ * name and VAT number are mandatory in those countries; elsewhere Checkout
+ * behaves as if the option were absent.
+ *
  * Shipping address collection is disabled for now; re-add
  * `shipping_address_collection` (and `shipping: 'auto'` in
  * `customer_update`) here if it needs to come back.
@@ -26,7 +30,7 @@ export function buildCheckoutAddressCollectionParams(options?: {
 > {
   return {
     billing_address_collection: 'required',
-    tax_id_collection: { enabled: true },
+    tax_id_collection: { enabled: true, required: 'if_supported' },
     ...(options?.hasCustomer
       ? {
           customer_update: { name: 'auto', address: 'auto' },
