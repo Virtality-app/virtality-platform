@@ -10,7 +10,7 @@ const POSTHOG_READY_TIMEOUT_MS = 5_000
 
 /**
  * Keeps PostHog person + feature flags in sync after client-side sign-in.
- * Initial boot in instrumentation-client.ts only sees a session on full reload.
+ * Also covers the initial page load: instrumentation-client.ts does not identify.
  */
 export function usePostHogIdentifyOnSession(): void {
   const { data, isPending } = authClient.useSession()
