@@ -35,6 +35,7 @@ import {
   TooltipTrigger,
 } from '@virtality/ui/components/tooltip'
 import type { ExerciseThumbnailVideoSource } from '@/lib/exercise-wizard-thumbnail'
+import { immersiveVideoFileKindOf } from '@/lib/immersive-video-file-kind'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -67,9 +68,16 @@ export function ImmersiveVideoDialog({
     setDescription(row.description ?? '')
   }, [row?.id, row?.title, row?.activity, row?.description])
 
-  const videoSource: ExerciseThumbnailVideoSource | null = pendingFile
-    ? { kind: 'file', file: pendingFile }
-    : null
+  // Bundles are opaque to the browser: no frame can be grabbed from them, so
+  // the thumbnail can only be an uploaded image. The row's stored filename
+  // decides when no file is pending.
+  const fileKind = immersiveVideoFileKindOf(
+    pendingFile?.name ?? row?.filename ?? '',
+  )
+  const videoSource: ExerciseThumbnailVideoSource | null =
+    pendingFile && fileKind === 'video'
+      ? { kind: 'file', file: pendingFile }
+      : null
 
   const scheduleSave = (patch: {
     title?: string
@@ -157,6 +165,7 @@ export function ImmersiveVideoDialog({
               videoId={row.id}
               thumbnailUrl={row.thumbnailUrl}
               videoSource={videoSource}
+              imageOnly={fileKind === 'bundle'}
             />
             <ImmersiveVideoFileSection
               row={row}

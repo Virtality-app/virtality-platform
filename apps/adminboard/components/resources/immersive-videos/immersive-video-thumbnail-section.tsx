@@ -19,10 +19,13 @@ export function ImmersiveVideoThumbnailSection({
   videoId,
   thumbnailUrl,
   videoSource,
+  imageOnly = false,
 }: {
   videoId: string
   thumbnailUrl: string | null
   videoSource: ExerciseThumbnailVideoSource | null
+  /** Hide the "From video" tab; set for AssetBundles, which yield no frames. */
+  imageOnly?: boolean
 }) {
   const generator = useExerciseThumbnailGenerator(videoSource)
   const setThumbnail = useSetImmersiveVideoThumbnail()
@@ -35,6 +38,26 @@ export function ImmersiveVideoThumbnailSection({
     toast.success('Thumbnail saved.')
   }
 
+  const uploadInput = (
+    <Input
+      type='file'
+      accept='image/*'
+      disabled={isBusy}
+      onChange={(event) => {
+        const file = event.target.files?.[0]
+        if (!file) return
+        setThumbnail.mutate(
+          { id: videoId, file },
+          {
+            onSuccess: () => toast.success('Thumbnail saved.'),
+            onError: (error) =>
+              toast.error(getErrorMessage(error, 'Thumbnail failed.')),
+          },
+        )
+      }}
+    />
+  )
+
   return (
     <div className='space-y-3'>
       {thumbnailUrl ? (
@@ -45,87 +68,77 @@ export function ImmersiveVideoThumbnailSection({
           className={cn('h-24 w-24 rounded object-cover')}
         />
       ) : null}
-      <Tabs defaultValue='video'>
-        <TabsList className={cn('grid w-full grid-cols-2')}>
-          <TabsTrigger value='video' disabled={!videoSource}>
-            From video
-          </TabsTrigger>
-          <TabsTrigger value='upload'>Upload image</TabsTrigger>
-        </TabsList>
-        <TabsContent value='video' className='space-y-3 pt-2'>
-          {videoSource ? (
-            <>
-              <ExerciseWizardThumbnailControls
-                form={generator.form}
-                disabled={isBusy}
-                onChange={generator.updateField}
-                onOrientation={generator.applyOrientation}
-              />
-              <div className='flex flex-wrap items-center gap-2'>
-                <Button
-                  type='button'
-                  variant='outline'
+      {imageOnly ? (
+        uploadInput
+      ) : (
+        <Tabs defaultValue='video'>
+          <TabsList className={cn('grid w-full grid-cols-2')}>
+            <TabsTrigger value='video' disabled={!videoSource}>
+              From video
+            </TabsTrigger>
+            <TabsTrigger value='upload'>Upload image</TabsTrigger>
+          </TabsList>
+          <TabsContent value='video' className='space-y-3 pt-2'>
+            {videoSource ? (
+              <>
+                <ExerciseWizardThumbnailControls
+                  form={generator.form}
                   disabled={isBusy}
-                  onClick={() => void generator.generate()}
-                >
-                  {generator.isBusy ? (
-                    <Spinner className='mr-2 size-4' />
-                  ) : (
-                    <Camera className='mr-2 size-4' />
-                  )}
-                  Generate thumbnail
-                </Button>
-                <Button
-                  type='button'
-                  disabled={isBusy || !generator.generated}
-                  onClick={() => {
-                    if (!generator.generated) return
-                    void saveBlob(generator.generated.blob).catch((error) =>
-                      toast.error(getErrorMessage(error, 'Thumbnail failed.')),
-                    )
-                  }}
-                >
-                  {setThumbnail.isPending ? (
-                    <Spinner className='mr-2 size-4' />
-                  ) : (
-                    <Check className='mr-2 size-4' />
-                  )}
-                  Use as thumbnail
-                </Button>
-                <span className='text-muted-foreground text-xs'>
-                  {generator.status}
-                </span>
-              </div>
-              <ExerciseWizardThumbnailPreview
-                previewUrl={generator.generated?.previewUrl ?? null}
-              />
-            </>
-          ) : (
-            <p className='text-muted-foreground text-sm'>
-              Pick a video file to generate a thumbnail from it.
-            </p>
-          )}
-        </TabsContent>
-        <TabsContent value='upload' className='pt-2'>
-          <Input
-            type='file'
-            accept='image/*'
-            disabled={isBusy}
-            onChange={(event) => {
-              const file = event.target.files?.[0]
-              if (!file) return
-              setThumbnail.mutate(
-                { id: videoId, file },
-                {
-                  onSuccess: () => toast.success('Thumbnail saved.'),
-                  onError: (error) =>
-                    toast.error(getErrorMessage(error, 'Thumbnail failed.')),
-                },
-              )
-            }}
-          />
-        </TabsContent>
-      </Tabs>
+                  onChange={generator.updateField}
+                  onOrientation={generator.applyOrientation}
+                />
+                <div className='flex flex-wrap items-center gap-2'>
+                  <Button
+                    type='button'
+                    variant='outline'
+                    disabled={isBusy}
+                    onClick={() => void generator.generate()}
+                  >
+                    {generator.isBusy ? (
+                      <Spinner className='mr-2 size-4' />
+                    ) : (
+                      <Camera className='mr-2 size-4' />
+                    )}
+                    Generate thumbnail
+                  </Button>
+                  <Button
+                    type='button'
+                    disabled={isBusy || !generator.generated}
+                    onClick={() => {
+                      if (!generator.generated) return
+                      void saveBlob(generator.generated.blob).catch((error) =>
+                        toast.error(
+                          getErrorMessage(error, 'Thumbnail failed.'),
+                        ),
+                      )
+                    }}
+                  >
+                    {setThumbnail.isPending ? (
+                      <Spinner className='mr-2 size-4' />
+                    ) : (
+                      <Check className='mr-2 size-4' />
+                    )}
+                    Use as thumbnail
+                  </Button>
+                  <span className='text-muted-foreground text-xs'>
+                    {generator.status}
+                  </span>
+                </div>
+                <ExerciseWizardThumbnailPreview
+                  previewUrl={generator.generated?.previewUrl ?? null}
+                />
+              </>
+            ) : (
+              <p className='text-muted-foreground text-sm'>
+                Pick a video file to generate a thumbnail from it.
+              </p>
+            )}
+          </TabsContent>
+          <TabsContent value='upload' className='pt-2'>
+            {uploadInput}
+          </TabsContent>
+        </Tabs>
+      )}
     </div>
   )
 }
