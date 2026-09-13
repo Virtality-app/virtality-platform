@@ -25,7 +25,6 @@ import {
   uploadImmersiveVideoPart,
   type ImmersiveVideoPrisma,
 } from './immersive-video-service.ts'
-import { runImmersiveVideoVerify } from './immersive-video-verify.ts'
 
 const idInput = z.object({ id: z.string().min(1) })
 
@@ -200,12 +199,9 @@ const uploadComplete = adminAuthed
   .route({ path: '/immersive-video/upload/complete', method: 'POST' })
   .input(idInput)
   .handler(async ({ context, input }) =>
-    withImmersiveVideoErrors(() => {
-      const deps = depsFromContext(context)
-      return completeImmersiveVideoUpload(deps, input.id, (id) => {
-        void runImmersiveVideoVerify(id, deps)
-      })
-    }),
+    withImmersiveVideoErrors(() =>
+      completeImmersiveVideoUpload(depsFromContext(context), input.id),
+    ),
   )
 
 const uploadAbort = adminAuthed

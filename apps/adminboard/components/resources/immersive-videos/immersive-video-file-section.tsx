@@ -35,11 +35,7 @@ export function ImmersiveVideoFileSection({
   const idEditable = canChooseImmersiveVideoId(row)
 
   if (verifying) {
-    return (
-      <p className='text-muted-foreground text-sm'>
-        Verifying file… This runs on the server; you can leave this page.
-      </p>
-    )
+    return <p className='text-muted-foreground text-sm'>Verifying file…</p>
   }
 
   if (isThisUpload) {

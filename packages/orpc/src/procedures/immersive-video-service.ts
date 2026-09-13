@@ -476,10 +476,15 @@ export async function immersiveVideoUploadStatus(
   }
 }
 
+/**
+ * Completes the multipart upload and verifies inline. Verify is one
+ * HeadObject, so the caller gets the settled row (Draft or Published, or the
+ * failure notice) instead of a transient Verifying it would have to poll for.
+ * The row still passes through Verifying so the sweep recovers a crash here.
+ */
 export async function completeImmersiveVideoUpload(
   deps: ServiceDeps,
   id: string,
-  runVerify: (id: string) => void,
 ): Promise<ImmersiveVideoAdminRow> {
   const row = await loadVideo(deps.prisma, id)
   if (!row.uploadId || !row.uploadObjectKey) {
@@ -506,12 +511,11 @@ export async function completeImmersiveVideoUpload(
 
   // The multipart upload no longer exists after Complete; drop the id so the
   // NO_UPLOAD guards stop routing status/abort/delete at a dead UploadId.
-  const updated = await deps.prisma.immersiveVideo.update({
+  await deps.prisma.immersiveVideo.update({
     where: { id },
     data: { state: 'Verifying', uploadId: null },
   })
-  void runVerify(id)
-  return toImmersiveVideoAdminRow(updated)
+  return runImmersiveVideoVerify(id, deps)
 }
 
 export async function abortImmersiveVideoUpload(
@@ -546,7 +550,7 @@ export async function abortImmersiveVideoUpload(
 export async function runImmersiveVideoVerify(
   id: string,
   deps: ServiceDeps,
-): Promise<ImmersiveVideoAdminRow | null> {
+): Promise<ImmersiveVideoAdminRow> {
   const row = await loadVideo(deps.prisma, id)
   if (row.state !== 'Verifying' || !row.uploadObjectKey) {
     return toImmersiveVideoAdminRow(row)

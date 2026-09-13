@@ -394,7 +394,7 @@ describe('immersive video catalog', () => {
     ).rejects.toThrow('BAD_PART_SIZE')
   })
 
-  it('upload.complete drops the dead uploadId while keeping the verify inputs', async () => {
+  it('upload.complete verifies inline and returns the settled row', async () => {
     const { prisma, state } = createPrisma(
       baseRow({
         state: 'Republishing',
@@ -411,24 +411,57 @@ describe('immersive video catalog', () => {
       listParts: vi.fn(async () => [
         { partNumber: 1, etag: '"a"', checksumSha256: 'sum-a' },
       ]),
+      headObject: vi.fn(async () => ({
+        contentLength: 10,
+        checksumSha256: 'composite-sum',
+      })),
     })
 
-    const row = await completeImmersiveVideoUpload(
-      { prisma, s3 },
-      'video-1',
-      () => undefined,
-    )
-    expect(row.state).toBe('Verifying')
+    const row = await completeImmersiveVideoUpload({ prisma, s3 }, 'video-1')
+    expect(s3.completeMultipartUpload).toHaveBeenCalledTimes(1)
+    expect(s3.headObject).toHaveBeenCalledWith({
+      key: 'immersive-videos/video-1.mp4',
+    })
+    expect(row.state).toBe('Published')
+    expect(row.version).toBe(2)
+    expect(state.row.checksum).toBe('composite-sum')
+    // The dead UploadId is gone (S3 answers NoSuchUpload once Complete
+    // succeeds), so abort/status/complete cannot route at it again.
     expect(state.row.uploadId).toBeNull()
-    expect(state.row.uploadObjectKey).toBe('immersive-videos/video-1.mp4')
-    expect(state.row.uploadSizeBytes).toBe(BigInt(10))
-
-    // A second complete/abort/status on the verifying row must not reach S3
-    // with the dead UploadId (S3 answers NoSuchUpload once Complete succeeds).
     await expect(
       abortImmersiveVideoUpload({ prisma, s3 }, 'video-1'),
     ).rejects.toThrow('NO_UPLOAD')
     expect(s3.abortMultipartUpload).not.toHaveBeenCalled()
+  })
+
+  it('upload.complete returns the failure row when the object did not land whole', async () => {
+    const { prisma, state } = createPrisma(
+      baseRow({
+        state: 'Uploading',
+        priorState: 'Draft',
+        uploadId: 'upload-1',
+        uploadObjectKey: 'immersive-videos/video-1.mp4',
+        uploadFilename: 'trail.mp4',
+        uploadSizeBytes: BigInt(10),
+      }),
+    )
+    const s3 = createS3({
+      listParts: vi.fn(async () => [
+        { partNumber: 1, etag: '"a"', checksumSha256: 'sum-a' },
+      ]),
+      headObject: vi.fn(async () => ({
+        contentLength: 9,
+        checksumSha256: 'x',
+      })),
+    })
+
+    const row = await completeImmersiveVideoUpload({ prisma, s3 }, 'video-1')
+    expect(row.state).toBe('Draft')
+    expect(row.verifyFailedAt).not.toBeNull()
+    expect(state.row.objectKey).toBeNull()
+    expect(s3.deleteObject).toHaveBeenCalledWith({
+      key: 'immersive-videos/video-1.mp4',
+    })
   })
 
   it('upload.abort restores priorState', async () => {
