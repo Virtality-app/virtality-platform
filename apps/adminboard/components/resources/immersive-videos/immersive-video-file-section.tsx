@@ -5,7 +5,10 @@ import type { ImmersiveVideoPickedFile } from '@/components/resources/immersive-
 import { ImmersiveVideoIdField } from '@/components/resources/immersive-videos/immersive-video-id-field'
 import { ImmersiveVideoUploadProgress } from '@/components/resources/immersive-videos/immersive-video-upload-progress'
 import { Button } from '@/components/ui/button'
-import { immersiveVideoHasFile } from '@/lib/immersive-video-admin-row'
+import {
+  immersiveVideoHasFile,
+  liveImmersiveVideoUploadProgress,
+} from '@/lib/immersive-video-admin-row'
 import type { ImmersiveVideoAdminRow } from '@/lib/immersive-video-admin-row'
 import {
   canChooseImmersiveVideoId,
@@ -42,8 +45,10 @@ export function ImmersiveVideoFileSection({
     return (
       <div className='space-y-2'>
         <ImmersiveVideoUploadProgress
-          uploadedBytes={upload.uploadedBytes}
-          totalBytes={upload.totalBytes}
+          {...liveImmersiveVideoUploadProgress(
+            upload.uploadedBytes,
+            upload.totalBytes,
+          )}
         />
         <Button
           type='button'

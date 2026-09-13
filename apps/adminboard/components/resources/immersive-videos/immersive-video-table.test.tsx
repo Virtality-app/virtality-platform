@@ -111,7 +111,7 @@ describe('ImmersiveVideoTable', () => {
     const badges = screen.getAllByTestId('immersive-video-state-badge')
     expect(badges.map((badge) => badge.textContent)).toEqual([
       'Draft · no file',
-      'Uploading 33 %',
+      'Uploading',
       'Verifying',
       'Draft',
       'Published',

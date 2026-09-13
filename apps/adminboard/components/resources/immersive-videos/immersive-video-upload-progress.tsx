@@ -1,22 +1,18 @@
 'use client'
 
-import { formatImmersiveVideoUploadProgress } from '@/lib/immersive-video-admin-row'
 import { cn } from '@/lib/utils'
 
+/** One progress line for an upload: a label above a bar at `percent`. */
 export function ImmersiveVideoUploadProgress({
-  uploadedBytes,
-  totalBytes,
+  label,
+  percent,
 }: {
-  uploadedBytes: number
-  totalBytes: number
+  label: string
+  percent: number
 }) {
-  const percent =
-    totalBytes === 0 ? 0 : Math.round((uploadedBytes / totalBytes) * 100)
   return (
     <div className='space-y-1'>
-      <p className='text-muted-foreground text-sm'>
-        {formatImmersiveVideoUploadProgress(uploadedBytes, totalBytes)}
-      </p>
+      <p className='text-muted-foreground text-sm'>{label}</p>
       <div className='h-2 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800'>
         <div
           className={cn('h-full bg-zinc-900 dark:bg-zinc-50')}

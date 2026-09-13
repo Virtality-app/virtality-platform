@@ -78,10 +78,6 @@ export function immersiveVideoRowActions(
 export function immersiveVideoStateBadgeLabel(
   row: ImmersiveVideoAdminRow,
 ): string {
-  if (row.state === 'Uploading') {
-    const percent = immersiveVideoUploadPercent(row)
-    return percent == null ? 'Uploading' : `Uploading ${percent} %`
-  }
   if (row.state === 'Draft' && !immersiveVideoHasFile(row)) {
     return 'Draft · no file'
   }
@@ -121,13 +117,34 @@ export function formatImmersiveVideoDuration(
   return `${mm}:${ss}`
 }
 
-export function formatImmersiveVideoUploadProgress(
+export type ImmersiveVideoUploadProgressView = {
+  label: string
+  percent: number
+}
+
+/** Progress for the upload running in this browser tab, with byte counts. */
+export function liveImmersiveVideoUploadProgress(
   uploadedBytes: number,
   totalBytes: number,
-): string {
+): ImmersiveVideoUploadProgressView {
   const percent =
     totalBytes === 0 ? 0 : Math.round((uploadedBytes / totalBytes) * 100)
-  return `${formatImmersiveVideoSize(uploadedBytes)} of ${formatImmersiveVideoSize(totalBytes)} · ${percent} %`
+  return {
+    label: `${formatImmersiveVideoSize(uploadedBytes)} of ${formatImmersiveVideoSize(totalBytes)} · ${percent} %`,
+    percent,
+  }
+}
+
+/**
+ * Progress for an Uploading row this tab is not driving (paused, or started
+ * elsewhere); only the server's part count is known.
+ */
+export function storedImmersiveVideoUploadProgress(
+  row: ImmersiveVideoAdminRow,
+): ImmersiveVideoUploadProgressView | null {
+  const percent = immersiveVideoUploadPercent(row)
+  if (percent == null) return null
+  return { label: `Paused · ${percent} %`, percent }
 }
 
 export function publishPreconditionLabel(

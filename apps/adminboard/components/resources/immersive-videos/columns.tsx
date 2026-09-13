@@ -10,14 +10,40 @@ import type { ImmersiveVideoAdminRow } from '@/lib/immersive-video-admin-row'
 import {
   formatImmersiveVideoDuration,
   formatImmersiveVideoSize,
-  immersiveVideoUploadPercent,
+  liveImmersiveVideoUploadProgress,
+  storedImmersiveVideoUploadProgress,
 } from '@/lib/immersive-video-admin-row'
 import { ColumnDef } from '@tanstack/react-table'
 import { cn } from '@/lib/utils'
 
 export function createImmersiveVideoColumns(
   handlers: ImmersiveVideoRowActionHandlers,
+  options: {
+    /** The Progress column only earns its space while a row is Uploading. */
+    showProgress: boolean
+  },
 ): ColumnDef<ImmersiveVideoAdminRow>[] {
+  const progressColumn: ColumnDef<ImmersiveVideoAdminRow> = {
+    id: 'progress',
+    header: 'Progress',
+    enableSorting: false,
+    cell: ({ row }) => {
+      if (row.original.state !== 'Uploading') return null
+      const progress =
+        handlers.upload.activeVideoId === row.original.id
+          ? liveImmersiveVideoUploadProgress(
+              handlers.upload.uploadedBytes,
+              handlers.upload.totalBytes,
+            )
+          : storedImmersiveVideoUploadProgress(row.original)
+      return progress ? (
+        <div className='min-w-40'>
+          <ImmersiveVideoUploadProgress {...progress} />
+        </div>
+      ) : null
+    },
+  }
+
   return [
     {
       accessorKey: 'thumbnailUrl',
@@ -56,17 +82,6 @@ export function createImmersiveVideoColumns(
       cell: ({ row }) => (
         <div className='space-y-1'>
           <ImmersiveVideoStateBadge row={row.original} />
-          {row.original.state === 'Uploading' &&
-          handlers.upload.activeVideoId === row.original.id ? (
-            <ImmersiveVideoUploadProgress
-              uploadedBytes={handlers.upload.uploadedBytes}
-              totalBytes={handlers.upload.totalBytes}
-            />
-          ) : row.original.uploadProgress ? (
-            <p className='text-muted-foreground text-xs'>
-              {immersiveVideoUploadPercent(row.original)} %
-            </p>
-          ) : null}
           {row.original.verifyFailedAt ? (
             <p className='text-destructive text-xs'>
               The uploaded file failed verification. Upload it again.
@@ -75,6 +90,7 @@ export function createImmersiveVideoColumns(
         </div>
       ),
     },
+    ...(options.showProgress ? [progressColumn] : []),
     {
       accessorKey: 'version',
       header: ({ column }) => <ColumnHeader column={column} title='Version' />,

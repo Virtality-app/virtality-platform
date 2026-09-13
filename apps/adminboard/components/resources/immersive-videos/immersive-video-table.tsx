@@ -50,6 +50,7 @@ export default function ImmersiveVideoTable() {
   const resumeInputRef = useRef<HTMLInputElement>(null)
 
   const data = catalog.data ?? []
+  const showProgress = data.some((row) => row.state === 'Uploading')
   const dialogRow = data.find((row) => row.id === dialogRowId) ?? null
 
   // The first upload may rename the row; the open dialog follows the new id
@@ -77,31 +78,34 @@ export default function ImmersiveVideoTable() {
 
   const columns = useMemo(
     () =>
-      createImmersiveVideoColumns({
-        upload,
-        onEdit: (row) => setDialogRowId(row.id),
-        // Kind and Video ID are chosen in the dialog's file section.
-        onUploadFile: (row) => setDialogRowId(row.id),
-        onResumeUpload: (row) => {
-          setResumeTargetId(row.id)
-          resumeInputRef.current?.click()
+      createImmersiveVideoColumns(
+        {
+          upload,
+          onEdit: (row) => setDialogRowId(row.id),
+          // Kind and Video ID are chosen in the dialog's file section.
+          onUploadFile: (row) => setDialogRowId(row.id),
+          onResumeUpload: (row) => {
+            setResumeTargetId(row.id)
+            resumeInputRef.current?.click()
+          },
+          onPublish: (row) => {
+            const reason = publishPreconditionLabel(row)
+            if (reason) {
+              toast.error(reason)
+              return
+            }
+            publish.mutate(
+              { id: row.id },
+              {
+                onError: (error) =>
+                  toast.error(getErrorMessage(error, 'Failed to publish')),
+              },
+            )
+          },
         },
-        onPublish: (row) => {
-          const reason = publishPreconditionLabel(row)
-          if (reason) {
-            toast.error(reason)
-            return
-          }
-          publish.mutate(
-            { id: row.id },
-            {
-              onError: (error) =>
-                toast.error(getErrorMessage(error, 'Failed to publish')),
-            },
-          )
-        },
-      }),
-    [publish, upload],
+        { showProgress },
+      ),
+    [publish, showProgress, upload],
   )
 
   const { table, globalFilter, setGlobalFilter, setColumnFilters } =
