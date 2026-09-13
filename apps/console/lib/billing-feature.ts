@@ -1,3 +1,5 @@
+import { parseBooleanFlag } from '@/lib/env-flag'
+
 /**
  * Billing UI (Profile → Billing tab, Remaining Time sidebar, renew banner)
  * is a preview/local-only feature by default: on for every non-production
@@ -14,11 +16,4 @@ export function resolveBillingFeatureEnabled(
   const override = parseBooleanFlag(flag)
   if (override !== undefined) return override
   return env !== 'production'
-}
-
-function parseBooleanFlag(value: string | undefined): boolean | undefined {
-  const normalized = value?.trim().toLowerCase()
-  if (normalized === 'true' || normalized === '1') return true
-  if (normalized === 'false' || normalized === '0') return false
-  return undefined
 }
