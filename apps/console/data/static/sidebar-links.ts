@@ -8,6 +8,7 @@ import {
   LucideProps,
 } from 'lucide-react'
 import { ForwardRefExoticComponent, RefAttributes } from 'react'
+import { resolveVrExperiencesNavEnabled } from '@/lib/vr-experiences-feature'
 
 type SidebarLink = {
   title: string
@@ -15,11 +16,18 @@ type SidebarLink = {
   icon: ForwardRefExoticComponent<
     Omit<LucideProps, 'ref'> & RefAttributes<SVGSVGElement>
   >
+  /** Omit the link from the rendered sidebar when this returns false. */
+  enabled?: () => boolean
 }
 
 const sidebarLinks: SidebarLink[] = [
   { title: 'devices', url: '/devices', icon: RectangleGogglesIcon },
-  { title: 'VR video', url: '/vr-video', icon: Film },
+  {
+    title: 'VR experiences',
+    url: '/vr-video',
+    icon: Film,
+    enabled: resolveVrExperiencesNavEnabled,
+  },
   {
     title: 'patients',
     url: '/patients',
@@ -37,5 +45,9 @@ const sidebarLinks: SidebarLink[] = [
   },
   { title: 'forms', url: '/forms', icon: ScrollText },
 ]
+
+export function getVisibleSidebarLinks(): SidebarLink[] {
+  return sidebarLinks.filter((link) => link.enabled?.() ?? true)
+}
 
 export default sidebarLinks

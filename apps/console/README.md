@@ -26,14 +26,15 @@ Auth and API traffic go to `services/server` (`http://localhost:8080`).
 
 ## Env
 
-| Variable                              | Required for local | Notes                                                                    |
-| ------------------------------------- | ------------------ | ------------------------------------------------------------------------ |
-| `NEXT_PUBLIC_ENV`                     | yes                | `development`                                                            |
-| `ENV`                                 | recommended        | `development`                                                            |
-| `NEXT_PUBLIC_BILLING_FEATURE_ENABLED` | no                 | `true`/`false`; overrides the default (billing UI on outside production) |
-| `DATABASE_URL`                        | yes                | Used by the Next proxy / Prisma                                          |
-| `NEXT_PUBLIC_POSTHOG_KEY`             | no                 | Analytics                                                                |
-| `NEXT_PUBLIC_CDN_URL` / AWS\_\*       | no                 | Uploads / media                                                          |
+| Variable                                 | Required for local | Notes                                                                           |
+| ---------------------------------------- | ------------------ | ------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_ENV`                        | yes                | `development`                                                                   |
+| `ENV`                                    | recommended        | `development`                                                                   |
+| `NEXT_PUBLIC_BILLING_FEATURE_ENABLED`    | no                 | `true`/`false`; overrides the default (billing UI on outside production)        |
+| `NEXT_PUBLIC_VR_EXPERIENCES_NAV_ENABLED` | no                 | `true`/`false`; hides the VR Experiences sidebar link when `false` (default on) |
+| `DATABASE_URL`                           | yes                | Used by the Next proxy / Prisma                                                 |
+| `NEXT_PUBLIC_POSTHOG_KEY`                | no                 | Analytics                                                                       |
+| `NEXT_PUBLIC_CDN_URL` / AWS\_\*          | no                 | Uploads / media                                                                 |
 
 After `pnpm db:migrate:dev`, sign in as the seeded admin:
 

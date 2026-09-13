@@ -11,7 +11,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar'
-import sidebarLinks from '@/data/static/sidebar-links'
+import { getVisibleSidebarLinks } from '@/data/static/sidebar-links'
 import Link from 'next/link'
 import SmallLogo from './sm-logo'
 import { BugReportForm } from '../ui/bug-report-form'
@@ -24,6 +24,7 @@ import { RemainingTimeSidebar } from './remaining-time-sidebar'
 
 const RootSidebar = () => {
   const { isMobile, setOpenMobile } = useSidebar()
+  const sidebarLinks = getVisibleSidebarLinks()
 
   const capitalizeTooltip = (title: string) => {
     return title.charAt(0).toUpperCase() + title.slice(1)
