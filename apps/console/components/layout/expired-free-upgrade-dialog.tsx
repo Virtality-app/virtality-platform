@@ -30,7 +30,7 @@ export function ExpiredFreeUpgradeDialog() {
     >
       <DialogContent showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle>Upgrade to launch VR programs</DialogTitle>
+          <DialogTitle>Subscribe to start VR programs</DialogTitle>
           <DialogDescription>
             Your access has ended. Subscribe to a plan to start VR programs
             again. You can keep browsing Console while you decide.

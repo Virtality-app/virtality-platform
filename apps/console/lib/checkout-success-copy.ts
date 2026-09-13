@@ -11,14 +11,15 @@ export function checkoutSuccessCopy(
   switch (intent) {
     case 'subscribe':
       return {
-        headline: "You're in.",
+        headline: "You're All Set",
         subcopy:
-          "Default is yours now. Here's to more time with your patients.",
+          "Thanks for subscribing, we're excited to support your next steps.",
       }
     case 'renew':
       return {
-        headline: 'Thanks for staying with us.',
-        subcopy: 'Your Default access carries on, no gap, no hassle.',
+        headline: 'Thanks for Staying With Us',
+        subcopy:
+          'Your renewal keeps everything running smoothly. We appreciate you.',
       }
   }
 }

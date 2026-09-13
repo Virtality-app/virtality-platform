@@ -15,11 +15,11 @@ export function TrialWelcomePage() {
         <div className='relative z-10 space-y-8 text-center'>
           <div className='space-y-3'>
             <h1 className='text-3xl font-bold text-balance md:text-4xl'>
-              Welcome to your trial.
+              Welcome to Virtality!
             </h1>
             <p className='text-muted-foreground mx-auto max-w-xl text-lg leading-relaxed text-pretty'>
-              Full access is unlocked. Explore Virtality at your own pace and
-              see what fits your practice.
+              Full access is unlocked. Feel free to explore Virtality at your
+              own pace.
             </p>
           </div>
           <CheckoutSuccessHomeCta enabled />
