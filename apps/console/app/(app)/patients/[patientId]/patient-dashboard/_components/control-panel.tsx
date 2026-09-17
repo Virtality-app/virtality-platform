@@ -9,6 +9,7 @@ import SceneSettings from './control-panel-scene-settings'
 import DeviceSelector from './control-panel-device-selector'
 import CastingButton from './control-panel-casting-button'
 import useControlPanel from './use-control-panel'
+import { NavigationGuardDialog } from '@/components/ui/navigation-guard-dialog'
 import { ImmersiveVideoPicker } from './immersive-video-picker'
 import { ImmersiveVideoTransport } from './immersive-video-transport'
 import { useImmersiveVideoSession } from '@/context/immersive-video-session-context'
@@ -52,7 +53,7 @@ const ControlPanel = ({
     defaultExercises,
     selectedDevice,
     missingSettings,
-    GuardDialog,
+    guard,
   } = useControlPanel()
   const { playback, frozen } = useImmersiveVideoSession()
   const isImmersive = selectedMode === 'immersive'
@@ -122,16 +123,19 @@ const ControlPanel = ({
         {isProgramInactive && isMain && <ProgramSelector className='flex-1' />}
         {isImmersive && <ImmersiveVideoPicker className='flex-1' />}
 
-        <SceneSettings
-          coachEnabled={coachEnabled}
-          onCoachEnabledChange={changeCoachEnabled}
-          coachToggleDisabled={coachToggleDisabled}
-          selectedDevice={selectedDevice}
-          missingSettings={missingSettings}
-        />
+        {isImmersive ? null : (
+          <SceneSettings
+            coachEnabled={coachEnabled}
+            onCoachEnabledChange={changeCoachEnabled}
+            coachToggleDisabled={coachToggleDisabled}
+            selectedDevice={selectedDevice}
+            missingSettings={missingSettings}
+          />
+        )}
       </div>
 
-      <GuardDialog
+      <NavigationGuardDialog
+        {...guard}
         title='Active connection'
         description='You have an active connection navigating to an other page will disconnect the device. Are you sure you want to leave this page?'
       />

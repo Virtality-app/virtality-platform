@@ -32,6 +32,18 @@ _Avoid_: Device event controller (the console has a module of that name), connec
 The in-memory record of every open room and which peer currently occupies each **Role Slot**. It decides outcomes (joined, replaced, cleared, evicted); it does not talk to sockets.
 _Avoid_: Room store, active rooms, room map
 
+**Relay**:
+The socket-side module that decides what happens to one inbound event from a seated peer: forwarded to the other **Room Peer Role**, blocked (stale peer, missing room or role), or not relayed (not in the relay table). It returns the outcome as data, including the payload framing and log level; the **Server Device Controller** performs the single emit and log line. One `onAny` listener per peer feeds it.
+_Avoid_: Relay handler, per-event listener, forwarder closure
+
+**Relay Family**:
+One of the per-domain `RelayEventMap`s in shared (`PROGRAM_RELAY`, `CASTING_RELAY`, `DEVICE_RELAY`, `VIDEO_RELAY`) that the **Relay** table is built from. `GAME_RELAY` is a family that exists in shared but is deliberately not registered.
+_Avoid_: Event group, relay category, event map (when the merged table is meant)
+
 **Presence Check**:
 A console-side socket connection that only asks which rooms currently have an **Active Role Peer** in the `vr` slot. It occupies no **Role Slot** and joins no room.
 _Avoid_: Presence-only socket, presence mode, polling client
+
+**Simulated Headset**:
+A standalone client process that connects to the socket server as the `vr` **Active Role Peer** of one room and behaves like the headset build for program and video events. The server carries no simulation code; the seam is the socket, the same one a real headset uses. Its core is pure (`handle`/`tick` return emits as data) and a thin socket.io-client adapter pipes them to the wire.
+_Avoid_: Sim mode, `SIM=true`, test client, vrCommsTesting

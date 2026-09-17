@@ -46,6 +46,7 @@ const mocks = vi.hoisted(() => {
     connected: true,
     headsetPresent: true,
     canLaunchVr: true,
+    entitlementPending: false,
   }
 })
 
@@ -67,10 +68,15 @@ vi.mock('@/hooks/use-vr-headset-presence', () => ({
   useVrHeadsetPresence: () => mocks.headsetPresent,
 }))
 vi.mock('@/hooks/use-live-entitlement-standing', () => ({
-  useLiveEntitlementStanding: () => ({ canLaunchVr: mocks.canLaunchVr }),
+  useLiveEntitlementStanding: () => ({
+    canLaunchVr: mocks.canLaunchVr,
+    isPending: mocks.entitlementPending,
+  }),
 }))
 vi.mock('@/hooks/use-navigation-guard', () => ({
-  default: () => ({ GuardDialog: () => null }),
+  default: () => ({
+    guard: { open: false, onStay: vi.fn(), onLeave: vi.fn() },
+  }),
 }))
 vi.mock('@/components/ui/ErrorToasty', () => ({ default: vi.fn() }))
 vi.mock('tinybase/ui-react', () => ({
@@ -92,6 +98,7 @@ beforeEach(() => {
   mocks.connected = true
   mocks.headsetPresent = true
   mocks.canLaunchVr = true
+  mocks.entitlementPending = false
 })
 
 describe('program launch coach setting', () => {
@@ -148,6 +155,17 @@ describe('program launch coach setting', () => {
     act(() => result.current.programStart())
     expect(mocks.program.Pause).toHaveBeenCalledOnce()
     expect(mocks.program.Start).not.toHaveBeenCalled()
+  })
+
+  it('blocks program and warmup launch while entitlement is loading', () => {
+    mocks.entitlementPending = true
+    const { result } = renderHook(useControlPanel)
+    act(() => result.current.changeCoachEnabled(false))
+    expect(result.current.treatmentLaunchReady).toBe(false)
+    act(() => result.current.programStart())
+    act(() => result.current.handleWarmupStart())
+    expect(mocks.program.Start).not.toHaveBeenCalled()
+    expect(mocks.program.WarmupStart).not.toHaveBeenCalled()
   })
 
   it('preserves warmup payload', () => {

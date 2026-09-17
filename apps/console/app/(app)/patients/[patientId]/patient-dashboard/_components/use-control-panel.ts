@@ -67,11 +67,13 @@ const useControlPanel = () => {
       selectedDevice,
       headsetReady: connected && headsetPresent,
     })
-  const { canLaunchVr } = useLiveEntitlementStanding()
+  const { canLaunchVr, isPending: entitlementPending } =
+    useLiveEntitlementStanding()
   const treatmentLaunchReady = canLaunchTreatment({
     consoleConnected: connected,
     headsetPresent,
     entitlementAllowsLaunch: canLaunchVr,
+    entitlementPending,
   })
 
   const missingSettings = !selectedAvatar || !selectedMap
@@ -107,6 +109,7 @@ const useControlPanel = () => {
       consoleConnected: connected,
       headsetPresent,
       entitlementAllowsLaunch: canLaunchVr,
+      entitlementPending,
     })
     if (launchError) return ErrorToasty(launchError)
 
@@ -173,6 +176,7 @@ const useControlPanel = () => {
       consoleConnected: connected,
       headsetPresent,
       entitlementAllowsLaunch: canLaunchVr,
+      entitlementPending,
     })
     if (launchError) return ErrorToasty(launchError)
 
@@ -215,7 +219,7 @@ const useControlPanel = () => {
   const isSkipBlockedByProgramState =
     isProgramInactive || isProgramPaused || isProgramLaunching
 
-  const { GuardDialog } = useNavigationGuard(connected, () => {
+  const { guard } = useNavigationGuard(connected, () => {
     selectedDevice?.socket.disconnect()
   })
 
@@ -247,7 +251,7 @@ const useControlPanel = () => {
     defaultExercises,
     selectedDevice,
     missingSettings,
-    GuardDialog,
+    guard,
   }
 }
 

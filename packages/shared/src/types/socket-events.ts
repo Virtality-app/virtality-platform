@@ -123,7 +123,6 @@ export const VIDEO_EVENT = {
   Pause: 'videoPause',
   Stop: 'videoStop',
   StopAck: 'videoStopAck',
-  Recenter: 'videoRecenter',
   PlaybackProgress: 'videoPlaybackProgress',
   Ended: 'videoEnded',
 } as const
@@ -215,7 +214,6 @@ export const VIDEO_RELAY = {
   Pause: { name: VIDEO_EVENT.Pause, payload: false },
   Stop: { name: VIDEO_EVENT.Stop, payload: true },
   StopAck: { name: VIDEO_EVENT.StopAck, payload: true },
-  Recenter: { name: VIDEO_EVENT.Recenter, payload: false },
   PlaybackProgress: { name: VIDEO_EVENT.PlaybackProgress, payload: true },
   Ended: { name: VIDEO_EVENT.Ended, payload: false },
 } as const satisfies Record<VideoEventKey, RelayEntry>
@@ -473,7 +471,6 @@ export type VideoEventPayloads = {
   Pause: []
   Stop: VideoIdArgs
   StopAck: VideoIdArgs
-  Recenter: []
   PlaybackProgress: [payload: VideoPlaybackProgressPayload]
   Ended: []
 }

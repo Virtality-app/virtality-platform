@@ -23,6 +23,7 @@ import {
   dashboardChartClassName,
   dashboardExerciseListClassName,
   dashboardGridClassName,
+  dashboardImmersiveStackClassName,
   dashboardInfoPanelClassName,
   dashboardSessionNotesClassName,
 } from './patient-dashboard-grid'
@@ -30,8 +31,10 @@ import {
 const PatientDashboard = () => {
   useIsAuthed()
   const [showCasting, setShowCasting] = useState(false)
-  const { canLaunchVr } = useLiveEntitlementStanding()
-  const showExpiredBanner = !canLaunchVr
+  const { canLaunchVr, isPending: entitlementPending } =
+    useLiveEntitlementStanding()
+  // Hold the banner until standing has loaded so server and client agree.
+  const showExpiredBanner = !entitlementPending && !canLaunchVr
   const { state } = usePatientDashboard()
   const isImmersive = state.selectedMode === 'immersive'
   const gridFlags = {
@@ -40,11 +43,8 @@ const PatientDashboard = () => {
     hideExerciseList: isImmersive,
   }
   const exerciseListClassName = dashboardExerciseListClassName(gridFlags)
-  const chartClassName = dashboardChartClassName(showExpiredBanner, isImmersive)
-  const castingClassName = dashboardCastingClassName(
-    showExpiredBanner,
-    isImmersive,
-  )
+  const chartClassName = dashboardChartClassName(showExpiredBanner)
+  const castingClassName = dashboardCastingClassName(showExpiredBanner)
 
   return (
     <div className='min-h-screen-with-nav flex justify-center'>
@@ -69,19 +69,23 @@ const PatientDashboard = () => {
           <ExerciseList className={exerciseListClassName} />
         )}
 
-        {isImmersive && !showCasting ? (
-          <ImmersiveVideoPanel className={chartClassName} />
-        ) : null}
-
-        {showCasting ? (
+        {isImmersive ? (
+          <ImmersiveVideoPanel
+            className={dashboardImmersiveStackClassName(gridFlags)}
+          >
+            {showCasting ? <CastingContent className='min-h-0 flex-1' /> : null}
+          </ImmersiveVideoPanel>
+        ) : showCasting ? (
           <CastingContent className={castingClassName} />
-        ) : isImmersive ? null : (
+        ) : (
           <ChartCard className={chartClassName} />
         )}
 
-        <SessionNotesCard
-          className={dashboardSessionNotesClassName(gridFlags)}
-        />
+        {isImmersive ? null : (
+          <SessionNotesCard
+            className={dashboardSessionNotesClassName(gridFlags)}
+          />
+        )}
 
         <SessionDialog />
         <PatientDashboardVideoDialogs />
