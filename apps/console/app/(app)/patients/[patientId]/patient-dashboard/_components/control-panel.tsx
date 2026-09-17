@@ -25,6 +25,9 @@ const ControlPanel = ({
   setShowCasting,
 }: ControlPanelProps) => {
   const {
+    coachEnabled,
+    changeCoachEnabled,
+    coachToggleDisabled,
     devices,
     connected,
     selectedMode,
@@ -120,6 +123,9 @@ const ControlPanel = ({
         {isImmersive && <ImmersiveVideoPicker className='flex-1' />}
 
         <SceneSettings
+          coachEnabled={coachEnabled}
+          onCoachEnabledChange={changeCoachEnabled}
+          coachToggleDisabled={coachToggleDisabled}
           selectedDevice={selectedDevice}
           missingSettings={missingSettings}
         />
