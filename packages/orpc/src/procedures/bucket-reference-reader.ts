@@ -123,5 +123,14 @@ export function createPrismaBucketReferenceReader(
             mediaKind,
           })),
         ),
+    findEmailAttachmentReferences: (lookupValues) =>
+      prisma.adminEmailAttachment.findMany({
+        where: { objectKey: { in: lookupValues } },
+        select: {
+          id: true,
+          filename: true,
+          objectKey: true,
+        },
+      }),
   }
 }

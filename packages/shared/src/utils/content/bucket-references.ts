@@ -10,8 +10,9 @@ export type BucketReferenceResourceType =
   | 'partnerLogo'
   | 'promoVideo'
   | 'mosaic'
+  | 'emailAttachment'
 
-export type BucketReferenceField = 'image' | 'video'
+export type BucketReferenceField = 'image' | 'video' | 'attachment'
 
 export type BucketObjectReference = {
   resourceType: BucketReferenceResourceType
@@ -102,6 +103,13 @@ export type BucketReferenceReader = {
       mediaKind: 'image' | 'video'
     }>
   >
+  findEmailAttachmentReferences: (lookupValues: string[]) => Promise<
+    Array<{
+      id: string
+      filename: string
+      objectKey: string
+    }>
+  >
 }
 
 const RESOURCE_TYPE_ORDER: BucketReferenceResourceType[] = [
@@ -114,6 +122,7 @@ const RESOURCE_TYPE_ORDER: BucketReferenceResourceType[] = [
   'partnerLogo',
   'promoVideo',
   'mosaic',
+  'emailAttachment',
 ]
 
 export function buildBucketReferenceLookupValues(objectKey: string): string[] {
@@ -202,6 +211,7 @@ export async function findKnownBucketObjectReferences({
     partnerLogos,
     promoVideos,
     mosaicTiles,
+    emailAttachments,
   ] = await Promise.all([
     reader.findExerciseReferences(lookupValues),
     reader.findExerciseDraftReferences(lookupValues),
@@ -212,6 +222,7 @@ export async function findKnownBucketObjectReferences({
     reader.findPartnerLogoReferences(lookupValues),
     reader.findPromoVideoReferences(lookupValues),
     reader.findMosaicTileReferences(lookupValues),
+    reader.findEmailAttachmentReferences(lookupValues),
   ])
 
   for (const exercise of exercises) {
@@ -310,6 +321,17 @@ export async function findKnownBucketObjectReferences({
         resourceId: mosaicTile.id,
         resourceLabel: mosaicTile.alt,
         field: mosaicTile.mediaKind,
+      })
+    }
+  }
+
+  for (const emailAttachment of emailAttachments) {
+    if (fieldMatchesReference(emailAttachment.objectKey, lookupValues)) {
+      references.push({
+        resourceType: 'emailAttachment',
+        resourceId: emailAttachment.id,
+        resourceLabel: emailAttachment.filename,
+        field: 'attachment',
       })
     }
   }

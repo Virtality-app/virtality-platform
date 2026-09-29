@@ -24,6 +24,7 @@ function createReader(
     findPartnerLogoReferences: async () => [],
     findPromoVideoReferences: async () => [],
     findMosaicTileReferences: async () => [],
+    findEmailAttachmentReferences: async () => [],
     ...overrides,
   }
 }
@@ -222,6 +223,30 @@ describe('findKnownBucketObjectReferences', () => {
         resourceId: 'tile-2',
         resourceLabel: 'Ambient demo',
         field: 'video',
+      },
+    ])
+  })
+
+  it('detects admin email attachment references by object key', async () => {
+    const outcome = await findKnownBucketObjectReferences({
+      reader: createReader({
+        findEmailAttachmentReferences: async () => [
+          {
+            id: 'att-1',
+            filename: 'report.pdf',
+            objectKey: 'email-attachments/draft-1/att-1-report.pdf',
+          },
+        ],
+      }),
+      objectKey: 'email-attachments/draft-1/att-1-report.pdf',
+    })
+
+    expect(outcome.references).toEqual([
+      {
+        resourceType: 'emailAttachment',
+        resourceId: 'att-1',
+        resourceLabel: 'report.pdf',
+        field: 'attachment',
       },
     ])
   })

@@ -17,6 +17,7 @@ import { getAdminEmailTopicLabel } from '@virtality/shared/utils'
 import { format } from 'date-fns'
 import { Copy } from 'lucide-react'
 import { toast } from 'sonner'
+import { AdminEmailAttachmentList } from './admin-email-attachment-list'
 
 type AdminEmailSentRecordViewProps = {
   sentRecordId: string
@@ -106,6 +107,8 @@ export const AdminEmailSentRecordView = ({
               {format(new Date(sentRecord.draftCreatedAt), 'MMM d, yyyy HH:mm')}
             </p>
           </div>
+
+          <AdminEmailAttachmentList attachments={sentRecord.attachments} />
 
           <Button
             type='button'

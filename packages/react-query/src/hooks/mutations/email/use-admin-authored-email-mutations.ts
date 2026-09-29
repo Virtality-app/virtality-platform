@@ -161,3 +161,40 @@ export const useFinalSendAdminEmailDraft = () => {
     }),
   )
 }
+
+const useInvalidateAfterAttachmentChange = () => {
+  const orpc = useORPC()
+  const queryClient = useQueryClient()
+  const invalidateDrafts = useInvalidateAdminEmailDrafts()
+
+  return (draftId: string) => {
+    invalidateDrafts()
+    queryClient.invalidateQueries({
+      queryKey: orpc.email.adminAuthored.drafts.get.key({
+        input: { draftId },
+      }),
+    })
+  }
+}
+
+export const useAddAdminEmailAttachment = () => {
+  const orpc = useORPC()
+  const invalidate = useInvalidateAfterAttachmentChange()
+
+  return useMutation(
+    orpc.email.adminAuthored.drafts.attachments.add.mutationOptions({
+      onSuccess: (draft) => invalidate(draft.id),
+    }),
+  )
+}
+
+export const useRemoveAdminEmailAttachment = () => {
+  const orpc = useORPC()
+  const invalidate = useInvalidateAfterAttachmentChange()
+
+  return useMutation(
+    orpc.email.adminAuthored.drafts.attachments.remove.mutationOptions({
+      onSuccess: (draft) => invalidate(draft.id),
+    }),
+  )
+}

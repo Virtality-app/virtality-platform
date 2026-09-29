@@ -1,5 +1,5 @@
 import { ORPCError } from '@orpc/server'
-import type { PrismaClient } from '@virtality/db'
+import type { Prisma, PrismaClient } from '@virtality/db'
 import { sendEmail } from '@virtality/nodemailer'
 import {
   deliverIndividualEmails,
@@ -33,6 +33,15 @@ import {
   personaliseOptOutLinks,
 } from './admin-authored-email/opt-out-links.ts'
 import {
+  attachmentInclude,
+  copyAttachmentsToDraft,
+  deleteAttachmentObjects,
+  loadAttachmentContents,
+  mapAttachment,
+  uploadDraftAttachment,
+  type AttachmentRow,
+} from './admin-authored-email/attachments.ts'
+import {
   resolveDraftRecipientsFromDb,
   type AudienceRow,
 } from './admin-authored-email/recipient-resolution.ts'
@@ -53,6 +62,16 @@ const updateDraftInput = z.object({
 
 const cloneDraftInput = z.object({
   draftId: z.string().min(1),
+})
+
+const addAttachmentInput = z.object({
+  draftId: z.string().min(1),
+  file: z.instanceof(File),
+})
+
+const removeAttachmentInput = z.object({
+  draftId: z.string().min(1),
+  attachmentId: z.string().min(1),
 })
 
 const cloneSentRecordInput = z.object({
@@ -87,12 +106,20 @@ const draftInclude = {
     select: { id: true },
   },
   audience: { select: audienceSelect },
+  attachments: attachmentInclude,
 } as const
 
 const sentRecordInclude = {
   deliveryResults: {
     orderBy: { attemptedAt: 'asc' },
   },
+  attachments: attachmentInclude,
+} as const
+
+/** Any attachment change needs a fresh test send before Final send. */
+const resetTestSend = {
+  hasSuccessfulTestSend: false,
+  lastTestSentAt: null,
 } as const
 
 type DraftWithSentRecords = {
@@ -116,6 +143,7 @@ type DraftWithSentRecords = {
   createdAt: Date
   updatedAt: Date
   sentRecords: { id: string }[]
+  attachments: AttachmentRow[]
 }
 
 const toDraftRecord = (draft: DraftWithSentRecords) => ({
@@ -153,6 +181,7 @@ const mapDraft = (draft: DraftWithSentRecords) => {
     createdById: draft.createdById,
     createdAt: draft.createdAt,
     updatedAt: draft.updatedAt,
+    attachments: draft.attachments.map(mapAttachment),
     isFinalSent: draftHasFinalSend(toDraftRecord(draft)),
     sendReadiness: getDraftSendReadiness(toDraftRecord(draft)),
   }
@@ -180,6 +209,7 @@ type SentRecordWithDeliveries = {
     errorMessage: string | null
     attemptedAt: Date
   }[]
+  attachments: AttachmentRow[]
 }
 
 const mapSentRecord = (sentRecord: SentRecordWithDeliveries) => ({
@@ -200,6 +230,7 @@ const mapSentRecord = (sentRecord: SentRecordWithDeliveries) => ({
   sentById: sentRecord.sentById,
   draftCreatedAt: sentRecord.draftCreatedAt,
   sentAt: sentRecord.sentAt,
+  attachments: sentRecord.attachments.map(mapAttachment),
   deliveryResults: sentRecord.deliveryResults.map((result) => ({
     recipientEmail: result.recipientEmail,
     status: result.status,
@@ -272,6 +303,50 @@ const renderDraft = async (
     subject: draft.subject,
     html: rendered.html,
     previewText: draft.previewText ?? undefined,
+  }
+}
+
+type CloneContext = {
+  prisma: PrismaClient
+  s3: Parameters<typeof copyAttachmentsToDraft>[0]['s3']
+}
+
+/** Creates a draft holding its own S3 copy of each given attachment. */
+const createDraftWithAttachmentCopies = async (
+  { prisma, s3 }: CloneContext,
+  {
+    attachments,
+    data,
+  }: {
+    attachments: AttachmentRow[]
+    data: Omit<Prisma.AdminEmailDraftUncheckedCreateInput, 'id' | 'attachments'>
+  },
+) => {
+  const draftId = generateUUID()
+  const copies = await copyAttachmentsToDraft({ s3, draftId, attachments })
+
+  try {
+    return await prisma.adminEmailDraft.create({
+      data: {
+        ...data,
+        id: draftId,
+        attachments: {
+          create: copies.map(
+            ({ id, objectKey, filename, contentType, size }) => ({
+              id,
+              objectKey,
+              filename,
+              contentType,
+              size,
+            }),
+          ),
+        },
+      },
+      include: draftInclude,
+    })
+  } catch (error) {
+    await deleteAttachmentObjects(s3, copies)
+    throw error
   }
 }
 
@@ -365,9 +440,9 @@ const cloneDraft = authed
   .handler(async ({ context, input }) => {
     const source = await getDraftOrThrow(context.prisma, input.draftId)
 
-    const cloned = await context.prisma.adminEmailDraft.create({
+    const cloned = await createDraftWithAttachmentCopies(context, {
+      attachments: source.attachments,
       data: {
-        id: generateUUID(),
         subject: source.subject,
         previewText: source.previewText,
         bodyBlocksJson: source.bodyBlocksJson,
@@ -379,7 +454,6 @@ const cloneDraft = authed
         clonedFromDraftId: source.id,
         createdById: context.user.id,
       },
-      include: draftInclude,
     })
 
     return mapDraft(cloned)
@@ -394,6 +468,7 @@ const cloneSentRecord = authed
   .handler(async ({ context, input }) => {
     const sentRecord = await context.prisma.adminEmailSentRecord.findUnique({
       where: { id: input.sentRecordId },
+      include: { attachments: attachmentInclude },
     })
 
     if (!sentRecord) {
@@ -410,9 +485,9 @@ const cloneSentRecord = authed
         })
       : null
 
-    const cloned = await context.prisma.adminEmailDraft.create({
+    const cloned = await createDraftWithAttachmentCopies(context, {
+      attachments: sentRecord.attachments,
       data: {
-        id: generateUUID(),
         subject: sentRecord.subject,
         previewText: sentRecord.previewText,
         bodyBlocksJson: sentRecord.bodyBlocksJson,
@@ -424,7 +499,6 @@ const cloneSentRecord = authed
         clonedFromSentRecordId: sentRecord.id,
         createdById: context.user.id,
       },
-      include: draftInclude,
     })
 
     return mapDraft(cloned)
@@ -556,11 +630,16 @@ const testSendDraft = authed
 
     const rendered = await renderDraft(draft)
     const htmlFor = personaliseOptOutLinks(rendered.html, draft.topic)
+    const attachments = await loadAttachmentContents(
+      context.s3,
+      draft.attachments,
+    )
 
     await sendEmail({
       to: input.testRecipientEmail,
       subject: rendered.subject,
       html: htmlFor(input.testRecipientEmail),
+      attachments,
     })
 
     const updated = await context.prisma.adminEmailDraft.update({
@@ -607,10 +686,15 @@ const finalSendDraft = authed
     }
 
     const rendered = await renderDraft(draft)
+    const attachments = await loadAttachmentContents(
+      context.s3,
+      draft.attachments,
+    )
     const deliveryResults = await deliverIndividualEmails({
       recipients: resolved.recipients,
       subject: rendered.subject,
       html: personaliseOptOutLinks(rendered.html, draft.topic),
+      attachments,
       sendEmail,
     })
 
@@ -631,6 +715,9 @@ const finalSendDraft = authed
         createdById: draft.createdById,
         sentById: context.user.id,
         draftCreatedAt: draft.createdAt,
+        attachments: {
+          connect: draft.attachments.map(({ id }) => ({ id })),
+        },
         deliveryResults: {
           create: deliveryResults.map((result) => ({
             id: generateUUID(),
@@ -645,6 +732,73 @@ const finalSendDraft = authed
     })
 
     return mapSentRecord(sentRecord)
+  })
+
+const addAttachment = authed
+  .route({
+    path: '/email/admin-authored/drafts/attachments/add',
+    method: 'POST',
+  })
+  .input(addAttachmentInput)
+  .handler(async ({ context, input }) => {
+    const draft = await getDraftOrThrow(context.prisma, input.draftId)
+    assertDraftEditable(draft)
+
+    const attachment = await uploadDraftAttachment({
+      s3: context.s3,
+      draftId: draft.id,
+      existing: draft.attachments,
+      file: input.file,
+    })
+
+    try {
+      const updated = await context.prisma.adminEmailDraft.update({
+        where: { id: draft.id },
+        data: {
+          ...resetTestSend,
+          attachments: { create: attachment },
+        },
+        include: draftInclude,
+      })
+
+      return mapDraft(updated)
+    } catch (error) {
+      await deleteAttachmentObjects(context.s3, [attachment])
+      throw error
+    }
+  })
+
+const removeAttachment = authed
+  .route({
+    path: '/email/admin-authored/drafts/attachments/remove',
+    method: 'POST',
+  })
+  .input(removeAttachmentInput)
+  .handler(async ({ context, input }) => {
+    const draft = await getDraftOrThrow(context.prisma, input.draftId)
+    assertDraftEditable(draft)
+
+    const attachment = draft.attachments.find(
+      ({ id }) => id === input.attachmentId,
+    )
+    if (!attachment) {
+      throw new ORPCError('NOT_FOUND', { message: 'Attachment not found' })
+    }
+
+    const updated = await context.prisma.adminEmailDraft.update({
+      where: { id: draft.id },
+      data: {
+        ...resetTestSend,
+        attachments: { delete: { id: attachment.id } },
+      },
+      include: draftInclude,
+    })
+
+    // After the row is gone, so a failed delete leaves an orphan, never a
+    // row pointing at a missing object.
+    await deleteAttachmentObjects(context.s3, [attachment])
+
+    return mapDraft(updated)
   })
 
 const listSentRecords = authed
@@ -692,6 +846,10 @@ export const adminAuthoredEmail = {
     previewRecipients: previewDraftRecipients,
     testSend: testSendDraft,
     finalSend: finalSendDraft,
+    attachments: {
+      add: addAttachment,
+      remove: removeAttachment,
+    },
   },
   sentRecords: {
     list: listSentRecords,

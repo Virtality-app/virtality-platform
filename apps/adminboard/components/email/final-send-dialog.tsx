@@ -9,7 +9,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { formatAdminEmailAttachmentSize } from '@virtality/shared/utils'
 import { Input } from '@virtality/ui/components/input'
+import type { DraftAttachment } from './use-admin-email-draft-actions'
 
 export type FinalSendBreakdown = {
   explicitCount: number
@@ -27,6 +29,7 @@ type FinalSendDialogProps = {
   topicLabel: string
   /** Resolved at open time; null while resolving. */
   breakdown: FinalSendBreakdown | null
+  attachments: DraftAttachment[]
   confirmedSubject: string
   onConfirmedSubjectChange: (value: string) => void
   onConfirm: () => void
@@ -39,11 +42,13 @@ export const FinalSendDialog = ({
   subject,
   topicLabel,
   breakdown,
+  attachments,
   confirmedSubject,
   onConfirmedSubjectChange,
   onConfirm,
   isPending,
 }: FinalSendDialogProps) => {
+  const attachmentBytes = attachments.reduce((sum, { size }) => sum + size, 0)
   const subjectMatches = confirmedSubject === subject
   const recipientCount = breakdown?.totalCount ?? 0
   const canConfirm =
@@ -88,6 +93,26 @@ export const FinalSendDialog = ({
               <span className='text-muted-foreground'>Subject:</span>{' '}
               <span className='font-medium'>{subject || '(empty)'}</span>
             </p>
+            {attachments.length > 0 ? (
+              <p className='mt-2'>
+                <span className='text-muted-foreground'>Attachments:</span>{' '}
+                <span className='font-medium'>
+                  {attachments.length} (
+                  {formatAdminEmailAttachmentSize(attachmentBytes)}) with every
+                  email
+                </span>
+                {breakdown ? (
+                  <span className='text-muted-foreground block text-xs'>
+                    About{' '}
+                    {formatAdminEmailAttachmentSize(
+                      // Base64 encoding in the email adds about a third.
+                      Math.ceil((attachmentBytes * 4) / 3) * recipientCount,
+                    )}{' '}
+                    of mail in total.
+                  </span>
+                ) : null}
+              </p>
+            ) : null}
           </div>
 
           <div>

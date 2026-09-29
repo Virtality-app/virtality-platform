@@ -2,6 +2,7 @@ import {
   CopyObjectCommand,
   DeleteObjectCommand,
   DeleteObjectCommandInput,
+  GetObjectCommand,
   HeadObjectCommand,
   ListObjectsV2Command,
   PutObjectCommand,
@@ -128,6 +129,16 @@ class VirtalityS3 extends S3Client {
   deleteFile = async ({ Key }: Pick<DeleteObjectCommandInput, 'Key'>) => {
     try {
       return await this.send(new DeleteObjectCommand({ Key, Bucket }))
+    } catch (error) {
+      console.log(error)
+      return null
+    }
+  }
+
+  getFileBytes = async ({ Key }: { Key: string }) => {
+    try {
+      const response = await this.send(new GetObjectCommand({ Bucket, Key }))
+      return (await response.Body?.transformToByteArray()) ?? null
     } catch (error) {
       console.log(error)
       return null

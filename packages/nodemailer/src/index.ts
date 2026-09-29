@@ -16,7 +16,7 @@ export type {
   PendingPasswordChangeData,
   PendingAccountDeletionData,
 } from './types/auth.js'
-export type { SendEmailOptions } from './lib/send-email.js'
+export type { SendEmailAttachment, SendEmailOptions } from './lib/send-email.js'
 export type { SendWaitlistNotificationInput } from './lib/send-waitlist-notification.js'
 export type { SendTrialRedeemCodeEmailData } from './lib/send-trial-redeem-code.js'
 export type { SendPromotionCodeEmailData } from './lib/send-promotion-code.js'

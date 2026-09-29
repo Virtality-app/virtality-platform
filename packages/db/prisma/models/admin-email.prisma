@@ -80,6 +80,7 @@ model AdminEmailDraft {
   audience             EmailAudience?         @relation(fields: [audienceId], references: [id], onDelete: SetNull)
   draftClones          AdminEmailDraft[]      @relation("AdminEmailDraftClone")
   sentRecords          AdminEmailSentRecord[]
+  attachments          AdminEmailAttachment[]
 
   @@index([createdById])
   @@index([updatedAt])
@@ -109,6 +110,7 @@ model AdminEmailSentRecord {
   sentBy          User                       @relation("AdminEmailSentRecordSender", fields: [sentById], references: [id])
   clonedDrafts    AdminEmailDraft[]          @relation("AdminEmailDraftClonedFromSent")
   deliveryResults AdminEmailDeliveryResult[]
+  attachments     AdminEmailAttachment[]
 
   @@index([sentAt])
   @@index([createdById])
@@ -126,5 +128,25 @@ model AdminEmailDeliveryResult {
   sentRecord AdminEmailSentRecord @relation(fields: [sentRecordId], references: [id], onDelete: Cascade)
 
   @@unique([sentRecordId, recipientEmail])
+  @@index([sentRecordId])
+}
+
+/// Attachment: a PDF or image stored in S3 under `objectKey` and sent with an
+/// Admin-authored Email. Each row owns its object: cloning copies the object.
+/// Final send links the row to the sent record; the draft is locked from then on.
+model AdminEmailAttachment {
+  id           String   @id
+  draftId      String?
+  sentRecordId String?
+  objectKey    String   @unique
+  filename     String
+  contentType  String
+  size         Int
+  createdAt    DateTime @default(now()) @db.Timestamp(6)
+
+  draft      AdminEmailDraft?      @relation(fields: [draftId], references: [id], onDelete: SetNull)
+  sentRecord AdminEmailSentRecord? @relation(fields: [sentRecordId], references: [id], onDelete: SetNull)
+
+  @@index([draftId])
   @@index([sentRecordId])
 }

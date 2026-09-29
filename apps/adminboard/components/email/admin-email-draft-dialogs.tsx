@@ -14,7 +14,7 @@ type AdminEmailDraftDialogsProps = {
 export const AdminEmailDraftDialogs = ({
   workspace,
 }: AdminEmailDraftDialogsProps) => {
-  const { form, actions, preview, archive } = workspace
+  const { draft, form, actions, preview, archive } = workspace
 
   return (
     <>
@@ -41,6 +41,7 @@ export const AdminEmailDraftDialogs = ({
         subject={form.subject}
         topicLabel={getAdminEmailTopicLabel(form.topic)}
         breakdown={actions.finalSendBreakdown}
+        attachments={draft.attachments}
         confirmedSubject={actions.confirmedSubject}
         onConfirmedSubjectChange={actions.setConfirmedSubject}
         onConfirm={() => void actions.finalSend()}
