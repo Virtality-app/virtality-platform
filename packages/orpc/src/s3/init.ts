@@ -168,7 +168,8 @@ class VirtalityS3 extends S3Client {
       await this.send(
         new CopyObjectCommand({
           Bucket,
-          CopySource: `${Bucket}/${sourceKey}`,
+          // CopySource must be URL-encoded; keys may hold spaces or non-ASCII.
+          CopySource: `${Bucket}/${sourceKey.split('/').map(encodeURIComponent).join('/')}`,
           Key: destinationKey,
         }),
       )
