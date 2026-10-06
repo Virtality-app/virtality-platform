@@ -205,7 +205,7 @@ The four-step checklist on the **Home Dashboard** — pair a headset, add a pati
 _Avoid_: Missions, tour flags, hiding the card when complete
 
 **Session Picker**:
-The three-step patient / program / headset choice on the **Home Dashboard**. Launch records the chosen program and headset as the patient's **Last Used Program** and last headset, then opens that patient's dashboard with a **Launch Intent**.
+The three-step patient / program / headset choice on the **Home Dashboard**. Launch records the chosen program and headset as the patient's **Last Used Program** and last headset, then opens that patient's dashboard with a **Launch Intent**. Its New patient, New program and Pair a headset links (and the matching Getting Started steps) carry a `returnTo`; creating the patient or program, or finishing the pairing, comes back to the dashboard with the new item picked and the earlier picks kept (`lib/home-picker-return.ts`).
 _Avoid_: Home launch, remote start, dashboard-side launch
 
 **Launch Intent**:

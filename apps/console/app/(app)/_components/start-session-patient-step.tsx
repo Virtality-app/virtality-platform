@@ -6,29 +6,27 @@ import { Plus, Search } from 'lucide-react'
 import { Input } from '@virtality/ui/components/input'
 import type { PatientListItem } from '@/types/models'
 import { filterPatientsBySearch } from '@/lib/patient-list'
+import { withReturnTo } from '@/lib/home-picker-return'
 import StartSessionStep from './start-session-step'
 import StartSessionOption from './start-session-option'
 import PatientInitialsAvatar from './patient-initials-avatar'
 import type { StartSessionPicker } from './use-start-session-picker'
 
-const SHORTLIST_SIZE = 3
+// Fewer than this fit in the list without a search box.
+const SEARCH_THRESHOLD = 5
 
-function shortlist(
+/** Matches for the search, or everyone, most recently seen first. */
+function patientRows(
   patients: PatientListItem[],
   query: string,
-  selectedId: string | null,
 ): PatientListItem[] {
   const matches = filterPatientsBySearch(patients, query)
-  if (query.trim()) return matches.slice(0, SHORTLIST_SIZE)
-
-  const byRecent = [...matches].sort(
+  if (query.trim()) return matches
+  return [...matches].sort(
     (a, b) =>
       (b.lastSessionAt ? new Date(b.lastSessionAt).getTime() : 0) -
       (a.lastSessionAt ? new Date(a.lastSessionAt).getTime() : 0),
   )
-  const selected = byRecent.find((p) => p.id === selectedId)
-  const rest = byRecent.filter((p) => p.id !== selectedId)
-  return [...(selected ? [selected] : []), ...rest].slice(0, SHORTLIST_SIZE)
 }
 
 const StartSessionPatientStep = ({
@@ -38,8 +36,9 @@ const StartSessionPatientStep = ({
   patients: PatientListItem[]
   picker: StartSessionPicker
 }) => {
-  const { selection, patientQuery, setPatientQuery, selectPatient } = picker
-  const rows = shortlist(patients, patientQuery, selection.patientId)
+  const { selection, patientQuery, setPatientQuery, selectPatient, returnTo } =
+    picker
+  const rows = patientRows(patients, patientQuery)
 
   return (
     <StartSessionStep
@@ -49,25 +48,27 @@ const StartSessionPatientStep = ({
       done={Boolean(selection.patientId)}
       footer={
         <Link
-          href='/patients/new'
+          href={withReturnTo('/patients/new', returnTo)}
           className='text-muted-foreground hover:text-foreground flex items-center gap-2 text-[13px]'
         >
           <Plus className='size-4' /> New patient
         </Link>
       }
+      toolbar={
+        patients.length > SEARCH_THRESHOLD ? (
+          <div className='relative'>
+            <Search className='text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2' />
+            <Input
+              value={patientQuery}
+              onChange={(event) => setPatientQuery(event.target.value)}
+              placeholder='Search patients…'
+              aria-label='Search patients'
+              className='pl-8'
+            />
+          </div>
+        ) : null
+      }
     >
-      {patients.length > SHORTLIST_SIZE ? (
-        <div className='relative'>
-          <Search className='text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2' />
-          <Input
-            value={patientQuery}
-            onChange={(event) => setPatientQuery(event.target.value)}
-            placeholder='Search patients…'
-            aria-label='Search patients'
-            className='pl-8'
-          />
-        </div>
-      ) : null}
       {patients.length === 0 ? (
         <p className='text-muted-foreground text-[13px]'>
           No patients yet. Add your first one to start a session.

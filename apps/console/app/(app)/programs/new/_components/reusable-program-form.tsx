@@ -32,6 +32,7 @@ import { toast } from 'react-toastify'
 import { useEffect } from 'react'
 import type { CompleteReusableProgram } from '@/types/models'
 import { withRom } from '@/lib/with-rom'
+import { afterCreateHref } from '@/lib/home-picker-return'
 import {
   ReusableProgramFormSchema,
   type ReusableProgramForm,
@@ -93,12 +94,18 @@ const ReusableProgramFormView = ({
 
   const { mutate: createProgramExercises, isPending: isCreatingExercises } =
     useCreateReusableProgramExercises({
-      onSuccess: () => {
+      onSuccess: (_data, variables) => {
         queryClient.invalidateQueries({
           queryKey: orpc.reusableProgram.list.key(),
         })
 
-        router.push('/programs')
+        router.push(
+          afterCreateHref(
+            'programId',
+            variables.reusableProgramId,
+            '/programs',
+          ),
+        )
       },
     })
 

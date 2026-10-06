@@ -1,15 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { BookMarked, Zap } from 'lucide-react'
+import { Plus, Zap } from 'lucide-react'
 import { Badge } from '@virtality/ui/components/badge'
 import type { HomeDashboardData } from './use-home-dashboard-data'
 import { QUICK_START_PROGRAM_ID } from '@/lib/home-session-picker'
+import { withReturnTo } from '@/lib/home-picker-return'
 import StartSessionStep from './start-session-step'
 import StartSessionOption from './start-session-option'
 import type { StartSessionPicker } from './use-start-session-picker'
-
-const SHORTLIST_SIZE = 3
 
 const StartSessionProgramStep = ({
   programs,
@@ -18,14 +17,15 @@ const StartSessionProgramStep = ({
   programs: HomeDashboardData['programs']
   picker: StartSessionPicker
 }) => {
-  const { selection, selectProgram, lastProgramId } = picker
+  const { selection, selectProgram, lastProgramId, returnTo } = picker
 
-  // The last used program leads; the rest keep library order (most recently edited).
+  // The last used program leads; the rest keep library order (most recently
+  // edited). Quick Start sits under the list so it never scrolls away.
   const lastUsed = programs.find((program) => program.id === lastProgramId)
   const rows = [
     ...(lastUsed ? [lastUsed] : []),
     ...programs.filter((program) => program.id !== lastProgramId),
-  ].slice(0, SHORTLIST_SIZE)
+  ]
 
   return (
     <StartSessionStep
@@ -34,17 +34,31 @@ const StartSessionProgramStep = ({
       tourTarget='session-program'
       done={Boolean(selection.programId)}
       footer={
-        <Link
-          href='/programs'
-          className='text-muted-foreground hover:text-foreground flex items-center gap-2 text-[13px]'
-        >
-          <BookMarked className='size-4' /> Program library
-        </Link>
+        <>
+          <StartSessionOption
+            selected={selection.programId === QUICK_START_PROGRAM_ID}
+            onSelect={() => selectProgram(QUICK_START_PROGRAM_ID)}
+          >
+            <div className='min-w-0 flex-1'>
+              <div>Quick Start</div>
+              <small className='text-muted-foreground block text-xs'>
+                Build the list on the fly
+              </small>
+            </div>
+            <Zap className='text-muted-foreground size-4' />
+          </StartSessionOption>
+          <Link
+            href={withReturnTo('/programs/new', returnTo)}
+            className='text-muted-foreground hover:text-foreground flex items-center gap-2 text-[13px]'
+          >
+            <Plus className='size-4' /> New program
+          </Link>
+        </>
       }
     >
       {programs.length === 0 ? (
         <p className='text-muted-foreground text-[13px]'>
-          No Reusable Programs yet. Quick Start builds the list on the fly.
+          No programs yet. Quick Start builds the list on the fly.
         </p>
       ) : null}
       {rows.map((program) => (
@@ -70,18 +84,6 @@ const StartSessionProgramStep = ({
           ) : null}
         </StartSessionOption>
       ))}
-      <StartSessionOption
-        selected={selection.programId === QUICK_START_PROGRAM_ID}
-        onSelect={() => selectProgram(QUICK_START_PROGRAM_ID)}
-      >
-        <div className='min-w-0 flex-1'>
-          <div>Quick Start</div>
-          <small className='text-muted-foreground block text-xs'>
-            Build the list on the fly
-          </small>
-        </div>
-        <Zap className='text-muted-foreground size-4' />
-      </StartSessionOption>
     </StartSessionStep>
   )
 }

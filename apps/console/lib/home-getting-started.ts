@@ -1,4 +1,5 @@
 import { tourHref } from './guided-tour'
+import { withReturnTo } from './home-picker-return'
 
 /** Id of the Start a session card; header button and the last step scroll to it. */
 export const START_SESSION_ANCHOR = 'start-session'
@@ -31,6 +32,11 @@ export type GettingStarted = {
   complete: boolean
 }
 
+/** Opens the step's page with its tour, and comes back here once it is done. */
+function missionHref(id: 'device' | 'patient' | 'program'): string {
+  return withReturnTo(tourHref(id), '/')
+}
+
 export function buildGettingStarted(
   input: GettingStartedInput,
 ): GettingStarted {
@@ -49,7 +55,7 @@ export function buildGettingStarted(
           ? 'A headset is added but not paired yet.'
           : 'Add a headset and pair it with the 6-digit code.',
       done: hasPaired,
-      href: hasPaired ? '/devices' : tourHref('device'),
+      href: hasPaired ? '/devices' : missionHref('device'),
     },
     {
       id: 'patient',
@@ -58,7 +64,7 @@ export function buildGettingStarted(
         ? `${input.patientCount} patient${input.patientCount === 1 ? '' : 's'} on file`
         : 'Name and basic info is enough to start.',
       done: hasPatient,
-      href: hasPatient ? '/patients' : tourHref('patient'),
+      href: hasPatient ? '/patients' : missionHref('patient'),
     },
     {
       id: 'program',
@@ -67,7 +73,7 @@ export function buildGettingStarted(
         ? `${input.programCount} program${input.programCount === 1 ? '' : 's'} in your library`
         : 'Start from a Starter Template or pick exercises yourself. Takes about 3 minutes.',
       done: hasProgram,
-      href: hasProgram ? '/programs' : tourHref('program'),
+      href: hasProgram ? '/programs' : missionHref('program'),
     },
     {
       id: 'session',

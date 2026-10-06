@@ -13,6 +13,7 @@ import MetaQuest3 from '@/public/meta_quest_3.webp'
 import MetaQuest3s from '@/public/meta_quest_3s.webp'
 import DeviceCardSkeleton from './device-card-skeleton'
 import DeviceCardActions from './device-card-actions'
+import { useReturnHomeOnPair } from './use-return-home-on-pair'
 import { H3, P } from '@/components/ui/typography'
 import { cn } from '@/lib/utils'
 import useDevice from '@/hooks/use-device'
@@ -34,6 +35,7 @@ const DeviceCard = ({ device }: DeviceProps) => {
   const { startPairing, cancelPairing, resetState } = handler
 
   const isPaired = status === 'paired' || Boolean(device.data.deviceId)
+  useReturnHomeOnPair(device.data.id, status)
   const [countdown, setCountdown] = useState(300)
 
   const handleRemoveDevice = () => {

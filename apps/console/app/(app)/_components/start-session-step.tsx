@@ -2,11 +2,15 @@ import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import HomeSectionLabel from './home-section-label'
 
-/** Column frame for one step of the picker: label, done marker, options, footer link. */
+/**
+ * Column frame for one step of the picker: label, done marker, an optional
+ * toolbar (search), the options in a scrolling list, and the footer.
+ */
 const StartSessionStep = ({
   number,
   label,
   done,
+  toolbar,
   children,
   footer,
   tourTarget,
@@ -14,6 +18,7 @@ const StartSessionStep = ({
   number: number
   label: string
   done: boolean
+  toolbar?: React.ReactNode
   children: React.ReactNode
   footer?: React.ReactNode
   /** `data-tour` hook for the Getting started walkthrough. */
@@ -42,8 +47,16 @@ const StartSessionStep = ({
         {done ? <Check className='size-3.5' strokeWidth={2.5} /> : number}
       </span>
     </div>
-    {children}
-    {footer ? <div className='mt-auto pt-1'>{footer}</div> : null}
+    {toolbar}
+    <div
+      data-scroll-list
+      className='-mx-1 flex max-h-52 flex-col gap-1 overflow-y-auto px-1 py-0.5'
+    >
+      {children}
+    </div>
+    {footer ? (
+      <div className='mt-auto flex flex-col gap-2 pt-1'>{footer}</div>
+    ) : null}
   </div>
 )
 

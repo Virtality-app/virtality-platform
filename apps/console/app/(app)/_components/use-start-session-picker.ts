@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useRow, useStore } from 'tinybase/ui-react'
 import type { PatientLocalData } from '@/types/models'
 import {
@@ -14,6 +14,11 @@ import {
   summarizeHomePicker,
   type HomePickerSelection,
 } from '@/lib/home-session-picker'
+import {
+  homePickerHref,
+  readHomePickerSeed,
+  withoutHomePickerParams,
+} from '@/lib/home-picker-return'
 import type { HomeDashboardData } from './use-home-dashboard-data'
 
 /**
@@ -24,12 +29,28 @@ import type { HomeDashboardData } from './use-home-dashboard-data'
 export function useStartSessionPicker(data: HomeDashboardData) {
   const router = useRouter()
   const store = useStore()
-  const [selection, setSelection] = useState<HomePickerSelection>(
-    emptyHomePickerSelection,
-  )
+  const searchParams = useSearchParams()
+  // What the dashboard was opened with, e.g. a patient just created from it.
+  // Kept until the clinician picks something, since a new item can be missing
+  // from the lists until they refetch.
+  const [seed, setSeed] = useState(() => readHomePickerSeed(searchParams))
+  const [selection, setSelection] = useState<HomePickerSelection>(() => ({
+    ...emptyHomePickerSelection,
+    ...seed,
+  }))
   const [patientQuery, setPatientQuery] = useState('')
 
-  const { patients, programs, devices, presenceById, summary } = data
+  const { isLoading, patients, programs, devices, presenceById, summary } = data
+
+  // The seed lives in state now; drop it from the URL so a reload starts clean.
+  useEffect(() => {
+    if (Object.keys(seed).length === 0) return
+    const query = withoutHomePickerParams(
+      new URLSearchParams(window.location.search),
+    )
+    router.replace(query ? `/?${query}` : '/', { scroll: false })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const patientLocalData = useRow(
     'patients',
@@ -50,7 +71,7 @@ export function useStartSessionPicker(data: HomeDashboardData) {
 
   // When the patient changes, restore what they last used.
   useEffect(() => {
-    if (!selection.patientId) return
+    if (!selection.patientId || isLoading) return
     const lastProgram = patientLocalData.lastProgram
     const lastHeadset = patientLocalData.lastHeadset
     const onlyDevice = devices.length === 1 ? devices[0]?.data.id : undefined
@@ -61,8 +82,9 @@ export function useStartSessionPicker(data: HomeDashboardData) {
       const next = reconcileHomePickerSelection(
         {
           ...prev,
-          programId: prev.programId ?? lastProgram ?? null,
-          deviceId: prev.deviceId ?? lastHeadset ?? onlyDevice ?? null,
+          programId: prev.programId ?? seed.programId ?? lastProgram ?? null,
+          deviceId:
+            prev.deviceId ?? seed.deviceId ?? lastHeadset ?? onlyDevice ?? null,
         },
         {
           programIds: programs.map((program) => program.id),
@@ -77,6 +99,8 @@ export function useStartSessionPicker(data: HomeDashboardData) {
     })
   }, [
     selection.patientId,
+    isLoading,
+    seed,
     patientLocalData.lastProgram,
     patientLocalData.lastHeadset,
     programs,
@@ -84,12 +108,18 @@ export function useStartSessionPicker(data: HomeDashboardData) {
     presenceById,
   ])
 
-  const selectPatient = (patientId: string) =>
+  const selectPatient = (patientId: string) => {
+    setSeed({})
     setSelection({ patientId, programId: null, deviceId: null })
-  const selectProgram = (programId: string) =>
+  }
+  const selectProgram = (programId: string) => {
+    setSeed({})
     setSelection((prev) => ({ ...prev, programId }))
-  const selectDevice = (deviceId: string) =>
+  }
+  const selectDevice = (deviceId: string) => {
+    setSeed({})
     setSelection((prev) => ({ ...prev, deviceId }))
+  }
 
   const selectedPatient = patients.find((p) => p.id === selection.patientId)
   const selectedProgram = programs.find((p) => p.id === selection.programId)
@@ -144,6 +174,8 @@ export function useStartSessionPicker(data: HomeDashboardData) {
     pickerSummary,
     canLaunch: launchHref !== null,
     launch,
+    /** Where a create page sends the clinician back to, with this selection. */
+    returnTo: homePickerHref(selection),
   }
 }
 

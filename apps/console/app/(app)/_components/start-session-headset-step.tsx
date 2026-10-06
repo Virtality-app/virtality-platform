@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { RectangleGoggles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { isHeadsetSelectable } from '@/lib/home-session-picker'
+import { withReturnTo } from '@/lib/home-picker-return'
 import type { DeviceVrPresenceStatus } from '@/lib/vr-presence-status'
 import type { HomeDashboardData } from './use-home-dashboard-data'
 import StartSessionStep from './start-session-step'
@@ -26,7 +27,7 @@ const StartSessionHeadsetStep = ({
   presenceById: HomeDashboardData['presenceById']
   picker: StartSessionPicker
 }) => {
-  const { selection, selectDevice } = picker
+  const { selection, selectDevice, returnTo } = picker
 
   return (
     <StartSessionStep
@@ -36,7 +37,7 @@ const StartSessionHeadsetStep = ({
       done={Boolean(selection.deviceId)}
       footer={
         <Link
-          href='/devices'
+          href={withReturnTo('/devices', returnTo)}
           className='text-muted-foreground hover:text-foreground flex items-center gap-2 text-[13px]'
         >
           <RectangleGoggles className='size-4' /> Pair a headset

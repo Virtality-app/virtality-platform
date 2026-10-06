@@ -27,6 +27,7 @@ import useMounted from '@/hooks/use-mounted'
 import useIsAuthed from '@/hooks/use-is-authed'
 import { getQueryClient, useNewPatient, useORPC } from '@virtality/react-query'
 import { trackAnalyticsEvent } from '@/lib/analytics-contract'
+import { afterCreateHref } from '@/lib/home-picker-return'
 import useNow from '@/hooks/use-now'
 
 const PatientForm = () => {
@@ -45,7 +46,7 @@ const PatientForm = () => {
   }
 
   const { mutate: createPatient, isPending: isFormPending } = useNewPatient({
-    onSuccess: (data) => {
+    onSuccess: (_data, variables) => {
       trackAnalyticsEvent('patient_created', {
         time_spent_sec: (now() - ts.current) / 1000,
       })
@@ -53,7 +54,9 @@ const PatientForm = () => {
         queryKey: orpc.patient.list.key(),
       })
 
-      router.push('/patients')
+      router.push(
+        afterCreateHref('patientId', variables.data.patient.id, '/patients'),
+      )
     },
   })
 
