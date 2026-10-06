@@ -14,6 +14,14 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import type { FinalSendBreakdown } from './final-send-dialog'
 
+export type DraftAttachment = {
+  id: string
+  filename: string
+  contentType: string
+  size: number
+  url: string
+}
+
 export type DraftWorkspaceData = {
   id: string
   subject: string
@@ -28,6 +36,7 @@ export type DraftWorkspaceData = {
     ready: boolean
     reasons: string[]
   }
+  attachments: DraftAttachment[]
 }
 
 export type DraftFormState = {
@@ -198,6 +207,7 @@ export const useAdminEmailDraftActions = ({
 
   return {
     saveDraft,
+    saveIfDirty,
     testSend,
     openFinalSend,
     finalSend,

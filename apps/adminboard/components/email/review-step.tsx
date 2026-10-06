@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from '@virtality/ui/components/card'
 import { ArrowLeft, Send } from 'lucide-react'
+import { AdminEmailAttachmentList } from './admin-email-attachment-list'
 import { TestSendPopover } from './test-send-popover'
 
 type ReviewStepProps = {
@@ -60,6 +61,10 @@ export const ReviewStep = ({ workspace, onBack }: ReviewStepProps) => {
               </p>
             )}
           </div>
+          <AdminEmailAttachmentList
+            attachments={draft.attachments}
+            className='mt-3'
+          />
         </CardContent>
       </Card>
 

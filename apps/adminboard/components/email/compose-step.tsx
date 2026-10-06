@@ -1,5 +1,6 @@
 'use client'
 
+import { AdminEmailAttachmentsField } from '@/components/email/admin-email-attachments-field'
 import { AdminEmailDraftContentFields } from '@/components/email/admin-email-draft-content-fields'
 import { EmailBlockBuilder } from '@/components/email/email-block-builder'
 import type { AdminEmailDraftWorkspaceState } from '@/components/email/use-admin-email-draft-workspace'
@@ -13,7 +14,7 @@ type ComposeStepProps = {
 }
 
 export const ComposeStep = ({ workspace, onNext }: ComposeStepProps) => {
-  const { form, patch, isDirty, readOnly, actions } = workspace
+  const { draft, form, patch, isDirty, readOnly, actions } = workspace
 
   return (
     <div className='space-y-4'>
@@ -30,6 +31,13 @@ export const ComposeStep = ({ workspace, onNext }: ComposeStepProps) => {
             blocks={form.bodyBlocks}
             disabled={readOnly}
             onChange={(bodyBlocks) => patch({ bodyBlocks })}
+          />
+          <div className='border-t' />
+          <AdminEmailAttachmentsField
+            draftId={draft.id}
+            attachments={draft.attachments}
+            saveIfDirty={actions.saveIfDirty}
+            disabled={readOnly}
           />
         </CardContent>
       </Card>

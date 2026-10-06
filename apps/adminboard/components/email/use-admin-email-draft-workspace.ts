@@ -57,11 +57,15 @@ export const useAdminEmailDraftWorkspace = ({
     ...callbacks,
   })
 
+  // Compare the timestamp, not the Date: every refetch (e.g. on window focus)
+  // deserialises a new Date, which would wipe unsaved edits.
+  const savedAt = new Date(draft.updatedAt).getTime()
+
   useEffect(() => {
     setForm(toDraftFormState(draft))
     setPreviewOpen(false)
     setArchiveOpen(false)
-  }, [draft.id, draft.updatedAt])
+  }, [draft.id, savedAt])
 
   const previewQueryDraftId = getAdminEmailDraftPreviewQueryDraftId({
     previewOpen,

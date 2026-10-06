@@ -54,6 +54,7 @@ export const toDraftWorkspaceData = (
   isFinalSent: draft.isFinalSent,
   sendReadiness: draft.sendReadiness,
   updatedAt: draft.updatedAt,
+  attachments: draft.attachments,
 })
 
 /** Selection transitions every layout uses after a draft action. */

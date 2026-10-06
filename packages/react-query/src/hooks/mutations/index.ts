@@ -135,6 +135,8 @@ export {
   useRestoreAdminEmailDraft,
   useTestSendAdminEmailDraft,
   useFinalSendAdminEmailDraft,
+  useAddAdminEmailAttachment,
+  useRemoveAdminEmailAttachment,
 } from './email/use-admin-authored-email-mutations.js'
 export {
   useCreateEmailAudience,

@@ -2,6 +2,7 @@ import {
   CopyObjectCommand,
   DeleteObjectCommand,
   DeleteObjectCommandInput,
+  GetObjectCommand,
   HeadObjectCommand,
   ListObjectsV2Command,
   PutObjectCommand,
@@ -134,6 +135,16 @@ class VirtalityS3 extends S3Client {
     }
   }
 
+  getFileBytes = async ({ Key }: { Key: string }) => {
+    try {
+      const response = await this.send(new GetObjectCommand({ Bucket, Key }))
+      return (await response.Body?.transformToByteArray()) ?? null
+    } catch (error) {
+      console.log(error)
+      return null
+    }
+  }
+
   objectExists = async ({ Key }: { Key: string }) => {
     try {
       await this.send(new HeadObjectCommand({ Bucket, Key }))
@@ -168,7 +179,8 @@ class VirtalityS3 extends S3Client {
       await this.send(
         new CopyObjectCommand({
           Bucket,
-          CopySource: `${Bucket}/${sourceKey}`,
+          // CopySource must be URL-encoded; keys may hold spaces or non-ASCII.
+          CopySource: `${Bucket}/${sourceKey.split('/').map(encodeURIComponent).join('/')}`,
           Key: destinationKey,
         }),
       )

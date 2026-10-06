@@ -83,3 +83,33 @@ describe('deliverIndividualEmails per-recipient html', () => {
     )
   })
 })
+
+describe('deliverIndividualEmails attachments', () => {
+  it('sends the same attachments to every recipient', async () => {
+    const sendEmail = vi.fn().mockResolvedValue(undefined)
+    const attachments = [
+      {
+        filename: 'report.pdf',
+        content: new Uint8Array([0x25, 0x50, 0x44, 0x46]),
+        contentType: 'application/pdf',
+      },
+    ]
+
+    await deliverIndividualEmails({
+      recipients: ['one@example.com', 'two@example.com'],
+      subject: 'June update',
+      html: '<p>Hello</p>',
+      attachments,
+      sendEmail,
+    })
+
+    expect(sendEmail).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ to: 'one@example.com', attachments }),
+    )
+    expect(sendEmail).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ to: 'two@example.com', attachments }),
+    )
+  })
+})
