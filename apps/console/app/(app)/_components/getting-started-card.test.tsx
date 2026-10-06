@@ -44,6 +44,6 @@ describe('GettingStartedCard', () => {
     fireEvent.click(screen.getByRole('button', { name: /show steps/i }))
 
     expect(screen.getByText('Pair a headset')).toBeTruthy()
-    expect(screen.getByText('Run a Started Session')).toBeTruthy()
+    expect(screen.getByText('Start a session')).toBeTruthy()
   })
 })

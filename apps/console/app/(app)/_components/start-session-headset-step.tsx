@@ -32,6 +32,7 @@ const StartSessionHeadsetStep = ({
     <StartSessionStep
       number={3}
       label='Headset'
+      tourTarget='session-headset'
       done={Boolean(selection.deviceId)}
       footer={
         <Link

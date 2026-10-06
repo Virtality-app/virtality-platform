@@ -45,6 +45,7 @@ const StartSessionPatientStep = ({
     <StartSessionStep
       number={1}
       label='Patient'
+      tourTarget='session-patient'
       done={Boolean(selection.patientId)}
       footer={
         <Link

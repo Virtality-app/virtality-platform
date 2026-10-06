@@ -35,7 +35,7 @@ const ReusableProgramCreateFlow = () => {
           </P>
         </div>
 
-        <div className='grid gap-4 md:grid-cols-2'>
+        <div data-tour='program-choice' className='grid gap-4 md:grid-cols-2'>
           <button
             type='button'
             className='hover:bg-accent flex flex-col gap-2 rounded-lg border p-6 text-left transition-colors'

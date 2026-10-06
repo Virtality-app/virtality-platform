@@ -31,6 +31,7 @@ const StartSessionProgramStep = ({
     <StartSessionStep
       number={2}
       label='Program'
+      tourTarget='session-program'
       done={Boolean(selection.programId)}
       footer={
         <Link

@@ -2,18 +2,17 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
-import { Button } from '@virtality/ui/components/button'
 import { Card, CardContent, CardFooter } from '@virtality/ui/components/card'
 import { Badge } from '@virtality/ui/components/badge'
 import { Wifi, WifiOff } from 'lucide-react'
 import { VRDevice } from '@/types/models'
 import useSocketConnection from '@/hooks/use-socket-connection'
 import useDeviceCardState from '@/hooks/use-device-card-state'
-import { Input } from '@virtality/ui/components/input'
 import placeholder from '@/public/placeholder.svg'
 import MetaQuest3 from '@/public/meta_quest_3.webp'
 import MetaQuest3s from '@/public/meta_quest_3s.webp'
 import DeviceCardSkeleton from './device-card-skeleton'
+import DeviceCardActions from './device-card-actions'
 import { H3, P } from '@/components/ui/typography'
 import { cn } from '@/lib/utils'
 import useDevice from '@/hooks/use-device'
@@ -60,80 +59,6 @@ const DeviceCard = ({ device }: DeviceProps) => {
     const interval = setInterval(updateCountdown, 1000)
     return () => clearInterval(interval)
   }, [expiresAt, isCodeFieldOpen])
-
-  const renderFooterActions = () => {
-    if (error && !isCodeFieldOpen) {
-      return (
-        <div className='flex w-full gap-2'>
-          <Button
-            onClick={() => void cancelPairing()}
-            disabled={isCancelling}
-            className='flex-1'
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handlePairing}
-            disabled={isStarting}
-            className='flex-1'
-          >
-            Retry
-          </Button>
-        </div>
-      )
-    }
-
-    if (isCodeFieldOpen) {
-      return (
-        <div className='flex gap-2'>
-          <Input
-            type='text'
-            name='verificationCode'
-            id='verificationCode'
-            value={verificationCode}
-            className='w-full text-center'
-            disabled
-          />
-          <Button onClick={() => void cancelPairing()} disabled={isCancelling}>
-            Cancel
-          </Button>
-        </div>
-      )
-    }
-
-    if (isPaired) {
-      return (
-        <Button
-          variant='destructive'
-          onClick={handleRemoveDevice}
-          className='w-full'
-        >
-          Remove
-        </Button>
-      )
-    }
-
-    return (
-      <div className='flex w-full gap-2'>
-        <Button
-          variant='destructive'
-          disabled={status === 'pairing' || isStarting}
-          onClick={handleRemoveDevice}
-          className='flex-1'
-        >
-          Remove
-        </Button>
-        <Button
-          variant='default'
-          onClick={handlePairing}
-          disabled={status === 'pairing' || isStarting}
-          className='flex-1'
-        >
-          Pair
-        </Button>
-      </div>
-    )
-  }
 
   if (removeDevice.isPending) return <DeviceCardSkeleton />
 
@@ -200,7 +125,20 @@ const DeviceCard = ({ device }: DeviceProps) => {
           </div>
         </div>
       </CardContent>
-      <CardFooter>{renderFooterActions()}</CardFooter>
+      <CardFooter>
+        <DeviceCardActions
+          error={error}
+          isCodeFieldOpen={isCodeFieldOpen}
+          isPaired={isPaired}
+          isBusy={status === 'pairing' || isStarting}
+          isStarting={isStarting}
+          isCancelling={isCancelling}
+          verificationCode={verificationCode}
+          onPair={handlePairing}
+          onCancel={() => void cancelPairing()}
+          onRemove={handleRemoveDevice}
+        />
+      </CardFooter>
     </Card>
   )
 }

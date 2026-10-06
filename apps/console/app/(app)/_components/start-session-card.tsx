@@ -60,6 +60,7 @@ const StartSessionCard = ({ data }: { data: HomeDashboardData }) => {
           variant='primary'
           size='lg'
           disabled={!canLaunch}
+          data-tour='session-launch'
           onClick={launch}
         >
           <Play className='fill-current' />

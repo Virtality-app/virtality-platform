@@ -201,7 +201,7 @@ The console landing page for a signed-in clinician: a seven-day sessions overvie
 _Avoid_: Welcome page, landing tips, home screen
 
 **Getting Started**:
-The four-step checklist on the **Home Dashboard** — pair a headset, add a patient, build a **Reusable Program**, run a **Started Session** — with each step's done state derived from the clinician's live data, never from stored onboarding flags. Completing the last step collapses the card to its summary row; it stays on the dashboard and can be expanded again.
+The four-step checklist on the **Home Dashboard** — pair a headset, add a patient, build a **Reusable Program**, run a **Started Session** — with each step's done state derived from the clinician's live data, never from stored onboarding flags. Completing the last step collapses the card to its summary row; it stays on the dashboard and can be expanded again. Each open step's button starts a guided tour on that step's page (`?tour=<id>`, defined in `lib/guided-tour.ts`) that highlights the fields and buttons to use, one at a time.
 _Avoid_: Missions, tour flags, hiding the card when complete
 
 **Session Picker**:

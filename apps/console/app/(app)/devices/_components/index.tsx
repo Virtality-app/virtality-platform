@@ -1,7 +1,6 @@
 'use client'
 import { Input } from '@virtality/ui/components/input'
 import { Button } from '@virtality/ui/components/button'
-import { Card, CardContent } from '@virtality/ui/components/card'
 import {
   Dialog,
   DialogContent,
@@ -25,12 +24,12 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import DeviceCard from './device-card'
+import AddDeviceCard from './add-device-card'
 import { DeviceSchema } from '@/lib/definitions'
 import { DeviceForm } from '@/types/models'
 import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-import { Plus } from 'lucide-react'
 import DeviceCardSkeleton from './device-card-skeleton'
 import { v4 as uuid } from 'uuid'
 import { useDeviceContext } from '@/context/device-context'
@@ -107,6 +106,7 @@ const Devices = () => {
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
+                data-tour='device-form'
                 className='space-y-4'
               >
                 <FormField
@@ -197,24 +197,3 @@ const Devices = () => {
 }
 
 export default Devices
-
-const AddDeviceCard = ({
-  handleDialogOpen,
-}: {
-  handleDialogOpen: () => void
-}) => {
-  return (
-    <Card
-      id='add-new-device'
-      onClick={handleDialogOpen}
-      className='aspect-4/5 w-full max-w-xs cursor-pointer border-2 border-dashed border-zinc-400 transition-colors hover:border-zinc-200 dark:border-zinc-200 dark:hover:border-zinc-400 dark:hover:bg-zinc-900'
-    >
-      <CardContent className='m-auto flex h-full flex-col items-center justify-center p-6'>
-        <Button className='mb-4 rounded-full p-3! dark:bg-zinc-200'>
-          <Plus className='h-6 w-6 text-zinc-200 dark:text-zinc-900' />
-        </Button>
-        <p className='text-lg font-medium dark:text-zinc-200'>Add device</p>
-      </CardContent>
-    </Card>
-  )
-}

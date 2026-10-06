@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { cookies } from 'next/headers'
 import { SidebarProvider, SIDEBAR_COOKIE_NAME } from '@/components/ui/sidebar'
 import RootSidebar from '@/components/layout/sidebar'
@@ -6,6 +7,7 @@ import { RenewPromptBanner } from '@/components/layout/renew-prompt-banner'
 import { ExpiredFreeUpgradeDialog } from '@/components/layout/expired-free-upgrade-dialog'
 import { CheckoutReturnHandler } from '@/components/checkout-return/checkout-return-handler'
 import { TrialWelcomeRedirect } from '@/components/layout/trial-welcome-redirect'
+import GuidedTour from '@/components/guided-tour/guided-tour'
 
 export default async function AppLayout({
   children,
@@ -25,6 +27,9 @@ export default async function AppLayout({
         <RenewPromptBanner />
         <ExpiredFreeUpgradeDialog />
         {children}
+        <Suspense fallback={null}>
+          <GuidedTour />
+        </Suspense>
       </main>
     </SidebarProvider>
   )

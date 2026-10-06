@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { AlertCircle, Loader2 } from 'lucide-react'
-import { Button } from '@virtality/ui/components/button'
+import { AlertCircle } from 'lucide-react'
 import { Separator } from '@virtality/ui/components/separator'
 import { useForm } from 'react-hook-form'
 import { patientFormDefaultValues } from '@/lib/patient-form-defaults'
@@ -9,15 +8,14 @@ import { PatientFormSchema, PatientFormInput } from '@/lib/definitions'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form } from '@/components/ui/form'
 import { BodyAreas } from '@/types/models'
-import Link from 'next/link'
 import { getUUID } from '@/lib/utils'
 import useNavigationGuard from '@/hooks/use-navigation-guard'
 import { NavigationGuardDialog } from '@/components/ui/navigation-guard-dialog'
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-toastify'
-import { useClientT } from '@/i18n/use-client-t'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import BasicInfo from '../../_components/basic-info'
+import PatientFormActions from './patient-form-actions'
 import MedicalHistory from '../../_components/medical-history-tab'
 import useBeforeUnload from '@/hooks/use-before-unload'
 import {
@@ -58,8 +56,6 @@ const PatientForm = () => {
       router.push('/patients')
     },
   })
-
-  const { t } = useClientT(['common'])
 
   const form = useForm<PatientFormInput>({
     resolver: zodResolver(PatientFormSchema),
@@ -188,22 +184,7 @@ const PatientForm = () => {
 
       <Separator />
 
-      {/* Action Buttons */}
-      {mounted && (
-        <div className='flex justify-end space-x-4'>
-          <Button asChild type='button' variant='outline'>
-            <Link href='/patients'>{t('btn.cancel')}</Link>
-          </Button>
-
-          <Button type='submit' form='patient-form' variant='primary'>
-            {isFormPending ? (
-              <Loader2 className='animate-spin' />
-            ) : (
-              t('btn.create')
-            )}
-          </Button>
-        </div>
-      )}
+      {mounted && <PatientFormActions isPending={isFormPending} />}
 
       {/* Unsaved changes confirmation dialog (from hook) */}
       <NavigationGuardDialog

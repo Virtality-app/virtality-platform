@@ -1,8 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { ChevronDown, Zap } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import {
   Collapsible,
   CollapsibleContent,
@@ -13,7 +12,6 @@ import { cn } from '@/lib/utils'
 import {
   gettingStartedHeadline,
   gettingStartedSubline,
-  START_SESSION_ANCHOR,
   type GettingStarted,
 } from '@/lib/home-getting-started'
 import HomeSectionLabel from './home-section-label'
@@ -71,14 +69,6 @@ const GettingStartedCard = ({
             <GettingStartedStep key={step.id} step={step} number={index + 1} />
           ))}
         </ol>
-        <div className='flex items-center gap-3 border-t px-6 py-3'>
-          <span className='text-muted-foreground text-[13px]'>In a hurry?</span>
-          <Button asChild variant='outline' size='sm'>
-            <Link href={`#${START_SESSION_ANCHOR}`}>
-              <Zap /> Quick Start skips the program step
-            </Link>
-          </Button>
-        </div>
       </CollapsibleContent>
     </Collapsible>
   )

@@ -186,7 +186,11 @@ const BasicInfo = ({ form, patient }: BasicInfoProps) => {
                 <FormItem>
                   <FormLabel>{t('form.fullName')} *</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter patient's full name" {...field} />
+                    <Input
+                      placeholder="Enter patient's full name"
+                      data-tour='patient-name'
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -288,7 +292,10 @@ const BasicInfo = ({ form, patient }: BasicInfoProps) => {
                       value={patientSexSelectValue(field.value)}
                     >
                       <FormControl>
-                        <SelectTrigger className='w-full shadow-none'>
+                        <SelectTrigger
+                          data-tour='patient-sex'
+                          className='w-full shadow-none'
+                        >
                           <SelectValue placeholder='Select sex...' />
                         </SelectTrigger>
                       </FormControl>
@@ -345,7 +352,10 @@ const BasicInfo = ({ form, patient }: BasicInfoProps) => {
                       value={patientLanguageSelectValue(field.value)}
                     >
                       <FormControl>
-                        <SelectTrigger className='w-full shadow-none'>
+                        <SelectTrigger
+                          data-tour='patient-language'
+                          className='w-full shadow-none'
+                        >
                           <SelectValue placeholder='Select language...' />
                         </SelectTrigger>
                       </FormControl>

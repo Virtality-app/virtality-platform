@@ -9,16 +9,20 @@ const StartSessionStep = ({
   done,
   children,
   footer,
+  tourTarget,
 }: {
   number: number
   label: string
   done: boolean
   children: React.ReactNode
   footer?: React.ReactNode
+  /** `data-tour` hook for the Getting started walkthrough. */
+  tourTarget?: string
 }) => (
   <div
     role='listbox'
     aria-label={label}
+    data-tour={tourTarget}
     className={cn(
       'bg-card flex min-h-62 flex-col gap-3 rounded-xl border p-4 transition-shadow',
       done &&

@@ -209,6 +209,7 @@ const ReusableProgramFormView = ({
                 type='submit'
                 variant='primary'
                 form='reusableProgramForm'
+                data-tour='program-submit'
               >
                 {t('btn.submit')}
               </Button>
@@ -227,7 +228,11 @@ const ReusableProgramFormView = ({
                     <FormItem>
                       <FormLabel>{capitalize(field.name)}</FormLabel>
                       <FormControl>
-                        <Input {...field} className='max-w-62.5' />
+                        <Input
+                          {...field}
+                          data-tour='program-name'
+                          className='max-w-62.5'
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -276,7 +281,12 @@ const ReusableProgramFormView = ({
             <Button type='button' onClick={secondaryNav.onClick}>
               {secondaryNav.label}
             </Button>
-            <Button type='button' variant='primary' onClick={goToSelectedList}>
+            <Button
+              type='button'
+              variant='primary'
+              onClick={goToSelectedList}
+              data-tour='program-catalog-continue'
+            >
               {CATALOG_FIRST_CATALOG_CONTINUE_LABEL}
             </Button>
           </div>

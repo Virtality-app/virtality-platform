@@ -1,3 +1,5 @@
+import { tourHref } from './guided-tour'
+
 /** Id of the Start a session card; header button and the last step scroll to it. */
 export const START_SESSION_ANCHOR = 'start-session'
 
@@ -47,7 +49,7 @@ export function buildGettingStarted(
           ? 'A headset is added but not paired yet.'
           : 'Add a headset and pair it with the 6-digit code.',
       done: hasPaired,
-      href: '/devices',
+      href: hasPaired ? '/devices' : tourHref('device'),
     },
     {
       id: 'patient',
@@ -56,25 +58,25 @@ export function buildGettingStarted(
         ? `${input.patientCount} patient${input.patientCount === 1 ? '' : 's'} on file`
         : 'Name and basic info is enough to start.',
       done: hasPatient,
-      href: hasPatient ? '/patients' : '/patients/new',
+      href: hasPatient ? '/patients' : tourHref('patient'),
     },
     {
       id: 'program',
-      title: 'Build a Reusable Program',
+      title: 'Create an exercise program',
       detail: hasProgram
         ? `${input.programCount} program${input.programCount === 1 ? '' : 's'} in your library`
         : 'Start from a Starter Template or pick exercises yourself. Takes about 3 minutes.',
       done: hasProgram,
-      href: hasProgram ? '/programs' : '/programs/new',
+      href: hasProgram ? '/programs' : tourHref('program'),
     },
     {
       id: 'session',
-      title: 'Run a Started Session',
+      title: 'Start a session',
       detail: hasSession
         ? 'First session done'
         : 'Put the headset on the patient, pick the program, press Launch.',
       done: hasSession,
-      href: `#${START_SESSION_ANCHOR}`,
+      href: hasSession ? `#${START_SESSION_ANCHOR}` : tourHref('session'),
     },
   ]
 

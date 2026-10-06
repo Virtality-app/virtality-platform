@@ -73,7 +73,7 @@ const StarterTemplatePicker = ({
       </div>
 
       <div className='grid flex-1 gap-6 overflow-hidden lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]'>
-        <Command className='border'>
+        <Command data-tour='program-template-list' className='border'>
           <CommandInput
             placeholder='Search starter templates...'
             className='h-9'
@@ -145,6 +145,7 @@ const StarterTemplatePicker = ({
           <Button
             variant='primary'
             disabled={!selectedTemplate}
+            data-tour='program-template-continue'
             onClick={() => {
               if (selectedTemplate) onContinue(selectedTemplate)
             }}
