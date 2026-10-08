@@ -235,6 +235,10 @@ export type AdminCustomerListItem = {
   accessStatus: CustomerAccessStatus
   billingStatus: CustomerBillingStatus
   primarySubscriptionId: string | null
+  /** Clock end of the open Timed Access Gate; null without one. */
+  trialEnd: Date | null
+  /** The customer's email has a live (not deleted) Waitlist sign-up. */
+  onWaitlist: boolean
   createdAt: Date
 }
 

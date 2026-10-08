@@ -2,15 +2,21 @@
 
 import DateCell from '@/components/tables/date-cell'
 import { ColumnHeader } from '@/components/tables/header-cell'
+import { formatCustomerBillingStatus } from '@/lib/admin-customer-display'
 import {
-  formatCustomerAccessStatus,
-  formatCustomerBillingStatus,
-} from '@/lib/admin-customer-display'
+  customerCanLaunchVr,
+  formatCustomerTableAccess,
+  resolveCustomerTrialStanding,
+} from '@/lib/customer-table-display'
+import { CustomerTrialCell } from '@/components/customer/customer-trial-cell'
+import { CustomerVrCell } from '@/components/customer/customer-vr-cell'
 import type { AdminCustomerListItem } from '@virtality/shared/utils'
 import { ColumnDef } from '@tanstack/react-table'
 import startCase from 'lodash.startcase'
 
-export function createCustomerColumns(): ColumnDef<AdminCustomerListItem>[] {
+export function createCustomerColumns(
+  now: Date,
+): ColumnDef<AdminCustomerListItem>[] {
   return [
     {
       accessorKey: 'name',
@@ -25,11 +31,31 @@ export function createCustomerColumns(): ColumnDef<AdminCustomerListItem>[] {
       ),
     },
     {
-      accessorKey: 'accessStatus',
-      header: ({ column }) => <ColumnHeader column={column} title='Access' />,
+      id: 'vr',
+      accessorFn: (row) => customerCanLaunchVr(row.accessStatus),
+      header: ({ column }) => <ColumnHeader column={column} title='VR' />,
       cell: ({ row }) => (
-        <div>{formatCustomerAccessStatus(row.original.accessStatus)}</div>
+        <CustomerVrCell
+          canLaunchVr={customerCanLaunchVr(row.original.accessStatus)}
+        />
       ),
+    },
+    {
+      id: 'trial',
+      accessorFn: (row) =>
+        row.trialEnd == null ? undefined : new Date(row.trialEnd).getTime(),
+      sortUndefined: 'last',
+      header: ({ column }) => <ColumnHeader column={column} title='Trial' />,
+      cell: ({ row }) => (
+        <CustomerTrialCell
+          standing={resolveCustomerTrialStanding(row.original.trialEnd, now)}
+        />
+      ),
+    },
+    {
+      id: 'access',
+      accessorFn: (row) => formatCustomerTableAccess(row),
+      header: ({ column }) => <ColumnHeader column={column} title='Access' />,
     },
     {
       accessorKey: 'billingStatus',

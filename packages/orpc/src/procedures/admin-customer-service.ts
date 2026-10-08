@@ -64,6 +64,7 @@ function buildCustomerListItem(input: {
   user: CustomerUserRow
   subscriptions: readonly AdminCustomerSubscriptionRow[]
   openAccessGate: AccessGrantClock | null
+  onWaitlist: boolean
   now: Date
 }): AdminCustomerListItem {
   const subscriptionSummaries = input.subscriptions.map(
@@ -85,8 +86,17 @@ function buildCustomerListItem(input: {
     }),
     billingStatus: deriveCustomerBillingStatus(primary),
     primarySubscriptionId: primary?.id ?? null,
+    trialEnd:
+      input.openAccessGate?.status === 'trialing'
+        ? (input.openAccessGate.trialEnd ?? null)
+        : null,
+    onWaitlist: input.onWaitlist,
     createdAt: input.user.createdAt,
   }
+}
+
+function normalizeWaitlistEmail(email: string): string {
+  return email.trim().toLowerCase()
 }
 
 export async function listAdminCustomers(
@@ -142,11 +152,20 @@ export async function listAdminCustomers(
     }
   }
 
+  const waitlist = await prisma.waitingList.findMany({
+    where: { deletedAt: null },
+    select: { email: true },
+  })
+  const waitlistEmails = new Set(
+    waitlist.map((row) => normalizeWaitlistEmail(row.email)),
+  )
+
   return users.map((user) =>
     buildCustomerListItem({
       user,
       subscriptions: subscriptionsByUser.get(user.id) ?? [],
       openAccessGate: openAccessGateByUser.get(user.id) ?? null,
+      onWaitlist: waitlistEmails.has(normalizeWaitlistEmail(user.email)),
       now,
     }),
   )

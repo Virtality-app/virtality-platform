@@ -41,10 +41,12 @@ function createPrismaMock(input: {
     trialEnd?: Date | null
     createdAt?: Date
   }>
+  waitlist?: Array<{ email: string; deletedAt?: Date | null }>
 }) {
   const users = input.users ?? []
   const subscriptions = input.subscriptions ?? []
   const accessGrants = input.accessGrants ?? []
+  const waitlist = input.waitlist ?? []
 
   return {
     user: {
@@ -87,6 +89,11 @@ function createPrismaMock(input: {
     },
     adminCustomerAudit: {
       findMany: vi.fn(async () => []),
+    },
+    waitingList: {
+      findMany: vi.fn(async () =>
+        waitlist.filter((row) => row.deletedAt == null),
+      ),
     },
     accessGrant: {
       findMany: vi.fn(
@@ -229,6 +236,73 @@ describe('listAdminCustomers', () => {
       accessStatus: 'trialing',
       billingStatus: 'trialing',
       primarySubscriptionId: 'sub_free',
+      trialEnd: new Date('2026-08-20T12:00:00.000Z'),
+    })
+  })
+
+  it('carries no trial clock for a Permanent Access Gate', async () => {
+    const prisma = createPrismaMock({
+      users: [
+        {
+          id: 'user_free',
+          name: 'Free User',
+          email: 'free@example.com',
+          createdAt: NOW,
+        },
+      ],
+      accessGrants: [
+        {
+          id: 'grant_free',
+          userId: 'user_free',
+          status: 'granted',
+          trialStart: NOW,
+          trialEnd: null,
+          createdAt: NOW,
+        },
+      ],
+    })
+
+    const customers = await listAdminCustomers(prisma as never, { now: NOW })
+
+    expect(customers[0]?.trialEnd).toBeNull()
+  })
+
+  it('marks customers whose email has a live Waitlist sign-up', async () => {
+    const prisma = createPrismaMock({
+      users: [
+        {
+          id: 'user_waiting',
+          name: 'Waiting',
+          email: 'Waiting@Example.com',
+          createdAt: NOW,
+        },
+        {
+          id: 'user_removed',
+          name: 'Removed',
+          email: 'removed@example.com',
+          createdAt: NOW,
+        },
+        {
+          id: 'user_other',
+          name: 'Other',
+          email: 'other@example.com',
+          createdAt: NOW,
+        },
+      ],
+      waitlist: [
+        { email: ' waiting@example.com' },
+        { email: 'removed@example.com', deletedAt: NOW },
+      ],
+    })
+
+    const customers = await listAdminCustomers(prisma as never, { now: NOW })
+
+    expect(
+      Object.fromEntries(customers.map((c) => [c.userId, c.onWaitlist])),
+    ).toEqual({
+      user_waiting: true,
+      user_removed: false,
+      user_other: false,
     })
   })
 })

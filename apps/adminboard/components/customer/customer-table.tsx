@@ -14,7 +14,8 @@ import { useResourceTable } from '@virtality/ui/lib/use-resource-table'
 export function CustomerTable() {
   const router = useRouter()
   const { data, isPending } = useAdminCustomers()
-  const columns = useMemo(() => createCustomerColumns(), [])
+  // One clock per table mount so every Trial cell agrees on "today".
+  const columns = useMemo(() => createCustomerColumns(new Date()), [])
   const { table, globalFilter, setGlobalFilter } = useResourceTable({
     tableId: 'customers',
     data: data ?? [],
