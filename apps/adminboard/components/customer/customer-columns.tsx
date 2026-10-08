@@ -3,6 +3,8 @@
 import DateCell from '@/components/tables/date-cell'
 import { ColumnHeader } from '@/components/tables/header-cell'
 import { formatCustomerBillingStatus } from '@/lib/admin-customer-display'
+import { createCustomerTrialFilterFn } from '@/lib/customer-table-filters'
+import { valueListFilterFn } from '@/lib/table-value-filters'
 import {
   customerCanLaunchVr,
   formatCustomerTableAccess,
@@ -33,6 +35,7 @@ export function createCustomerColumns(
     {
       id: 'vr',
       accessorFn: (row) => customerCanLaunchVr(row.accessStatus),
+      filterFn: 'equals',
       header: ({ column }) => <ColumnHeader column={column} title='VR' />,
       cell: ({ row }) => (
         <CustomerVrCell
@@ -45,6 +48,7 @@ export function createCustomerColumns(
       accessorFn: (row) =>
         row.trialEnd == null ? undefined : new Date(row.trialEnd).getTime(),
       sortUndefined: 'last',
+      filterFn: createCustomerTrialFilterFn(now),
       header: ({ column }) => <ColumnHeader column={column} title='Trial' />,
       cell: ({ row }) => (
         <CustomerTrialCell
@@ -55,14 +59,14 @@ export function createCustomerColumns(
     {
       id: 'access',
       accessorFn: (row) => formatCustomerTableAccess(row),
+      filterFn: valueListFilterFn,
       header: ({ column }) => <ColumnHeader column={column} title='Access' />,
     },
     {
-      accessorKey: 'billingStatus',
+      id: 'billing',
+      accessorFn: (row) => formatCustomerBillingStatus(row.billingStatus),
+      filterFn: valueListFilterFn,
       header: ({ column }) => <ColumnHeader column={column} title='Billing' />,
-      cell: ({ row }) => (
-        <div>{formatCustomerBillingStatus(row.original.billingStatus)}</div>
-      ),
     },
     {
       accessorKey: 'createdAt',
