@@ -3,9 +3,7 @@ import {
   buildExerciseColumnFilters,
   countActiveExerciseFilters,
   EMPTY_EXERCISE_TABLE_FILTERS,
-  exerciseValueFilterFn,
   listExerciseValues,
-  toggleExerciseValue,
 } from './exercise-table-filters'
 
 describe('exercise table filters', () => {
@@ -45,7 +43,7 @@ describe('exercise table filters', () => {
     ])
   })
 
-  it('counts and toggles', () => {
+  it('counts the active filters', () => {
     expect(
       countActiveExerciseFilters({
         categories: ['a', 'b'],
@@ -54,22 +52,5 @@ describe('exercise table filters', () => {
         onlyEnabled: true,
       }),
     ).toBe(2)
-    expect(toggleExerciseValue(['a'], 'b')).toEqual(['a', 'b'])
-    expect(toggleExerciseValue(['a', 'b'], 'a')).toEqual(['b'])
-  })
-
-  it('matches rows against the selected values', () => {
-    const row = (value: string) =>
-      ({ getValue: () => value }) as unknown as Parameters<
-        typeof exerciseValueFilterFn
-      >[0]
-
-    expect(exerciseValueFilterFn(row('Strength'), 'category', [])).toBe(true)
-    expect(
-      exerciseValueFilterFn(row('Strength'), 'category', ['Strength']),
-    ).toBe(true)
-    expect(
-      exerciseValueFilterFn(row('Balance'), 'category', ['Strength']),
-    ).toBe(false)
   })
 })

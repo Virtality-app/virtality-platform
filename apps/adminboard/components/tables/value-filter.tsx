@@ -19,22 +19,22 @@ import { Badge } from '@virtality/ui/components/badge'
 import { Check, ChevronsUpDown } from 'lucide-react'
 import { useState } from 'react'
 
-type ExerciseValueFilterProps = {
+type ValueFilterProps = {
   label: string
   options: string[]
   selected: string[]
-  onToggle: (category: string) => void
+  onToggle: (value: string) => void
   onClear: () => void
 }
 
-/** Searchable multi-select over one exercise field's distinct values. */
-export const ExerciseValueFilter = ({
+/** Searchable multi-select over one table column's values. */
+export const ValueFilter = ({
   label,
   options,
   selected,
   onToggle,
   onClear,
-}: ExerciseValueFilterProps) => {
+}: ValueFilterProps) => {
   const [open, setOpen] = useState(false)
 
   return (

@@ -4,11 +4,11 @@ import { Button } from '@/components/ui/button'
 import FilterBadge from '@/components/ui/filter-badge'
 import {
   countActiveExerciseFilters,
-  toggleExerciseValue,
   type ExerciseTableFilters as Filters,
 } from '@/lib/exercise-table-filters'
+import { toggleListValue } from '@/lib/table-value-filters'
 import { X } from 'lucide-react'
-import { ExerciseValueFilter } from './exercise-value-filter'
+import { ValueFilter } from '@/components/tables/value-filter'
 
 type ExerciseTableFiltersProps = {
   categories: string[]
@@ -29,26 +29,26 @@ export const ExerciseTableFilters = ({
 
   return (
     <div className='flex flex-wrap items-center gap-2'>
-      <ExerciseValueFilter
+      <ValueFilter
         label='Category'
         options={categories}
         selected={value.categories}
         onToggle={(category) =>
           onChange({
             ...value,
-            categories: toggleExerciseValue(value.categories, category),
+            categories: toggleListValue(value.categories, category),
           })
         }
         onClear={() => onChange({ ...value, categories: [] })}
       />
-      <ExerciseValueFilter
+      <ValueFilter
         label='Direction'
         options={directions}
         selected={value.directions}
         onToggle={(direction) =>
           onChange({
             ...value,
-            directions: toggleExerciseValue(value.directions, direction),
+            directions: toggleListValue(value.directions, direction),
           })
         }
         onClear={() => onChange({ ...value, directions: [] })}

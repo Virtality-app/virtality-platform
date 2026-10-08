@@ -5,7 +5,7 @@ import { ColumnHeader } from '@/components/tables/header-cell'
 import { Exercise } from '@virtality/db'
 import { ColumnDef } from '@tanstack/react-table'
 import startCase from 'lodash.startcase'
-import { exerciseValueFilterFn } from '@/lib/exercise-table-filters'
+import { valueListFilterFn } from '@/lib/table-value-filters'
 
 export const columns: ColumnDef<Exercise>[] = [
   {
@@ -26,14 +26,14 @@ export const columns: ColumnDef<Exercise>[] = [
     header: ({ column, header }) => (
       <ColumnHeader column={column} title={startCase(header.id)} />
     ),
-    filterFn: exerciseValueFilterFn,
+    filterFn: valueListFilterFn,
   },
   {
     accessorKey: 'category',
     header: ({ column, header }) => (
       <ColumnHeader column={column} title={startCase(header.id)} />
     ),
-    filterFn: exerciseValueFilterFn,
+    filterFn: valueListFilterFn,
   },
   {
     accessorKey: 'enabled',
