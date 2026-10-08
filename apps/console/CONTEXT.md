@@ -197,7 +197,7 @@ Soft-deleting a Device from the owning clinician's list. It also releases any bo
 _Avoid_: Unpair, hard delete as the only remove path, soft-delete while keeping identity
 
 **Home Dashboard**:
-The console landing page for a signed-in clinician: a seven-day sessions overview across all their patients, a **Session Picker**, **Pinned Patients**, and a **Getting Started** checklist.
+The console landing page for a signed-in clinician: a seven-day sessions overview across all their patients, a **Session Picker**, **Pinned Patients**, and a **Getting Started** checklist. Gated by `NEXT_PUBLIC_HOME_DASHBOARD_ENABLED` (`lib/home-dashboard-feature.ts`): on outside production by default; when off, `/` shows the original welcome screen.
 _Avoid_: Welcome page, landing tips, home screen
 
 **Getting Started**:
