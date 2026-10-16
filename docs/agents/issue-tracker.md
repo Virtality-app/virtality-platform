@@ -36,8 +36,10 @@ The repo's issues sync both ways with the Linear team **`Core`** (identifiers `C
 
 **Find an issue's twin:**
 
-- GitHub → Linear: `list_issues` with `team: "Core"` and `query: "<GitHub title>"`, then confirm with `get_issue` (`fields: ["attachments"]`) that one of the attachments points at the GitHub issue URL.
-- Linear → GitHub: `get_issue` on the `CORE-<n>`. The GitHub issue URL is in its attachments.
+- GitHub → Linear: `linear[bot]` comments on every synced issue with a link to its twin. Read it with `gh api repos/Virtality-app/virtality-platform/issues/<n>/comments --jq '.[] | select(.user.login == "linear[bot]") | .body'`.
+- Linear → GitHub: `get_issue` on the `CORE-<n>` with `fields: ["attachments"]`. One attachment is the GitHub issue.
+
+Sub-issues sync as Linear parent/child issues, and labels map onto Linear labels (`bug` → `Bug`).
 
 Issues filed before the sync was turned on may have no twin. Leave them as they are; don't create a twin by hand, because the sync would then produce duplicates.
 
