@@ -22,7 +22,11 @@ PRs target **`dev`** (staging). Promote to production with `dev` → **`main`** 
 
 ### Issue tracker
 
-Issues live on **`Virtality-app/virtality-platform`**, not on a personal fork. Always set `GH_REPO=Virtality-app/virtality-platform` or pass `--repo Virtality-app/virtality-platform` for `gh issue` commands. See `docs/agents/issue-tracker.md`.
+Issues live on **`Virtality-app/virtality-platform`**, not on a personal fork. Always set `GH_REPO=Virtality-app/virtality-platform` or pass `--repo Virtality-app/virtality-platform` for `gh issue` commands. Linear (team `Core`, ids like `CORE-123`) mirrors them through two-way sync: write with `gh`, and use the Linear MCP to read Linear-only fields and to attach files. See `docs/agents/issue-tracker.md`.
+
+### Demo recordings
+
+Every PR that changes something a user can see or click carries a short recording of the change working, attached to the issue's Linear twin. Read `docs/agents/demo-recordings.md` before opening the PR.
 
 ### Triage labels
 

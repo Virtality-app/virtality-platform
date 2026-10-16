@@ -23,6 +23,26 @@ Use the `gh` CLI for all operations.
 
 With `GH_REPO` set, you can omit `--repo`. Never rely on the fork remote alone.
 
+## Linear mirror
+
+The repo's issues sync both ways with the Linear team **`Core`** (identifiers `CORE-<n>`). An issue created, edited, commented on or closed on one side shows up on the other, so the team can file and triage in Linear (including from the WhatsApp `team-bot`) and you still see the work through `gh`.
+
+**GitHub is the write side.** Create, label, comment on, link and close issues with `gh` as described above. The sub-issue, dependency and label conventions below, and Sandcastle and `/wayfinder`, all run on GitHub. Only write through the Linear MCP for:
+
+- **Attachments.** `gh` cannot upload files. Demo recordings go on the Linear twin (see `docs/agents/demo-recordings.md`).
+- **Linear-only fields** the user asks you to set, such as priority, project, cycle or a Linear workflow status.
+
+**Read Linear** when you need context that GitHub doesn't hold: a Linear workflow status (`Ideas`, …), priority, project or cycle, or attachments the team added there.
+
+**Find an issue's twin:**
+
+- GitHub → Linear: `list_issues` with `team: "Core"` and `query: "<GitHub title>"`, then confirm with `get_issue` (`fields: ["attachments"]`) that one of the attachments points at the GitHub issue URL.
+- Linear → GitHub: `get_issue` on the `CORE-<n>`. The GitHub issue URL is in its attachments.
+
+Issues filed before the sync was turned on may have no twin. Leave them as they are; don't create a twin by hand, because the sync would then produce duplicates.
+
+**Link PRs to both sides.** Put `Closes #<n>` and the `CORE-<n>` identifier in the PR description so GitHub closes the issue and Linear attaches the PR.
+
 ## When a skill says "publish to the issue tracker"
 
 Create a GitHub issue on `Virtality-app/virtality-platform`.
