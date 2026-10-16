@@ -28,6 +28,11 @@ export type TourStep = {
    * targets that open a list underneath (a Select).
    */
   placement?: CardPlacement
+  /**
+   * Which element to highlight when several carry the target: `last` for a
+   * list the clinician just added to, so the step points at the new item.
+   */
+  match?: 'first' | 'last'
 }
 
 export type CardPlacement = 'below' | 'beside'
@@ -65,6 +70,7 @@ export const TOURS: Record<TourId, Tour> = {
       },
       {
         target: 'device-pair',
+        match: 'last',
         title: 'Start pairing',
         body: 'Press Pair to get a 6-digit code for the headset.',
         advance: { on: 'click' },

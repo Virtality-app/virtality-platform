@@ -18,7 +18,7 @@ export function useTourClickAdvance(
     const { selector } = step.advance
 
     const handleClick = (event: MouseEvent) => {
-      const el = findTourTarget(step.target)
+      const el = findTourTarget(step.target, step.match)
       const clicked = event.target
       if (!el || !(clicked instanceof Element) || !el.contains(clicked)) return
       if (selector) {

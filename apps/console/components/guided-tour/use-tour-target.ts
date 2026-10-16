@@ -9,14 +9,14 @@ import {
 } from '@/lib/guided-tour'
 
 /** The visible element tagged `data-tour="<target>"`, if any. */
-export function findTourTarget(target: string): HTMLElement | null {
-  const matches = document.querySelectorAll<HTMLElement>(
-    `[data-tour="${target}"]`,
-  )
-  for (const el of matches) {
-    if (el.getClientRects().length > 0) return el
-  }
-  return null
+export function findTourTarget(
+  target: string,
+  match: TourStep['match'] = 'first',
+): HTMLElement | null {
+  const visible = [
+    ...document.querySelectorAll<HTMLElement>(`[data-tour="${target}"]`),
+  ].filter((el) => el.getClientRects().length > 0)
+  return (match === 'last' ? visible.at(-1) : visible[0]) ?? null
 }
 
 export type TourTarget = {
@@ -53,7 +53,10 @@ export function useTourTarget(
         (t) => findTourTarget(t) !== null,
       )
       const el = active?.present
-        ? findTourTarget(steps[active.index]!.target)
+        ? findTourTarget(
+            steps[active.index]!.target,
+            steps[active.index]!.match,
+          )
         : null
 
       if (el && active && active.index !== scrolledTo) {
