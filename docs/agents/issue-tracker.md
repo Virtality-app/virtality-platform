@@ -43,7 +43,7 @@ Sub-issues sync as Linear parent/child issues, and labels map onto Linear labels
 
 Issues filed before the sync was turned on may have no twin. Leave them as they are; don't create a twin by hand, because the sync would then produce duplicates.
 
-**Link PRs to both sides.** Put `Closes #<n>` and the `CORE-<n>` identifier in the PR description so GitHub closes the issue and Linear attaches the PR.
+**Link PRs to both sides.** Put `Closes #<n>` and `Closes CORE-<n>` on separate lines of the PR description: GitHub closes the issue, and Linear attaches the PR to its twin. Linear only links the second form; a CORE id anywhere else in the text is ignored, and `Closes CORE-<n>` in any PR description, even as an example, links that PR.
 
 ## When a skill says "publish to the issue tracker"
 

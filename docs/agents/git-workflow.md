@@ -17,4 +17,4 @@ There is no separate long-lived `staging` git branch: staging tracks `dev`.
 
 Agents creating PRs with `gh pr create` must pass `--base dev` (or ensure the default base is `dev`). Never open a routine work PR into `main`.
 
-The PR description names its issue on both sides (`Closes #<n>` and `CORE-<n>`, see `docs/agents/issue-tracker.md`) and ends with a `## Demo` section (see `docs/agents/demo-recordings.md`).
+The PR description names its issue on both sides (`Closes #<n>` and `Closes CORE-<n>`, see `docs/agents/issue-tracker.md`) and ends with a `## Demo` section (see `docs/agents/demo-recordings.md`).
