@@ -50,10 +50,16 @@ export const TOURS: Record<TourId, Tour> = {
         advance: { on: 'click' },
       },
       {
-        target: 'device-form',
+        target: 'device-name',
         title: 'Name it',
-        body: 'Give the headset a name you will recognise, like "Room 1", then press Add Device.',
-        advance: { on: 'click', selector: 'button[type="submit"]' },
+        body: 'Give the headset a name you will recognise, like "Device One".',
+        advance: { on: 'next' },
+      },
+      {
+        target: 'device-submit',
+        title: 'Add it',
+        body: 'Press Add Device. The headset shows up in your list.',
+        advance: { on: 'click' },
       },
       {
         target: 'device-pair',

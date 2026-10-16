@@ -106,7 +106,6 @@ const Devices = () => {
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                data-tour='device-form'
                 className='space-y-4'
               >
                 <FormField
@@ -121,6 +120,7 @@ const Devices = () => {
                         <Input
                           autoComplete='off'
                           placeholder='Enter device name'
+                          data-tour='device-name'
                           {...field}
                         />
                       </FormControl>
@@ -185,7 +185,9 @@ const Devices = () => {
                   >
                     Cancel
                   </Button>
-                  <Button type='submit'>Add Device</Button>
+                  <Button type='submit' data-tour='device-submit'>
+                    Add Device
+                  </Button>
                 </DialogFooter>
               </form>
             </Form>
