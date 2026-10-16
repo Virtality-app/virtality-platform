@@ -5,10 +5,10 @@ import { cn } from '@/lib/utils'
 import type { GettingStartedStep as Step } from '@/lib/home-getting-started'
 
 const actionLabel: Record<Step['id'], { open: string; done: string }> = {
-  device: { open: 'Pair', done: 'Add another' },
-  patient: { open: 'Add patient', done: 'Open' },
-  program: { open: 'Create program', done: 'Open' },
-  session: { open: 'Start', done: 'Open' },
+  device: { open: 'Pair', done: 'Pair another headset' },
+  patient: { open: 'Add patient', done: 'Add another patient' },
+  program: { open: 'Create program', done: 'Create another program' },
+  session: { open: 'Start', done: 'Start another session' },
 }
 
 const GettingStartedStep = ({

@@ -78,7 +78,7 @@ export const TOURS: Record<TourId, Tour> = {
     ],
   },
   patient: {
-    title: 'Add your first patient',
+    title: 'Add a patient',
     path: '/patients/new',
     steps: [
       {

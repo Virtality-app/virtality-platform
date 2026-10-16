@@ -104,6 +104,12 @@ describe('buildGettingStarted', () => {
     expect(result.steps.every((s) => !s.current)).toBe(true)
     expect(result.steps[0]?.detail).toBe('2 headsets paired')
     expect(gettingStartedHeadline(result)).toBe('You are all set.')
+    expect(result.steps.map((s) => s.href)).toEqual([
+      '/devices?tour=device&returnTo=%2F',
+      '/patients/new?tour=patient&returnTo=%2F',
+      '/programs/new?tour=program&returnTo=%2F',
+      '/?tour=session',
+    ])
     expect(gettingStartedSubline(result)).toBe(
       'Every step is done. Expand it any time to revisit them.',
     )
