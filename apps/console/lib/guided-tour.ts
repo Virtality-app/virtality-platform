@@ -21,7 +21,14 @@ export type TourStep = {
   advance: { on: 'click'; selector?: string } | { on: 'next' }
   /** A branch step: skipped when its target is not on screen. */
   optional?: boolean
+  /**
+   * `beside`: the card sits next to the target instead of below it, for
+   * targets that open a list underneath (a Select).
+   */
+  placement?: CardPlacement
 }
+
+export type CardPlacement = 'below' | 'beside'
 
 export type Tour = {
   /** Shown above each step's title. */
@@ -77,12 +84,14 @@ export const TOURS: Record<TourId, Tour> = {
         title: 'Pick their sex',
         body: 'Choose an option from this list.',
         advance: { on: 'next' },
+        placement: 'beside',
       },
       {
         target: 'patient-language',
         title: 'Pick their language',
         body: 'The headset speaks to the patient in this language.',
         advance: { on: 'next' },
+        placement: 'beside',
       },
       {
         target: 'patient-submit',
@@ -207,25 +216,36 @@ export type Rect = { top: number; left: number; width: number; height: number }
 const GAP = 12
 const MARGIN = 16
 
-/** Places the coach card below the target, or above it when there is no room. */
+/**
+ * Places the coach card below the target, or above it when there is no room.
+ * `beside` puts it to the right of the target, or the left, so a list opening
+ * under the target stays clear; with no room on either side it goes above.
+ */
 export function coachCardPosition(
   target: Rect,
   card: { width: number; height: number },
   viewport: { width: number; height: number },
+  placement: CardPlacement = 'below',
 ): { top: number; left: number } {
+  const clampTop = (top: number) =>
+    Math.max(MARGIN, Math.min(top, viewport.height - card.height - MARGIN))
+  const maxLeft = viewport.width - card.width - MARGIN
+  const clampLeft = (left: number) => Math.max(MARGIN, Math.min(left, maxLeft))
+
   const below = target.top + target.height + GAP
   const above = target.top - GAP - card.height
+
+  if (placement === 'beside') {
+    const right = target.left + target.width + GAP
+    const left = target.left - GAP - card.width
+    if (right <= maxLeft) return { top: clampTop(target.top), left: right }
+    if (left >= MARGIN) return { top: clampTop(target.top), left }
+    if (above >= MARGIN) return { top: above, left: clampLeft(target.left) }
+  }
+
   const top =
     below + card.height <= viewport.height - MARGIN || above < MARGIN
       ? below
       : above
-  const maxLeft = viewport.width - card.width - MARGIN
-  const left = Math.max(MARGIN, Math.min(target.left, maxLeft))
-  return {
-    top: Math.max(
-      MARGIN,
-      Math.min(top, viewport.height - card.height - MARGIN),
-    ),
-    left,
-  }
+  return { top: clampTop(top), left: clampLeft(target.left) }
 }

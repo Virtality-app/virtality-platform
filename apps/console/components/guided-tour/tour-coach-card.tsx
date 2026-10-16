@@ -62,10 +62,15 @@ const TourCoachCard = ({
   }, [])
 
   const position = rect
-    ? coachCardPosition(rect, size, {
-        width: window.innerWidth,
-        height: window.innerHeight,
-      })
+    ? coachCardPosition(
+        rect,
+        size,
+        {
+          width: window.innerWidth,
+          height: window.innerHeight,
+        },
+        step.placement,
+      )
     : undefined
 
   return (

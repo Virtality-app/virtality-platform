@@ -99,6 +99,44 @@ describe('coachCardPosition', () => {
   })
 })
 
+describe('coachCardPosition beside', () => {
+  const card = { width: 320, height: 150 }
+  const viewport = { width: 1280, height: 800 }
+
+  it('sits to the right of the target so a list below it stays clear', () => {
+    expect(
+      coachCardPosition(
+        { top: 300, left: 200, width: 400, height: 36 },
+        card,
+        viewport,
+        'beside',
+      ),
+    ).toEqual({ top: 300, left: 612 })
+  })
+
+  it('moves to the left of a target near the right edge', () => {
+    expect(
+      coachCardPosition(
+        { top: 300, left: 700, width: 500, height: 36 },
+        card,
+        viewport,
+        'beside',
+      ),
+    ).toEqual({ top: 300, left: 368 })
+  })
+
+  it('goes above a target that fills the width', () => {
+    expect(
+      coachCardPosition(
+        { top: 300, left: 16, width: 1248, height: 36 },
+        card,
+        viewport,
+        'beside',
+      ),
+    ).toEqual({ top: 138, left: 16 })
+  })
+})
+
 describe('tour links', () => {
   it('opens each tour on its own page', () => {
     expect(tourHref('patient')).toBe('/patients/new?tour=patient')
