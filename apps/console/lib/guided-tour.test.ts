@@ -4,6 +4,7 @@ import {
   isTourId,
   resolveActiveStep,
   tourHref,
+  tourStartIndex,
   TOURS,
   type TourStep,
 } from './guided-tour'
@@ -141,6 +142,20 @@ describe('tour links', () => {
   it('opens each tour on its own page', () => {
     expect(tourHref('patient')).toBe('/patients/new?tour=patient')
     expect(tourHref('session')).toBe('/?tour=session')
+  })
+
+  it('can start a tour at a later step', () => {
+    expect(tourHref('device', 'device-pair')).toBe(
+      '/devices?tour=device&tourStep=device-pair',
+    )
+    expect(tourStartIndex('device', 'device-pair')).toBe(
+      TOURS.device.steps.findIndex((s) => s.target === 'device-pair'),
+    )
+  })
+
+  it('starts at the first step without a known start step', () => {
+    expect(tourStartIndex('device', null)).toBe(0)
+    expect(tourStartIndex('device', 'nope')).toBe(0)
   })
 
   it('only accepts known tours', () => {

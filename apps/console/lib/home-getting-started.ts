@@ -33,14 +33,21 @@ export type GettingStarted = {
 }
 
 /** Opens the step's page with its tour, and comes back here once it is done. */
-function missionHref(id: 'device' | 'patient' | 'program'): string {
-  return withReturnTo(tourHref(id), '/')
+function missionHref(
+  id: 'device' | 'patient' | 'program',
+  from?: string,
+): string {
+  return withReturnTo(tourHref(id, from), '/')
 }
+
+/** The device tour's Pair step: where a headset added on an earlier run resumes. */
+const DEVICE_PAIR_STEP = 'device-pair'
 
 export function buildGettingStarted(
   input: GettingStartedInput,
 ): GettingStarted {
   const hasPaired = input.pairedDeviceCount > 0
+  const hasUnpaired = input.deviceCount > input.pairedDeviceCount
   const hasPatient = input.patientCount > 0
   const hasProgram = input.programCount > 0
   const hasSession = input.sessionCount > 0
@@ -55,7 +62,9 @@ export function buildGettingStarted(
           ? 'A headset is added but not paired yet.'
           : 'Add a headset and pair it with the 6-digit code.',
       done: hasPaired,
-      href: hasPaired ? '/devices' : missionHref('device'),
+      href: hasPaired
+        ? '/devices'
+        : missionHref('device', hasUnpaired ? DEVICE_PAIR_STEP : undefined),
     },
     {
       id: 'patient',

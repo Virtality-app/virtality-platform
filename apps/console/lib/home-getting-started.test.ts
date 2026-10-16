@@ -49,6 +49,28 @@ describe('buildGettingStarted', () => {
     expect(result.doneCount).toBe(1)
   })
 
+  it('resumes the device tour at Pair when a headset is added but not paired', () => {
+    const base = {
+      patientCount: 0,
+      programCount: 0,
+      sessionCount: 0,
+    }
+    const unpaired = buildGettingStarted({
+      ...base,
+      deviceCount: 1,
+      pairedDeviceCount: 0,
+    })
+    const fresh = buildGettingStarted({
+      ...base,
+      deviceCount: 0,
+      pairedDeviceCount: 0,
+    })
+
+    expect(unpaired.steps[0]?.href).toContain('tourStep=device-pair')
+    expect(fresh.steps[0]?.href).toContain('tour=device')
+    expect(fresh.steps[0]?.href).not.toContain('tourStep')
+  })
+
   it('makes the first open step current even when later ones are done', () => {
     const result = buildGettingStarted({
       deviceCount: 1,

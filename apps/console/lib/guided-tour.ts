@@ -5,6 +5,8 @@
  */
 
 export const TOUR_PARAM = 'tour'
+/** Optional: the `target` of the step to start at instead of the first. */
+export const TOUR_STEP_PARAM = 'tourStep'
 
 export type TourId = 'device' | 'patient' | 'program' | 'session'
 
@@ -188,9 +190,23 @@ export function isTourId(value: string | null): value is TourId {
   return value !== null && Object.hasOwn(TOURS, value)
 }
 
-/** A mission page link that starts its tour on arrival. */
-export function tourHref(id: TourId): string {
-  return `${TOURS[id].path}?${TOUR_PARAM}=${id}`
+/**
+ * A link that starts the tour on arrival, from the step whose target is
+ * `from` when given.
+ */
+export function tourHref(id: TourId, from?: string): string {
+  const params = new URLSearchParams({ [TOUR_PARAM]: id })
+  if (from) params.set(TOUR_STEP_PARAM, from)
+  return `${TOURS[id].path}?${params}`
+}
+
+/** The step a tour starts at: the one targeting `from`, or the first. */
+export function tourStartIndex(id: TourId, from: string | null): number {
+  if (!from) return 0
+  return Math.max(
+    TOURS[id].steps.findIndex((step) => step.target === from),
+    0,
+  )
 }
 
 export type ActiveTourStep = {
