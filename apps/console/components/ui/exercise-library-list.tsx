@@ -416,7 +416,11 @@ const ExerciseLibraryList = ({
             })
 
             return (
-              <li key={listKey} className='space-y-2'>
+              <li
+                key={listKey}
+                data-tour={groupIdx === 0 ? 'exercise-row' : undefined}
+                className='space-y-2'
+              >
                 <motion.div
                   layout
                   initial={{ opacity: 0, y: -20 }}

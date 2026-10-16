@@ -65,6 +65,8 @@ interface FlipCardProps {
   directionBadges?: DirectionBadgeHighlight[]
   /** Toggle a single near-term variant without dual-side auto-add (GitHub #13). */
   onDirectionBadgeClick?: (side: NearTermDirection, e: MouseEvent) => void
+  /** `data-tour` hook for the Getting started walkthrough. */
+  tourTarget?: string
 }
 
 const FlipCard = ({
@@ -77,6 +79,7 @@ const FlipCard = ({
   footerTitle,
   directionBadges,
   onDirectionBadgeClick,
+  tourTarget,
 }: FlipCardProps) => {
   const [isFlipped, setIsFlipped] = useState(false)
   const [isPreviewPlaying, setIsPreviewPlaying] = useState(false)
@@ -118,6 +121,7 @@ const FlipCard = ({
   return (
     <div
       id={exercise.id}
+      data-tour={tourTarget}
       onClick={onSelect}
       className={cn(
         'perspective-1000 relative w-full cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg',

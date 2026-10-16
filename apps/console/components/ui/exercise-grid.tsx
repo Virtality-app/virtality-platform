@@ -175,7 +175,7 @@ const ExerciseGrid = () => {
 
   return (
     <div className='flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-x-hidden overflow-y-auto p-2'>
-      <div className='flex flex-col gap-2'>
+      <div data-tour='exercise-filters' className='flex flex-col gap-2'>
         <h2 className='text-lg font-bold'>Select By Body Part</h2>
         <div className='mb-3 flex flex-wrap gap-2'>
           {categories?.map((category) => {
@@ -304,7 +304,7 @@ const ExerciseGrid = () => {
             No exercises match your filters.
           </p>
         ) : (
-          displayedFamilies?.map((family) => {
+          displayedFamilies?.map((family, index) => {
             const selectionMembers = familyMembersForLibrarySelection(family)
             const selectionState = libraryFamilySelectionState(
               selectionMembers,
@@ -331,6 +331,7 @@ const ExerciseGrid = () => {
                   handleDirectionToggle(family, side)
                 }
                 onSelect={() => handleFamilyToggle(family)}
+                tourTarget={index === 0 ? 'exercise-card' : undefined}
               />
             )
           })
