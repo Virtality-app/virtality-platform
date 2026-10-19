@@ -1,3 +1,6 @@
+/** Equipment options available before their first exercise is published. */
+export const DEFAULT_EXERCISE_EQUIPMENT_KEYS = ['rope', 'small_ball'] as const
+
 /**
  * Maps nullable exercise `item` values to a canonical equipment filter key.
  * Null, undefined, and whitespace-only strings are treated as bodyweight.
