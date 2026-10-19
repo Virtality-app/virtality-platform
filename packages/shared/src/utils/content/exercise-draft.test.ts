@@ -553,6 +553,13 @@ describe('check exercise draft unity name occupancy', () => {
 })
 
 describe('exercise wizard classification vocabulary', () => {
+  it('offers rope and small ball before any exercises or drafts exist', () => {
+    expect(collectExerciseWizardClassificationVocabulary([], [])).toEqual({
+      categories: [],
+      items: ['rope', 'small_ball'],
+    })
+  })
+
   it('merges distinct categories and items from exercises and drafts', () => {
     const vocabulary = collectExerciseWizardClassificationVocabulary(
       [{ category: 'Legs', item: 'Band' }],
@@ -564,7 +571,7 @@ describe('exercise wizard classification vocabulary', () => {
 
     expect(vocabulary).toEqual({
       categories: ['Arms', 'Legs'],
-      items: ['band'],
+      items: ['band', 'rope', 'small_ball'],
     })
   })
 })

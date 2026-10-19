@@ -4,6 +4,8 @@
  */
 export function equipmentIconSrcForItem(item: string): string | null {
   const k = item.toLowerCase()
+  if (k === 'rope') return '/assets/equipment/ROPE_ICON.png'
+  if (k === 'small_ball') return '/assets/equipment/SMALL_BALLS_ICON.png'
   if (k.includes('dumbbells')) return '/assets/equipment/DUMBELL_ICON.png'
   if (k.includes('bar')) return '/assets/equipment/BAR_ICON.png'
   if (k.includes('thera-band')) return '/assets/equipment/THERA_BAND_ICON.png'

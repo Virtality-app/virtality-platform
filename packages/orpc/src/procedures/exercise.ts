@@ -1,5 +1,8 @@
 import { z } from 'zod/v4'
-import { normalizeExerciseEquipmentKey } from '@virtality/shared/utils'
+import {
+  DEFAULT_EXERCISE_EQUIPMENT_KEYS,
+  normalizeExerciseEquipmentKey,
+} from '@virtality/shared/utils'
 import { authed } from '../middleware/auth.ts'
 import { ExerciseFindManyZodSchema } from '@virtality/db/definitions'
 
@@ -46,7 +49,7 @@ const listExerciseItems = authed
       select: { item: true },
     })
 
-    const keys = new Set<string>()
+    const keys = new Set<string>(DEFAULT_EXERCISE_EQUIPMENT_KEYS)
     for (const row of rows) {
       keys.add(normalizeExerciseEquipmentKey(row.item))
     }
