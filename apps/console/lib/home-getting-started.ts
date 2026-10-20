@@ -1,7 +1,7 @@
 import { tourHref } from './guided-tour'
 import { withReturnTo } from './home-picker-return'
 
-/** Id of the Start a session card; the header button scrolls to it. */
+/** Id of the Start a session card, so it can be linked to with a hash. */
 export const START_SESSION_ANCHOR = 'start-session'
 
 export type GettingStartedInput = {
