@@ -82,8 +82,6 @@ export type UserLocalData = {
   device: boolean
   patient: boolean
   program: boolean
-  dashboardSuggestionSidebar: boolean
-  dashboardSuggestionDropdown: boolean
 }
 
 export type DashboardMode = 'main' | 'free' | 'immersive'

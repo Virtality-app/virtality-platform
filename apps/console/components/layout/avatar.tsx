@@ -35,7 +35,6 @@ import { useClientT } from '@/i18n/use-client-t'
 import AvatarSkeleton from './avatar-skeleton'
 import useMounted from '@/hooks/use-mounted'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { useStore } from 'tinybase/ui-react'
 import { useRouter } from 'next/navigation'
 import posthog from 'posthog-js'
 import { getWebsiteUrl, getAdminUrl } from '@virtality/shared/types'
@@ -57,7 +56,6 @@ const Avatar = () => {
   const { setTheme, resolvedTheme, theme, themes } = useTheme()
   const { state, setState } = useTour()
   const { t, i18n } = useClientT(['avatar', 'glossary'])
-  const store = useStore()
   const isMobile = useIsMobile()
 
   const handleSignOut = async () => {
@@ -162,25 +160,6 @@ const Avatar = () => {
             <DropdownMenuPortal>
               <DropdownMenuSubContent className='dark:bg-zinc-950'>
                 <DropdownMenuGroup>
-                  <DropdownMenuItem
-                    onClick={() => {
-                      store?.setCell(
-                        'users',
-                        user!.id,
-                        'dashboardSuggestionSidebar',
-                        true,
-                      )
-                      store?.setCell(
-                        'users',
-                        user!.id,
-                        'dashboardSuggestionDropdown',
-                        true,
-                      )
-                    }}
-                  >
-                    Reset Suggestions
-                  </DropdownMenuItem>
-
                   <DropdownMenuSub>
                     <DropdownMenuSubTrigger className='gap-2'>
                       {resolvedTheme === 'light' ? (

@@ -27,8 +27,6 @@ const TinyBaseProvider = ({ children }: { children: React.ReactNode }) => {
           device: false,
           patient: false,
           program: false,
-          dashboardSuggestionSidebar: true,
-          dashboardSuggestionDropdown: true,
         } as UserLocalData)
       }
       await persister.startAutoSave()
