@@ -28,6 +28,13 @@ describe('normalizeExerciseEquipmentKey', () => {
   it('lowercases non-empty values', () => {
     expect(normalizeExerciseEquipmentKey('Dumbbell')).toBe('dumbbell')
   })
+
+  it.each(['Small ball', 'Small balls', 'small-ball', 'SmallBall'])(
+    'maps %s to small_ball',
+    (item) => {
+      expect(normalizeExerciseEquipmentKey(item)).toBe('small_ball')
+    },
+  )
 })
 
 describe('filterExercisesForLibrary', () => {

@@ -122,7 +122,7 @@ describe('exercise draft service', () => {
 
     expect(vocabulary).toEqual({
       categories: ['Arms', 'Core', 'Legs'],
-      items: ['band'],
+      items: ['band', 'rope', 'small_ball'],
     })
   })
 })

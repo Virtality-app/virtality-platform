@@ -1,5 +1,8 @@
 import type { ExerciseDraftLaterality } from '../../types/exercise-draft.ts'
-import { normalizeExerciseEquipmentKey } from '../clinical/normalize-exercise-equipment-key.ts'
+import {
+  DEFAULT_EXERCISE_EQUIPMENT_KEYS,
+  normalizeExerciseEquipmentKey,
+} from '../clinical/normalize-exercise-equipment-key.ts'
 import { buildBucketObjectKey } from './bucket.ts'
 
 export type ExerciseDraftRecord = {
@@ -552,7 +555,7 @@ export function collectExerciseWizardClassificationVocabulary(
   drafts: readonly { category: string; item: string | null }[],
 ): { categories: string[]; items: string[] } {
   const categories = new Set<string>()
-  const items = new Set<string>()
+  const items = new Set<string>(DEFAULT_EXERCISE_EQUIPMENT_KEYS)
 
   for (const row of [...exercises, ...drafts]) {
     const category = row.category.trim()
