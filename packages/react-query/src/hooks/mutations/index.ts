@@ -158,6 +158,7 @@ export { useSaveExerciseDraft } from './exercise-draft/use-save-exercise-draft.j
 export { useDiscardExerciseDraft } from './exercise-draft/use-discard-exercise-draft.js'
 export { useCheckExerciseDraftOccupancy } from './exercise-draft/use-check-exercise-draft-occupancy.js'
 export { usePromoteExerciseDraft } from './exercise-draft/use-promote-exercise-draft.js'
+export { useUpdateExerciseFamilyMedia } from './exercise/use-update-exercise-family-media.js'
 export {
   useAbortImmersiveVideoUpload,
   useCompleteImmersiveVideoUpload,

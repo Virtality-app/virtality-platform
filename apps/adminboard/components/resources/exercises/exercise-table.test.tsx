@@ -14,7 +14,11 @@ vi.mock('@virtality/react-query', () => ({
 }))
 
 vi.mock('@/components/resources/exercises/columns', () => ({
-  columns: [{ accessorKey: 'displayName', header: 'Name' }],
+  createExerciseColumns: () => [{ accessorKey: 'displayName', header: 'Name' }],
+}))
+
+vi.mock('@/components/resources/exercises/exercise-media-dialog', () => ({
+  ExerciseMediaDialog: () => <div data-testid='exercise-media-dialog' />,
 }))
 
 vi.mock('@/components/resources/exercises/exercise-draft-list', () => ({

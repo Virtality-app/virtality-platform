@@ -9,10 +9,12 @@ import { PlusSquare } from 'lucide-react'
 import Link from 'next/link'
 import { useMemo, useState } from 'react'
 import { useExercise } from '@virtality/react-query'
+import type { Exercise } from '@virtality/db'
 import { ExerciseDraftList } from '@/components/resources/exercises/exercise-draft-list'
+import { ExerciseMediaDialog } from '@/components/resources/exercises/exercise-media-dialog'
 import { ExerciseTableFilters } from '@/components/resources/exercises/exercise-table-filters'
 import { Button } from '@/components/ui/button'
-import { columns } from '@/components/resources/exercises/columns'
+import { createExerciseColumns } from '@/components/resources/exercises/columns'
 import { EXERCISE_WIZARD_CREATE_PATH } from '@/lib/exercise-wizard-constants'
 import {
   buildExerciseColumnFilters,
@@ -25,6 +27,11 @@ import { useResourceTable } from '@virtality/ui/lib/use-resource-table'
 const ExerciseTable = () => {
   const { data, isPending } = useExercise({ includeDisabled: true })
   const [filters, setFilters] = useState<Filters>(EMPTY_EXERCISE_TABLE_FILTERS)
+  const [editingMedia, setEditingMedia] = useState<Exercise | null>(null)
+  const columns = useMemo(
+    () => createExerciseColumns({ onEditMedia: setEditingMedia }),
+    [],
+  )
   const { table, globalFilter, setGlobalFilter, setColumnFilters } =
     useResourceTable({
       tableId: 'exercises',
@@ -76,6 +83,13 @@ const ExerciseTable = () => {
       </DataTableHeader>
       <DataTableBody table={table} columns={columns} isLoading={isPending} />
       <DataTableFooter table={table} />
+      {editingMedia ? (
+        <ExerciseMediaDialog
+          key={editingMedia.id}
+          exercise={editingMedia}
+          onClose={() => setEditingMedia(null)}
+        />
+      ) : null}
     </div>
   )
 }

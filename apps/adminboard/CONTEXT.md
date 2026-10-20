@@ -119,8 +119,12 @@ The Image of an Exercise family, stored as a bucket object under `exercises/thum
 _Avoid_: Poster, cover image, still
 
 **Exercise Thumbnail Generator**:
-The wizard Media step tab (labelled "From video") that captures one frame of the family's video in the browser and uploads it as a new Exercise Thumbnail. It reads the video from its CDN URL or from the file selected for upload, and never overwrites an existing bucket object.
+The Media tab (labelled "From video"), in the wizard and in the Exercises table's Edit media dialog, that captures one frame of the family's video in the browser and uploads it as a new Exercise Thumbnail. It reads the video from its CDN URL or from the file selected for upload, and never overwrites an existing bucket object.
 _Avoid_: Thumbnail tool, frame grabber
+
+**Edit media**:
+The Exercises table row action that sets the image and video of an existing Exercise family. Saving writes both to every row sharing the `displayName`; the Unity `name` is never changed.
+_Avoid_: Re-upload, media sync
 
 **Enable in Console**:
 The Review action that promotes a complete Exercise Draft to Enabled Exercise row(s) for the family.
