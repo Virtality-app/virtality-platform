@@ -224,6 +224,13 @@ export async function listTranslations(
     : Object.keys(catalog.english)
   const items: TranslationListItem[] = []
 
+  const englishRows = locales.some((locale) => locale !== 'en')
+    ? await store.listByLocale('en', filter.namespace)
+    : []
+  const englishByKey = new Map(
+    englishRows.map((row) => [`${row.namespace}\u0000${row.key}`, row.value]),
+  )
+
   for (const locale of locales) {
     const rows = await store.listByLocale(locale, filter.namespace)
     const rowsByKey = new Map(
@@ -235,10 +242,14 @@ export async function listTranslations(
       )) {
         const row = rowsByKey.get(`${namespace}\u0000${key}`)
         const draft = draftFor(catalog, locale, namespace, key)
+        const sourceEnglish =
+          locale === 'en'
+            ? english
+            : (englishByKey.get(`${namespace}\u0000${key}`) ?? english)
         const status =
           locale === 'en' && !row
             ? 'done'
-            : getTranslationStatus({ english, draft, row })
+            : getTranslationStatus({ english: sourceEnglish, draft, row })
         if (filter.status && filter.status !== status) continue
         items.push({
           locale: locale as TranslationLocale,
@@ -256,7 +267,7 @@ export async function listTranslations(
 }
 
 export async function upsertTranslation(
-  store: Pick<TranslationStore, 'upsert'>,
+  store: Pick<TranslationStore, 'upsert' | 'listByLocale'>,
   input: { locale: string; namespace: string; key: string; value: string },
   updatedById: string | null,
   catalog: TranslationCatalog = defaultTranslationCatalog,
@@ -264,9 +275,17 @@ export async function upsertTranslation(
   assertCatalogLocale(input.locale)
   const english = assertCatalogKey(input.namespace, input.key, catalog)
   assertPlaceholdersKept(english, input.value)
+  // A Greek value is translated from the English staff currently see, which
+  // may be an override; editing that English later outdates the Greek.
+  let sourceEnglish = english
+  if (input.locale !== 'en') {
+    const overrides = await store.listByLocale('en', input.namespace)
+    sourceEnglish =
+      overrides.find((row) => row.key === input.key)?.value ?? english
+  }
   return store.upsert({
     ...input,
-    sourceHash: hashSourceText(english),
+    sourceHash: hashSourceText(sourceEnglish),
     updatedById,
   })
 }

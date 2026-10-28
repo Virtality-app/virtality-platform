@@ -8,6 +8,7 @@ import {
   Film,
   Grid3x3,
   Images,
+  Languages,
   Layers,
   LayoutDashboard,
   LineChart,
@@ -97,6 +98,7 @@ export const sidebarNav: SidebarNavGroup[] = [
   {
     label: 'Admin',
     items: [
+      { title: 'Translations', href: '/translations', icon: Languages },
       { title: 'Tester Codes', href: '/tester-codes', icon: LinkIcon },
       { title: 'Create user', href: '/admin/create-user', icon: UserPlus },
     ],

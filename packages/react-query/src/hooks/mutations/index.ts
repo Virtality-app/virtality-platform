@@ -212,3 +212,7 @@ export { useDeleteBucketObject } from './bucket/use-delete-bucket-object.js'
 export { useReplaceBucketObject } from './bucket/use-replace-bucket-object.js'
 export { useMoveBucketFolder } from './bucket/use-move-bucket-folder.js'
 export { useDeleteBucketFolder } from './bucket/use-delete-bucket-folder.js'
+
+// Translation mutations
+export { useUpsertTranslation } from './translation/use-upsert-translation.js'
+export { useResetTranslation } from './translation/use-reset-translation.js'

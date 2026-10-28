@@ -172,6 +172,38 @@ describe('upsertTranslation / resetTranslation', () => {
     expect(saved.updatedById).toBe('admin-1')
   })
 
+  it('hashes Greek against the English override, so editing English outdates it and saving Greek clears it', async () => {
+    const store = createStore()
+    const hi = { namespace: 'common', key: 'hi' }
+    await upsertTranslation(
+      store,
+      { locale: 'el', ...hi, value: 'Χαίρε {{name}}' },
+      null,
+      catalog,
+    )
+    const statusOf = async () =>
+      (await listTranslations(store, { locale: 'el' }, catalog)).find(
+        (i) => i.key === 'hi',
+      )?.status
+    expect(await statusOf()).toBe('done')
+
+    await upsertTranslation(
+      store,
+      { locale: 'en', ...hi, value: 'Howdy {{name}}' },
+      null,
+      catalog,
+    )
+    expect(await statusOf()).toBe('outdated')
+
+    await upsertTranslation(
+      store,
+      { locale: 'el', ...hi, value: 'Χαίρε {{name}}' },
+      null,
+      catalog,
+    )
+    expect(await statusOf()).toBe('done')
+  })
+
   it('rejects unknown keys and dropped placeholders', async () => {
     const store = createStore()
     await expect(
