@@ -2,7 +2,7 @@
 
 import { createContext, useContext, ReactNode, RefObject, useRef } from 'react'
 import usePatientDashboardState from '@/hooks/use-patient-dashboard-state'
-import usePatientDashboardSocketSetup from '@/hooks/use-patient-dashboard-socket-setup'
+import usePatientDashboardSocketSetup from '@/hooks/patient-dashboard-socket/use-patient-dashboard-socket-setup'
 import { useRow, useStore } from 'tinybase/ui-react'
 import { PatientLocalData, ProgressDataPoint } from '@/types/models'
 import { Store } from 'tinybase'

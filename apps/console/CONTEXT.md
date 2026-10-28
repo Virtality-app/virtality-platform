@@ -41,7 +41,7 @@ A **Started Session** that ended unexpectedly before normal completion. It is no
 _Avoid_: Completed session, failed launch
 
 **Session Progress Record**:
-Exercise performance data captured during a **Started Session** and persisted incrementally as treatment progresses. Live progress, skip, and headset auto-advance mutations go through `skip-safe-progress-flow`; the patient-dashboard socket hook is the sole adapter (wire + UI + persistence gating), not a second implementation and not a pass-through live-adapter module.
+Exercise performance data captured during a **Started Session** and persisted incrementally as treatment progresses. Live progress, skip, and headset auto-advance mutations go through `skip-safe-progress-flow`; the patient-dashboard socket hook (`hooks/patient-dashboard-socket/`, a composer over hooks private to that folder) is the sole adapter (wire + UI + persistence gating), not a second implementation and not a pass-through live-adapter module.
 _Avoid_: End-only session data, temporary progress, headset ChangeExercise mutating confirmed index only in the hook, `skip-safe-progress-live-adapter` as a public seam
 
 **Completed Rep Measurement**:
