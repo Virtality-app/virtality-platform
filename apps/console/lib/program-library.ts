@@ -5,14 +5,6 @@ export type ProgramLibraryListRow = {
   exercises: { id: string }[]
 }
 
-export const PROGRAM_RETIRE_CONFIRMATION = {
-  menuLabel: 'Delete',
-  title: 'Delete program?',
-  confirmLabel: 'Delete program',
-  description:
-    'This program will no longer appear for future treatment. Past patient sessions that used this program will stay unchanged.',
-} as const
-
 export function getProgramExerciseCount(
   program: ProgramLibraryListRow,
 ): number {

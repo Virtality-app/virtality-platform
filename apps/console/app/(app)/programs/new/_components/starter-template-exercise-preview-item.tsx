@@ -6,6 +6,7 @@ import { Pause, Play } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
 import { Item, ItemContent, ItemTitle } from '@/components/ui/item'
 import type { StarterTemplatePreviewExercise } from '@/lib/starter-template-create'
+import { useClientT } from '@/i18n/use-client-t'
 import { shouldBypassVercelImageOptimization } from '@virtality/shared/utils'
 
 interface StarterTemplateExercisePreviewItemProps {
@@ -19,6 +20,7 @@ const StarterTemplateExercisePreviewItem = ({
   isPlaying,
   onPlayingChange,
 }: StarterTemplateExercisePreviewItemProps) => {
+  const { t } = useClientT('programs')
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const label = exercise.displayName
 
@@ -45,7 +47,7 @@ const StarterTemplateExercisePreviewItem = ({
         {!isPlaying ? (
           <Image
             src={exercise.image ?? '/placeholder.svg'}
-            alt={`${label} thumbnail`}
+            alt={t('preview.thumbnailAlt', { name: label })}
             fill
             unoptimized={shouldBypassVercelImageOptimization(exercise.image)}
             className='object-contain'
@@ -68,9 +70,7 @@ const StarterTemplateExercisePreviewItem = ({
           <Button
             type='button'
             onClick={handlePreviewToggle}
-            aria-label={
-              isPlaying ? 'Pause preview video' : 'Play preview video'
-            }
+            aria-label={isPlaying ? t('preview.pause') : t('preview.play')}
             className='absolute top-1/2 left-1/2 z-10 size-8 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black/65 p-0 text-white shadow-md transition hover:scale-105 hover:bg-black/80 focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black focus-visible:outline-none'
           >
             {isPlaying ? (

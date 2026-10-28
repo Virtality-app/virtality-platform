@@ -6,7 +6,7 @@ import {
 } from './program-submit-enabled-variants'
 
 export const ReusableProgramFormSchema = z.object({
-  name: z.string().trim().min(1, { message: 'Name cannot be empty' }),
+  name: z.string().trim().min(1),
 })
 
 export type ReusableProgramForm = z.infer<typeof ReusableProgramFormSchema>

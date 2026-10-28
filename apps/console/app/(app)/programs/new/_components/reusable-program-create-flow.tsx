@@ -18,7 +18,7 @@ type EditorSource =
 
 const ReusableProgramCreateFlow = () => {
   const router = useRouter()
-  const { t } = useClientT('common')
+  const { t } = useClientT(['programs', 'common'])
   const [step, setStep] = useState<CreateStep>('choice')
   const [editorSource, setEditorSource] = useState<EditorSource | null>(null)
 
@@ -28,11 +28,8 @@ const ReusableProgramCreateFlow = () => {
     return (
       <div className='h-screen-with-nav container mx-auto flex flex-col gap-6 p-8'>
         <div>
-          <H2>Create program</H2>
-          <P>
-            Start from scratch or use a starter template. Either path opens the
-            program editor before anything is saved to your library.
-          </P>
+          <H2>{t('create.title')}</H2>
+          <P>{t('create.description')}</P>
         </div>
 
         <div data-tour='program-choice' className='grid gap-4 md:grid-cols-2'>
@@ -44,10 +41,11 @@ const ReusableProgramCreateFlow = () => {
               setStep('editor')
             }}
           >
-            <span className='text-lg font-medium'>Create your own program</span>
+            <span className='text-lg font-medium'>
+              {t('create.scratchTitle')}
+            </span>
             <span className='text-muted-foreground text-sm'>
-              Build a reusable program from the exercise library with standard
-              default settings.
+              {t('create.scratchDescription')}
             </span>
           </button>
 
@@ -56,16 +54,17 @@ const ReusableProgramCreateFlow = () => {
             className='hover:bg-accent flex flex-col gap-2 rounded-lg border p-6 text-left transition-colors'
             onClick={() => setStep('template-picker')}
           >
-            <span className='text-lg font-medium'>Use a starter template</span>
+            <span className='text-lg font-medium'>
+              {t('create.templateTitle')}
+            </span>
             <span className='text-muted-foreground text-sm'>
-              Begin from a curated exercise list, then review and edit before
-              saving to your Program Library.
+              {t('create.templateDescription')}
             </span>
           </button>
         </div>
 
         <div>
-          <Button onClick={handleCancel}>{t('btn.cancel')}</Button>
+          <Button onClick={handleCancel}>{t('common:btn.cancel')}</Button>
         </div>
       </div>
     )

@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import {
-  PROGRAM_RETIRE_CONFIRMATION,
   filterProgramsBySearch,
   getProgramExerciseCount,
 } from './program-library.js'
@@ -52,19 +51,5 @@ describe('program library search', () => {
     expect(filterProgramsBySearch(samplePrograms, 'WRIST')).toEqual([
       samplePrograms[1],
     ])
-  })
-})
-
-describe('program library delete confirmation', () => {
-  it('uses delete wording while explaining soft retirement', () => {
-    const { menuLabel, title, confirmLabel, description } =
-      PROGRAM_RETIRE_CONFIRMATION
-
-    expect(menuLabel).toBe('Delete')
-    expect(title).toBe('Delete program?')
-    expect(confirmLabel).toBe(title.replace('?', ''))
-    expect(description).toMatch(/past patient sessions/i)
-    expect(description).toMatch(/unchanged/i)
-    expect(description).toMatch(/no longer appear for future treatment/i)
   })
 })

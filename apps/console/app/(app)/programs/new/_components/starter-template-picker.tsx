@@ -29,7 +29,7 @@ const StarterTemplatePicker = ({
   onBack,
   onContinue,
 }: StarterTemplatePickerProps) => {
-  const { t } = useClientT('common')
+  const { t } = useClientT(['programs', 'common'])
   const { data: templates, isLoading: isLoadingTemplates } =
     useStarterTemplates()
   const { data: exercises, isLoading: isLoadingExercises } = useExercise()
@@ -65,22 +65,19 @@ const StarterTemplatePicker = ({
   return (
     <div className='h-screen-with-nav container mx-auto flex flex-col gap-6 p-8'>
       <div>
-        <H2>Use a starter template</H2>
-        <P>
-          Browse curated exercise lists. Templates show included exercises only;
-          you can adjust settings in the editor before saving your program.
-        </P>
+        <H2>{t('picker.title')}</H2>
+        <P>{t('picker.description')}</P>
       </div>
 
       <div className='grid flex-1 gap-6 overflow-hidden lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]'>
         <Command data-tour='program-template-list' className='border'>
           <CommandInput
-            placeholder='Search starter templates...'
+            placeholder={t('picker.searchPlaceholder')}
             className='h-9'
           />
           <CommandList>
-            <CommandEmpty>No starter template found.</CommandEmpty>
-            <CommandGroup heading='Starter templates'>
+            <CommandEmpty>{t('picker.empty')}</CommandEmpty>
+            <CommandGroup heading={t('picker.groupHeading')}>
               {templates?.map((template) => (
                 <CommandItem
                   key={template.id}
@@ -102,9 +99,9 @@ const StarterTemplatePicker = ({
 
         <div className='flex flex-col gap-4 overflow-hidden rounded-md border p-4'>
           <div>
-            <h3 className='text-lg font-medium'>Template preview</h3>
+            <h3 className='text-lg font-medium'>{t('picker.previewTitle')}</h3>
             <p className='text-muted-foreground text-sm'>
-              Included exercises for the selected template.
+              {t('picker.previewDescription')}
             </p>
           </div>
 
@@ -126,22 +123,22 @@ const StarterTemplatePicker = ({
                 </div>
               ) : (
                 <p className='text-muted-foreground text-sm'>
-                  This template has no enabled exercises to preview.
+                  {t('picker.noExercises')}
                 </p>
               )}
             </div>
           ) : (
             <p className='text-muted-foreground text-sm'>
-              Select a starter template to preview its exercises.
+              {t('picker.selectPrompt')}
             </p>
           )}
         </div>
       </div>
 
       <div className='flex justify-between'>
-        <Button onClick={onCancel}>{t('btn.cancel')}</Button>
+        <Button onClick={onCancel}>{t('common:btn.cancel')}</Button>
         <div className='flex gap-2'>
-          <Button onClick={onBack}>{t('btn.back')}</Button>
+          <Button onClick={onBack}>{t('common:btn.back')}</Button>
           <Button
             variant='primary'
             disabled={!selectedTemplate}
@@ -150,7 +147,7 @@ const StarterTemplatePicker = ({
               if (selectedTemplate) onContinue(selectedTemplate)
             }}
           >
-            Continue to editor
+            {t('picker.continue')}
           </Button>
         </div>
       </div>

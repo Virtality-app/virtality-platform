@@ -1,0 +1,68 @@
+{
+  "library": {
+    "title": "Program Library",
+    "description": "Browse and manage your reusable therapy programs.",
+    "newProgram": "New program"
+  },
+  "columns": {
+    "name": "Name",
+    "exercises": "Exercises",
+    "updatedAt": "Updated at"
+  },
+  "actions": {
+    "edit": "Edit",
+    "makeCopy": "Make a copy",
+    "copyId": "Copy ID",
+    "delete": "Delete"
+  },
+  "retire": {
+    "title": "Delete program?",
+    "confirm": "Delete program",
+    "description": "This program will no longer appear for future treatment. Past patient sessions that used this program will stay unchanged."
+  },
+  "create": {
+    "title": "Create program",
+    "description": "Start from scratch or use a starter template. Either path opens the program editor before anything is saved to your library.",
+    "scratchTitle": "Create your own program",
+    "scratchDescription": "Build a reusable program from the exercise library with standard default settings.",
+    "templateTitle": "Use a starter template",
+    "templateDescription": "Begin from a curated exercise list, then review and edit before saving to your Program Library."
+  },
+  "picker": {
+    "title": "Use a starter template",
+    "description": "Browse curated exercise lists. Templates show included exercises only; you can adjust settings in the editor before saving your program.",
+    "searchPlaceholder": "Search starter templates...",
+    "empty": "No starter template found.",
+    "groupHeading": "Starter templates",
+    "previewTitle": "Template preview",
+    "previewDescription": "Included exercises for the selected template.",
+    "noExercises": "This template has no enabled exercises to preview.",
+    "selectPrompt": "Select a starter template to preview its exercises.",
+    "continue": "Continue to editor"
+  },
+  "preview": {
+    "thumbnailAlt": "{{name}} thumbnail",
+    "play": "Play preview video",
+    "pause": "Pause preview video"
+  },
+  "editor": {
+    "createTitle": "Create program",
+    "finalizeTitle": "Finalize program from template",
+    "createDescription": "Name your program and review settings, then add exercises if you need them before saving.",
+    "finalizeDescription": "Review settings, then add more exercises if you need them before saving.",
+    "editTitle": "Edit program",
+    "editDescription": "Review settings, then add more exercises if you need them before saving.",
+    "addExercises": "Add exercises",
+    "name": "Name",
+    "catalogTemplateTitle": "Add exercises from starter template",
+    "catalogTemplateDescription": "Add or remove exercise variants, then return to settings to finish.",
+    "catalogDescription": "Choose exercises from the catalog, then return to settings to finish.",
+    "editCatalogDescription": "Add or remove exercise variants, then return to settings before saving.",
+    "continue": "Continue",
+    "selectedNone": "No exercises selected",
+    "selected_one": "{{count}} exercise selected",
+    "selected_other": "{{count}} exercises selected",
+    "noExercisesError": "You need to add at least one exercise.",
+    "starterTemplateLocked": "Starter templates cannot be edited."
+  }
+}

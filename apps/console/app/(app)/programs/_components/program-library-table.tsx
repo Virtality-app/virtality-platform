@@ -21,12 +21,14 @@ import { Button } from '@virtality/ui/components/button'
 import Link from 'next/link'
 import { PlusSquare } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useClientT } from '@/i18n/use-client-t'
 
 export default function ProgramLibraryTable() {
   usePageViewTracking({
     props: { route_group: 'program', tab_view: 'program-library' },
   })
   const router = useRouter()
+  const { t } = useClientT('programs')
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState('')
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
@@ -63,9 +65,9 @@ export default function ProgramLibraryTable() {
   return (
     <div className='h-screen-with-nav flex flex-col p-8'>
       <div className='mb-4'>
-        <h1 className='text-2xl font-semibold'>Program Library</h1>
+        <h1 className='text-2xl font-semibold'>{t('library.title')}</h1>
         <p className='text-muted-foreground text-sm'>
-          Browse and manage your reusable therapy programs.
+          {t('library.description')}
         </p>
       </div>
       <DataTableHeader
@@ -75,7 +77,7 @@ export default function ProgramLibraryTable() {
       >
         <Button id='new-program' asChild variant='primary' className='ml-auto'>
           <Link href='/programs/new'>
-            <PlusSquare /> New program
+            <PlusSquare /> {t('library.newProgram')}
           </Link>
         </Button>
       </DataTableHeader>

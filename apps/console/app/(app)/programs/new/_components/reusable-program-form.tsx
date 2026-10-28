@@ -30,16 +30,12 @@ import {
   canSubmitReusableProgram,
   reusableProgramExercisesForCreateSubmit,
 } from '@/lib/program-library-submit'
-import { ZERO_ENABLED_VARIANTS_MESSAGE } from '@/lib/program-submit-enabled-variants'
 import {
   starterTemplateCatalogSelection,
   suggestedProgramNameFromTemplate,
 } from '@/lib/starter-template-create'
 import { useCatalogFirstAuthoringFlow } from '@/hooks/use-catalog-first-authoring-flow'
-import {
-  CATALOG_CATALOG_FIRST_AUTHORING_STEP,
-  CATALOG_FIRST_CATALOG_CONTINUE_LABEL,
-} from '@/lib/catalog-first-authoring-flow'
+import { CATALOG_CATALOG_FIRST_AUTHORING_STEP } from '@/lib/catalog-first-authoring-flow'
 
 type EditorSource =
   | { kind: 'scratch' }
@@ -60,22 +56,17 @@ const ReusableProgramFormView = ({
   const { state, handler } = useExerciseLibrary()
   const { selectedExercises, deferredRemovalIds } = state
   const { updateExercises } = handler
-  const { t } = useClientT('common')
+  const { t } = useClientT(['programs', 'common'])
   const { data: exercises, isLoading: isLoadingExercises } = useExercise()
   const isScratch = editorSource.kind === 'scratch'
   const isTemplate = editorSource.kind === 'template'
   const isCatalogFirstCreate = isScratch || isTemplate
-  const {
-    isCatalogStep,
-    isSelectedListStep,
-    goToSelectedList,
-    goToCatalog,
-    selectedExerciseCountLabel,
-  } = useCatalogFirstAuthoringFlow(
-    isScratch
-      ? { initialStep: CATALOG_CATALOG_FIRST_AUTHORING_STEP }
-      : undefined,
-  )
+  const { isCatalogStep, isSelectedListStep, goToSelectedList, goToCatalog } =
+    useCatalogFirstAuthoringFlow(
+      isScratch
+        ? { initialStep: CATALOG_CATALOG_FIRST_AUTHORING_STEP }
+        : undefined,
+    )
   const isCatalogFirstCatalogStep = isCatalogFirstCreate && isCatalogStep
   const isCatalogFirstSelectedListStep =
     isCatalogFirstCreate && isSelectedListStep
@@ -139,7 +130,7 @@ const ReusableProgramFormView = ({
 
     if (submitCheck.ok === false) {
       if (submitCheck.reason === 'exercises') {
-        return notify.error(ZERO_ENABLED_VARIANTS_MESSAGE)
+        return notify.error(t('editor.noExercisesError'))
       }
       return
     }
@@ -164,11 +155,11 @@ const ReusableProgramFormView = ({
 
   let secondaryNav: { onClick: () => void; label: string }
   if (isCatalogFirstCatalogStep) {
-    secondaryNav = { onClick: goToSelectedList, label: t('btn.back') }
+    secondaryNav = { onClick: goToSelectedList, label: t('common:btn.back') }
   } else if (onBack) {
-    secondaryNav = { onClick: onBack, label: t('btn.back') }
+    secondaryNav = { onClick: onBack, label: t('common:btn.back') }
   } else {
-    secondaryNav = { onClick: handleCancel, label: t('btn.cancel') }
+    secondaryNav = { onClick: handleCancel, label: t('common:btn.cancel') }
   }
 
   if (isCreating || isCreatingExercises || (isTemplate && isLoadingExercises)) {
@@ -181,11 +172,11 @@ const ReusableProgramFormView = ({
 
   if (isCatalogFirstSelectedListStep) {
     const heading = isTemplate
-      ? 'Finalize program from template'
-      : 'Create program'
+      ? t('editor.finalizeTitle')
+      : t('editor.createTitle')
     const settingsDescription = isTemplate
-      ? 'Review settings, then add more exercises if you need them before saving.'
-      : 'Name your program and review settings, then add exercises if you need them before saving.'
+      ? t('editor.finalizeDescription')
+      : t('editor.createDescription')
 
     return (
       <div className='h-screen-with-nav container mx-auto flex flex-col gap-6 p-8'>
@@ -201,7 +192,7 @@ const ReusableProgramFormView = ({
                 {secondaryNav.label}
               </Button>
               <Button type='button' onClick={goToCatalog}>
-                Add exercises
+                {t('editor.addExercises')}
               </Button>
               <Button
                 type='submit'
@@ -209,7 +200,7 @@ const ReusableProgramFormView = ({
                 form='reusableProgramForm'
                 data-tour='program-submit'
               >
-                {t('btn.submit')}
+                {t('common:btn.submit')}
               </Button>
             </div>
           </div>
@@ -218,7 +209,7 @@ const ReusableProgramFormView = ({
               <FormInput
                 control={form.control}
                 name='name'
-                label='Name'
+                label={t('editor.name')}
                 data-tour='program-name'
                 inputClassName='max-w-62.5'
               />
@@ -233,16 +224,18 @@ const ReusableProgramFormView = ({
   }
 
   const selectedCount = selectedExercises.length
+  const selectedExerciseCountLabel =
+    selectedCount === 0
+      ? t('editor.selectedNone')
+      : t('editor.selected', { count: selectedCount })
   const catalogCopy = isTemplate
     ? {
-        heading: 'Add exercises from starter template',
-        description:
-          'Add or remove exercise variants, then return to settings to finish.',
+        heading: t('editor.catalogTemplateTitle'),
+        description: t('editor.catalogTemplateDescription'),
       }
     : {
-        heading: 'Add exercises',
-        description:
-          'Choose exercises from the catalog, then return to settings to finish.',
+        heading: t('editor.addExercises'),
+        description: t('editor.catalogDescription'),
       }
 
   return (
@@ -259,7 +252,7 @@ const ReusableProgramFormView = ({
             className='flex shrink-0 items-center gap-3'
           >
             <span className='text-muted-foreground text-sm'>
-              {selectedExerciseCountLabel(selectedCount)}
+              {selectedExerciseCountLabel}
             </span>
             <Button type='button' onClick={secondaryNav.onClick}>
               {secondaryNav.label}
@@ -270,7 +263,7 @@ const ReusableProgramFormView = ({
               onClick={goToSelectedList}
               data-tour='program-catalog-continue'
             >
-              {CATALOG_FIRST_CATALOG_CONTINUE_LABEL}
+              {t('editor.continue')}
             </Button>
           </div>
         </div>

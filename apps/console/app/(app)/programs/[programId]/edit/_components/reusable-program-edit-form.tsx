@@ -33,9 +33,7 @@ import {
   isStarterTemplateProgram,
   reusableProgramExercisesForEditSubmit,
 } from '@/lib/program-library-submit'
-import { ZERO_ENABLED_VARIANTS_MESSAGE } from '@/lib/program-submit-enabled-variants'
 import { useCatalogFirstAuthoringFlow } from '@/hooks/use-catalog-first-authoring-flow'
-import { CATALOG_FIRST_CATALOG_CONTINUE_LABEL } from '@/lib/catalog-first-authoring-flow'
 
 interface ReusableProgramEditFormProps {
   programId: string
@@ -53,15 +51,10 @@ const ReusableProgramEditForm = ({
   const { state, handler } = useExerciseLibrary()
   const { selectedExercises, deferredRemovalIds } = state
   const { updateExercises } = handler
-  const { t } = useClientT('common')
+  const { t } = useClientT(['programs', 'common'])
   const { data: exercises, isLoading: isLoadingExercises } = useExercise()
-  const {
-    isCatalogStep,
-    isSelectedListStep,
-    goToSelectedList,
-    goToCatalog,
-    selectedExerciseCountLabel,
-  } = useCatalogFirstAuthoringFlow()
+  const { isCatalogStep, isSelectedListStep, goToSelectedList, goToCatalog } =
+    useCatalogFirstAuthoringFlow()
 
   const { data: existingProgram, isLoading } = useReusableProgram({
     id: programId,
@@ -87,7 +80,7 @@ const ReusableProgramEditForm = ({
     if (!existingProgram || !exercises) return
 
     if (isStarterTemplateProgram(existingProgram)) {
-      notify.error('Starter templates cannot be edited.')
+      notify.error(t('editor.starterTemplateLocked'))
       router.replace('/programs')
       return
     }
@@ -123,7 +116,7 @@ const ReusableProgramEditForm = ({
 
     if (submitCheck.ok === false) {
       if (submitCheck.reason === 'exercises') {
-        return notify.error(ZERO_ENABLED_VARIANTS_MESSAGE)
+        return notify.error(t('editor.noExercisesError'))
       }
       return
     }
@@ -147,9 +140,9 @@ const ReusableProgramEditForm = ({
 
   let secondaryNav: { onClick: () => void; label: string }
   if (isCatalogStep) {
-    secondaryNav = { onClick: goToSelectedList, label: t('btn.back') }
+    secondaryNav = { onClick: goToSelectedList, label: t('common:btn.back') }
   } else {
-    secondaryNav = { onClick: handleCancel, label: t('btn.cancel') }
+    secondaryNav = { onClick: handleCancel, label: t('common:btn.cancel') }
   }
 
   if (isLoading || isLoadingExercises || isUpdating || isUpdatingExercises) {
@@ -170,10 +163,9 @@ const ReusableProgramEditForm = ({
         <div className='flex h-full max-h-full flex-col space-y-2 overflow-hidden'>
           <div className='flex items-start justify-between gap-4'>
             <div>
-              <H2>Edit program</H2>
+              <H2>{t('editor.editTitle')}</H2>
               <P className='text-muted-foreground'>
-                Review settings, then add more exercises if you need them before
-                saving.
+                {t('editor.editDescription')}
               </P>
             </div>
 
@@ -182,14 +174,14 @@ const ReusableProgramEditForm = ({
                 {secondaryNav.label}
               </Button>
               <Button type='button' onClick={goToCatalog}>
-                Add exercises
+                {t('editor.addExercises')}
               </Button>
               <Button
                 type='submit'
                 variant='primary'
                 form='reusableProgramEditForm'
               >
-                {t('btn.submit')}
+                {t('common:btn.submit')}
               </Button>
             </div>
           </div>
@@ -201,7 +193,7 @@ const ReusableProgramEditForm = ({
               <FormInput
                 control={form.control}
                 name='name'
-                label='Name'
+                label={t('editor.name')}
                 inputClassName='max-w-62.5'
               />
             )}
@@ -215,16 +207,19 @@ const ReusableProgramEditForm = ({
   }
 
   const selectedCount = selectedExercises.length
+  const selectedExerciseCountLabel =
+    selectedCount === 0
+      ? t('editor.selectedNone')
+      : t('editor.selected', { count: selectedCount })
 
   return (
     <div className={PAGE_SHELL_CLASSNAME}>
       <div className='flex h-full max-h-full flex-col space-y-2 overflow-hidden'>
         <div className='flex items-start justify-between gap-4'>
           <div>
-            <H2>Add exercises</H2>
+            <H2>{t('editor.addExercises')}</H2>
             <P className='text-muted-foreground'>
-              Add or remove exercise variants, then return to settings before
-              saving.
+              {t('editor.editCatalogDescription')}
             </P>
           </div>
 
@@ -233,13 +228,13 @@ const ReusableProgramEditForm = ({
             className='flex shrink-0 items-center gap-3'
           >
             <span className='text-muted-foreground text-sm'>
-              {selectedExerciseCountLabel(selectedCount)}
+              {selectedExerciseCountLabel}
             </span>
             <Button type='button' onClick={secondaryNav.onClick}>
               {secondaryNav.label}
             </Button>
             <Button type='button' variant='primary' onClick={goToSelectedList}>
-              {CATALOG_FIRST_CATALOG_CONTINUE_LABEL}
+              {t('editor.continue')}
             </Button>
           </div>
         </div>
