@@ -3,9 +3,12 @@ import { toast, type Id, type ToastOptions } from 'react-toastify'
 import NotifyToast, {
   type NotifyVariant,
 } from '@/components/feedback/notify-toast'
+import i18next from '@/i18n/i18next'
+import { resolveNotifyMessage, type NotifyMessage } from '@/lib/notify-message'
 import { playAttentionSound } from '@/lib/notify-sound'
 
 export type NotifyId = Id
+export type { NotifyMessage }
 
 const OPTIONS: Record<NotifyVariant, ToastOptions> = {
   success: {
@@ -31,19 +34,27 @@ const OPTIONS: Record<NotifyVariant, ToastOptions> = {
   },
 }
 
-const show = (variant: NotifyVariant, message: string): NotifyId =>
-  toast(createElement(NotifyToast, { variant, message }), OPTIONS[variant])
+const show = (variant: NotifyVariant, message: NotifyMessage): NotifyId =>
+  toast(
+    createElement(NotifyToast, {
+      variant,
+      message: resolveNotifyMessage(message, (key, options) =>
+        i18next.t(key, options),
+      ),
+    }),
+    OPTIONS[variant],
+  )
 
 /**
  * The console's only toast API. Call sites must not import `toast` from
  * `react-toastify` directly, so every toast shares one look.
  */
 export const notify = {
-  success: (message: string) => show('success', message),
-  error: (message: string) => show('error', message),
-  info: (message: string) => show('info', message),
+  success: (message: NotifyMessage) => show('success', message),
+  error: (message: NotifyMessage) => show('error', message),
+  info: (message: NotifyMessage) => show('info', message),
   /** Patient needs the clinician: stays longer and plays a sound. */
-  attention: (message: string) => {
+  attention: (message: NotifyMessage) => {
     playAttentionSound()
     return show('attention', message)
   },

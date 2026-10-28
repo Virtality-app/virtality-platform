@@ -1,0 +1,19 @@
+{
+  "required": "This field is required.",
+  "invalid_type": "Invalid value.",
+  "invalid_value": "Invalid value.",
+  "invalid_email": "Provide a valid email, for example name@domain.com.",
+  "invalid_format": "Invalid format.",
+  "too_small": "Must be at least {{min}}.",
+  "too_small_string": "Must be at least {{min}} characters.",
+  "too_big": "Must be at most {{max}}.",
+  "too_big_string": "Must be at most {{max}} characters.",
+  "custom": "Invalid value.",
+  "weight_positive": "Weight must be a positive number.",
+  "height_positive": "Height must be a positive number.",
+  "phone_length": "Phone number must be between 10 and 15 digits.",
+  "sex_required": "Sex is required.",
+  "language_required": "Language is required.",
+  "model_required": "Select a model.",
+  "platform_required": "Please select a platform."
+}

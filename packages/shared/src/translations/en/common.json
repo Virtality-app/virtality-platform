@@ -31,7 +31,6 @@
     "pause": "Pause",
     "resume": "Resume"
   },
-
   "form": {
     "firstName": "First Name",
     "lastName": "Last Name",
@@ -57,5 +56,9 @@
     "terms": "I agree to the terms and conditions",
     "search": "Search",
     "title": "title"
+  },
+  "toast": {
+    "saved": "Saved.",
+    "error": "Something went wrong."
   }
 }

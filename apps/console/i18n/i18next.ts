@@ -1,9 +1,11 @@
 import i18next from 'i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import resourcesToBackend from 'i18next-resources-to-backend'
+import { z } from 'zod/v4'
 import { initReactI18next } from 'react-i18next/initReactI18next'
 import { loadTranslationBundle } from './load-translation-bundle'
 import { settings } from './settings'
+import { createZodErrorMap } from './zod-error-map'
 
 const { fallbackLng, languages, defaultNS } = settings
 
@@ -15,7 +17,7 @@ i18next
   .use(resourcesToBackend(loadTranslationBundle))
   .init({
     // debug: true,
-    ns: ['common'],
+    ns: ['common', 'validation'],
     supportedLngs: languages,
     fallbackLng,
     fallbackNS: defaultNS,
@@ -26,5 +28,10 @@ i18next
     },
     preload: runsOnServerSide ? languages : [],
   })
+
+// The one place Zod issues become translated messages.
+z.config({
+  customError: createZodErrorMap((key, options) => i18next.t(key, options)),
+})
 
 export default i18next

@@ -1,4 +1,5 @@
 import { z } from 'zod/v4'
+import { translateMessage } from '@/i18n/translate-message'
 import { isPatientLanguage, isPatientSex } from './patient-form-validation'
 import { isValidNumber } from './utils'
 import { isValidPassword } from '@virtality/shared/utils'
@@ -10,46 +11,30 @@ export type Role = z.infer<typeof RoleEnum>
 export const UserSchema = z.object({
   id: z.string(),
   name: z.string(),
-  email: z
-    .string()
-    .min(1, { message: 'Email cannot be empty' })
-    .email({ message: 'Provide valid email example@domain.com' }),
+  email: z.string().min(1).email(),
   image: z.string().nullable().optional(),
-  phoneNumber: z
-    .string()
-    .max(15, { message: 'Phone number cannot be more than 15 digits' })
-    .nullable(),
+  phoneNumber: z.string().max(15).nullable(),
 })
 
 export const UserProfileSchema = z.object({
-  name: z
-    .string()
-    .min(1, { message: 'Name cannot be empty' })
-    .max(32, { message: 'Name cannot be more than 32 characters' }),
-  email: z.email({ message: 'Provide valid email example@domain.com' }),
+  name: z.string().min(1).max(32),
+  email: z.email(),
   // image: z.string().nullable().optional(),
-  phoneNumber: z
-    .string()
-    .max(15, { message: 'Phone number cannot be more than 15 digits' })
-    .nullable(),
+  phoneNumber: z.string().max(15).nullable(),
 })
 
 export type UserProfile = z.infer<typeof UserProfileSchema>
 
 export const SignInSchema = z.object({
-  email: z.email({ message: '• Provide valid email example@domain.com' }),
-  password: z.string().min(1, { message: '• Password cannot be empty' }),
+  email: z.email(),
+  password: z.string().min(1),
 })
 
 export type SignInForm = z.infer<typeof SignInSchema>
 
 export const SignUpSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, { message: '• Name cannot be empty.' })
-    .max(32, { message: '• Name cannot be more than 32 characters.' }),
-  email: z.email({ message: '• Provide valid email example@domain.com' }),
+  name: z.string().trim().min(1).max(32),
+  email: z.email(),
   password: z.string().check(isValidPassword),
 })
 
@@ -82,17 +67,17 @@ export const SessionExerciseSchema = z.object({
 export const SessionExerciseArraySchema = z.array(SessionExerciseSchema)
 
 export const PatientFormSchema = z.object({
-  name: z.string().nonempty('Name is required'),
+  name: z.string().nonempty(),
   weight: z
     .string()
     .refine(isValidNumber, {
-      message: 'Weight must be a positive number',
+      error: translateMessage('weight_positive'),
     })
     .optional(),
   height: z
     .string()
     .refine(isValidNumber, {
-      message: 'Height must be a positive number',
+      error: translateMessage('height_positive'),
     })
     .optional(),
   phone: z
@@ -105,7 +90,7 @@ export const PatientFormSchema = z.object({
         return val.length >= 10 && val.length <= 15
       },
       {
-        message: 'Phone number must be between 10 and 15 digits',
+        error: translateMessage('phone_length'),
       },
     ),
   email: z.string().refine(
@@ -116,16 +101,16 @@ export const PatientFormSchema = z.object({
       else return false
     },
     {
-      message: 'Invalid email format',
+      error: translateMessage('invalid_email'),
     },
   ),
   dob: z.string().optional(),
   sex: z.string().refine(isPatientSex, {
-    message: 'Sex is required',
+    error: translateMessage('sex_required'),
   }),
   image: z.instanceof(File).or(z.string()).optional().nullable(),
   language: z.string().refine(isPatientLanguage, {
-    message: 'Language is required',
+    error: translateMessage('language_required'),
   }),
   occupation: z.string().optional(),
   // medical history
@@ -143,11 +128,11 @@ export const DeviceSchema = z.object({
   id: z.string(),
   deviceId: z.string().nullable(),
   userId: z.string(),
-  name: z
+  name: z.string().min(1).max(32),
+  model: z
     .string()
-    .min(1, { message: 'Name cannot be empty.' })
-    .max(32, { message: 'Name too long.' }),
-  model: z.string().nonempty('Select a model.').nullable(),
+    .nonempty({ error: translateMessage('model_required') })
+    .nullable(),
   lastUsed: z.date(),
   createdAt: z.date(),
   deletedAt: z.date().nullable(),
@@ -161,12 +146,11 @@ export const ProgressDataSchema = z.object({
 export type ProgressData = z.infer<typeof ProgressDataSchema>
 
 export const BugReportFormSchema = z.object({
-  title: z.string().min(2, { message: 'Title must be at least 2 characters.' }),
-  platform: z.enum(['web', 'vr'], { message: 'Please select a platform.' }),
-  description: z
-    .string()
-    .min(10, { message: 'Description must be at least 10 characters.' })
-    .max(500, { message: 'Description must not exceed 500 characters.' }),
+  title: z.string().min(2),
+  platform: z.enum(['web', 'vr'], {
+    error: translateMessage('platform_required'),
+  }),
+  description: z.string().min(10).max(500),
   image: z.array(z.instanceof(File)).or(z.string()).optional().nullable(),
 })
 
