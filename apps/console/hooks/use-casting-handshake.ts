@@ -120,17 +120,11 @@ export function useCastingHandshake(socket: SocketWithQuery | null) {
 
         pc.onicecandidate = (event) => {
           if (event.candidate) {
-            console.log('[casting] Local ICE candidate:', event.candidate.type)
             emitter.casting.Candidate(event.candidate.toJSON())
           }
         }
 
-        pc.onicegatheringstatechange = () => {
-          console.log('[casting] ICE gathering state:', pc.iceGatheringState)
-        }
-
         pc.oniceconnectionstatechange = () => {
-          console.log('[casting] ICE connection state:', pc.iceConnectionState)
           if (pc.iceConnectionState === 'failed') {
             console.warn('[casting] ICE connection failed')
             setStatus('error')
@@ -138,7 +132,6 @@ export function useCastingHandshake(socket: SocketWithQuery | null) {
         }
 
         pc.onconnectionstatechange = () => {
-          console.log('[casting] Peer connection state:', pc.connectionState)
           if (pc.connectionState === 'failed') {
             setStatus('error')
           }

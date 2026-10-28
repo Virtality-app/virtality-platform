@@ -250,6 +250,47 @@ describe('filterExerciseFamiliesForLibrary', () => {
     expect(shoulderOnly[0]!.members.map((m) => m.id).sort()).toEqual(['l', 'r'])
   })
 
+  it('matches the bodyweight key to null or blank equipment', () => {
+    const rows: ExerciseLibraryFilterRow[] = [
+      ex({ id: 'bw', name: 'bw', category: 'shoulder', item: null }),
+      ex({ id: 'blank', name: 'blank', category: 'shoulder', item: '   ' }),
+      ex({ id: 'db', name: 'db', category: 'shoulder', item: 'dumbbell' }),
+    ]
+    const r = filterExerciseFamiliesForLibrary(rows, {
+      selectedBodyParts: [],
+      selectedEquipmentKeys: ['bodyweight'],
+      searchTerm: '',
+      ...noFav,
+    })
+    expect(r.map((f) => f.familyKey)).toEqual(['blank', 'bw'])
+  })
+
+  it('ORs equipment keys and ANDs them with body parts', () => {
+    const rows: ExerciseLibraryFilterRow[] = [
+      ex({ id: 'a', name: 'a', category: 'shoulder', item: 'dumbbell' }),
+      ex({ id: 'b', name: 'b', category: 'shoulder', item: 'resistance_band' }),
+      ex({ id: 'c', name: 'c', category: 'wrist', item: 'dumbbell' }),
+      ex({ id: 'd', name: 'd', category: 'shoulder', item: null }),
+    ]
+    const r = filterExerciseFamiliesForLibrary(rows, {
+      selectedBodyParts: ['shoulder'],
+      selectedEquipmentKeys: ['dumbbell', 'resistance_band'],
+      searchTerm: '',
+      ...noFav,
+    })
+    expect(r.map((f) => f.familyKey)).toEqual(['a', 'b'])
+  })
+
+  it('returns no families when the filters exclude everything', () => {
+    const r = filterExerciseFamiliesForLibrary(catalog, {
+      selectedBodyParts: ['wrist'],
+      selectedEquipmentKeys: [],
+      searchTerm: 'press',
+      ...noFav,
+    })
+    expect(r).toEqual([])
+  })
+
   it('respects favorites when any member is starred', () => {
     const r = filterExerciseFamiliesForLibrary(catalog, {
       selectedBodyParts: [],

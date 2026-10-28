@@ -23,8 +23,8 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { authClient } from '@/auth-client'
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'react-toastify'
 
 const ResetSchema = z.object({
   newPassword: z.string().check(isValidPassword),
@@ -33,7 +33,6 @@ const ResetSchema = z.object({
 type ResetForm = z.infer<typeof ResetSchema>
 const ResetForm = ({ token }: { token?: string }) => {
   const router = useRouter()
-  const [formError, setFormError] = useState<string | undefined | null>(null)
 
   const form = useForm<ResetForm>({
     resolver: zodResolver(ResetSchema),
@@ -53,13 +52,15 @@ const ResetForm = ({ token }: { token?: string }) => {
     try {
       const { error } = await authClient.resetPassword({ newPassword, token })
 
-      if (error) setFormError(error.message)
-      console.log(error)
-      if (!formError) {
-        router.push('/')
+      if (error) {
+        toast.error(error.message ?? 'Failed to reset password')
+        return
       }
+
+      router.push('/')
     } catch (error) {
-      console.log('Error resetting password: ', error)
+      console.error(error)
+      toast.error('Failed to reset password')
     }
   }
 
