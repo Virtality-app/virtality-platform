@@ -26,6 +26,7 @@ import { MouseEvent } from 'react'
 import { usePatientDashboard } from '@/context/patient-dashboard-context'
 import { Button } from '@virtality/ui/components/button'
 import { useAvatar } from '@virtality/react-query'
+import { useClientT } from '@/i18n/use-client-t'
 import { shouldBypassVercelImageOptimization } from '@virtality/shared/utils'
 
 const AvatarSelector = () => {
@@ -34,6 +35,7 @@ const AvatarSelector = () => {
   const { selectedAvatar, programState } = state
   const { setSelectedAvatar } = handler
   const { data: avatars } = useAvatar()
+  const { t } = useClientT('patient-dashboard')
 
   const avatarChange = (value: string) => {
     const avatar = avatars?.find((avatar) => avatar.id === value) ?? null
@@ -63,7 +65,7 @@ const AvatarSelector = () => {
           {selectedAvatar ? (
             <AvatarCard avatar={selectedAvatar} />
           ) : (
-            <SelectValue placeholder='Select an Avatar' />
+            <SelectValue placeholder={t('avatar.placeholder')} />
           )}
         </SelectTrigger>
         <SelectContent className='dark:bg-zinc-900'>
@@ -93,6 +95,7 @@ const AvatarSelector = () => {
 export default AvatarSelector
 
 const AvatarCard = ({ avatar }: { avatar: Avatar }) => {
+  const { t } = useClientT('patient-dashboard')
   return (
     <div className='flex items-center gap-2'>
       <TooltipProvider>
@@ -107,7 +110,7 @@ const AvatarCard = ({ avatar }: { avatar: Avatar }) => {
             <Card className='max-w-(--breakpoint-sm) gap-2 bg-zinc-50 p-4 text-zinc-950 dark:bg-zinc-950 dark:text-zinc-200'>
               <CardContent className='p-0'>
                 <Image
-                  alt='Avatar image'
+                  alt={t('avatar.imageAlt')}
                   width={150}
                   height={150}
                   loading='eager'

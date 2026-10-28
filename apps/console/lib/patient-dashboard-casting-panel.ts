@@ -1,3 +1,4 @@
+import i18next from '@/i18n/i18next'
 import type { CastingStatus } from '@/hooks/use-casting-handshake'
 
 export type CastingPlayerView = 'idle' | 'loading' | 'connected' | 'error'
@@ -6,9 +7,9 @@ export type CastingControlAction = 'start' | 'stop'
 
 export const CASTING_LOAD_TIMEOUT_MS = 30_000
 
-export const CASTING_CONTROL_LABELS: Record<CastingControlAction, string> = {
-  start: 'Start casting',
-  stop: 'Stop casting',
+const CASTING_CONTROL_LABEL_KEYS: Record<CastingControlAction, string> = {
+  start: 'casting.start',
+  stop: 'casting.stop',
 }
 
 export function getCastingPlayerView(status: CastingStatus): CastingPlayerView {
@@ -42,7 +43,7 @@ export function getCastingControlAction(
 export function getCastingControlLabelForAction(
   action: CastingControlAction,
 ): string {
-  return CASTING_CONTROL_LABELS[action]
+  return i18next.t(CASTING_CONTROL_LABEL_KEYS[action])
 }
 
 export function getCastingControlLabel(status: CastingStatus): string {
@@ -59,15 +60,15 @@ export function isCastingControlDisabled(
 export function getCastingStatusLabel(status: CastingStatus): string {
   switch (status) {
     case 'idle':
-      return 'Idle'
+      return i18next.t('casting.status.idle')
     case 'requesting':
-      return 'Requesting stream...'
+      return i18next.t('casting.status.requesting')
     case 'negotiating':
-      return 'Connecting...'
+      return i18next.t('casting.status.negotiating')
     case 'connected':
-      return 'Live'
+      return i18next.t('casting.status.connected')
     case 'error':
-      return 'Connection failed'
+      return i18next.t('casting.status.error')
   }
 }
 

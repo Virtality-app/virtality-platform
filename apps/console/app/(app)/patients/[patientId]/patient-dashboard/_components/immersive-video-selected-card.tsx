@@ -1,5 +1,6 @@
 'use client'
 
+import { useClientT } from '@/i18n/use-client-t'
 import { Badge } from '@virtality/ui/components/badge'
 import {
   Card,
@@ -27,6 +28,7 @@ export function ImmersiveVideoSelectedCard({
 }: {
   className?: string
 }) {
+  const { t } = useClientT('patient-dashboard')
   const { state } = usePatientDashboard()
   const {
     selectedRow,
@@ -49,7 +51,9 @@ export function ImmersiveVideoSelectedCard({
   return (
     <Card className={cn('flex flex-col', className)}>
       <CardHeader>
-        <CardTitle>{selectedRow?.title ?? 'No video selected'}</CardTitle>
+        <CardTitle>
+          {selectedRow?.title ?? t('immersive.noVideoSelected')}
+        </CardTitle>
         <CardAction>
           <ImmersiveVideoSessionTimer />
         </CardAction>

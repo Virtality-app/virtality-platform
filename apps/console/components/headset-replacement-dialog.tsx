@@ -8,10 +8,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { useClientT } from '@/i18n/use-client-t'
 import { Button } from '@virtality/ui/components/button'
-
-const REPLACEMENT_COPY =
-  'Another tab is now controlling this headset. Close this tab, or continue in the active one.'
 
 export function HeadsetReplacementDialog({
   open,
@@ -20,16 +18,19 @@ export function HeadsetReplacementDialog({
   open: boolean
   onOpenChange: (open: boolean) => void
 }) {
+  const { t } = useClientT(['patient-dashboard', 'common'])
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle>Headset controlled in another tab</DialogTitle>
-          <DialogDescription>{REPLACEMENT_COPY}</DialogDescription>
+          <DialogTitle>{t('headsetDialog.replacedTitle')}</DialogTitle>
+          <DialogDescription>
+            {t('headsetDialog.replacedDescription')}
+          </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant='primary' onClick={() => onOpenChange(false)}>
-            OK
+            {t('common:btn.ok')}
           </Button>
         </DialogFooter>
       </DialogContent>

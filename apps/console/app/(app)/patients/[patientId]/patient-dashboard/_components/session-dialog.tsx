@@ -30,6 +30,7 @@ import {
 } from '@virtality/react-query'
 import { trackAnalyticsEvent } from '@/lib/analytics-contract'
 import { useEffect, useState } from 'react'
+import { useClientT } from '@/i18n/use-client-t'
 import { SessionCompletionSaveChoice } from '@virtality/shared/utils'
 import { generateUUID } from '@virtality/shared/utils'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
@@ -41,6 +42,7 @@ import {
 } from '@/lib/session-completion-dialog'
 
 const SessionDialog = () => {
+  const { t } = useClientT(['patient-dashboard', 'common'])
   const queryClient = getQueryClient()
   const orpc = useORPC()
   const { state, handler, patientId } = usePatientDashboard()
@@ -208,17 +210,18 @@ const SessionDialog = () => {
           onPointerDownOutside={handleClicksOutsideDialog}
         >
           <DialogHeader>
-            <DialogTitle>Session Completed</DialogTitle>
+            <DialogTitle>{t('sessionDialog.title')}</DialogTitle>
           </DialogHeader>
           <DialogDescription>
-            Choose how to save this session and any supplemental therapies used
-            outside VR.
+            {t('sessionDialog.description')}
           </DialogDescription>
 
           <div className='scrollbar-gutter-stable min-h-0 flex-1 overflow-y-auto'>
             <div className='space-y-4 p-1 pr-3'>
               <div className='space-y-3'>
-                <p className='text-sm font-medium'>Program Library</p>
+                <p className='text-sm font-medium'>
+                  {t('sessionDialog.programLibrary')}
+                </p>
                 <RadioGroup
                   value={saveChoice}
                   onValueChange={(value) =>
@@ -235,7 +238,7 @@ const SessionDialog = () => {
                       id='finish-only'
                     />
                     <Label htmlFor='finish-only' className='font-normal'>
-                      Finish session only
+                      {t('sessionDialog.finishOnly')}
                     </Label>
                   </div>
 
@@ -251,7 +254,7 @@ const SessionDialog = () => {
                         htmlFor='update-source-program'
                         className='font-normal'
                       >
-                        Update this program
+                        {t('sessionDialog.updateProgram')}
                         {patientSessionData?.sourceProgramName
                           ? ` (${patientSessionData.sourceProgramName})`
                           : ''}
@@ -268,7 +271,7 @@ const SessionDialog = () => {
                       htmlFor='save-as-new-program'
                       className='font-normal'
                     >
-                      Save as new program
+                      {t('sessionDialog.saveAsNew')}
                     </Label>
                   </div>
                 </RadioGroup>
@@ -276,7 +279,9 @@ const SessionDialog = () => {
                 {saveChoice ===
                   SessionCompletionSaveChoice.SAVE_AS_NEW_PROGRAM && (
                   <div className='space-y-2'>
-                    <Label htmlFor='new-program-name'>Program name</Label>
+                    <Label htmlFor='new-program-name'>
+                      {t('sessionDialog.programName')}
+                    </Label>
                     <Input
                       id='new-program-name'
                       value={completionState.newProgramName}
@@ -294,14 +299,15 @@ const SessionDialog = () => {
                   SessionCompletionSaveChoice.UPDATE_SOURCE_PROGRAM &&
                   completionState.showUpdateConfirmation && (
                     <p className='text-muted-foreground text-sm'>
-                      This will overwrite the exercises and settings in your
-                      Program Library program. Past sessions stay unchanged.
+                      {t('sessionDialog.overwriteWarning')}
                     </p>
                   )}
               </div>
 
               <div className='space-y-2'>
-                <p className='text-sm font-medium'>Supplemental therapies</p>
+                <p className='text-sm font-medium'>
+                  {t('sessionDialog.supplementalTherapies')}
+                </p>
                 {supplementalTherapies?.map((method) => (
                   <FormCheckbox
                     key={method.id}
@@ -327,7 +333,7 @@ const SessionDialog = () => {
                   />
                 ))}
                 <FormCheckbox
-                  label={'Other'}
+                  label={t('sessionDialog.other')}
                   name={'otherEnabled'}
                   control={form.control}
                 />
@@ -336,20 +342,26 @@ const SessionDialog = () => {
                   <FormInput
                     key={'other'}
                     control={form.control}
-                    label={<span className='hidden'>{'otherText'}</span>}
+                    label={
+                      <span className='hidden'>
+                        {t('sessionDialog.otherPlaceholder')}
+                      </span>
+                    }
                     name={'otherText'}
-                    placeholder={'Other therapy used...'}
+                    placeholder={t('sessionDialog.otherPlaceholder')}
                   />
                 )}
               </div>
 
               <div className='space-y-2 pb-1'>
-                <Label htmlFor='session-notes'>Session notes</Label>
+                <Label htmlFor='session-notes'>
+                  {t('sessionDialog.notes')}
+                </Label>
                 <Textarea
                   id='session-notes'
                   value={form.watch('notes') ?? ''}
                   onChange={(e) => form.setValue('notes', e.target.value)}
-                  placeholder='Add notes about this session...'
+                  placeholder={t('sessionDialog.notesPlaceholder')}
                 />
               </div>
             </div>
@@ -361,14 +373,14 @@ const SessionDialog = () => {
               variant='destructive'
               onClick={handleDeletePatientSession}
             >
-              {"Don't Save"}
+              {t('sessionDialog.dontSave')}
             </Button>
             <Button form='session-completion-form' variant='default'>
               {saveChoice ===
                 SessionCompletionSaveChoice.UPDATE_SOURCE_PROGRAM &&
               !completionState.showUpdateConfirmation
-                ? 'Continue'
-                : 'Save'}
+                ? t('common:btn.continue')
+                : t('common:btn.save')}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,3 +1,4 @@
+import i18next from '@/i18n/i18next'
 import {
   isDirectExerciseSelectionDisabled,
   isSkipControlDisabled,
@@ -10,10 +11,11 @@ export const EXERCISE_CHANGE_ACK_TIMEOUT_MS = 15_000
 
 export type SkipControlDisabledReason = 'pending' | 'boundary' | null
 
-export const EXERCISE_LIST_HIGHLIGHT_LABEL = {
-  confirmed: 'Current (headset)',
-  pending: 'Pending change',
-} as const
+export function exerciseListHighlightLabel(
+  highlightState: 'confirmed' | 'pending',
+): string {
+  return i18next.t(`exerciseList.highlight.${highlightState}`)
+}
 
 export function resolveSkipControlDisabledReason(input: {
   direction: SkipDirection
@@ -44,15 +46,15 @@ export function resolveSkipControlTooltip(
   direction: SkipDirection,
 ): string | undefined {
   if (reason === 'pending') {
-    return 'Waiting for the headset to confirm the exercise change.'
+    return i18next.t('exerciseChange.skipPending')
   }
 
   if (reason === 'boundary') {
     if (direction === 'forward') {
-      return 'Last exercise — forward skip is not available.'
+      return i18next.t('exerciseChange.skipLast')
     }
 
-    return 'First exercise — back skip is not available.'
+    return i18next.t('exerciseChange.skipFirst')
   }
 
   return undefined
@@ -77,7 +79,7 @@ export function resolveDirectSelectionBlockedTooltip(
   pendingExerciseChange: PendingExerciseChange | null,
 ): string | undefined {
   if (isDirectExerciseSelectionDisabled({ pendingExerciseChange })) {
-    return 'Exercise list selection is disabled while a headset exercise change is in flight.'
+    return i18next.t('exerciseChange.selectionDisabled')
   }
 
   return undefined
@@ -87,13 +89,16 @@ export function resolveExerciseChangeStatusMessage(input: {
   confirmedExerciseName: string
   pendingExerciseName: string
 }): string {
-  return `Waiting for headset to confirm change from ${input.confirmedExerciseName} to ${input.pendingExerciseName}. Sets and reps show the headset-confirmed exercise.`
+  return i18next.t('exerciseChange.status', {
+    from: input.confirmedExerciseName,
+    to: input.pendingExerciseName,
+  })
 }
 
 export function resolveExerciseChangeFailureMessage(
   confirmedExerciseName: string,
 ): string {
-  return `Exercise change timed out. ${confirmedExerciseName} remains the current headset exercise.`
+  return i18next.t('exerciseChange.timedOut', { name: confirmedExerciseName })
 }
 
 export function resolveExerciseListHighlightClass(

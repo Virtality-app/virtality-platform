@@ -1,5 +1,7 @@
 'use client'
 
+import { Trans } from 'react-i18next'
+import { useClientT } from '@/i18n/use-client-t'
 import Link from 'next/link'
 import { Badge } from '@virtality/ui/components/badge'
 import { cn } from '@/lib/utils'
@@ -20,6 +22,7 @@ export function ImmersiveVideoPickerRow({
   disabled: boolean
   onSelect: (videoId: string) => void
 }) {
+  const { t } = useClientT('patient-dashboard')
   const selectable = isImmersivePickerRowSelectable(row.cell)
   const dimmed = !selectable
 
@@ -55,13 +58,15 @@ export function ImmersiveVideoPickerRow({
         </div>
         {dimmed ? (
           <div className='mt-1 flex flex-wrap items-center gap-2'>
-            <Badge variant='outline'>Not on headset</Badge>
+            <Badge variant='outline'>{t('immersive.notOnHeadset')}</Badge>
             <span className='text-muted-foreground text-xs'>
-              Download this video to the headset from{' '}
-              <Link href='/vr-video' className='underline'>
-                VR Experiences
-              </Link>
-              .
+              <Trans
+                t={t}
+                i18nKey='immersive.downloadHint'
+                components={{
+                  link: <Link href='/vr-video' className='underline' />,
+                }}
+              />
             </span>
           </div>
         ) : null}

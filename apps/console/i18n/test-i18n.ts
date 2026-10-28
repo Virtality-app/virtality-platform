@@ -26,3 +26,20 @@ export function createTestI18n(lng: 'en' | 'el' = 'en') {
   })
   return i18n
 }
+
+/** Shared test instance used as the global i18n in vitest setup. */
+const testI18n = createInstance()
+
+void testI18n.use(initReactI18next).init({
+  lng: 'en',
+  fallbackLng: 'en',
+  defaultNS: 'patient-dashboard',
+  fallbackNS: 'patient-dashboard',
+  interpolation: { escapeValue: false },
+  resources: {
+    en: bundles(translationCatalog),
+    el: bundles(greekDrafts),
+  },
+})
+
+export { testI18n }

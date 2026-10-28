@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { useClientT } from '@/i18n/use-client-t'
 import { Button } from '@virtality/ui/components/button'
 import {
   headsetDidNotConfirmCopy,
@@ -24,18 +25,19 @@ export function HeadsetDidNotConfirmDialog({
   intent?: HeadsetDidNotConfirmIntent
   onOpenChange: (open: boolean) => void
 }) {
+  const { t } = useClientT(['patient-dashboard', 'common'])
   return (
     <Dialog open={reason != null} onOpenChange={onOpenChange}>
       <DialogContent showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle>Headset didn&apos;t confirm</DialogTitle>
+          <DialogTitle>{t('headsetDialog.didNotConfirmTitle')}</DialogTitle>
           <DialogDescription>
             {reason ? headsetDidNotConfirmCopy(intent, reason) : null}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant='primary' onClick={() => onOpenChange(false)}>
-            OK
+            {t('common:btn.ok')}
           </Button>
         </DialogFooter>
       </DialogContent>

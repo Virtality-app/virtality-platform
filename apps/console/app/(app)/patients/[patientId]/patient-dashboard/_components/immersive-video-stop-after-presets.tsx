@@ -1,5 +1,6 @@
 'use client'
 
+import { useClientT } from '@/i18n/use-client-t'
 import { Check } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
 import {
@@ -20,8 +21,13 @@ export function ImmersiveVideoStopAfterPresets({
   elapsedSec: number | null
   onChoose: (minutes: number | null) => void
 }) {
+  const { t } = useClientT('patient-dashboard')
   return (
-    <div role='listbox' aria-label='Time limits' className='flex flex-col'>
+    <div
+      role='listbox'
+      aria-label={t('stopAfter.limits')}
+      className='flex flex-col'
+    >
       {CHOICES.map((minutes) => {
         const selected = minutes === stopAfterMin
         const available =

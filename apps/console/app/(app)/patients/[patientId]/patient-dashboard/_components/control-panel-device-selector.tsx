@@ -10,6 +10,7 @@ import { Button } from '@virtality/ui/components/button'
 import VRControlPanel from '@/components/vr-control/vr-control-panel'
 import { cn } from '@/lib/utils'
 import { DeviceContextValue } from '@/context/device-context'
+import { useClientT } from '@/i18n/use-client-t'
 
 interface DeviceSelectorProps {
   devices: DeviceContextValue['devices']
@@ -17,6 +18,7 @@ interface DeviceSelectorProps {
 }
 
 const DeviceSelector = ({ devices, connected }: DeviceSelectorProps) => {
+  const { t } = useClientT('patient-dashboard')
   const [openDevicePop, setOpenDevicePop] = useState(false)
   const handleDevicePopover = () => {
     setOpenDevicePop(!openDevicePop)
@@ -33,7 +35,7 @@ const DeviceSelector = ({ devices, connected }: DeviceSelectorProps) => {
                 : 'border-red-800/60 bg-red-600/60',
             )}
           />
-          <span className='max-lg:hidden'>Device</span>
+          <span className='max-lg:hidden'>{t('controls.device')}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent

@@ -2,6 +2,7 @@
 
 import { AlertTriangle } from 'lucide-react'
 import { useLiveEntitlementStanding } from '@/hooks/use-live-entitlement-standing'
+import { useClientT } from '@/i18n/use-client-t'
 import { TREATMENT_LAUNCH_ERROR } from '@/lib/patient-dashboard-treatment-launch'
 
 /**
@@ -9,6 +10,7 @@ import { TREATMENT_LAUNCH_ERROR } from '@/lib/patient-dashboard-treatment-launch
  * clinician knows why the VR program can't be launched before they try.
  */
 export function VrAccessExpiredBanner() {
+  const { t } = useClientT('patient-dashboard')
   const { canLaunchVr, isPending } = useLiveEntitlementStanding()
 
   // Nothing until standing resolves: the server has no standing, so rendering
@@ -26,10 +28,10 @@ export function VrAccessExpiredBanner() {
 
       <div className='min-w-0 flex-1'>
         <p className='text-sm font-semibold text-amber-950 dark:text-amber-50'>
-          VR program unavailable
+          {t('vrAccessExpired.title')}
         </p>
         <p className='mt-0.5 text-sm text-amber-900/75 dark:text-amber-100/70'>
-          {TREATMENT_LAUNCH_ERROR.entitlementExpired}
+          {t(TREATMENT_LAUNCH_ERROR.entitlementExpired)}
         </p>
       </div>
     </div>

@@ -20,12 +20,14 @@ import {
   useUpdatePatientSession,
 } from '@virtality/react-query'
 import { trackAnalyticsEvent } from '@/lib/analytics-contract'
+import { useClientT } from '@/i18n/use-client-t'
 
 interface SessionNotesCardProps {
   className?: string
 }
 
 const SessionNotesCard = ({ className }: SessionNotesCardProps) => {
+  const { t } = useClientT(['patient-dashboard', 'common'])
   const queryClient = getQueryClient()
   const orpc = useORPC()
   const { state, patientSessionId, patientId } = usePatientDashboard()
@@ -66,7 +68,7 @@ const SessionNotesCard = ({ className }: SessionNotesCardProps) => {
   return (
     <Card className={cn('h-full', className)}>
       <CardHeader>
-        <CardTitle>Session Notes</CardTitle>
+        <CardTitle>{t('sessionNotes.title')}</CardTitle>
       </CardHeader>
       <CardContent className='flex-1'>
         <form
@@ -76,7 +78,7 @@ const SessionNotesCard = ({ className }: SessionNotesCardProps) => {
         >
           <FormTextarea
             name='notes'
-            label='Notes'
+            label={t('sessionNotes.label')}
             control={form.control}
             disabled={programState === 'ready'}
             className='h-full [&_#notes]:h-full [&_#notes]:resize-none'
@@ -88,7 +90,7 @@ const SessionNotesCard = ({ className }: SessionNotesCardProps) => {
           form='sessionNotes'
           disabled={programState === 'ready' || isPending}
         >
-          <Save /> {isPending ? 'Saving...' : 'Save'}
+          <Save /> {isPending ? t('sessionNotes.saving') : t('common:btn.save')}
         </Button>
       </CardFooter>
     </Card>

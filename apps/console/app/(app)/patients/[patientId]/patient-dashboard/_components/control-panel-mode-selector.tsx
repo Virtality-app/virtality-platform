@@ -19,8 +19,8 @@ import {
   isDashboardMode,
   isLeavingImmersiveLocked,
   isProgramModeSwitchLocked,
-  LEAVE_IMMERSIVE_MODE_HINT,
 } from '@/lib/control-panel-mode'
+import { useClientT } from '@/i18n/use-client-t'
 import type { ImmersivePlaybackStatus } from '@/lib/immersive-video-playback-reducer'
 
 interface ModeSelectorProps {
@@ -38,6 +38,7 @@ const ModeSelector = ({
   playbackStatus,
   frozen = false,
 }: ModeSelectorProps) => {
+  const { t } = useClientT('patient-dashboard')
   const programLocked = isProgramModeSwitchLocked(programState)
   const leavingLocked =
     selectedMode === 'immersive' && isLeavingImmersiveLocked(playbackStatus)
@@ -55,7 +56,7 @@ const ModeSelector = ({
       disabled={triggerDisabled}
       className='border dark:border-zinc-600 dark:bg-zinc-900'
     >
-      <SelectValue placeholder='Choose Mode...' />
+      <SelectValue placeholder={t('mode.placeholder')} />
     </SelectTrigger>
   )
 
@@ -71,27 +72,27 @@ const ModeSelector = ({
             <TooltipTrigger asChild>
               <span className='inline-flex'>
                 {trigger}
-                <span className='sr-only'>{LEAVE_IMMERSIVE_MODE_HINT}</span>
+                <span className='sr-only'>{t('mode.leaveImmersiveHint')}</span>
               </span>
             </TooltipTrigger>
-            <TooltipContent>{LEAVE_IMMERSIVE_MODE_HINT}</TooltipContent>
+            <TooltipContent>{t('mode.leaveImmersiveHint')}</TooltipContent>
           </Tooltip>
         ) : (
           trigger
         )}
         <SelectContent className='dark:bg-zinc-900'>
           <SelectItem key='free' value='free'>
-            Free Mode
+            {t('mode.free')}
           </SelectItem>
           <SelectItem key='main' value='main'>
-            Exercise Mode
+            {t('mode.main')}
           </SelectItem>
           <SelectItem
             key='immersive'
             value='immersive'
             disabled={!canEnterImmersiveMode(programState)}
           >
-            Immersive Video
+            {t('mode.immersive')}
           </SelectItem>
         </SelectContent>
       </Select>

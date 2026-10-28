@@ -1,5 +1,6 @@
 'use client'
 
+import { useClientT } from '@/i18n/use-client-t'
 import { useState } from 'react'
 import { ChevronsUpDown } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
@@ -17,6 +18,7 @@ import { ImmersiveVideoPickerRow } from './immersive-video-picker-row'
 export function ImmersiveVideoPicker({ className }: { className?: string }) {
   const { rows, selectedRow, setSelectedVideoId, playback, frozen } =
     useImmersiveVideoSession()
+  const { t } = useClientT('patient-dashboard')
   const [open, setOpen] = useState(false)
   const pickerDisabled =
     frozen || isImmersivePlaybackBlocking(playback.state.status)
@@ -34,7 +36,7 @@ export function ImmersiveVideoPicker({ className }: { className?: string }) {
           )}
         >
           <span className='min-w-5 flex-1 overflow-hidden text-left text-ellipsis'>
-            {selectedRow?.title ?? 'Select video'}
+            {selectedRow?.title ?? t('immersive.selectVideo')}
           </span>
           <ChevronsUpDown className='opacity-50' />
         </Button>
@@ -42,7 +44,7 @@ export function ImmersiveVideoPicker({ className }: { className?: string }) {
       <PopoverContent className='w-(--radix-popover-trigger-width) p-1'>
         {rows.length === 0 ? (
           <p className='text-muted-foreground p-3 text-sm'>
-            No published immersive videos.
+            {t('immersive.noVideos')}
           </p>
         ) : (
           rows.map((row) => (

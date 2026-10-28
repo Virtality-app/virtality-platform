@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   EXERCISE_CHANGE_ACK_TIMEOUT_MS,
-  EXERCISE_LIST_HIGHLIGHT_LABEL,
+  exerciseListHighlightLabel,
   resolveDirectSelectionBlockedTooltip,
   resolveExerciseChangeFailureMessage,
   resolveExerciseChangeStatusMessage,
@@ -193,8 +193,8 @@ describe('resolveExerciseListHighlightBadgeClass', () => {
 
 describe('exercise change UI constants', () => {
   it('exposes glossary-aligned highlight labels', () => {
-    expect(EXERCISE_LIST_HIGHLIGHT_LABEL.confirmed).toMatch(/headset/i)
-    expect(EXERCISE_LIST_HIGHLIGHT_LABEL.pending).toMatch(/pending/i)
+    expect(exerciseListHighlightLabel('confirmed')).toMatch(/headset/i)
+    expect(exerciseListHighlightLabel('pending')).toMatch(/pending/i)
   })
 
   it('uses a bounded acknowledgement timeout', () => {

@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import {
-  AUTO_LAUNCH_GAVE_UP,
   autoLaunchClockRunning,
   buildLaunchHref,
   parseLaunchIntent,
@@ -73,10 +72,10 @@ describe('giving up', () => {
   it('explains the first blocker, preferring the manual-Start error for readiness', () => {
     expect(
       resolveAutoLaunchGaveUpMessage({ ...ready, exerciseCount: 0 }, null),
-    ).toBe(AUTO_LAUNCH_GAVE_UP.noExercises)
+    ).toBe('Auto-launch cancelled: no program selected.')
     expect(
       resolveAutoLaunchGaveUpMessage({ ...ready, missingSettings: true }, null),
-    ).toBe(AUTO_LAUNCH_GAVE_UP.missingSettings)
+    ).toBe('Auto-launch cancelled: select an avatar and map in Scene Settings.')
     expect(
       resolveAutoLaunchGaveUpMessage(
         { ...ready, treatmentLaunchReady: false },
@@ -88,6 +87,6 @@ describe('giving up', () => {
         { ...ready, treatmentLaunchReady: false },
         null,
       ),
-    ).toBe(AUTO_LAUNCH_GAVE_UP.notReady)
+    ).toBe('Auto-launch cancelled: the headset did not become ready in time.')
   })
 })

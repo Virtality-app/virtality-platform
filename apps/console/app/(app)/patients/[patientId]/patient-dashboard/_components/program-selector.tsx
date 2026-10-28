@@ -16,6 +16,8 @@ import {
 } from '@/components/ui/command'
 import { Button } from '@virtality/ui/components/button'
 import { Check, ChevronsUpDown, Dumbbell, Loader2, X } from 'lucide-react'
+import { useClientT } from '@/i18n/use-client-t'
+import { SelectionOptions } from './program-selection-options'
 import { cn } from '@/lib/utils'
 import { usePatient, useReusablePrograms } from '@virtality/react-query'
 import {
@@ -24,6 +26,7 @@ import {
 } from '@/lib/patient-dashboard-program-selection'
 
 const ProgramSelector = ({ className }: { className?: string }) => {
+  const { t } = useClientT('patient-dashboard')
   const { state, handler, store, patientLocalData, patientId } =
     usePatientDashboard()
 
@@ -134,9 +137,12 @@ const ProgramSelector = ({ className }: { className?: string }) => {
 
       <PopoverContent className='p-0 dark:border-zinc-600'>
         <Command>
-          <CommandInput placeholder='Search program...' className='h-9' />
+          <CommandInput
+            placeholder={t('programSelector.search')}
+            className='h-9'
+          />
           <CommandList>
-            <CommandEmpty>No program found.</CommandEmpty>
+            <CommandEmpty>{t('programSelector.empty')}</CommandEmpty>
             <CommandGroup>
               <CommandItem>
                 <SelectionOptions
@@ -170,29 +176,3 @@ const ProgramSelector = ({ className }: { className?: string }) => {
 }
 
 export default ProgramSelector
-
-function SelectionOptions({
-  quickStartHandler,
-  className,
-  onlyQuickStart,
-}: {
-  quickStartHandler: () => void
-  className?: string
-  onlyQuickStart?: boolean
-}) {
-  return (
-    <div className={cn('flex items-center gap-2', className)}>
-      {!onlyQuickStart && (
-        <span className='md:max-lg:hidden'>Select program</span>
-      )}
-      {!onlyQuickStart && <span className='md:max-lg:hidden'>or</span>}
-      <div
-        role='button'
-        onClick={quickStartHandler}
-        className='text-vital-blue-700 flex items-center justify-between hover:underline'
-      >
-        Quick start
-      </div>
-    </div>
-  )
-}

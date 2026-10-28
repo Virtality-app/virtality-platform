@@ -1,3 +1,4 @@
+import i18next from '@/i18n/i18next'
 import { formatDurationLabel } from '@/lib/headset-library-format'
 import {
   isPlayingOrPaused,
@@ -10,15 +11,17 @@ export function immersiveStatusBadge(input: {
   stopping?: boolean
 }): string {
   if (input.stopping && isPlayingOrPaused(input.status)) {
-    return 'Stopping…'
+    return i18next.t('immersive.status.stopping')
   }
   if (input.status === 'Playing') {
-    return input.headsetName ? `Playing on ${input.headsetName}` : 'Playing'
+    return input.headsetName
+      ? i18next.t('immersive.status.playingOn', { name: input.headsetName })
+      : i18next.t('immersive.status.playing')
   }
   if (input.status === 'Paused') {
-    return 'Paused'
+    return i18next.t('immersive.status.paused')
   }
-  return 'Ready to start'
+  return i18next.t('immersive.status.ready')
 }
 
 /** The playback bar only means something once the headset reports position. */

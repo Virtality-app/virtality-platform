@@ -11,6 +11,7 @@ import type { CompleteExercise } from '@/types/models'
 import type { PendingExerciseChange } from '@/lib/session-exercise-skip'
 import type { Exercise } from '@virtality/db'
 import { Loader2 } from 'lucide-react'
+import { useClientT } from '@/i18n/use-client-t'
 
 function resolveCatalogExerciseName(
   exerciseId: string,
@@ -35,6 +36,7 @@ const SessionExerciseChangeStatus = ({
   exercises,
   defaultExercises,
 }: SessionExerciseChangeStatusProps) => {
+  const { t } = useClientT('patient-dashboard')
   const confirmedExercise = exercises[pendingExerciseChange.sourceExerciseIndex]
   const pendingExercise = exercises[pendingExerciseChange.targetExerciseIndex]
 
@@ -44,12 +46,12 @@ const SessionExerciseChangeStatus = ({
 
   const confirmedExerciseName = resolveCatalogExerciseName(
     confirmedExercise.exerciseId,
-    'Current exercise',
+    t('exerciseChange.currentFallback'),
     defaultExercises,
   )
   const pendingExerciseName = resolveCatalogExerciseName(
     pendingExercise.exerciseId,
-    'Pending exercise',
+    t('exerciseChange.pendingFallback'),
     defaultExercises,
   )
   const statusMessage = resolveExerciseChangeStatusMessage({

@@ -1,5 +1,6 @@
 'use client'
 
+import { useClientT } from '@/i18n/use-client-t'
 import {
   Crosshair,
   Loader2,
@@ -19,6 +20,7 @@ import {
 } from '@/lib/immersive-video-transport'
 
 export function ImmersiveVideoTransport() {
+  const { t } = useClientT('patient-dashboard')
   const { selectedRow, playback, roomComplete, frozen } =
     useImmersiveVideoSession()
   const { state, sendPlay, sendPause, sendStop, sendRecenter } = playback
@@ -60,7 +62,11 @@ export function ImmersiveVideoTransport() {
         <Button
           variant='primary'
           size='icon'
-          aria-label={playPause.icon === 'play' ? 'Play' : 'Pause'}
+          aria-label={
+            playPause.icon === 'play'
+              ? t('immersive.play')
+              : t('immersive.pause')
+          }
           disabled={playPause.disabled}
           onClick={handlePlayPause}
         >
@@ -75,7 +81,7 @@ export function ImmersiveVideoTransport() {
         <Button
           size='icon'
           variant='destructive'
-          aria-label={stopping ? 'Stopping' : 'Stop'}
+          aria-label={stopping ? t('immersive.stopping') : t('immersive.stop')}
           aria-busy={stopping}
           disabled={!stopEnabled}
           onClick={sendStop}
@@ -93,7 +99,7 @@ export function ImmersiveVideoTransport() {
         onClick={sendRecenter}
       >
         <Crosshair className='size-6' />
-        Center
+        {t('immersive.center')}
       </Button>
     </>
   )

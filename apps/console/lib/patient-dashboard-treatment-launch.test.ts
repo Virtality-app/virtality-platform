@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 import {
   canLaunchTreatment,
   getTreatmentLaunchError,
-  TREATMENT_LAUNCH_ERROR,
 } from './patient-dashboard-treatment-launch.js'
 
 describe('patient dashboard treatment launch gating', () => {
@@ -63,9 +62,7 @@ describe('getTreatmentLaunchError', () => {
       entitlementPending: true,
     }
     expect(canLaunchTreatment(pending)).toBe(false)
-    expect(getTreatmentLaunchError(pending)).toBe(
-      TREATMENT_LAUNCH_ERROR.entitlementPending,
-    )
+    expect(getTreatmentLaunchError(pending)).toBe('Checking Remaining Time…')
   })
 
   it('reports entitlement expiry before connection errors', () => {
@@ -75,7 +72,9 @@ describe('getTreatmentLaunchError', () => {
         headsetPresent: false,
         entitlementAllowsLaunch: false,
       }),
-    ).toBe(TREATMENT_LAUNCH_ERROR.entitlementExpired)
+    ).toBe(
+      'Remaining Time expired. Subscribe to continue launching the VR program.',
+    )
   })
 
   it('reports console disconnection before headset absence', () => {
@@ -85,7 +84,7 @@ describe('getTreatmentLaunchError', () => {
         headsetPresent: false,
         entitlementAllowsLaunch: true,
       }),
-    ).toBe(TREATMENT_LAUNCH_ERROR.consoleDisconnected)
+    ).toBe('Please connect with a device!')
   })
 
   it('reports headset absence when the console is connected', () => {
@@ -95,7 +94,7 @@ describe('getTreatmentLaunchError', () => {
         headsetPresent: false,
         entitlementAllowsLaunch: true,
       }),
-    ).toBe(TREATMENT_LAUNCH_ERROR.headsetAbsent)
+    ).toBe('Waiting for the VR headset to connect.')
   })
 
   it('returns null when launch is ready', () => {

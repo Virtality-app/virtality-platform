@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import i18next from '@/i18n/i18next'
 import { notify } from '@/lib/notify'
 import { getDisplayName } from '@/lib/utils'
 import type { PendingExerciseChange } from '@/lib/session-exercise-skip'
@@ -59,7 +60,8 @@ const usePendingExerciseChange = ({
 
     const sourceExercise = exercises?.[pending.sourceExerciseIndex]
     const confirmedExerciseName =
-      getDisplayName(sourceExercise?.exercise) ?? 'Current exercise'
+      getDisplayName(sourceExercise?.exercise) ??
+      i18next.t('exerciseChange.currentFallback')
 
     flow.writeFlowState(result.state)
     clearPendingExerciseChange()

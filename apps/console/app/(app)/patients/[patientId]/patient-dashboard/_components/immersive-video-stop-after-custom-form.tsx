@@ -1,5 +1,6 @@
 'use client'
 
+import { useClientT } from '@/i18n/use-client-t'
 import { useState, type FormEvent } from 'react'
 import { Button } from '@virtality/ui/components/button'
 import { Input } from '@virtality/ui/components/input'
@@ -19,6 +20,7 @@ export function ImmersiveVideoStopAfterCustomForm({
   elapsedSec: number | null
   onApply: (minutes: number) => void
 }) {
+  const { t } = useClientT('patient-dashboard')
   const [raw, setRaw] = useState(
     stopAfterMin == null ? '' : String(stopAfterMin),
   )
@@ -37,7 +39,7 @@ export function ImmersiveVideoStopAfterCustomForm({
   return (
     <form onSubmit={handleSubmit} className='flex flex-col gap-1 p-2'>
       <label htmlFor='stop-after-custom' className='text-sm font-medium'>
-        Custom (minutes)
+        {t('stopAfter.custom')}
       </label>
       <div className='flex gap-2'>
         <Input
@@ -57,7 +59,7 @@ export function ImmersiveVideoStopAfterCustomForm({
           className='h-8'
         />
         <Button type='submit' size='sm'>
-          Set
+          {t('stopAfter.set')}
         </Button>
       </div>
       {error ? (

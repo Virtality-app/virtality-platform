@@ -1,4 +1,241 @@
 {
   "start-btn": "Start",
-  "pause-btn": "Pause"
+  "pause-btn": "Pause",
+  "autoLaunch": {
+    "waiting": "Waiting for the headset, then launching…",
+    "connecting": "Connecting to the headset…",
+    "gaveUp": {
+      "noExercises": "Auto-launch cancelled: no program selected.",
+      "missingSettings": "Auto-launch cancelled: select an avatar and map in Scene Settings.",
+      "notReady": "Auto-launch cancelled: the headset did not become ready in time."
+    }
+  },
+  "avatar": {
+    "placeholder": "Select an Avatar",
+    "imageAlt": "Avatar image"
+  },
+  "map": {
+    "placeholder": "Select a Map",
+    "imageAlt": "Map image"
+  },
+  "chart": {
+    "exerciseNotFound": "Exercise not found"
+  },
+  "controls": {
+    "cast": "Cast",
+    "device": "Device",
+    "sets": "Sets: {{current}} / {{total}}",
+    "reps": "Reps: {{current}} / {{total}}",
+    "skipNext": "Skip to next exercise",
+    "skipPrevious": "Skip to previous exercise"
+  },
+  "mode": {
+    "placeholder": "Choose Mode...",
+    "free": "Free Mode",
+    "main": "Exercise Mode",
+    "immersive": "Immersive Video",
+    "leaveImmersiveHint": "Stop the video to change mode."
+  },
+  "navigationGuard": {
+    "title": "Active connection",
+    "description": "You have an active connection navigating to an other page will disconnect the device. Are you sure you want to leave this page?"
+  },
+  "sceneSettings": {
+    "title": "Scene Settings",
+    "resetHeight": "Reset Height",
+    "resetPosition": "Reset Position",
+    "sitting": "Sitting",
+    "coach": "Coach",
+    "avatar": "Avatar",
+    "map": "Map"
+  },
+  "programSelector": {
+    "search": "Search program...",
+    "empty": "No program found.",
+    "select": "Select program",
+    "or": "or",
+    "quickStart": "Quick start"
+  },
+  "exerciseList": {
+    "title": "Exercises",
+    "legend": "Green ring: headset-confirmed exercise. Amber ring: pending change target.",
+    "selectionLocked": "Exercise list selection is locked while a change is in flight.",
+    "empty": "No exercises...",
+    "applyToAll": "Apply to all",
+    "applyChanges": "Apply Changes",
+    "highlight": {
+      "confirmed": "Current (headset)",
+      "pending": "Pending change"
+    }
+  },
+  "exerciseChange": {
+    "currentFallback": "Current exercise",
+    "pendingFallback": "Pending exercise",
+    "skipPending": "Waiting for the headset to confirm the exercise change.",
+    "skipLast": "Last exercise — forward skip is not available.",
+    "skipFirst": "First exercise — back skip is not available.",
+    "selectionDisabled": "Exercise list selection is disabled while a headset exercise change is in flight.",
+    "status": "Waiting for headset to confirm change from {{from}} to {{to}}. Sets and reps show the headset-confirmed exercise.",
+    "timedOut": "Exercise change timed out. {{name}} remains the current headset exercise."
+  },
+  "launchError": {
+    "consoleDisconnected": "Please connect with a device!",
+    "headsetAbsent": "Waiting for the VR headset to connect.",
+    "entitlementExpired": "Remaining Time expired. Subscribe to continue launching the VR program.",
+    "entitlementPending": "Checking Remaining Time…"
+  },
+  "vrAccessExpired": {
+    "title": "VR program unavailable"
+  },
+  "immersive": {
+    "notOnHeadset": "Not on headset",
+    "downloadHint": "Download this video to the headset from <link>VR Experiences</link>.",
+    "selectVideo": "Select video",
+    "noVideos": "No published immersive videos.",
+    "noVideoSelected": "No video selected",
+    "sessionTime": "Session time",
+    "play": "Play",
+    "pause": "Pause",
+    "stop": "Stop",
+    "stopping": "Stopping",
+    "center": "Center",
+    "activity": "Activity",
+    "cycling": "Cycling",
+    "walking": "Walking",
+    "gateConnecting": "Connecting to headset…",
+    "gateTurnOn": "Turn the headset on and open the app.",
+    "status": {
+      "stopping": "Stopping…",
+      "playing": "Playing",
+      "playingOn": "Playing on {{name}}",
+      "paused": "Paused",
+      "ready": "Ready to start"
+    }
+  },
+  "stopAfter": {
+    "label": "Stop the video after",
+    "limits": "Time limits",
+    "timeLimit": "Time limit",
+    "custom": "Custom (minutes)",
+    "set": "Set",
+    "none": "No time limit",
+    "after": "Stop after {{minutes}} min",
+    "errorWholeMinutes": "Enter whole minutes.",
+    "errorRange": "Enter {{min}}–{{max}} minutes.",
+    "errorAlreadyElapsed": "The timer has already run that long."
+  },
+  "quickStart": {
+    "title": "Quick Start",
+    "catalogDescription": "Add or remove exercises, then return to settings.",
+    "settingsDescription": "Tune settings, add exercises if you need them, then continue or save as a reusable program.",
+    "programName": "Program Name",
+    "addExercises": "Add exercises",
+    "saveProgram": "Save Program",
+    "finalize": "Finalize",
+    "selectedNone": "No exercises selected",
+    "selectedCount_one": "{{count}} exercise selected",
+    "selectedCount_other": "{{count}} exercises selected",
+    "promptTitle": "Save this as a program?",
+    "promptDescription": "You can save these exercises to your Program Library, or continue with a one-off session.",
+    "promptSave": "Save program",
+    "continueWithoutSaving": "Continue without saving",
+    "needExercise": "You need to add at least one exercise."
+  },
+  "sessionDialog": {
+    "title": "Session Completed",
+    "description": "Choose how to save this session and any supplemental therapies used outside VR.",
+    "programLibrary": "Program Library",
+    "finishOnly": "Finish session only",
+    "updateProgram": "Update this program",
+    "saveAsNew": "Save as new program",
+    "programName": "Program name",
+    "overwriteWarning": "This will overwrite the exercises and settings in your Program Library program. Past sessions stay unchanged.",
+    "supplementalTherapies": "Supplemental therapies",
+    "other": "Other",
+    "otherPlaceholder": "Other therapy used...",
+    "notes": "Session notes",
+    "notesPlaceholder": "Add notes about this session...",
+    "dontSave": "Don't Save"
+  },
+  "sessionNotes": {
+    "title": "Session Notes",
+    "label": "Notes",
+    "saving": "Saving..."
+  },
+  "casting": {
+    "title": "Casting",
+    "start": "Start casting",
+    "stop": "Stop casting",
+    "status": {
+      "idle": "Idle",
+      "requesting": "Requesting stream...",
+      "negotiating": "Connecting...",
+      "connected": "Live",
+      "error": "Connection failed"
+    },
+    "timeoutTitle": "Casting is taking longer than expected",
+    "timeoutDescription": "The VR headset stream has not appeared yet. You can keep waiting or cancel casting.",
+    "wait": "Wait",
+    "idleTitle": "Casting idle preview",
+    "idleDescription": "Start casting to view the VR headset stream.",
+    "errorTitle": "Unable to start casting",
+    "errorDescription": "Check the device connection and try again.",
+    "connecting": "Connecting to headset stream..."
+  },
+  "vrControl": {
+    "client": "Client",
+    "clientDescription": "Console connection to the VR headset.",
+    "device": "Device",
+    "selectDevice": "Select a device",
+    "connect": "Connect",
+    "disconnect": "Disconnect",
+    "connecting": "Connecting...",
+    "reconnecting": "Reconnecting ({{attempt}}/5)...",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "replaced": "Replaced",
+    "failed": "Connection failed",
+    "notPaired": "Device not paired.",
+    "connectFailed": "Unable to connect to device.",
+    "presence": {
+      "checking": "Checking",
+      "online": "Online",
+      "offline": "Offline",
+      "unpaired": "Unpaired"
+    }
+  },
+  "headsetDialog": {
+    "didNotConfirmTitle": "Headset didn't confirm",
+    "didntRespond": "Headset didn't respond. Check it's on and the app is open.",
+    "downloadDisconnected": "The headset disconnected before confirming the download. When it reconnects, check the list. If the video isn't downloading, click Download again.",
+    "playDisconnected": "The headset disconnected before confirming playback. When it reconnects, check the list. If the video isn't playing, press Play again.",
+    "stopDidntRespond": "Headset didn't confirm the stop. Check it's on and the app is open, then press Stop again.",
+    "stopDisconnected": "The headset disconnected before confirming the stop. When it reconnects, check whether the video is still playing on the headset.",
+    "replacedTitle": "Headset controlled in another tab",
+    "replacedDescription": "Another tab is now controlling this headset. Close this tab, or continue in the active one."
+  },
+  "socket": {
+    "retryLimit": "Connection failed after retry limit.",
+    "rejected": "Socket connection was rejected by server.",
+    "timedOut": "Connection timed out. Please retry.",
+    "unableToConnect": "Unable to connect."
+  },
+  "mirrorError": {
+    "notFound": "This headset is not linked to your account; the download request was not saved.",
+    "unauthorized": "Your session has expired; the download request was not saved.",
+    "generic": "The download request could not be saved."
+  },
+  "toast": {
+    "heightCalibrated": "Height calibrated successfully.",
+    "positionReset": "Position reset successfully.",
+    "settingsChanged": "Settings changed successfully.",
+    "patientNeedsAttention": "Patient needs attention",
+    "sessionInterrupted": "Session was interrupted before completion.",
+    "interruptedSaveFailed": "Failed to save interrupted session progress.",
+    "sessionStartFailed": "Failed to start session. Please try again.",
+    "settingsAppliedCurrent": "Settings applied to current exercise",
+    "settingsAppliedAll": "Settings applied to all exercises",
+    "selectProgram": "Select a program or use Quick Start.",
+    "selectAvatarAndMap": "You need to select both an avatar and map. Find them in Scene Settings."
+  }
 }

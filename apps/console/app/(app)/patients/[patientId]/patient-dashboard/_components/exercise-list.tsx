@@ -27,6 +27,7 @@ import {
 import ExerciseSettings from '@/components/exercise-library/exercise-settings'
 import { motion } from 'motion/react'
 import { useExercise } from '@virtality/react-query'
+import { useClientT } from '@/i18n/use-client-t'
 import { notify } from '@/lib/notify'
 import {
   isDirectExerciseSelectionDisabled,
@@ -34,7 +35,7 @@ import {
   resolveExerciseListHighlightState,
 } from '@/lib/session-exercise-skip'
 import {
-  EXERCISE_LIST_HIGHLIGHT_LABEL,
+  exerciseListHighlightLabel,
   resolveDirectSelectionBlockedTooltip,
   resolveExerciseListHighlightBadgeClass,
   resolveExerciseListHighlightClass,
@@ -60,6 +61,7 @@ const ExerciseList = ({ className }: { className?: string }) => {
   } = state
   const { setExercises, updatePatientDashboardState } = handler
   const { data: defaultExercises } = useExercise()
+  const { t } = useClientT('patient-dashboard')
 
   const isProgramActive = programState === 'started'
   const isProgramPaused = programState === 'paused'
@@ -121,7 +123,10 @@ const ExerciseList = ({ className }: { className?: string }) => {
       } catch (error) {
         console.error(error)
       } finally {
-        notify.success('Settings applied to current exercise')
+        notify.success({
+          key: 'toast.settingsAppliedCurrent',
+          ns: 'patient-dashboard',
+        })
       }
     }
 
@@ -150,7 +155,10 @@ const ExerciseList = ({ className }: { className?: string }) => {
     } catch (error) {
       console.error(error)
     } finally {
-      notify.success('Settings applied to all exercises')
+      notify.success({
+        key: 'toast.settingsAppliedAll',
+        ns: 'patient-dashboard',
+      })
     }
   }
 
@@ -182,18 +190,17 @@ const ExerciseList = ({ className }: { className?: string }) => {
     <TooltipProvider delayDuration={200}>
       <Card className={cn('', className)}>
         <CardHeader>
-          <CardTitle>Exercises</CardTitle>
+          <CardTitle>{t('exerciseList.title')}</CardTitle>
           {isActiveMainSession && (
             <p className='text-muted-foreground text-xs'>
-              Green ring: headset-confirmed exercise. Amber ring: pending change
-              target.
+              {t('exerciseList.legend')}
             </p>
           )}
           {isDirectSelectionBlocked && directSelectionBlockedTooltip && (
             <Tooltip>
               <TooltipTrigger asChild>
                 <p className='text-xs text-amber-300'>
-                  Exercise list selection is locked while a change is in flight.
+                  {t('exerciseList.selectionLocked')}
                 </p>
               </TooltipTrigger>
               <TooltipContent>{directSelectionBlockedTooltip}</TooltipContent>
@@ -288,7 +295,7 @@ const ExerciseList = ({ className }: { className?: string }) => {
                                 ),
                               )}
                             >
-                              {EXERCISE_LIST_HIGHLIGHT_LABEL[highlightState]}
+                              {exerciseListHighlightLabel(highlightState)}
                             </span>
                           )}
                         </div>
@@ -320,11 +327,11 @@ const ExerciseList = ({ className }: { className?: string }) => {
                                       applySettingsToAllExercises(index)
                                     }
                                   >
-                                    Apply to all
+                                    {t('exerciseList.applyToAll')}
                                   </Button>
                                 )}
                                 <Button onClick={() => applySettings(index)}>
-                                  Apply Changes
+                                  {t('exerciseList.applyChanges')}
                                 </Button>
                               </div>
                               <PopoverArrow className='fill-zinc-200 dark:fill-zinc-800' />
@@ -339,7 +346,7 @@ const ExerciseList = ({ className }: { className?: string }) => {
               })}
             </ItemGroup>
           ) : (
-            <p className='text-muted-foreground'>No exercises...</p>
+            <p className='text-muted-foreground'>{t('exerciseList.empty')}</p>
           )}
         </CardContent>
       </Card>

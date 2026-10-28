@@ -1,5 +1,6 @@
 'use client'
 
+import { useClientT } from '@/i18n/use-client-t'
 import { useImmersiveVideoSession } from '@/context/immersive-video-session-context'
 import { formatTimeLimitProgress } from '@/lib/immersive-video-auto-stop'
 import { cn } from '@/lib/utils'
@@ -10,6 +11,7 @@ export function ImmersiveVideoTimeLimitBar({
 }: {
   className?: string
 }) {
+  const { t } = useClientT('patient-dashboard')
   const { timeLimitElapsedSec, stopAfterMin } = useImmersiveVideoSession()
   if (timeLimitElapsedSec == null || stopAfterMin == null) return null
 
@@ -27,7 +29,7 @@ export function ImmersiveVideoTimeLimitBar({
       </div>
       <div
         role='progressbar'
-        aria-label='Time limit'
+        aria-label={t('stopAfter.timeLimit')}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={percent}

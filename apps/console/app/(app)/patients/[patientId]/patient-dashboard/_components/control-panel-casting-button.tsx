@@ -2,6 +2,7 @@ import { MonitorPlay } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
 import { cn } from '@/lib/utils'
 import { useFeatureFlagResult } from 'posthog-js/react'
+import { useClientT } from '@/i18n/use-client-t'
 
 interface CastingButtonProps {
   showCasting: boolean
@@ -10,6 +11,7 @@ interface CastingButtonProps {
 
 const CastingButton = ({ showCasting, setShowCasting }: CastingButtonProps) => {
   const res = useFeatureFlagResult('cast_feature')
+  const { t } = useClientT('patient-dashboard')
 
   if (res?.enabled && res.payload === false) return null
 
@@ -23,7 +25,7 @@ const CastingButton = ({ showCasting, setShowCasting }: CastingButtonProps) => {
             : 'border-red-800/60 bg-red-600/60',
         )}
       />
-      <span className='max-lg:hidden'>Cast</span>
+      <span className='max-lg:hidden'>{t('controls.cast')}</span>
     </Button>
   )
 }

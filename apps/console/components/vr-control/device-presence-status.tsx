@@ -1,4 +1,5 @@
 import { Loader2 } from 'lucide-react'
+import { useClientT } from '@/i18n/use-client-t'
 import { cn } from '@/lib/utils'
 import type { DeviceVrPresenceStatus } from '@/lib/vr-presence'
 
@@ -7,6 +8,7 @@ export function DevicePresenceStatus({
 }: {
   status: DeviceVrPresenceStatus
 }) {
+  const { t } = useClientT('patient-dashboard')
   const statusClassName =
     'inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium'
 
@@ -15,7 +17,7 @@ export function DevicePresenceStatus({
       return (
         <span className={cn(statusClassName, 'text-muted-foreground')}>
           <Loader2 className='size-3 animate-spin' />
-          Checking
+          {t('vrControl.presence.checking')}
         </span>
       )
     case 'online':
@@ -27,7 +29,7 @@ export function DevicePresenceStatus({
           )}
         >
           <span className='size-1.5 rounded-full bg-current' />
-          Online
+          {t('vrControl.presence.online')}
         </span>
       )
     case 'offline':
@@ -39,7 +41,7 @@ export function DevicePresenceStatus({
           )}
         >
           <span className='size-1.5 rounded-full bg-current' />
-          Offline
+          {t('vrControl.presence.offline')}
         </span>
       )
     case 'unpaired':
@@ -50,7 +52,7 @@ export function DevicePresenceStatus({
             'bg-muted text-muted-foreground dark:bg-zinc-800',
           )}
         >
-          Unpaired
+          {t('vrControl.presence.unpaired')}
         </span>
       )
     default: {

@@ -108,7 +108,10 @@ const useControlPanel = () => {
 
   const programStart = () => {
     if (!exercises?.length)
-      return notify.error('Select a program or use Quick Start.')
+      return notify.error({
+        key: 'toast.selectProgram',
+        ns: 'patient-dashboard',
+      })
 
     const launchError = getTreatmentLaunchError({
       consoleConnected: connected,
@@ -119,9 +122,10 @@ const useControlPanel = () => {
     if (launchError) return notify.error(launchError)
 
     if (!state.selectedAvatar || !state.selectedMap)
-      return notify.error(
-        'You need to select both an avatar and map. Find them in Scene Settings.',
-      )
+      return notify.error({
+        key: 'toast.selectAvatarAndMap',
+        ns: 'patient-dashboard',
+      })
 
     if (state.programState === 'ready') {
       const dispatchedData = exercises.map((ex) => {
@@ -191,9 +195,10 @@ const useControlPanel = () => {
 
   const handleWarmupStart = () => {
     if (missingSettings)
-      return notify.error(
-        'You need to select both an avatar and map. Find them in Scene Settings.',
-      )
+      return notify.error({
+        key: 'toast.selectAvatarAndMap',
+        ns: 'patient-dashboard',
+      })
 
     const launchError = getTreatmentLaunchError({
       consoleConnected: connected,

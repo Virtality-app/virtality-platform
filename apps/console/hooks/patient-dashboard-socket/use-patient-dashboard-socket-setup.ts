@@ -128,19 +128,22 @@ const usePatientDashboardSocketSetup = ({
   }
 
   const handleCalibrateHeightAck = () => {
-    notify.success('Height calibrated successfully.')
+    notify.success({ key: 'toast.heightCalibrated', ns: 'patient-dashboard' })
   }
 
   const handleResetPositionAck = () => {
-    notify.success('Position reset successfully.')
+    notify.success({ key: 'toast.positionReset', ns: 'patient-dashboard' })
   }
 
   const handleSettingsChangeAck = () => {
-    notify.success('Settings changed successfully.')
+    notify.success({ key: 'toast.settingsChanged', ns: 'patient-dashboard' })
   }
 
   const handleNotifyDoctor = () => {
-    notify.attention('Patient needs attention')
+    notify.attention({
+      key: 'toast.patientNeedsAttention',
+      ns: 'patient-dashboard',
+    })
   }
 
   const memberLeft = async () => {

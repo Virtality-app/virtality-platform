@@ -1,5 +1,6 @@
 'use client'
 
+import { useClientT } from '@/i18n/use-client-t'
 import { useState } from 'react'
 import { Timer } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
@@ -23,6 +24,7 @@ export function ImmersiveVideoStopAfterPicker({
 }) {
   const { stopAfterMin, setStopAfterMin, timeLimitElapsedSec, frozen } =
     useImmersiveVideoSession()
+  const { t } = useClientT('patient-dashboard')
   const [open, setOpen] = useState(false)
 
   const choose = (minutes: number | null) => {
@@ -35,7 +37,7 @@ export function ImmersiveVideoStopAfterPicker({
       <PopoverTrigger asChild>
         <Button
           variant='outline'
-          aria-label='Stop the video after'
+          aria-label={t('stopAfter.label')}
           disabled={frozen}
           className={cn('hover:bg-card dark:border-zinc-600', className)}
         >

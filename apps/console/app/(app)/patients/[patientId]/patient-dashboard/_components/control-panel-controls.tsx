@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
 import type { NotifyId } from '@/lib/notify'
+import { useClientT } from '@/i18n/use-client-t'
 import { PatientDashboardValue } from '@/context/patient-dashboard-context'
 import { type SkipDirection } from '@/lib/session-exercise-skip'
 import {
@@ -37,9 +38,9 @@ interface ControlsProps {
   isSkipBlockedByProgramState: boolean
 }
 
-const SKIP_CONTROL_ARIA_LABEL: Record<SkipDirection, string> = {
-  forward: 'Skip to next exercise',
-  back: 'Skip to previous exercise',
+const SKIP_CONTROL_ARIA_LABEL_KEY: Record<SkipDirection, string> = {
+  forward: 'controls.skipNext',
+  back: 'controls.skipPrevious',
 }
 
 interface SkipControlButtonProps {
@@ -55,13 +56,14 @@ const SkipControlButton = ({
   tooltip,
   onClick,
 }: SkipControlButtonProps) => {
+  const { t } = useClientT('patient-dashboard')
   const button = (
     <Button
       disabled={disabled}
       size='icon'
       variant='outline'
       onClick={onClick}
-      aria-label={SKIP_CONTROL_ARIA_LABEL[direction]}
+      aria-label={t(SKIP_CONTROL_ARIA_LABEL_KEY[direction])}
     >
       {direction === 'forward' ? <SkipForward /> : <SkipBack />}
     </Button>

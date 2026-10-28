@@ -43,7 +43,7 @@ const useSessionStartAck = ({
     resetSessionState()
     socket?.emit(PROGRAM_EVENT.End)
     selectedDevice?.events.program.End()
-    notify.error('Failed to start session. Please try again.')
+    notify.error({ key: 'toast.sessionStartFailed', ns: 'patient-dashboard' })
     setProgramState(resolveProgramStateAfterStartAckPersistenceFailure())
   }
 

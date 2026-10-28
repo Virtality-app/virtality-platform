@@ -1,3 +1,4 @@
+import { useClientT } from '@/i18n/use-client-t'
 import {
   Card,
   CardContent,
@@ -33,6 +34,7 @@ const MapSelector = () => {
     usePatientDashboard()
   const { selectedMap, programState } = state
   const { setSelectedMap } = handler
+  const { t } = useClientT('patient-dashboard')
   const { data: maps } = useMap(),
     { data: patient } = usePatient({ patientId })
 
@@ -64,7 +66,7 @@ const MapSelector = () => {
           {selectedMap ? (
             <MapCard map={selectedMap} />
           ) : (
-            <SelectValue placeholder='Select a Map' />
+            <SelectValue placeholder={t('map.placeholder')} />
           )}
         </SelectTrigger>
         <SelectContent className='dark:bg-zinc-900'>
@@ -94,6 +96,7 @@ const MapSelector = () => {
 export default MapSelector
 
 const MapCard = ({ map }: { map: Map }) => {
+  const { t } = useClientT('patient-dashboard')
   return (
     <div className='flex items-center gap-2'>
       <TooltipProvider>
@@ -107,7 +110,7 @@ const MapCard = ({ map }: { map: Map }) => {
             <Card className='max-w-(--breakpoint-sm) gap-2 bg-zinc-50 p-4 text-zinc-950 shadow-none dark:bg-zinc-950 dark:text-zinc-200'>
               <CardContent className='p-0'>
                 <Image
-                  alt='Map image'
+                  alt={t('map.imageAlt')}
                   width={150}
                   height={150}
                   loading='eager'

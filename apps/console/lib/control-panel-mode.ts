@@ -10,8 +10,6 @@ export type DashboardProgramState =
 export type DashboardSelectedMode =
   PatientDashboardValue['state']['selectedMode']
 
-export const LEAVE_IMMERSIVE_MODE_HINT = 'Stop the video to change mode.'
-
 export function isDashboardMode(value: string): value is DashboardSelectedMode {
   return value === 'main' || value === 'free' || value === 'immersive'
 }

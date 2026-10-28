@@ -1,3 +1,4 @@
+import { useClientT } from '@/i18n/use-client-t'
 import { Separator } from '@virtality/ui/components/separator'
 import { cn } from '@/lib/utils'
 import ProgramSelector from './program-selector'
@@ -27,6 +28,7 @@ const ControlPanel = ({
   showCasting,
   setShowCasting,
 }: ControlPanelProps) => {
+  const { t } = useClientT('patient-dashboard')
   const {
     coachEnabled,
     changeCoachEnabled,
@@ -102,10 +104,16 @@ const ControlPanel = ({
         {(isProgramActive || isProgramPaused) && isMain && (
           <>
             <Item variant='outline' size='sm' className='max-h-9 p-1'>
-              {`Sets: ${activeExerciseData.currentSet} / ${activeExerciseData.totalSets}`}
+              {t('controls.sets', {
+                current: activeExerciseData.currentSet,
+                total: activeExerciseData.totalSets,
+              })}
             </Item>
             <Item variant='outline' size='sm' className='max-h-9 p-1'>
-              {`Reps: ${activeExerciseData.currentRep} / ${activeExerciseData.totalReps}`}
+              {t('controls.reps', {
+                current: activeExerciseData.currentRep,
+                total: activeExerciseData.totalReps,
+              })}
             </Item>
             {pendingExerciseChange && (
               <SessionExerciseChangeStatus
@@ -141,8 +149,8 @@ const ControlPanel = ({
 
       <NavigationGuardDialog
         {...guard}
-        title='Active connection'
-        description='You have an active connection navigating to an other page will disconnect the device. Are you sure you want to leave this page?'
+        title={t('navigationGuard.title')}
+        description={t('navigationGuard.description')}
       />
     </div>
   )

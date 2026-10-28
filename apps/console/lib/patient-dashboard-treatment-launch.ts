@@ -1,3 +1,5 @@
+import i18next from '@/i18n/i18next'
+
 export type TreatmentLaunchReadiness = {
   consoleConnected: boolean
   headsetPresent: boolean
@@ -7,12 +9,12 @@ export type TreatmentLaunchReadiness = {
   entitlementPending?: boolean
 }
 
+/** Translation keys in `patient-dashboard`. */
 export const TREATMENT_LAUNCH_ERROR = {
-  consoleDisconnected: 'Please connect with a device!',
-  headsetAbsent: 'Waiting for the VR headset to connect.',
-  entitlementExpired:
-    'Remaining Time expired. Subscribe to continue launching the VR program.',
-  entitlementPending: 'Checking Remaining Time…',
+  consoleDisconnected: 'launchError.consoleDisconnected',
+  headsetAbsent: 'launchError.headsetAbsent',
+  entitlementExpired: 'launchError.entitlementExpired',
+  entitlementPending: 'launchError.entitlementPending',
 } as const
 
 export function canLaunchTreatment({
@@ -35,20 +37,22 @@ export function getTreatmentLaunchError({
   entitlementAllowsLaunch,
   entitlementPending = false,
 }: TreatmentLaunchReadiness): string | null {
+  const translate = (key: string) => i18next.t(key, { ns: 'patient-dashboard' })
+
   if (entitlementPending) {
-    return TREATMENT_LAUNCH_ERROR.entitlementPending
+    return translate(TREATMENT_LAUNCH_ERROR.entitlementPending)
   }
 
   if (!entitlementAllowsLaunch) {
-    return TREATMENT_LAUNCH_ERROR.entitlementExpired
+    return translate(TREATMENT_LAUNCH_ERROR.entitlementExpired)
   }
 
   if (!consoleConnected) {
-    return TREATMENT_LAUNCH_ERROR.consoleDisconnected
+    return translate(TREATMENT_LAUNCH_ERROR.consoleDisconnected)
   }
 
   if (!headsetPresent) {
-    return TREATMENT_LAUNCH_ERROR.headsetAbsent
+    return translate(TREATMENT_LAUNCH_ERROR.headsetAbsent)
   }
 
   return null

@@ -24,6 +24,7 @@ import {
 import { FormInput } from '@/components/ui/form'
 import { Exercise } from '@virtality/db'
 import { notify } from '@/lib/notify'
+import { useClientT } from '@/i18n/use-client-t'
 import { generateUUID } from '@virtality/shared/utils'
 import posthog from 'posthog-js'
 import {
@@ -34,16 +35,9 @@ import {
   useORPC,
 } from '@virtality/react-query'
 import { withRom } from '@/lib/with-rom'
-import { ZERO_ENABLED_VARIANTS_MESSAGE } from '@/lib/program-submit-enabled-variants'
 import { useCatalogFirstAuthoringFlow } from '@/hooks/use-catalog-first-authoring-flow'
-import {
-  CATALOG_CATALOG_FIRST_AUTHORING_STEP,
-  CATALOG_FIRST_CATALOG_CONTINUE_LABEL,
-} from '@/lib/catalog-first-authoring-flow'
-import {
-  canQuickStartFinalAction,
-  QUICKSTART_FINALIZE_LABEL,
-} from '@/lib/quickstart-authoring-flow'
+import { CATALOG_CATALOG_FIRST_AUTHORING_STEP } from '@/lib/catalog-first-authoring-flow'
+import { canQuickStartFinalAction } from '@/lib/quickstart-authoring-flow'
 
 const scrollableStepContentClass = 'min-h-0 flex-1 overflow-auto'
 
@@ -59,7 +53,11 @@ const applyExercises = (
     return { exercise, ...selectedExercise }
   })
 
+const notifyNeedExercise = () =>
+  notify.error({ key: 'quickStart.needExercise', ns: 'patient-dashboard' })
+
 const QuickStartDialog = () => {
+  const { t } = useClientT(['patient-dashboard', 'common'])
   const queryClient = getQueryClient()
   const orpc = useORPC()
   const { data: exerciseInfo } = useExercise()
@@ -83,7 +81,6 @@ const QuickStartDialog = () => {
     goToSelectedList,
     goToCatalog,
     resetFlow,
-    selectedExerciseCountLabel,
   } = useCatalogFirstAuthoringFlow({
     initialStep: CATALOG_CATALOG_FIRST_AUTHORING_STEP,
   })
@@ -179,7 +176,7 @@ const QuickStartDialog = () => {
     if (!exerciseInfo) return
 
     if (!canFinalize) {
-      return notify.error(ZERO_ENABLED_VARIANTS_MESSAGE)
+      return notifyNeedExercise()
     }
 
     posthog.capture('quickstart_continue')
@@ -199,7 +196,7 @@ const QuickStartDialog = () => {
     if (!exerciseInfo) return
 
     if (!canFinalize) {
-      return notify.error(ZERO_ENABLED_VARIANTS_MESSAGE)
+      return notifyNeedExercise()
     }
 
     promptForm.reset({ name: form.getValues('name') })
@@ -228,7 +225,7 @@ const QuickStartDialog = () => {
 
   const saveAsHandler = async (values: ReusableProgramForm) => {
     if (!canFinalize) {
-      return notify.error(ZERO_ENABLED_VARIANTS_MESSAGE)
+      return notifyNeedExercise()
     }
 
     posthog.capture('quickstart_program_created')
@@ -238,7 +235,7 @@ const QuickStartDialog = () => {
 
   const saveFromPrompt = promptForm.handleSubmit(async (values) => {
     if (!canFinalize) {
-      return notify.error(ZERO_ENABLED_VARIANTS_MESSAGE)
+      return notifyNeedExercise()
     }
 
     posthog.capture('quickstart_continue_save_prompt_saved')
@@ -256,12 +253,12 @@ const QuickStartDialog = () => {
       <Dialog open={inQuickStart} onOpenChange={handleOpenChange}>
         <DialogContent className='flex h-full max-h-4/5 w-4/5 max-w-4/5! flex-col overflow-hidden'>
           <DialogHeader>
-            <DialogTitle>Quick Start</DialogTitle>
+            <DialogTitle>{t('quickStart.title')}</DialogTitle>
           </DialogHeader>
           <DialogDescription>
             {isCatalogStep
-              ? 'Add or remove exercises, then return to settings.'
-              : 'Tune settings, add exercises if you need them, then continue or save as a reusable program.'}
+              ? t('quickStart.catalogDescription')
+              : t('quickStart.settingsDescription')}
           </DialogDescription>
 
           <div className='flex min-h-0 flex-1 flex-col space-y-4 overflow-hidden'>
@@ -274,7 +271,7 @@ const QuickStartDialog = () => {
                   <FormInput
                     name='name'
                     control={form.control}
-                    label='Program Name'
+                    label={t('quickStart.programName')}
                   />
                 </form>
                 <div className={scrollableStepContentClass}>
@@ -292,7 +289,7 @@ const QuickStartDialog = () => {
             {isSelectedListStep && (
               <>
                 <Button type='button' variant='secondary' onClick={goToCatalog}>
-                  Add exercises
+                  {t('quickStart.addExercises')}
                   <ArrowRight />
                 </Button>
                 <div className='flex gap-2'>
@@ -301,7 +298,7 @@ const QuickStartDialog = () => {
                     form='programForm'
                     disabled={!canFinalize || isSaving}
                   >
-                    Save Program <Save />
+                    {t('quickStart.saveProgram')} <Save />
                   </Button>
                   <Button
                     type='button'
@@ -309,7 +306,7 @@ const QuickStartDialog = () => {
                     onClick={openSavePrompt}
                     disabled={!canFinalize || isSaving}
                   >
-                    {QUICKSTART_FINALIZE_LABEL}
+                    {t('quickStart.finalize')}
                     <Zap />
                   </Button>
                 </div>
@@ -318,7 +315,11 @@ const QuickStartDialog = () => {
             {isCatalogStep && (
               <>
                 <span className='text-muted-foreground text-sm'>
-                  {selectedExerciseCountLabel(selectedExercises.length)}
+                  {selectedExercises.length === 0
+                    ? t('quickStart.selectedNone')
+                    : t('quickStart.selectedCount', {
+                        count: selectedExercises.length,
+                      })}
                 </span>
                 <Button
                   type='button'
@@ -326,7 +327,7 @@ const QuickStartDialog = () => {
                   onClick={goToSelectedList}
                 >
                   <ArrowLeft />
-                  {CATALOG_FIRST_CATALOG_CONTINUE_LABEL}
+                  {t('common:btn.continue')}
                 </Button>
               </>
             )}
@@ -337,10 +338,9 @@ const QuickStartDialog = () => {
       <Dialog open={savePromptOpen} onOpenChange={handleSavePromptOpenChange}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Save this as a program?</DialogTitle>
+            <DialogTitle>{t('quickStart.promptTitle')}</DialogTitle>
             <DialogDescription>
-              You can save these exercises to your Program Library, or continue
-              with a one-off session.
+              {t('quickStart.promptDescription')}
             </DialogDescription>
           </DialogHeader>
 
@@ -349,7 +349,7 @@ const QuickStartDialog = () => {
               <FormInput
                 name='name'
                 control={promptForm.control}
-                label='Program Name'
+                label={t('quickStart.programName')}
               />
             </fieldset>
           </form>
@@ -361,7 +361,7 @@ const QuickStartDialog = () => {
               variant='secondary'
               disabled={isSaving}
             >
-              Save program
+              {t('quickStart.promptSave')}
             </Button>
             <Button
               type='button'
@@ -369,7 +369,7 @@ const QuickStartDialog = () => {
               onClick={continueWithoutSaving}
               disabled={isSaving}
             >
-              Continue without saving
+              {t('quickStart.continueWithoutSaving')}
             </Button>
           </DialogFooter>
         </DialogContent>

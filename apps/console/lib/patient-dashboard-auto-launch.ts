@@ -1,3 +1,4 @@
+import i18next from '@/i18n/i18next'
 import type { DashboardMode } from '@/types/models'
 import type { DashboardProgramState } from '@/lib/patient-dashboard-session-launch'
 
@@ -68,11 +69,11 @@ export function autoLaunchClockRunning(
   return !gate.inQuickStart
 }
 
+/** Translation keys in `patient-dashboard`. */
 export const AUTO_LAUNCH_GAVE_UP = {
-  noExercises: 'Auto-launch cancelled: no program selected.',
-  missingSettings:
-    'Auto-launch cancelled: select an avatar and map in Scene Settings.',
-  notReady: 'Auto-launch cancelled: the headset did not become ready in time.',
+  noExercises: 'autoLaunch.gaveUp.noExercises',
+  missingSettings: 'autoLaunch.gaveUp.missingSettings',
+  notReady: 'autoLaunch.gaveUp.notReady',
 } as const
 
 /** Why an armed launch gave up; `launchError` is the manual-Start message, if any. */
@@ -80,7 +81,9 @@ export function resolveAutoLaunchGaveUpMessage(
   gate: AutoLaunchGate,
   launchError: string | null,
 ): string {
-  if (gate.exerciseCount === 0) return AUTO_LAUNCH_GAVE_UP.noExercises
-  if (gate.missingSettings) return AUTO_LAUNCH_GAVE_UP.missingSettings
-  return launchError ?? AUTO_LAUNCH_GAVE_UP.notReady
+  if (gate.exerciseCount === 0)
+    return i18next.t(AUTO_LAUNCH_GAVE_UP.noExercises)
+  if (gate.missingSettings)
+    return i18next.t(AUTO_LAUNCH_GAVE_UP.missingSettings)
+  return launchError ?? i18next.t(AUTO_LAUNCH_GAVE_UP.notReady)
 }

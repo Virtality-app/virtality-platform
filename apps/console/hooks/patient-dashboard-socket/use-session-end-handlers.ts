@@ -81,10 +81,13 @@ const useSessionEndHandlers = ({
       await persistRemoteUpserts(result.remoteUpserts)
       flow.writeFlowState(result.state)
       await interruptPatientSession({ id: sessionId })
-      notify.error('Session was interrupted before completion.')
+      notify.error({ key: 'toast.sessionInterrupted', ns: 'patient-dashboard' })
     } catch (error) {
       console.error(error)
-      notify.error('Failed to save interrupted session progress.')
+      notify.error({
+        key: 'toast.interruptedSaveFailed',
+        ns: 'patient-dashboard',
+      })
     } finally {
       flow.setConfirmedExerciseIndex(0)
       resetSessionState()

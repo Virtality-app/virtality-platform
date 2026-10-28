@@ -8,11 +8,13 @@ import Chart from '@/components/charts/progress-chart'
 import { usePatientDashboard } from '@/context/patient-dashboard-context'
 import { useExercise } from '@virtality/react-query'
 import { getDisplayName } from '@/lib/utils'
+import { useClientT } from '@/i18n/use-client-t'
 
 const ChartCard = ({ className }: { className?: string }) => {
   const { state, plotData } = usePatientDashboard()
   const { exercises, activeExerciseData } = state
   const { data: defaultExercise } = useExercise()
+  const { t } = useClientT('patient-dashboard')
 
   const chartTitle = getDisplayName(
     defaultExercise?.find((e) => e.id === activeExerciseData.id),
@@ -23,8 +25,8 @@ const ChartCard = ({ className }: { className?: string }) => {
       <CardHeader>
         <CardTitle>
           {exercises && exercises?.length !== 0
-            ? `${chartTitle ?? 'Exercise not found'}`
-            : 'Exercise not found'}
+            ? (chartTitle ?? t('chart.exerciseNotFound'))
+            : t('chart.exerciseNotFound')}
         </CardTitle>
       </CardHeader>
       <CardContent className='flex-1 [&_div]:min-[1280px]:max-[1526px]:max-h-125'>

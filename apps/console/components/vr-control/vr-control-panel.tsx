@@ -13,6 +13,8 @@ import useSocketConnection, {
   type SocketConnectionState,
 } from '@/hooks/use-socket-connection'
 import { useStore } from 'tinybase/ui-react'
+import { useClientT } from '@/i18n/use-client-t'
+import i18next from '@/i18n/i18next'
 import { notify } from '@/lib/notify'
 import { cn } from '@/lib/utils'
 import { usePatientDashboard } from '@/context/patient-dashboard-context'
@@ -46,15 +48,17 @@ function getClientConnectionLabel(
 ): string {
   switch (connectionState) {
     case 'connecting':
-      return 'Connecting...'
+      return i18next.t('vrControl.connecting')
     case 'reconnecting':
-      return `Reconnecting (${reconnectAttempt}/5)...`
+      return i18next.t('vrControl.reconnecting', { attempt: reconnectAttempt })
     case 'failed':
       return isReplacementNoticeError(connectionError)
-        ? 'Replaced'
-        : (connectionError ?? 'Connection failed')
+        ? i18next.t('vrControl.replaced')
+        : (connectionError ?? i18next.t('vrControl.failed'))
     default:
-      return connected ? 'Connected' : 'Disconnected'
+      return connected
+        ? i18next.t('vrControl.connected')
+        : i18next.t('vrControl.disconnected')
   }
 }
 
@@ -64,6 +68,7 @@ type VRControlPanelProps = {
 }
 
 const VRControlPanel = ({ devices, isOpen }: VRControlPanelProps) => {
+  const { t } = useClientT(['patient-dashboard', 'common'])
   const { state, handler, patientId } = usePatientDashboard()
   const { selectedDevice } = state
   const { setSelectedDevice } = handler
@@ -87,7 +92,10 @@ const VRControlPanel = ({ devices, isOpen }: VRControlPanelProps) => {
     const deviceId = selectedDevice?.data.deviceId
 
     if (!selectedDevice || !deviceId) {
-      return notify.error('Device not paired.')
+      return notify.error({
+        key: 'vrControl.notPaired',
+        ns: 'patient-dashboard',
+      })
     }
 
     if (!connected) {
@@ -96,9 +104,7 @@ const VRControlPanel = ({ devices, isOpen }: VRControlPanelProps) => {
         await connect({ timeoutMs: 10_500 })
       } catch (error) {
         notify.error(
-          error instanceof Error
-            ? error.message
-            : 'Unable to connect to device.',
+          error instanceof Error ? error.message : t('vrControl.connectFailed'),
         )
       }
     } else {
@@ -154,7 +160,7 @@ const VRControlPanel = ({ devices, isOpen }: VRControlPanelProps) => {
         onValueChange={handleDeviceSelection}
       >
         <SelectTrigger className='w-full' disabled={connected || replaced}>
-          <SelectValue placeholder='Select a device' />
+          <SelectValue placeholder={t('vrControl.selectDevice')} />
         </SelectTrigger>
 
         <SelectContent className='dark:bg-zinc-700'>
@@ -198,10 +204,10 @@ const VRControlPanel = ({ devices, isOpen }: VRControlPanelProps) => {
       className={cn('w-full', className)}
     >
       {connected
-        ? 'Disconnect'
+        ? t('vrControl.disconnect')
         : connectionState === 'failed'
-          ? 'Retry'
-          : 'Connect'}
+          ? t('common:btn.retry')
+          : t('vrControl.connect')}
     </Button>
   )
 
@@ -218,16 +224,16 @@ const VRControlPanel = ({ devices, isOpen }: VRControlPanelProps) => {
         <div className='space-y-5'>
           <div className='space-y-1'>
             <div className='flex items-center justify-between gap-2'>
-              <h1 className='text-sm font-semibold'>Client</h1>
+              <h1 className='text-sm font-semibold'>{t('vrControl.client')}</h1>
               {renderClientStatus()}
             </div>
             <p className='text-muted-foreground text-xs'>
-              Console connection to the VR headset.
+              {t('vrControl.clientDescription')}
             </p>
           </div>
 
           <div className='space-y-2'>
-            <h2 className='text-sm font-semibold'>Device</h2>
+            <h2 className='text-sm font-semibold'>{t('vrControl.device')}</h2>
             {renderDeviceSelect()}
           </div>
         </div>

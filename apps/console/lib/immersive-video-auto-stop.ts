@@ -1,3 +1,4 @@
+import i18next from '@/i18n/i18next'
 import {
   isPlayingOrPaused,
   type ImmersivePlaybackStatus,
@@ -93,7 +94,7 @@ export function parseCustomStopAfter(input: {
   const text = input.raw.trim()
   const minutes = Number(text)
   if (text === '' || !Number.isInteger(minutes)) {
-    return { ok: false, error: 'Enter whole minutes.' }
+    return { ok: false, error: i18next.t('stopAfter.errorWholeMinutes') }
   }
   if (
     minutes < IMMERSIVE_STOP_AFTER_CUSTOM_MIN ||
@@ -101,17 +102,20 @@ export function parseCustomStopAfter(input: {
   ) {
     return {
       ok: false,
-      error: `Enter ${IMMERSIVE_STOP_AFTER_CUSTOM_MIN}–${IMMERSIVE_STOP_AFTER_CUSTOM_MAX} minutes.`,
+      error: i18next.t('stopAfter.errorRange', {
+        min: IMMERSIVE_STOP_AFTER_CUSTOM_MIN,
+        max: IMMERSIVE_STOP_AFTER_CUSTOM_MAX,
+      }),
     }
   }
   if (!isStopAfterOptionAvailable({ minutes, elapsedSec: input.elapsedSec })) {
-    return { ok: false, error: 'The timer has already run that long.' }
+    return { ok: false, error: i18next.t('stopAfter.errorAlreadyElapsed') }
   }
   return { ok: true, minutes }
 }
 
 export function formatStopAfterLabel(stopAfterMin: number | null): string {
   return stopAfterMin == null
-    ? 'No time limit'
-    : `Stop after ${stopAfterMin} min`
+    ? i18next.t('stopAfter.none')
+    : i18next.t('stopAfter.after', { minutes: stopAfterMin })
 }

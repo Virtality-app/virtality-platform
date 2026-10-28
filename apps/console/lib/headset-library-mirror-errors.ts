@@ -1,3 +1,4 @@
+import i18next from '@/i18n/i18next'
 import type { HeadsetLibraryWriteError } from '@virtality/react-query'
 
 /**
@@ -9,10 +10,10 @@ export function mirrorWriteErrorMessage(
 ): string | null {
   if (error.procedure !== 'requestDownload') return null
   if (error.code === 'NOT_FOUND') {
-    return 'This headset is not linked to your account; the download request was not saved.'
+    return i18next.t('mirrorError.notFound')
   }
   if (error.code === 'UNAUTHORIZED') {
-    return 'Your session has expired; the download request was not saved.'
+    return i18next.t('mirrorError.unauthorized')
   }
-  return 'The download request could not be saved.'
+  return i18next.t('mirrorError.generic')
 }

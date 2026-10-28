@@ -1,29 +1,24 @@
+import i18next from '@/i18n/i18next'
+
 export type HeadsetDidNotConfirmReason = 'didnt-respond' | 'disconnected'
 
 export type HeadsetDidNotConfirmIntent = 'download' | 'play' | 'stop'
 
-const DIDNT_RESPOND =
-  "Headset didn't respond. Check it's on and the app is open."
-
-const COPY: Record<
+const COPY_KEY: Record<
   HeadsetDidNotConfirmIntent,
   Record<HeadsetDidNotConfirmReason, string>
 > = {
   download: {
-    'didnt-respond': DIDNT_RESPOND,
-    disconnected:
-      "The headset disconnected before confirming the download. When it reconnects, check the list. If the video isn't downloading, click Download again.",
+    'didnt-respond': 'headsetDialog.didntRespond',
+    disconnected: 'headsetDialog.downloadDisconnected',
   },
   play: {
-    'didnt-respond': DIDNT_RESPOND,
-    disconnected:
-      "The headset disconnected before confirming playback. When it reconnects, check the list. If the video isn't playing, press Play again.",
+    'didnt-respond': 'headsetDialog.didntRespond',
+    disconnected: 'headsetDialog.playDisconnected',
   },
   stop: {
-    'didnt-respond':
-      "Headset didn't confirm the stop. Check it's on and the app is open, then press Stop again.",
-    disconnected:
-      'The headset disconnected before confirming the stop. When it reconnects, check whether the video is still playing on the headset.',
+    'didnt-respond': 'headsetDialog.stopDidntRespond',
+    disconnected: 'headsetDialog.stopDisconnected',
   },
 }
 
@@ -31,5 +26,5 @@ export function headsetDidNotConfirmCopy(
   intent: HeadsetDidNotConfirmIntent,
   reason: HeadsetDidNotConfirmReason,
 ): string {
-  return COPY[intent][reason]
+  return i18next.t(COPY_KEY[intent][reason])
 }

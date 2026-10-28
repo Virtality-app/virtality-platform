@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { CircleAlert, Settings, X } from 'lucide-react'
 import { Separator } from '@virtality/ui/components/separator'
+import { useClientT } from '@/i18n/use-client-t'
 import {
   Popover,
   PopoverArrow,
@@ -32,6 +33,7 @@ const SceneSettings = ({
   missingSettings,
   selectedDevice,
 }: SceneSettingsProps) => {
+  const { t } = useClientT('patient-dashboard')
   const [openSceneSettings, setOpenSceneSettings] = useState(false)
   const [isSitting, setSitting] = useState(false)
 
@@ -74,7 +76,7 @@ const SceneSettings = ({
           {missingSettings && (
             <CircleAlert className='bg-card absolute -top-1.5 -right-1.5 rounded-full text-amber-600' />
           )}
-          <span className='max-lg:hidden'>Scene Settings</span>
+          <span className='max-lg:hidden'>{t('sceneSettings.title')}</span>
           <Settings className='hidden max-lg:block' />
         </Button>
       </PopoverTrigger>
@@ -92,10 +94,10 @@ const SceneSettings = ({
         <div className='flex flex-col gap-2'>
           <div className='flex gap-2 py-2'>
             <Button onClick={handleCalibrateHeight} className='flex-1'>
-              Reset Height
+              {t('sceneSettings.resetHeight')}
             </Button>
             <Button onClick={handleResetPosition} className='flex-1'>
-              Reset Position
+              {t('sceneSettings.resetPosition')}
             </Button>
           </div>
           <div className='flex gap-3'>
@@ -105,7 +107,7 @@ const SceneSettings = ({
               onCheckedChange={sittingChangeHandler}
               className='data-[state=checked]:bg-green-500'
             />
-            <Label htmlFor='sitting'>Sitting</Label>
+            <Label htmlFor='sitting'>{t('sceneSettings.sitting')}</Label>
           </div>
           <div className={cn('flex gap-3')}>
             <Switch
@@ -115,12 +117,12 @@ const SceneSettings = ({
               disabled={coachToggleDisabled}
               className='data-[state=checked]:bg-green-500'
             />
-            <Label htmlFor='coach-enabled'>Coach</Label>
+            <Label htmlFor='coach-enabled'>{t('sceneSettings.coach')}</Label>
           </div>
-          <h4>Avatar</h4>
+          <h4>{t('sceneSettings.avatar')}</h4>
           <Separator className='dark:bg-zinc-600' />
           <AvatarSelector />
-          <h4>Map</h4>
+          <h4>{t('sceneSettings.map')}</h4>
           <Separator className='dark:bg-zinc-600' />
           <MapSelector />
         </div>

@@ -2,7 +2,6 @@ import { act, cleanup, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useLaunchIntentFromUrl } from './use-launch-intent-from-url'
 import {
-  AUTO_LAUNCH_GAVE_UP,
   AUTO_LAUNCH_TIMEOUT_MS,
   type AutoLaunchGate,
 } from '@/lib/patient-dashboard-auto-launch'
@@ -159,7 +158,7 @@ describe('useLaunchIntentFromUrl', () => {
 
     expect(result.current.autoLaunchArmed).toBe(false)
     expect(mocks.notifyError).toHaveBeenCalledWith(
-      AUTO_LAUNCH_GAVE_UP.noExercises,
+      'Auto-launch cancelled: no program selected.',
     )
   })
 })

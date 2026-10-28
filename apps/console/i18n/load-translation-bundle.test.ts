@@ -23,7 +23,9 @@ describe('loadTranslationBundle', () => {
       throw new Error('ORPC not available')
     }
 
-    expect(await loadTranslationBundle('el', 'patient-dashboard')).toEqual({
+    expect(
+      await loadTranslationBundle('el', 'patient-dashboard'),
+    ).toMatchObject({
       'start-btn': 'Start',
       'pause-btn': 'Pause',
     })

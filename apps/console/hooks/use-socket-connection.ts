@@ -2,6 +2,7 @@
 
 import { CONNECTION_EVENT, ROOM_EVENT } from '@virtality/shared/types'
 import { buildReplacementNoticeConnectionMeta } from '@/lib/socket-replacement-notice'
+import i18next from '@/i18n/i18next'
 import { VRDevice } from '@/types/models'
 import { useEffect, useState } from 'react'
 
@@ -75,25 +76,20 @@ const useSocketConnection = ({ device }: useSocketConnectionProps) => {
 
         const onReconnectFailed = () => {
           cleanup()
-          reject(new Error('Connection failed after retry limit.'))
+          reject(new Error(i18next.t('socket.retryLimit')))
         }
 
         const onConnectionError = (payload: unknown) => {
           cleanup()
           reject(
-            new Error(
-              toErrorMessage(
-                payload,
-                'Socket connection was rejected by server.',
-              ),
-            ),
+            new Error(toErrorMessage(payload, i18next.t('socket.rejected'))),
           )
         }
 
         const timeout = setTimeout(() => {
           cleanup()
           socket.disconnect()
-          reject(new Error('Connection timed out. Please retry.'))
+          reject(new Error(i18next.t('socket.timedOut')))
         }, timeoutMs)
 
         socket.on('connect', onConnect)
@@ -143,12 +139,12 @@ const useSocketConnection = ({ device }: useSocketConnectionProps) => {
       setMeta({
         state: 'failed',
         attempt: 0,
-        error: 'Connection failed after retry limit.',
+        error: i18next.t('socket.retryLimit'),
       })
     }
 
     const onConnectError = (error: unknown) => {
-      const message = toErrorMessage(error, 'Unable to connect.')
+      const message = toErrorMessage(error, i18next.t('socket.unableToConnect'))
       setMeta((prev) => ({
         state: prev.state === 'reconnecting' ? 'reconnecting' : 'connecting',
         attempt: prev.attempt,
@@ -160,10 +156,7 @@ const useSocketConnection = ({ device }: useSocketConnectionProps) => {
       setMeta({
         state: 'failed',
         attempt: 0,
-        error: toErrorMessage(
-          payload,
-          'Socket connection was rejected by server.',
-        ),
+        error: toErrorMessage(payload, i18next.t('socket.rejected')),
       })
     }
 
