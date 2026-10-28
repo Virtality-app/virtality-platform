@@ -28,6 +28,7 @@ import { getQueryClient, useNewPatient, useORPC } from '@virtality/react-query'
 import { trackAnalyticsEvent } from '@/lib/analytics-contract'
 import { afterCreateHref } from '@/lib/home-picker-return'
 import useNow from '@/hooks/use-now'
+import { useClientT } from '@/i18n/use-client-t'
 
 const PatientForm = () => {
   useIsAuthed()
@@ -36,6 +37,7 @@ const PatientForm = () => {
   const mounted = useMounted()
   const router = useRouter()
   const { ts, now } = useNow()
+  const { t } = useClientT('patients')
 
   const medHistoryDeltas = {
     anamnesesDeltas: null,
@@ -132,7 +134,8 @@ const PatientForm = () => {
 
   const hasErrors = Object.keys(errors).length > 0 && Object.keys(errors).length
 
-  const onInvalid = () => notify.error('Some required fields are empty.')
+  const onInvalid = () =>
+    notify.error({ key: 'toast.requiredFieldsEmpty', ns: 'patients' })
 
   useBeforeUnload(isDirty)
   const { guard } = useNavigationGuard(isDirty)
@@ -142,12 +145,14 @@ const PatientForm = () => {
       <Tabs defaultValue='basic-info' className='flex-1'>
         <TabsList className='h-12.5 gap-2 bg-zinc-200 p-2'>
           <TabsTrigger value='basic-info' className='relative'>
-            Basic Info
+            {t('tabs.basicInfo')}
             {hasErrors && (
               <AlertCircle className='text-red-500 dark:text-red-700' />
             )}
           </TabsTrigger>
-          <TabsTrigger value='medical-history'>Medical History</TabsTrigger>
+          <TabsTrigger value='medical-history'>
+            {t('tabs.medicalHistory')}
+          </TabsTrigger>
         </TabsList>
         <form
           id='patient-form'
@@ -182,8 +187,8 @@ const PatientForm = () => {
       {/* Unsaved changes confirmation dialog (from hook) */}
       <NavigationGuardDialog
         {...guard}
-        title='Unsaved changes'
-        description='You have unsaved changes. Are you sure you want to leave this page?'
+        title={t('unsaved.title')}
+        description={t('unsaved.description')}
       />
     </div>
   )

@@ -39,7 +39,7 @@ const BasicInfo = ({ form, patient }: BasicInfoProps) => {
   usePageViewTracking({
     props: { route_group: 'patient', tab_view: 'patient-profile' },
   })
-  const { t } = useClientT(['common'])
+  const { t } = useClientT(['patients', 'common'])
 
   return (
     <div className='flex gap-6 max-xl:flex-col'>
@@ -49,10 +49,10 @@ const BasicInfo = ({ form, patient }: BasicInfoProps) => {
         <CardHeader className='from-vital-blue-700 to-vital-blue-600 rounded-t-lg bg-linear-to-br p-2 text-zinc-200'>
           <CardTitle className='flex items-center gap-2'>
             <User className='size-4' />
-            Patient Information
+            {t('form.patientInformation')}
           </CardTitle>
           <CardDescription className='text-zinc-200'>
-            Basic patient details and demographics
+            {t('form.patientInformationDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent className='flex-1 space-y-6 p-6'>
@@ -60,22 +60,22 @@ const BasicInfo = ({ form, patient }: BasicInfoProps) => {
             <FormInput
               control={form.control}
               name='name'
-              label={<>{t('form.fullName')} *</>}
-              placeholder="Enter patient's full name"
+              label={<>{t('form.fullName', { ns: 'common' })} *</>}
+              placeholder={t('form.namePlaceholder')}
               data-tour='patient-name'
             />
             <div className='grid gap-4 md:grid-cols-2'>
               <FormInput
                 control={form.control}
                 name='email'
-                label={t('form.email')}
+                label={t('form.email', { ns: 'common' })}
                 type='email'
-                placeholder='patient@example.com'
+                placeholder={t('form.emailPlaceholder')}
               />
               <FormField
                 control={form.control}
                 name='phone'
-                label={t('form.phone')}
+                label={t('form.phone', { ns: 'common' })}
               >
                 {(field) => (
                   <PhoneInput
@@ -91,7 +91,7 @@ const BasicInfo = ({ form, patient }: BasicInfoProps) => {
               <FormField
                 control={form.control}
                 name='dob'
-                label={t('form.dateOfBirth')}
+                label={t('form.dateOfBirth', { ns: 'common' })}
               >
                 {(field) => (
                   <Popover>
@@ -109,7 +109,7 @@ const BasicInfo = ({ form, patient }: BasicInfoProps) => {
                         {field.value ? (
                           format(field.value, 'PPP')
                         ) : (
-                          <span>Pick a date</span>
+                          <span>{t('form.pickDate')}</span>
                         )}
                         <CalendarIcon className='ml-auto h-4 w-4 opacity-50' />
                       </Button>
@@ -140,28 +140,32 @@ const BasicInfo = ({ form, patient }: BasicInfoProps) => {
               <FormSelect
                 control={form.control}
                 name='sex'
-                label={<>{t('form.sex')} *</>}
-                placeholder='Select sex...'
+                label={<>{t('form.sex', { ns: 'common' })} *</>}
+                placeholder={t('form.selectSex')}
                 toOptionValue={patientSexSelectValue}
                 data-tour='patient-sex'
                 triggerClassName='w-full shadow-none'
                 contentClassName='bg-white'
               >
-                <SelectItem value='male'>{t('form.male')}</SelectItem>
-                <SelectItem value='female'>{t('form.female')}</SelectItem>
+                <SelectItem value='male'>
+                  {t('form.male', { ns: 'common' })}
+                </SelectItem>
+                <SelectItem value='female'>
+                  {t('form.female', { ns: 'common' })}
+                </SelectItem>
               </FormSelect>
             </div>
             <div className='grid gap-4 md:grid-cols-2'>
               <FormInput
                 control={form.control}
                 name='weight'
-                label='Weight (kg)'
+                label={t('form.weight')}
                 placeholder='70.5'
               />
               <FormInput
                 control={form.control}
                 name='height'
-                label='Height (cm)'
+                label={t('form.height')}
                 placeholder='175.0'
               />
             </div>
@@ -170,7 +174,7 @@ const BasicInfo = ({ form, patient }: BasicInfoProps) => {
                 control={form.control}
                 name='language'
                 label={<>{t('language', { ns: 'glossary' })} *</>}
-                placeholder='Select language...'
+                placeholder={t('form.selectLanguage')}
                 toOptionValue={patientLanguageSelectValue}
                 data-tour='patient-language'
                 triggerClassName='w-full shadow-none'
@@ -186,7 +190,7 @@ const BasicInfo = ({ form, patient }: BasicInfoProps) => {
               <FormInput
                 control={form.control}
                 name='occupation'
-                label='Occupation'
+                label={t('form.occupation')}
               />
             </div>
           </div>

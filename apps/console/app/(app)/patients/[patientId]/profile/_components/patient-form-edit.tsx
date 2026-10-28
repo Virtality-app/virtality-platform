@@ -12,6 +12,8 @@ import { cn } from '@/lib/utils'
 import useNavigationGuard from '@/hooks/use-navigation-guard'
 import { NavigationGuardDialog } from '@/components/dialogs/navigation-guard-dialog'
 import { notify } from '@/lib/notify'
+import { Trans } from 'react-i18next'
+import i18next from '@/i18n/i18next'
 import { useClientT } from '@/i18n/use-client-t'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import BasicInfo from '@/app/(app)/patients/_components/basic-info'
@@ -43,7 +45,7 @@ interface PatientFormEditProps {
 const PatientFormEdit = ({ patientId }: PatientFormEditProps) => {
   const queryClient = getQueryClient()
   const orpc = useORPC()
-  const { t } = useClientT(['common'])
+  const { t } = useClientT(['patients', 'common'])
   const mounted = useMounted()
   const router = useRouter()
 
@@ -219,14 +221,15 @@ const PatientFormEdit = ({ patientId }: PatientFormEditProps) => {
       },
       {
         onSuccess: () => {
-          notify.success('Patient information saved.')
+          notify.success({ key: 'toast.patientSaved', ns: 'patients' })
           form.reset(values, { keepDirty: false })
         },
       },
     )
   }
 
-  const onInvalid = () => notify.error('Some required fields are empty.')
+  const onInvalid = () =>
+    notify.error({ key: 'toast.requiredFieldsEmpty', ns: 'patients' })
 
   const handleDialogToggle = () => setDialogOpen(!isDialogOpen)
 
@@ -250,13 +253,15 @@ const PatientFormEdit = ({ patientId }: PatientFormEditProps) => {
       <Tabs defaultValue='basic-info' className='flex-1'>
         <TabsList className='h-12.5 gap-2 bg-zinc-200 p-2'>
           <TabsTrigger value='basic-info' className='relative'>
-            Basic Info
+            {t('tabs.basicInfo')}
             {hasErrors && (
               <AlertCircle className='text-red-500 dark:text-red-700' />
             )}
           </TabsTrigger>
-          <TabsTrigger value='medical-history'>Medical History</TabsTrigger>
-          <TabsTrigger value='sessions'>Sessions</TabsTrigger>
+          <TabsTrigger value='medical-history'>
+            {t('tabs.medicalHistory')}
+          </TabsTrigger>
+          <TabsTrigger value='sessions'>{t('tabs.sessions')}</TabsTrigger>
         </TabsList>
         <form
           id='patient-form'
@@ -295,12 +300,16 @@ const PatientFormEdit = ({ patientId }: PatientFormEditProps) => {
       {mounted && (
         <div className='flex justify-end space-x-4'>
           <DeleteConfirmDialog
-            title='Delete Patient'
+            title={t('delete.title')}
             description={
-              <>
-                Are you sure you want to delete <strong>{patient?.name}</strong>
-                ? This action cannot be undone.
-              </>
+              <Trans
+                i18n={i18next}
+                t={t}
+                ns='patients'
+                i18nKey='delete.description'
+                values={{ name: patient?.name }}
+                components={{ strong: <strong /> }}
+              />
             }
             onConfirm={handleDelete}
             asChild
@@ -309,7 +318,7 @@ const PatientFormEdit = ({ patientId }: PatientFormEditProps) => {
               {isDeleting ? (
                 <Loader2 className='animate-spin' />
               ) : (
-                t('btn.delete')
+                t('btn.delete', { ns: 'common' })
               )}
             </Button>
           </DeleteConfirmDialog>
@@ -318,7 +327,7 @@ const PatientFormEdit = ({ patientId }: PatientFormEditProps) => {
             {isFormPending ? (
               <Loader2 className='animate-spin' />
             ) : (
-              t('btn.update')
+              t('btn.update', { ns: 'common' })
             )}
           </Button>
         </div>
@@ -327,8 +336,8 @@ const PatientFormEdit = ({ patientId }: PatientFormEditProps) => {
       {/* Unsaved changes confirmation dialog (from hook) */}
       <NavigationGuardDialog
         {...guard}
-        title='Unsaved changes'
-        description='You have unsaved changes. Are you sure you want to leave this page?'
+        title={t('unsaved.title')}
+        description={t('unsaved.description')}
       />
     </div>
   )

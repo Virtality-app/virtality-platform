@@ -10,6 +10,7 @@ import { ChangeEvent, useState } from 'react'
 import { ControllerRenderProps, useForm } from 'react-hook-form'
 import placeholder from '@/public/placeholder.svg'
 import { shouldBypassVercelImageOptimization } from '@virtality/shared/utils'
+import { useClientT } from '@/i18n/use-client-t'
 
 interface PatientPhotoFieldProps {
   form: ReturnType<typeof useForm<PatientFormInput>>
@@ -17,6 +18,7 @@ interface PatientPhotoFieldProps {
 }
 
 const PatientPhotoField = ({ form, patient }: PatientPhotoFieldProps) => {
+  const { t } = useClientT('patients')
   const [previewUrl, setPreviewUrl] = useState<Patient['image']>(null)
   const [hasImage, setImage] = useState(patient?.image ? true : false)
   const [isImageHovered, setIsImageHovered] = useState(false)
@@ -76,7 +78,7 @@ const PatientPhotoField = ({ form, patient }: PatientPhotoFieldProps) => {
             <Image
               height={200}
               width={200}
-              alt='Patient'
+              alt={t('form.photoAlt')}
               src={
                 previewUrl
                   ? previewUrl
@@ -98,7 +100,7 @@ const PatientPhotoField = ({ form, patient }: PatientPhotoFieldProps) => {
         <FormField
           control={form.control}
           name='image'
-          label={<span className='sr-only'>Patient photo</span>}
+          label={<span className='sr-only'>{t('form.photoLabel')}</span>}
           className='absolute right-20.5 bottom-20.5 z-20 w-auto'
         >
           {(field) => (
@@ -122,7 +124,7 @@ const PatientPhotoField = ({ form, patient }: PatientPhotoFieldProps) => {
           )}
         </FormField>
       </div>
-      <p className='text-sm text-zinc-500'>Click to upload patient photo</p>
+      <p className='text-sm text-zinc-500'>{t('form.photoHint')}</p>
     </div>
   )
 }

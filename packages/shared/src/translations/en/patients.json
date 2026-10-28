@@ -1,0 +1,183 @@
+{
+  "tabs": {
+    "dashboard": "Patient Dashboard",
+    "profile": "Profile",
+    "basicInfo": "Basic Info",
+    "medicalHistory": "Medical History",
+    "sessions": "Sessions",
+    "viewing": "Viewing:"
+  },
+  "list": {
+    "newPatient": "New Patient",
+    "deleteSelected": "Delete Selected",
+    "deleteSelectedTitle": "Delete Selected Patients",
+    "deleteSelectedDescription": "Are you sure you want to delete these patients? This action cannot be undone."
+  },
+  "columns": {
+    "selectAll": "Select all",
+    "selectRow": "Select row",
+    "name": "Name",
+    "email": "Email",
+    "activeProgram": "Active Program",
+    "totalSessions": "Total Sessions",
+    "lastSession": "Last Session",
+    "noSessionsYet": "No sessions yet"
+  },
+  "actions": {
+    "copyId": "Copy ID",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+  "delete": {
+    "title": "Delete Patient",
+    "description": "Are you sure you want to delete <strong>{{name}}</strong>? This action cannot be undone."
+  },
+  "unsaved": {
+    "title": "Unsaved changes",
+    "description": "You have unsaved changes. Are you sure you want to leave this page?"
+  },
+  "toast": {
+    "requiredFieldsEmpty": "Some required fields are empty.",
+    "patientSaved": "Patient information saved.",
+    "notesUpdated": "Notes updated successfully."
+  },
+  "form": {
+    "patientInformation": "Patient Information",
+    "patientInformationDescription": "Basic patient details and demographics",
+    "namePlaceholder": "Enter patient's full name",
+    "pickDate": "Pick a date",
+    "selectSex": "Select sex...",
+    "selectLanguage": "Select language...",
+    "weight": "Weight (kg)",
+    "height": "Height (cm)",
+    "occupation": "Occupation",
+    "photoAlt": "Patient",
+    "photoLabel": "Patient photo",
+    "photoHint": "Click to upload patient photo",
+    "emailPlaceholder": "patient@example.com"
+  },
+  "medicalHistory": {
+    "loading": "Loading...",
+    "anamneses": "Anamneses",
+    "complaints": "Patient’s Complaint",
+    "expectations": "Patient’s Expectations",
+    "diagnosis": "Conclusion Diagnosis",
+    "nprs": "NPRS Pain Scale"
+  },
+  "session": {
+    "loading": "Loading session…",
+    "notFound": "Session not found.",
+    "backToList": "Back to list",
+    "status": {
+      "completed": "Completed",
+      "interrupted": "Interrupted"
+    },
+    "dateAtTime": "{{date}} at {{time}}",
+    "details": "Session Details",
+    "duration": "Duration:",
+    "durationMinutes": "{{minutes}} minutes",
+    "therapist": "Therapist:",
+    "unknownTherapist": "Unknown",
+    "notes": {
+      "title": "Session Notes",
+      "edit": "Edit Notes",
+      "placeholder": "Add session notes...",
+      "empty": "No notes available for this session."
+    },
+    "progressDelta": "{{sign}}{{points}} points vs previous session"
+  },
+  "sessionsTable": {
+    "date": "Date",
+    "program": "Program",
+    "status": "Status",
+    "duration": "Duration",
+    "durationMin": "{{minutes}} min",
+    "exercises": "Exercises",
+    "averageProgress": "Average progress",
+    "bestRepetition": "Best repetition",
+    "notes": "Notes",
+    "hasNotes": "Has notes",
+    "copyId": "Copy ID"
+  },
+  "exerciseMetrics": {
+    "title": "Exercises performed",
+    "exercise": "Exercise",
+    "setsReps": "Sets × Reps",
+    "averageProgress": "Average progress",
+    "bestRepetition": "Best repetition",
+    "consistency": "Movement consistency",
+    "fatigue": "Fatigue drop-off",
+    "firstToLast": "First set → Last set"
+  },
+  "metrics": {
+    "title": "Session metrics",
+    "info": "Info: {{title}}",
+    "minutes": "{{minutes}} min",
+    "duration": {
+      "title": "Duration",
+      "description": "Time from session start to completion, shown in minutes."
+    },
+    "averageProgress": {
+      "title": "Average progress",
+      "description": "Average progress (%) across all exercises in this session.",
+      "footnote": "Range: 0% – 100%"
+    },
+    "bestRepetition": {
+      "title": "Best repetition",
+      "description": "Your highest movement score from a single repetition in this session.",
+      "footnote": "Range: 0% – 100%"
+    },
+    "consistency": {
+      "title": "Movement consistency",
+      "description": "How much your repetition scores varied. Lower values mean more consistent scores, even if those scores were low.",
+      "footnote": "Range: 0 – 50 points"
+    },
+    "fatigue": {
+      "title": "Fatigue drop-off",
+      "description": "Compares earlier and later repetition scores. Positive values mean scores dropped; negative values mean scores improved.",
+      "footnote": "Range: -∞% – +100%"
+    },
+    "firstToLast": {
+      "title": "First set → Last set",
+      "description": "Compares your average score in the first and last sets. Positive values mean improvement; negative values mean a decline.",
+      "footnote": "Range: -100% – +∞%"
+    },
+    "volume": {
+      "title": "Total Repetitions (Volume)",
+      "description": "An estimate based on sets, repetitions, hold time and speed. Higher values represent more planned load."
+    }
+  },
+  "overview": {
+    "startDate": "Start date",
+    "endDate": "End date",
+    "inRange_one": "{{count}} completed session in range",
+    "inRange_other": "{{count}} completed sessions in range",
+    "presets": {
+      "week": "Last 7 days",
+      "month": "Last 30 days",
+      "3months": "Last 90 days"
+    },
+    "visitConsistency": {
+      "title": "Visit consistency",
+      "description": "Average number of days between completed sessions in the selected range. Sessions on the same day count as one visit.",
+      "footnote": "Gaps longer than {{days}} days are listed below.",
+      "daysAvg": "days avg",
+      "needMoreSessions": "Need 2+ sessions",
+      "gaps_one": "{{count}} gap >{{days}}d",
+      "gaps_other": "{{count}} gaps >{{days}}d",
+      "gapRange": "{{from}} → {{to}}: {{days}}d",
+      "moreGaps": "+{{count}} more"
+    },
+    "sessionDuration": {
+      "title": "Session duration",
+      "description": "Average time from session start to completion across completed sessions in the selected range.",
+      "minAvg": "min avg",
+      "none": "No completed sessions"
+    },
+    "volume": {
+      "description": "Sum of the planned load (sets, repetitions, hold time and speed) across completed sessions in the selected range. Higher values represent more planned load.",
+      "perSession": "~{{value}} per session",
+      "formula": "sets × reps × hold × speed"
+    }
+  }
+}

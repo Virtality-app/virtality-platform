@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { HTMLAttributes, ReactNode } from 'react'
 import { Button } from '@virtality/ui/components/button'
 import { usePatient } from '@virtality/react-query'
+import { useClientT } from '@/i18n/use-client-t'
 
 type TabBarProps = {
   patientId?: string
@@ -14,13 +15,15 @@ type TabBarProps = {
 }
 
 export type LinkObject = (LinkProps & {
-  textContext?: string
+  /** Key in the `patients` namespace. */
+  textKey?: string
   icon?: ReactNode
   className?: HTMLAttributes<HTMLInputElement>['className']
   featureAccess?: boolean
 })[]
 
 const TabBar = ({ patientId, linkObject }: TabBarProps) => {
+  const { t } = useClientT('patients')
   const pathname = usePathname()
   const links = linkObject ? linkObject : null
 
@@ -46,13 +49,14 @@ const TabBar = ({ patientId, linkObject }: TabBarProps) => {
                 <div className={cn(!link.icon && 'hidden')}>
                   {link.icon && link.icon}
                 </div>
-                {link.textContext}
+                {link.textKey && t(link.textKey)}
               </Link>
             </Button>
           )
         })}
       <span className='flex-1 text-center'>
-        Viewing: <span className='font-bold uppercase'>{patient?.name}</span>
+        {t('tabs.viewing')}{' '}
+        <span className='font-bold uppercase'>{patient?.name}</span>
       </span>
     </div>
   )

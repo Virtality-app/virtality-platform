@@ -1,6 +1,5 @@
 'use client'
 
-import { Badge } from '@virtality/ui/components/badge'
 import { Button } from '@virtality/ui/components/button'
 import {
   Card,
@@ -17,10 +16,9 @@ import { ChartArea, List, MoveLeft } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
 import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
-import {
-  getClinicalHistorySessionStatusLabel,
-  getSessionSourceProgramDisplayName,
-} from '@/lib/session-history'
+import { getSessionSourceProgramDisplayName } from '@/lib/session-history'
+import { useClientT } from '@/i18n/use-client-t'
+import SessionStatusBadge from './session-status-badge'
 import MetricSection from './session-metric-section'
 import SessionExerciseMetricsTable from './session-exercise-metrics-table'
 import SessionCardNotes from './session-card-notes'
@@ -36,6 +34,7 @@ const SessionCard = ({ session, patientId, onBack }: SessionCardProps) => {
   usePageViewTracking({
     props: { route_group: 'patient', tab_view: 'patient-session' },
   })
+  const { t } = useClientT(['patients', 'common'])
   const [view, setView] = useState(true)
 
   const { data: userName } = useUserName()
@@ -52,7 +51,6 @@ const SessionCard = ({ session, patientId, onBack }: SessionCardProps) => {
     return 0
   }
 
-  const statusLabel = getClinicalHistorySessionStatusLabel(session.status)
   const historyDate =
     session.completedAt != null
       ? new Date(session.completedAt)
@@ -82,15 +80,7 @@ const SessionCard = ({ session, patientId, onBack }: SessionCardProps) => {
               <CardTitle className='flex justify-between'>
                 <span>{sourceProgramName}</span>
                 <div className='flex flex-col gap-2'>
-                  {statusLabel && (
-                    <Badge
-                      variant={
-                        statusLabel === 'Interrupted' ? 'secondary' : 'outline'
-                      }
-                    >
-                      {statusLabel}
-                    </Badge>
-                  )}
+                  <SessionStatusBadge status={session.status} />
                   <Button
                     size='icon'
                     className='ml-auto'
@@ -103,7 +93,10 @@ const SessionCard = ({ session, patientId, onBack }: SessionCardProps) => {
                 </div>
               </CardTitle>
               <CardDescription>
-                {format(historyDate, 'PPPP')} at {completedAtTime()}
+                {t('session.dateAtTime', {
+                  date: format(historyDate, 'PPPP'),
+                  time: completedAtTime(),
+                })}
               </CardDescription>
             </CardHeader>
             <div className='flex flex-1 flex-col space-y-6'>
@@ -114,19 +107,27 @@ const SessionCard = ({ session, patientId, onBack }: SessionCardProps) => {
                   <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
                     <div className='space-y-4'>
                       <div>
-                        <h3 className='mb-2 font-medium'>Session Details</h3>
+                        <h3 className='mb-2 font-medium'>
+                          {t('session.details')}
+                        </h3>
                         <div className='space-y-2 text-sm'>
                           <div className='flex justify-between'>
                             <span className='text-muted-foreground'>
-                              Duration:
+                              {t('session.duration')}
                             </span>
-                            <span>{sessionDuration()} minutes</span>
+                            <span>
+                              {t('session.durationMinutes', {
+                                minutes: sessionDuration(),
+                              })}
+                            </span>
                           </div>
                           <div className='flex justify-between'>
                             <span className='text-muted-foreground'>
-                              Therapist:
+                              {t('session.therapist')}
                             </span>
-                            <span>{userName ?? 'Unknown'}</span>
+                            <span>
+                              {userName ?? t('session.unknownTherapist')}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -154,7 +155,7 @@ const SessionCard = ({ session, patientId, onBack }: SessionCardProps) => {
               )}
             </div>
             <Button onClick={handleBack} className='w-fit'>
-              <MoveLeft /> Back
+              <MoveLeft /> {t('btn.back', { ns: 'common' })}
             </Button>
           </Card>
         </motion.div>

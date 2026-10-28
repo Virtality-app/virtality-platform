@@ -13,6 +13,7 @@ import useBeforeUnload from '@/hooks/use-before-unload'
 import useNavigationGuard from '@/hooks/use-navigation-guard'
 import { NavigationGuardDialog } from '@/components/dialogs/navigation-guard-dialog'
 import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
+import { useClientT } from '@/i18n/use-client-t'
 
 /** Compare by which parts are active; null and all-inactive are treated as equal. */
 function bodyAreasHaveSameSelection(a: BodyAreas, b: BodyAreas): boolean {
@@ -36,9 +37,14 @@ function bodyAreasHaveSameSelection(a: BodyAreas, b: BodyAreas): boolean {
   )
 }
 
+const EditorLoading = () => {
+  const { t } = useClientT('patients')
+  return <p>{t('medicalHistory.loading')}</p>
+}
+
 const Editor = dynamic(() => import('@/editor'), {
   ssr: false,
-  loading: () => <p>Loading...</p>,
+  loading: () => <EditorLoading />,
 })
 
 interface MedicalHistoryProps {
@@ -59,6 +65,7 @@ const MedicalHistory = ({
   usePageViewTracking({
     props: { route_group: 'patient', tab_view: 'patient-medical-history' },
   })
+  const { t } = useClientT('patients')
 
   const {
     anamnesesDeltas,
@@ -80,20 +87,24 @@ const MedicalHistory = ({
   }
 
   const editorFields = [
-    { name: 'anamneses', label: 'Anamneses', deltas: anamnesesDeltas },
+    {
+      name: 'anamneses',
+      labelKey: 'medicalHistory.anamneses',
+      deltas: anamnesesDeltas,
+    },
     {
       name: 'complaints',
-      label: 'Patient’s Complaint',
+      labelKey: 'medicalHistory.complaints',
       deltas: complaintsDeltas,
     },
     {
       name: 'expectations',
-      label: 'Patient’s Expectations',
+      labelKey: 'medicalHistory.expectations',
       deltas: expectationsDeltas,
     },
     {
       name: 'diagnosis',
-      label: 'Conclusion Diagnosis',
+      labelKey: 'medicalHistory.diagnosis',
       deltas: diagnosisDeltas,
     },
   ] as const
@@ -107,15 +118,15 @@ const MedicalHistory = ({
     <div className='flex flex-col gap-4 xl:grid xl:grid-cols-2'>
       <NavigationGuardDialog
         {...guard}
-        title='Unsaved changes'
-        description='You have unsaved changes. Are you sure you want to leave this page?'
+        title={t('unsaved.title')}
+        description={t('unsaved.description')}
       />
       <div className='space-y-4'>
-        {editorFields.map(({ name, label, deltas }) => (
+        {editorFields.map(({ name, labelKey, deltas }) => (
           <FormField
             key={name}
             name={name}
-            label={label}
+            label={t(labelKey)}
             control={form.control}
           >
             {(field) => (
@@ -129,7 +140,11 @@ const MedicalHistory = ({
             )}
           </FormField>
         ))}
-        <FormField name='nprs' label='NPRS Pain Scale' control={form.control}>
+        <FormField
+          name='nprs'
+          label={t('medicalHistory.nprs')}
+          control={form.control}
+        >
           {(field) => (
             <div>
               <div

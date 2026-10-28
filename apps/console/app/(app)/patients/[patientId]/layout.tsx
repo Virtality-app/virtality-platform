@@ -20,11 +20,11 @@ export default async function PatientsLayout({
         patientId={patientId}
         linkObject={[
           {
-            textContext: 'Patient Dashboard',
+            textKey: 'tabs.dashboard',
             href: dashboardURL,
             featureAccess: true,
           },
-          { textContext: 'Profile', href: profileURL, featureAccess: true },
+          { textKey: 'tabs.profile', href: profileURL, featureAccess: true },
         ]}
       />
       <PageTransition>{children}</PageTransition>

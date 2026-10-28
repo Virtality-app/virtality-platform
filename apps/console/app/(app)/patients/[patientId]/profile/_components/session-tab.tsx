@@ -8,6 +8,7 @@ import SessionCard from './session-card'
 import { filterSessionsByDateRange } from '@/lib/session-date-range'
 import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
 import { usePatientSessionDateRange } from '@/hooks/use-patient-session-date-range'
+import { useClientT } from '@/i18n/use-client-t'
 
 interface SessionTabProps {
   patientId: string
@@ -17,6 +18,7 @@ export default function SessionTab({ patientId }: SessionTabProps) {
   usePageViewTracking({
     props: { route_group: 'patient', tab_view: 'patient-sessions' },
   })
+  const { t } = useClientT('patients')
   const [sessionViewing, setSessionViewing] = useState<string>('')
   const { startDate, endDate, setStartDate, setEndDate, applyPreset } =
     usePatientSessionDateRange(patientId)
@@ -55,7 +57,7 @@ export default function SessionTab({ patientId }: SessionTabProps) {
     return (
       <div className='flex flex-1 items-center justify-center py-12'>
         <p className='text-sm text-zinc-500 dark:text-zinc-400'>
-          Loading session…
+          {t('session.loading')}
         </p>
       </div>
     )
@@ -74,13 +76,15 @@ export default function SessionTab({ patientId }: SessionTabProps) {
   if (sessionViewing !== '' && !session) {
     return (
       <div className='rounded-xl border border-zinc-200 bg-zinc-50 p-6 dark:border-zinc-700 dark:bg-zinc-900/40'>
-        <p className='text-zinc-600 dark:text-zinc-400'>Session not found.</p>
+        <p className='text-zinc-600 dark:text-zinc-400'>
+          {t('session.notFound')}
+        </p>
         <button
           type='button'
           onClick={() => setSessionViewing('')}
           className='mt-2 text-sm font-medium text-teal-600 hover:underline dark:text-teal-400'
         >
-          Back to list
+          {t('session.backToList')}
         </button>
       </div>
     )

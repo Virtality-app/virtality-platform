@@ -17,6 +17,7 @@ import { Exercise } from '@virtality/db'
 import { BarChart3, Zap, Target } from 'lucide-react'
 import { TooltipProvider } from '@virtality/ui/components/tooltip'
 import MetricInfo from './session-metric-info'
+import { useClientT } from '@/i18n/use-client-t'
 
 const MetricSection = ({
   session,
@@ -25,6 +26,7 @@ const MetricSection = ({
   session: ExtendedPatientSession
   exercises?: Exercise[]
 }) => {
+  const { t } = useClientT('patients')
   const durationMin = getSessionDurationMinutes(session)
   const quality = getExerciseQualityScore(session)
   const qualityAvg = quality.length
@@ -42,21 +44,23 @@ const MetricSection = ({
       <Separator />
       <TooltipProvider delayDuration={200}>
         <div className='space-y-4'>
-          <h3 className='font-medium'>Session metrics</h3>
+          <h3 className='font-medium'>{t('metrics.title')}</h3>
           <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-3'>
             {durationMin != null && (
               <div className='flex items-center gap-2 rounded-lg border border-zinc-200/80 bg-zinc-50/50 p-3 dark:border-zinc-700/80 dark:bg-zinc-800/40'>
                 <BarChart3 className='size-4 shrink-0 text-teal-600 dark:text-teal-400' />
                 <div className='min-w-0 flex-1'>
                   <div className='flex items-center gap-1.5'>
-                    <p className='text-muted-foreground text-xs'>Duration</p>
+                    <p className='text-muted-foreground text-xs'>
+                      {t('metrics.duration.title')}
+                    </p>
                     <MetricInfo
-                      title='Duration'
-                      description='Time from session start to completion, shown in minutes.'
+                      title={t('metrics.duration.title')}
+                      description={t('metrics.duration.description')}
                     />
                   </div>
                   <p className='font-semibold tabular-nums'>
-                    {durationMin.toFixed(1)} min
+                    {t('metrics.minutes', { minutes: durationMin.toFixed(1) })}
                   </p>
                 </div>
               </div>
@@ -66,12 +70,12 @@ const MetricSection = ({
               <div className='min-w-0 flex-1'>
                 <div className='flex items-center gap-1.5'>
                   <p className='text-muted-foreground text-xs'>
-                    Average progress
+                    {t('metrics.averageProgress.title')}
                   </p>
                   <MetricInfo
-                    title='Average progress'
-                    description='Average progress (%) across all exercises in this session.'
-                    footnote='Range: 0% – 100%'
+                    title={t('metrics.averageProgress.title')}
+                    description={t('metrics.averageProgress.description')}
+                    footnote={t('metrics.averageProgress.footnote')}
                   />
                 </div>
                 <p className='font-semibold tabular-nums'>
@@ -84,12 +88,12 @@ const MetricSection = ({
               <div className='min-w-0 flex-1'>
                 <div className='flex items-center gap-1.5'>
                   <p className='text-muted-foreground text-xs'>
-                    Best repetition
+                    {t('metrics.bestRepetition.title')}
                   </p>
                   <MetricInfo
-                    title='Best repetition'
-                    description='Your highest movement score from a single repetition in this session.'
-                    footnote='Range: 0% – 100%'
+                    title={t('metrics.bestRepetition.title')}
+                    description={t('metrics.bestRepetition.description')}
+                    footnote={t('metrics.bestRepetition.footnote')}
                   />
                 </div>
                 <p className='font-semibold tabular-nums'>
@@ -104,12 +108,12 @@ const MetricSection = ({
               <div className='min-w-0 flex-1'>
                 <div className='flex items-center gap-1.5'>
                   <p className='text-muted-foreground text-xs'>
-                    Movement consistency
+                    {t('metrics.consistency.title')}
                   </p>
                   <MetricInfo
-                    title='Movement consistency'
-                    description='How much your repetition scores varied. Lower values mean more consistent scores, even if those scores were low.'
-                    footnote='Range: 0 – 50 points'
+                    title={t('metrics.consistency.title')}
+                    description={t('metrics.consistency.description')}
+                    footnote={t('metrics.consistency.footnote')}
                   />
                 </div>
                 <p className='font-semibold tabular-nums'>
@@ -124,12 +128,12 @@ const MetricSection = ({
               <div className='min-w-0 flex-1'>
                 <div className='flex items-center gap-1.5'>
                   <p className='text-muted-foreground text-xs'>
-                    Fatigue drop-off
+                    {t('metrics.fatigue.title')}
                   </p>
                   <MetricInfo
-                    title='Fatigue drop-off'
-                    description='Compares earlier and later repetition scores. Positive values mean scores dropped; negative values mean scores improved.'
-                    footnote='Range: -∞% – +100%'
+                    title={t('metrics.fatigue.title')}
+                    description={t('metrics.fatigue.description')}
+                    footnote={t('metrics.fatigue.footnote')}
                   />
                 </div>
                 <p className='font-semibold tabular-nums'>
@@ -141,12 +145,12 @@ const MetricSection = ({
               <div className='min-w-0 flex-1'>
                 <div className='flex items-center gap-1.5'>
                   <p className='text-muted-foreground text-xs'>
-                    First set → Last set
+                    {t('metrics.firstToLast.title')}
                   </p>
                   <MetricInfo
-                    title='First set → Last set'
-                    description='Compares your average score in the first and last sets. Positive values mean improvement; negative values mean a decline.'
-                    footnote='Range: -100% – +∞%'
+                    title={t('metrics.firstToLast.title')}
+                    description={t('metrics.firstToLast.description')}
+                    footnote={t('metrics.firstToLast.footnote')}
                   />
                 </div>
                 <p className='font-semibold tabular-nums'>
@@ -159,11 +163,11 @@ const MetricSection = ({
               <div className='min-w-0 flex-1'>
                 <div className='flex items-center gap-1.5'>
                   <p className='text-muted-foreground text-xs'>
-                    Total Repetitions (Volume)
+                    {t('metrics.volume.title')}
                   </p>
                   <MetricInfo
-                    title='Total Repetitions (Volume)'
-                    description='An estimate based on sets, repetitions, hold time and speed. Higher values represent more planned load.'
+                    title={t('metrics.volume.title')}
+                    description={t('metrics.volume.description')}
                   />
                 </div>
                 <p className='font-semibold tabular-nums'>

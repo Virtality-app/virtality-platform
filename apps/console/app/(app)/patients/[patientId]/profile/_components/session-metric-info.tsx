@@ -7,6 +7,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@virtality/ui/components/tooltip'
+import { useClientT } from '@/i18n/use-client-t'
 
 const MetricInfo = ({
   title,
@@ -17,12 +18,13 @@ const MetricInfo = ({
   description: string
   footnote?: string
 }) => {
+  const { t } = useClientT('patients')
   const [open, setOpen] = useState(false)
   const handleToggleTooltip = () => setOpen(!open)
   return (
     <Tooltip open={open} onOpenChange={setOpen}>
       <TooltipTrigger
-        aria-label={`Info: ${title}`}
+        aria-label={t('metrics.info', { title })}
         onClick={handleToggleTooltip}
       >
         <Info className='size-3.5' />

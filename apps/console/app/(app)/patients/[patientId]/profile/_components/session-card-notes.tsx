@@ -11,6 +11,7 @@ import {
 import { useState } from 'react'
 import { notify } from '@/lib/notify'
 import { trackAnalyticsEvent } from '@/lib/analytics-contract'
+import { useClientT } from '@/i18n/use-client-t'
 
 const SessionCardNotes = ({
   session,
@@ -19,6 +20,7 @@ const SessionCardNotes = ({
   session: ExtendedPatientSession
   patientId: string
 }) => {
+  const { t } = useClientT(['patients', 'common'])
   const queryClient = getQueryClient()
   const orpc = useORPC()
   const [notes, setNotes] = useState(session?.notes ?? '')
@@ -26,7 +28,7 @@ const SessionCardNotes = ({
 
   const { mutate: updatePatientSession, isPending } = useUpdatePatientSession({
     onSuccess: () => {
-      notify.success('Notes updated successfully.')
+      notify.success({ key: 'toast.notesUpdated', ns: 'patients' })
 
       trackAnalyticsEvent('session_notes_saved', {
         session_id: session.id,
@@ -60,22 +62,22 @@ const SessionCardNotes = ({
   return (
     <div>
       <div className='mb-4 flex items-center justify-between'>
-        <h3 className='font-medium'>Session Notes</h3>
+        <h3 className='font-medium'>{t('session.notes.title')}</h3>
         {!isEditing ? (
           <Button
             variant='outline'
             size='sm'
             onClick={() => setIsEditing(true)}
           >
-            Edit Notes
+            {t('session.notes.edit')}
           </Button>
         ) : (
           <div className='flex gap-2'>
             <Button variant='outline' size='sm' onClick={handleCancelEdit}>
-              Cancel
+              {t('btn.cancel', { ns: 'common' })}
             </Button>
             <Button size='sm' onClick={handleSaveNotes} disabled={isPending}>
-              Save
+              {t('btn.save', { ns: 'common' })}
             </Button>
           </div>
         )}
@@ -85,7 +87,7 @@ const SessionCardNotes = ({
         <Textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder='Add session notes...'
+          placeholder={t('session.notes.placeholder')}
           className='min-h-30 resize-none'
         />
       ) : (
@@ -96,7 +98,7 @@ const SessionCardNotes = ({
             </p>
           ) : (
             <p className='text-muted-foreground text-sm italic'>
-              No notes available for this session.
+              {t('session.notes.empty')}
             </p>
           )}
         </div>

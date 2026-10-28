@@ -12,6 +12,7 @@ import type { Exercise } from '@virtality/db'
 import { getDisplayName } from '@/lib/utils'
 import { buildSessionExerciseMetricRows } from '@/lib/session-exercise-metrics'
 import type { ExtendedPatientSession } from '@/types/models'
+import { useClientT } from '@/i18n/use-client-t'
 
 const formatPct = (value: number | null, signed = false) => {
   if (value == null) return '—'
@@ -29,24 +30,37 @@ const SessionExerciseMetricsTable = ({
   session: ExtendedPatientSession
   exercises?: Exercise[]
 }) => {
+  const { t } = useClientT('patients')
   const rows = buildSessionExerciseMetricRows(session)
 
   if (rows.length === 0) return null
 
   return (
     <div className='space-y-4'>
-      <h3 className='font-medium'>Exercises performed</h3>
+      <h3 className='font-medium'>{t('exerciseMetrics.title')}</h3>
       <div className='overflow-x-auto rounded-lg border border-zinc-200/80 dark:border-zinc-700/80'>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Exercise</TableHead>
-              <TableHead className='text-right'>Sets × Reps</TableHead>
-              <TableHead className='text-right'>Average progress</TableHead>
-              <TableHead className='text-right'>Best repetition</TableHead>
-              <TableHead className='text-right'>Movement consistency</TableHead>
-              <TableHead className='text-right'>Fatigue drop-off</TableHead>
-              <TableHead className='text-right'>First set → Last set</TableHead>
+              <TableHead>{t('exerciseMetrics.exercise')}</TableHead>
+              <TableHead className='text-right'>
+                {t('exerciseMetrics.setsReps')}
+              </TableHead>
+              <TableHead className='text-right'>
+                {t('exerciseMetrics.averageProgress')}
+              </TableHead>
+              <TableHead className='text-right'>
+                {t('exerciseMetrics.bestRepetition')}
+              </TableHead>
+              <TableHead className='text-right'>
+                {t('exerciseMetrics.consistency')}
+              </TableHead>
+              <TableHead className='text-right'>
+                {t('exerciseMetrics.fatigue')}
+              </TableHead>
+              <TableHead className='text-right'>
+                {t('exerciseMetrics.firstToLast')}
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

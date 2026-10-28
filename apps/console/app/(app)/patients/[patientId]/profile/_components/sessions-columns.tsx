@@ -10,10 +10,12 @@ import {
 import { ColumnDef } from '@tanstack/react-table'
 import { Copy, Ellipsis, NotebookPen } from 'lucide-react'
 import { format } from 'date-fns'
-import ColumnHeader from '@/components/tables/header-cell'
-import { getClinicalHistorySessionStatusLabel } from '@/lib/session-history'
+import TranslatedColumnHeader from '@/app/(app)/patients/_components/translated-column-header'
+import TranslatedText from '@/app/(app)/patients/_components/translated-text'
+import i18next from '@/i18n/i18next'
+import { useClientT } from '@/i18n/use-client-t'
 import type { SessionListRowModel } from '@/lib/session-list-row'
-import { Badge } from '@virtality/ui/components/badge'
+import SessionStatusBadge from './session-status-badge'
 import { cn } from '@/lib/utils'
 import SessionProgressDelta from './session-progress-delta'
 
@@ -26,7 +28,9 @@ export const sessionsColumns: ColumnDef<SessionListRowModel>[] = [
   {
     id: 'date',
     accessorFn: (row) => row.date?.getTime() ?? 0,
-    header: ({ column }) => <ColumnHeader column={column} title='Date' />,
+    header: ({ column }) => (
+      <TranslatedColumnHeader column={column} labelKey='sessionsTable.date' />
+    ),
     cell: ({ row }) => {
       const { date } = row.original
       if (!date) return '—'
@@ -43,7 +47,7 @@ export const sessionsColumns: ColumnDef<SessionListRowModel>[] = [
   {
     id: 'program',
     accessorFn: (row) => row.programName,
-    header: () => 'Program',
+    header: () => <TranslatedText labelKey='sessionsTable.program' />,
     cell: ({ row }) => (
       <span className='text-sm'>{row.original.programName}</span>
     ),
@@ -52,19 +56,15 @@ export const sessionsColumns: ColumnDef<SessionListRowModel>[] = [
   {
     id: 'status',
     accessorFn: (row) => row.session.status,
-    header: () => 'Status',
+    header: () => <TranslatedText labelKey='sessionsTable.status' />,
     cell: ({ row }) => {
-      const label = getClinicalHistorySessionStatusLabel(
-        row.original.session.status,
-      )
-      if (!label) return '—'
+      const { status } = row.original.session
       return (
-        <Badge
-          variant={label === 'Interrupted' ? 'secondary' : 'outline'}
+        <SessionStatusBadge
+          status={status}
           className='font-normal'
-        >
-          {label}
-        </Badge>
+          fallback='—'
+        />
       )
     },
     enableSorting: false,
@@ -73,13 +73,24 @@ export const sessionsColumns: ColumnDef<SessionListRowModel>[] = [
     id: 'duration',
     accessorFn: (row) => row.durationMin ?? -1,
     header: ({ column }) => (
-      <ColumnHeader column={column} title='Duration' className='justify-end' />
+      <TranslatedColumnHeader
+        column={column}
+        labelKey='sessionsTable.duration'
+        className='justify-end'
+      />
     ),
     cell: ({ row }) => {
       const min = row.original.durationMin
       return (
         <div className={NUMERIC_CELL_CLASS}>
-          {min == null ? '—' : `${min.toFixed(1)} min`}
+          {min == null ? (
+            '—'
+          ) : (
+            <TranslatedText
+              labelKey='sessionsTable.durationMin'
+              values={{ minutes: min.toFixed(1) }}
+            />
+          )}
         </div>
       )
     },
@@ -87,7 +98,13 @@ export const sessionsColumns: ColumnDef<SessionListRowModel>[] = [
   {
     id: 'exercises',
     accessorFn: (row) => row.exercisesDone,
-    header: () => <div className='text-right'>Exercises</div>,
+    header: ({ column }) => (
+      <TranslatedColumnHeader
+        column={column}
+        labelKey='sessionsTable.exercises'
+        className='text-right'
+      />
+    ),
     cell: ({ row }) => {
       const { exercisesDone, exercisesPlanned } = row.original
       return (
@@ -109,9 +126,9 @@ export const sessionsColumns: ColumnDef<SessionListRowModel>[] = [
     id: 'avgProgress',
     accessorFn: (row) => row.avgProgressPct ?? -1,
     header: ({ column }) => (
-      <ColumnHeader
+      <TranslatedColumnHeader
         column={column}
-        title='Average progress'
+        labelKey='sessionsTable.averageProgress'
         className='justify-end'
       />
     ),
@@ -133,7 +150,13 @@ export const sessionsColumns: ColumnDef<SessionListRowModel>[] = [
   {
     id: 'bestRep',
     accessorFn: (row) => row.bestRepPct ?? -1,
-    header: () => <div className='text-right'>Best repetition</div>,
+    header: ({ column }) => (
+      <TranslatedColumnHeader
+        column={column}
+        labelKey='sessionsTable.bestRepetition'
+        className='text-right'
+      />
+    ),
     cell: ({ row }) => (
       <div className={NUMERIC_CELL_CLASS}>
         {formatPct(row.original.bestRepPct)}
@@ -144,12 +167,16 @@ export const sessionsColumns: ColumnDef<SessionListRowModel>[] = [
   {
     id: 'notes',
     accessorFn: (row) => row.hasNotes,
-    header: () => <span className='sr-only'>Notes</span>,
+    header: () => (
+      <span className='sr-only'>
+        <TranslatedText labelKey='sessionsTable.notes' />
+      </span>
+    ),
     cell: ({ row }) =>
       row.original.hasNotes ? (
         <NotebookPen
           className='text-muted-foreground size-4'
-          aria-label='Has notes'
+          aria-label={i18next.t('sessionsTable.hasNotes', { ns: 'patients' })}
         />
       ) : null,
     enableSorting: false,
@@ -160,6 +187,7 @@ export const sessionsColumns: ColumnDef<SessionListRowModel>[] = [
     enableHiding: false,
     enableSorting: false,
     cell: function ActionCell({ row }) {
+      const { t } = useClientT('patients')
       const copyId = () => {
         navigator.clipboard.writeText(row.original.id)
       }
@@ -174,7 +202,7 @@ export const sessionsColumns: ColumnDef<SessionListRowModel>[] = [
           <DropdownMenuContent id='actions'>
             <DropdownMenuItem onClick={copyId}>
               <Copy />
-              Copy ID
+              {t('sessionsTable.copyId')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

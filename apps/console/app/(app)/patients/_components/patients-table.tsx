@@ -29,9 +29,11 @@ import {
 import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
 import { trackAnalyticsEvent } from '@/lib/analytics-contract'
 import { filterPatientsBySearch } from '@/lib/patient-list'
+import { useClientT } from '@/i18n/use-client-t'
 
 const PatientsTable = () => {
   'use no memo'
+  const { t } = useClientT('patients')
   useIsAuthed()
   usePageViewTracking({ props: { route_group: 'patient' } })
   const queryClient = getQueryClient()
@@ -104,22 +106,20 @@ const PatientsTable = () => {
       >
         {selectedRows.length !== 0 && (
           <DeleteConfirmDialog
-            title={'Delete Selected Patients'}
-            description={
-              'Are you sure you want to delete these patients? This action cannot be undone.'
-            }
+            title={t('list.deleteSelectedTitle')}
+            description={t('list.deleteSelectedDescription')}
             onConfirm={deleteSelectedHandler}
             asChild
           >
             <Button variant='destructive' className='mr-auto'>
               <Trash2 />
-              Delete Selected
+              {t('list.deleteSelected')}
             </Button>
           </DeleteConfirmDialog>
         )}
         <Button id='new-program' asChild variant='primary' className='ml-auto'>
           <Link href={`/patients/new`}>
-            <PlusSquare /> {'New Patient'}
+            <PlusSquare /> {t('list.newPatient')}
           </Link>
         </Button>
       </DataTableHeader>

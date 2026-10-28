@@ -8,7 +8,6 @@ import {
 } from '@/lib/session-metrics'
 import {
   DATE_RANGE_PRESETS,
-  DATE_RANGE_PRESET_LABELS,
   filterSessionsByDateRange,
   getFirstCompletedSessionDay,
   getSessionCalendarDays,
@@ -29,6 +28,7 @@ import { motion } from 'motion/react'
 import { TooltipProvider } from '@virtality/ui/components/tooltip'
 import { SessionDatePicker } from './session-date-picker'
 import MetricInfo from './session-metric-info'
+import { useClientT } from '@/i18n/use-client-t'
 
 interface SessionsOverviewProps {
   sessions: ExtendedPatientSession[]
@@ -47,6 +47,7 @@ export function SessionsOverview({
   onEndDateChange,
   onPresetSelect,
 }: SessionsOverviewProps) {
+  const { t } = useClientT('patients')
   const completedSessions = filterCompletedClinicalSessions(sessions)
   const filtered = filterSessionsByDateRange(completedSessions, {
     startDate,
@@ -79,7 +80,7 @@ export function SessionsOverview({
       <div className='space-y-4 rounded-xl border border-zinc-200 bg-white px-4 py-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950'>
         <div className='flex flex-wrap items-end gap-4'>
           <SessionDatePicker
-            label='Start date'
+            label={t('overview.startDate')}
             selected={startDate}
             onSelect={onStartDateChange}
             isDateDisabled={(date) =>
@@ -88,7 +89,7 @@ export function SessionsOverview({
             sessionDays={sessionDays}
           />
           <SessionDatePicker
-            label='End date'
+            label={t('overview.endDate')}
             selected={endDate}
             onSelect={onEndDateChange}
             isDateDisabled={(date) =>
@@ -97,8 +98,7 @@ export function SessionsOverview({
             sessionDays={sessionDays}
           />
           <p className='ml-auto text-sm text-zinc-500 dark:text-zinc-400'>
-            {filtered.length} completed session
-            {filtered.length !== 1 ? 's' : ''} in range
+            {t('overview.inRange', { count: filtered.length })}
           </p>
         </div>
         <div className='flex flex-wrap gap-2'>
@@ -111,7 +111,7 @@ export function SessionsOverview({
               className='border-zinc-200 dark:border-zinc-700 dark:bg-zinc-900/50'
               onClick={() => onPresetSelect(preset)}
             >
-              {DATE_RANGE_PRESET_LABELS[preset]}
+              {t(`overview.presets.${preset}`)}
             </Button>
           ))}
         </div>
@@ -133,11 +133,13 @@ export function SessionsOverview({
               <CardHeader className='pb-2'>
                 <CardTitle className='flex items-center gap-2 text-sm font-medium text-zinc-600 dark:text-zinc-300'>
                   <CalendarIcon className='size-4 text-teal-600 dark:text-teal-400' />
-                  Visit consistency
+                  {t('overview.visitConsistency.title')}
                   <MetricInfo
-                    title='Visit consistency'
-                    description='Average number of days between completed sessions in the selected range. Sessions on the same day count as one visit.'
-                    footnote={`Gaps longer than ${GAP_THRESHOLD_DAYS} days are listed below.`}
+                    title={t('overview.visitConsistency.title')}
+                    description={t('overview.visitConsistency.description')}
+                    footnote={t('overview.visitConsistency.footnote', {
+                      days: GAP_THRESHOLD_DAYS,
+                    })}
                   />
                 </CardTitle>
               </CardHeader>
@@ -146,29 +148,39 @@ export function SessionsOverview({
                   <p className='text-2xl font-semibold text-zinc-900 tabular-nums dark:text-zinc-100'>
                     {avgDaysBetween.toFixed(1)}{' '}
                     <span className='text-sm font-normal text-zinc-500 dark:text-zinc-400'>
-                      days avg
+                      {t('overview.visitConsistency.daysAvg')}
                     </span>
                   </p>
                 ) : (
                   <p className='text-sm text-zinc-500 dark:text-zinc-400'>
-                    Need 2+ sessions
+                    {t('overview.visitConsistency.needMoreSessions')}
                   </p>
                 )}
                 {gaps.length > 0 && (
                   <div className='mt-auto rounded-lg border border-amber-200/80 bg-amber-50/80 p-2 dark:border-amber-800/60 dark:bg-amber-950/30'>
                     <p className='text-xs font-medium text-amber-800 dark:text-amber-200'>
-                      {gaps.length} gap{gaps.length !== 1 ? 's' : ''} &gt;
-                      {GAP_THRESHOLD_DAYS}d
+                      {t('overview.visitConsistency.gaps', {
+                        count: gaps.length,
+                        days: GAP_THRESHOLD_DAYS,
+                      })}
                     </p>
                     <ul className='mt-1 text-xs text-amber-700 dark:text-amber-300'>
                       {gaps.slice(0, 3).map((g, i) => (
                         <li key={i}>
-                          {format(g.prevCompletedAt, 'd MMM')} →{' '}
-                          {format(g.nextCompletedAt, 'd MMM')}:{' '}
-                          {g.daysBetween.toFixed(0)}d
+                          {t('overview.visitConsistency.gapRange', {
+                            from: format(g.prevCompletedAt, 'd MMM'),
+                            to: format(g.nextCompletedAt, 'd MMM'),
+                            days: g.daysBetween.toFixed(0),
+                          })}
                         </li>
                       ))}
-                      {gaps.length > 3 && <li>+{gaps.length - 3} more</li>}
+                      {gaps.length > 3 && (
+                        <li>
+                          {t('overview.visitConsistency.moreGaps', {
+                            count: gaps.length - 3,
+                          })}
+                        </li>
+                      )}
                     </ul>
                   </div>
                 )}
@@ -190,10 +202,10 @@ export function SessionsOverview({
               <CardHeader className='pb-2'>
                 <CardTitle className='flex items-center gap-2 text-sm font-medium text-zinc-600 dark:text-zinc-300'>
                   <Activity className='size-4 text-teal-600 dark:text-teal-400' />
-                  Session duration
+                  {t('overview.sessionDuration.title')}
                   <MetricInfo
-                    title='Session duration'
-                    description='Average time from session start to completion across completed sessions in the selected range.'
+                    title={t('overview.sessionDuration.title')}
+                    description={t('overview.sessionDuration.description')}
                   />
                 </CardTitle>
               </CardHeader>
@@ -202,12 +214,12 @@ export function SessionsOverview({
                   <p className='text-2xl font-semibold text-zinc-900 tabular-nums dark:text-zinc-100'>
                     {avgDuration.toFixed(1)}{' '}
                     <span className='text-sm font-normal text-zinc-500 dark:text-zinc-400'>
-                      min avg
+                      {t('overview.sessionDuration.minAvg')}
                     </span>
                   </p>
                 ) : (
                   <p className='text-sm text-zinc-500 dark:text-zinc-400'>
-                    No completed sessions
+                    {t('overview.sessionDuration.none')}
                   </p>
                 )}
               </CardContent>
@@ -228,10 +240,10 @@ export function SessionsOverview({
               <CardHeader className='pb-2'>
                 <CardTitle className='flex items-center gap-2 text-sm font-medium text-zinc-600 dark:text-zinc-300'>
                   <TrendingUp className='size-4 text-teal-600 dark:text-teal-400' />
-                  Total Repetitions (Volume)
+                  {t('metrics.volume.title')}
                   <MetricInfo
-                    title='Total Repetitions (Volume)'
-                    description='Sum of the planned load (sets, repetitions, hold time and speed) across completed sessions in the selected range. Higher values represent more planned load.'
+                    title={t('metrics.volume.title')}
+                    description={t('overview.volume.description')}
                   />
                 </CardTitle>
               </CardHeader>
@@ -243,8 +255,12 @@ export function SessionsOverview({
                 </p>
                 <p className='text-xs text-zinc-500 dark:text-zinc-400'>
                   {avgDosePerSession > 0
-                    ? `~${avgDosePerSession.toLocaleString(undefined, { maximumFractionDigits: 0 })} per session`
-                    : 'sets × reps × hold × speed'}
+                    ? t('overview.volume.perSession', {
+                        value: avgDosePerSession.toLocaleString(undefined, {
+                          maximumFractionDigits: 0,
+                        }),
+                      })
+                    : t('overview.volume.formula')}
                 </p>
               </CardContent>
             </Card>

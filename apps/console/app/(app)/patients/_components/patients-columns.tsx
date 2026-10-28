@@ -10,7 +10,8 @@ import {
 } from '@virtality/ui/components/dropdown-menu'
 import { ColumnDef } from '@tanstack/react-table'
 import { Copy, Ellipsis, Pencil, Trash2 } from 'lucide-react'
-import ColumnHeader from '@/components/tables/header-cell'
+import TranslatedColumnHeader from './translated-column-header'
+import TranslatedText from './translated-text'
 import { format } from 'date-fns'
 import { PatientListItem } from '@/types/models'
 import DeleteConfirmDialog from '@/components/dialogs/delete-confirm-dialog'
@@ -22,6 +23,9 @@ import {
   getQueryClient,
 } from '@virtality/react-query'
 import { trackAnalyticsEvent } from '@/lib/analytics-contract'
+import { Trans } from 'react-i18next'
+import i18next from '@/i18n/i18next'
+import { useClientT } from '@/i18n/use-client-t'
 
 export const columns: ColumnDef<PatientListItem>[] = [
   {
@@ -33,7 +37,7 @@ export const columns: ColumnDef<PatientListItem>[] = [
           (table.getIsSomePageRowsSelected() && 'indeterminate')
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label='Select all'
+        aria-label={i18next.t('columns.selectAll', { ns: 'patients' })}
       />
     ),
     cell: ({ row }) => (
@@ -41,7 +45,7 @@ export const columns: ColumnDef<PatientListItem>[] = [
         id='select'
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label='Select row'
+        aria-label={i18next.t('columns.selectRow', { ns: 'patients' })}
       />
     ),
     enableSorting: false,
@@ -54,22 +58,30 @@ export const columns: ColumnDef<PatientListItem>[] = [
   },
   {
     accessorKey: 'name',
-    header: ({ column, header }) => (
-      <ColumnHeader column={column} title={header.id} className='capitalize' />
+    header: ({ column }) => (
+      <TranslatedColumnHeader
+        column={column}
+        labelKey='columns.name'
+        className='capitalize'
+      />
     ),
   },
   {
     accessorKey: 'email',
-    header: ({ column, header }) => (
-      <ColumnHeader column={column} title={header.id} className='capitalize' />
+    header: ({ column }) => (
+      <TranslatedColumnHeader
+        column={column}
+        labelKey='columns.email'
+        className='capitalize'
+      />
     ),
   },
   {
     accessorKey: 'activeProgramName',
     header: ({ column }) => (
-      <ColumnHeader
+      <TranslatedColumnHeader
         column={column}
-        title='Active Program'
+        labelKey='columns.activeProgram'
         className='capitalize'
       />
     ),
@@ -81,9 +93,9 @@ export const columns: ColumnDef<PatientListItem>[] = [
   {
     accessorKey: 'totalSessions',
     header: ({ column }) => (
-      <ColumnHeader
+      <TranslatedColumnHeader
         column={column}
-        title='Total Sessions'
+        labelKey='columns.totalSessions'
         className='capitalize'
       />
     ),
@@ -91,15 +103,20 @@ export const columns: ColumnDef<PatientListItem>[] = [
   {
     accessorKey: 'lastSessionAt',
     header: ({ column }) => (
-      <ColumnHeader
+      <TranslatedColumnHeader
         column={column}
-        title='Last Session'
+        labelKey='columns.lastSession'
         className='capitalize'
       />
     ),
     cell: ({ row }) => {
       const date: Date | null = row.getValue('lastSessionAt')
-      if (!date) return <div>No sessions yet</div>
+      if (!date)
+        return (
+          <div>
+            <TranslatedText labelKey='columns.noSessionsYet' />
+          </div>
+        )
       return <div>{format(date, 'PPP')}</div>
     },
   },
@@ -110,6 +127,7 @@ export const columns: ColumnDef<PatientListItem>[] = [
       const queryClient = getQueryClient()
       const orpc = useORPC()
       const router = useRouter()
+      const { t } = useClientT('patients')
       const patient = row.original
 
       const [open, setOpen] = useState(false)
@@ -151,11 +169,11 @@ export const columns: ColumnDef<PatientListItem>[] = [
             <DropdownMenuContent id='actions'>
               <DropdownMenuItem onClick={copyId}>
                 <Copy />
-                Copy ID
+                {t('actions.copyId')}
               </DropdownMenuItem>
               <DropdownMenuItem onClick={editHandler}>
                 <Pencil />
-                Edit
+                {t('actions.edit')}
               </DropdownMenuItem>
 
               <DropdownMenuItem
@@ -163,17 +181,21 @@ export const columns: ColumnDef<PatientListItem>[] = [
                 onClick={() => setOpen(true)}
               >
                 <Trash2 />
-                Delete
+                {t('actions.delete')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <DeleteConfirmDialog
-            title={'Delete Patient'}
+            title={t('delete.title')}
             description={
-              <>
-                Are you sure you want to delete <strong>{patient.name}</strong>?
-                This action cannot be undone.
-              </>
+              <Trans
+                i18n={i18next}
+                t={t}
+                ns='patients'
+                i18nKey='delete.description'
+                values={{ name: patient.name }}
+                components={{ strong: <strong /> }}
+              />
             }
             open={open}
             onOpenChange={setOpen}
