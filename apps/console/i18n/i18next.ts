@@ -17,7 +17,7 @@ i18next
   .use(resourcesToBackend(loadTranslationBundle))
   .init({
     // debug: true,
-    ns: ['common', 'validation'],
+    ns: ['common', 'validation', 'auth'],
     supportedLngs: languages,
     fallbackLng,
     fallbackNS: defaultNS,

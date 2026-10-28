@@ -4,7 +4,12 @@ import { FieldDescription } from '@/components/ui/field'
 import { SignUpForm } from '@/lib/definitions'
 import { UseFormReturn, useWatch } from 'react-hook-form'
 import { User } from '@/auth-client'
-import { getPasswordRequirementStatus } from '@virtality/shared/utils'
+import {
+  getPasswordRequirementStatus,
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+} from '@virtality/shared/utils'
+import { useClientT } from '@/i18n/use-client-t'
 
 interface SignupFormProps {
   id?: string
@@ -34,17 +39,18 @@ const PasswordRequirement = ({
 )
 
 const SignupForm = ({ id, form, onSubmit }: SignupFormProps) => {
+  const { t } = useClientT('auth')
   const password = useWatch({ control: form.control, name: 'password' }) ?? ''
   const passwordRequirementStatus = getPasswordRequirementStatus(password)
 
   return (
     <form id={id} onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
-      <FormInput control={form.control} name='name' label='Name *' />
-      <FormInput control={form.control} name='email' label='Email *' />
+      <FormInput control={form.control} name='name' label={t('field.name')} />
+      <FormInput control={form.control} name='email' label={t('field.email')} />
       <FormField
         control={form.control}
         name='password'
-        label='Password *'
+        label={t('field.password')}
         hideError
       >
         {(field) => (
@@ -52,19 +58,22 @@ const SignupForm = ({ id, form, onSubmit }: SignupFormProps) => {
             <Input type='password' {...field} value={field.value ?? ''} />
             <PasswordRequirement
               satisfied={passwordRequirementStatus.length}
-              label='Password must be between 8 and 16 characters long.'
+              label={t('signUp.passwordLength', {
+                min: PASSWORD_MIN_LENGTH,
+                max: PASSWORD_MAX_LENGTH,
+              })}
             />
             <PasswordRequirement
               satisfied={passwordRequirementStatus.uppercase}
-              label='Password must contain at least one uppercase letter.'
+              label={t('signUp.passwordUppercase')}
             />
             <PasswordRequirement
               satisfied={passwordRequirementStatus.lowercase}
-              label='Password must contain at least one lowercase letter.'
+              label={t('signUp.passwordLowercase')}
             />
             <PasswordRequirement
               satisfied={passwordRequirementStatus.digit}
-              label='Password must contain at least one digit.'
+              label={t('signUp.passwordDigit')}
             />
           </div>
         )}

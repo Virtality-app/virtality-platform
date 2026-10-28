@@ -13,6 +13,7 @@ import {
   DEFAULT_POST_LOGIN_PATH,
   toSocialSignInCallbackUrl,
 } from '@/lib/sign-in-redirect'
+import { useClientT } from '@/i18n/use-client-t'
 
 interface SocialSignInButtonProps {
   testerCode?: string
@@ -25,6 +26,7 @@ const SocialSignInButton = ({
   testerCode,
   postLoginPath = DEFAULT_POST_LOGIN_PATH,
 }: SocialSignInButtonProps) => {
+  const { t } = useClientT('auth')
   const [isRunning, setIsRunning] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -75,7 +77,7 @@ const SocialSignInButton = ({
         ) : (
           <>
             <SiGoogle color={SiGoogleHex} />
-            <span>{'Sign-in with Google'}</span>
+            <span>{t('signIn.google')}</span>
           </>
         )}
       </Button>

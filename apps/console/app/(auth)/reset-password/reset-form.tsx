@@ -17,6 +17,7 @@ import { FormInput } from '@/components/ui/form'
 import { authClient } from '@/auth-client'
 import { useRouter } from 'next/navigation'
 import { notify } from '@/lib/notify'
+import { useClientT } from '@/i18n/use-client-t'
 
 const ResetSchema = z.object({
   newPassword: z.string().check(isValidPassword),
@@ -25,6 +26,7 @@ const ResetSchema = z.object({
 type ResetForm = z.infer<typeof ResetSchema>
 const ResetForm = ({ token }: { token?: string }) => {
   const router = useRouter()
+  const { t } = useClientT(['auth', 'common'])
 
   const form = useForm<ResetForm>({
     resolver: zodResolver(ResetSchema),
@@ -35,7 +37,7 @@ const ResetForm = ({ token }: { token?: string }) => {
   const { isSubmitting } = form.formState
 
   if (!token) {
-    throw Error('Invalid Token')
+    throw Error(t('resetPassword.invalidToken'))
   }
 
   const onSubmit = async (values: ResetForm) => {
@@ -45,14 +47,14 @@ const ResetForm = ({ token }: { token?: string }) => {
       const { error } = await authClient.resetPassword({ newPassword, token })
 
       if (error) {
-        notify.error(error.message ?? 'Failed to reset password')
+        notify.error(error.message ?? t('resetPassword.failed'))
         return
       }
 
       router.push('/')
     } catch (error) {
       console.error(error)
-      notify.error('Failed to reset password')
+      notify.error(t('resetPassword.failed'))
     }
   }
 
@@ -60,11 +62,10 @@ const ResetForm = ({ token }: { token?: string }) => {
     <Card className='w-full max-w-lg'>
       <CardHeader>
         <CardTitle className='text-2xl font-bold'>
-          Reset your password
+          {t('resetPassword.title')}
         </CardTitle>
         <CardDescription className='text-muted-foreground text-sm'>
-          Enter your account email and we will send a link to reset your
-          password.
+          {t('resetPassword.description')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -76,7 +77,7 @@ const ResetForm = ({ token }: { token?: string }) => {
           <FormInput
             control={form.control}
             name='newPassword'
-            label='New Password'
+            label={t('field.newPassword')}
             type='password'
           />
         </form>
@@ -85,7 +86,7 @@ const ResetForm = ({ token }: { token?: string }) => {
         <div className='flex w-full gap-2'>
           <Button asChild>
             <Link href='/' className='flex-1'>
-              Back
+              {t('common:btn.back')}
             </Link>
           </Button>
           <Button
@@ -94,7 +95,9 @@ const ResetForm = ({ token }: { token?: string }) => {
             variant='primary'
             className='flex-1'
           >
-            {isSubmitting ? 'Submitting...' : 'Submit'}
+            {isSubmitting
+              ? t('resetPassword.submitting')
+              : t('common:btn.submit')}
           </Button>
         </div>
       </CardFooter>

@@ -11,6 +11,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { Field, FieldError, FieldLabel } from '../ui/field'
 import { warmUpSocketServer } from '@/lib/warm-up-socket-server'
 import { DEFAULT_POST_LOGIN_PATH } from '@/lib/sign-in-redirect'
+import { useClientT } from '@/i18n/use-client-t'
 
 type EmailSignInProps = {
   postLoginPath?: string
@@ -22,6 +23,7 @@ const EmailSignIn = ({
   testerCode,
 }: EmailSignInProps) => {
   const router = useRouter()
+  const { t } = useClientT('auth')
   const [loading, setLoading] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
   const form = useForm<SignInForm>({
@@ -54,7 +56,7 @@ const EmailSignIn = ({
     } catch (error) {
       console.error('Error signing in: ', error)
       setLoading(false)
-      setAuthError('Unexpected error occurred. Please contact support.')
+      setAuthError(t('signIn.unexpectedError'))
     }
   }
 
@@ -66,7 +68,7 @@ const EmailSignIn = ({
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor={field.name}>Email *</FieldLabel>
+              <FieldLabel htmlFor={field.name}>{t('field.email')}</FieldLabel>
               <Input
                 {...field}
                 id={field.name}
@@ -83,7 +85,9 @@ const EmailSignIn = ({
           control={form.control}
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor={field.name}>Password *</FieldLabel>
+              <FieldLabel htmlFor={field.name}>
+                {t('field.password')}
+              </FieldLabel>
               <Input
                 {...field}
                 id={field.name}
@@ -95,7 +99,7 @@ const EmailSignIn = ({
           )}
         />
         <Button type='submit' size='lg' disabled={loading}>
-          {loading ? <Loader2 className='animate-spin' /> : 'Sign In'}
+          {loading ? <Loader2 className='animate-spin' /> : t('signIn.submit')}
         </Button>
         {authError && <div className='text-red-500'>{authError}</div>}
       </div>

@@ -6,6 +6,10 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, '.'),
       '@virtality/ui': path.resolve(__dirname, '../../packages/ui/src'),
+      '@virtality/shared/translations': path.resolve(
+        __dirname,
+        '../../packages/shared/src/translations/index.ts',
+      ),
       '@virtality/shared/utils': path.resolve(
         __dirname,
         '../../packages/shared/src/utils/index.ts',

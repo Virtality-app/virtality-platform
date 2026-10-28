@@ -26,12 +26,15 @@ import {
   readAccessCodeFromSearchParams,
   signInHref,
 } from '@/lib/auth-access-code-url'
+import { Trans } from 'react-i18next'
+import { useClientT } from '@/i18n/use-client-t'
 
 const baseURL = getConsoleUrl()
 const websiteURL = getWebsiteUrl()
 
 const SignUp = () => {
   const router = useRouter()
+  const { t } = useClientT(['auth', 'common'])
   const searchParams = useSearchParams()
   const urlAccessCode = readAccessCodeFromSearchParams(searchParams)
   const [testerCode, setTesterCode] = useState(urlAccessCode)
@@ -70,11 +73,11 @@ const SignUp = () => {
       <Card className='w-full max-w-lg'>
         <CardHeader>
           <CardTitle className='text-2xl font-bold'>
-            Sign up with Virtality
+            {t('signUp.title')}
           </CardTitle>
           <CardDescription className='text-muted-foreground space-y-2 text-sm'>
-            <p>{'Please enter your credentials to create your new account.'}</p>
-            <p className='text-xs'>{'Fields with * are required.'}</p>
+            <p>{t('signUp.description')}</p>
+            <p className='text-xs'>{t('signUp.requiredNote')}</p>
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -84,7 +87,7 @@ const SignUp = () => {
               htmlFor='tester-code'
               className='text-muted-foreground text-xs'
             >
-              Redeem code
+              {t('field.redeemCode')}
             </Label>
             <Input
               id='tester-code'
@@ -103,7 +106,7 @@ const SignUp = () => {
           <div className='flex w-full gap-2'>
             <Button asChild>
               <Link href='/' className='flex-1'>
-                Back
+                {t('common:btn.back')}
               </Link>
             </Button>
             <Button
@@ -115,36 +118,39 @@ const SignUp = () => {
               {form.formState.isSubmitting ? (
                 <Loader2 className='animate-spin' />
               ) : (
-                'Continue'
+                t('common:btn.continue')
               )}
             </Button>
           </div>
           <p className='text-muted-foreground text-sm'>
-            Already have an account?{' '}
+            {t('signUp.hasAccount')}{' '}
             <Link
               href={signInHref(testerCode)}
               className='text-blue-600 hover:underline'
             >
-              Sign in
+              {t('signUp.signInLink')}
             </Link>
           </p>
           <div>
             <p className='text-muted-foreground text-xs'>
-              By creating an account you agree to the{' '}
-              <Link
-                href='terms'
-                className='hover:text-vital-blue-700 underline'
-              >
-                Terms of Service
-              </Link>{' '}
-              and our{' '}
-              <Link
-                href='privacy'
-                className='hover:text-vital-blue-700 underline'
-              >
-                Privacy Policy
-              </Link>
-              .
+              <Trans
+                t={t}
+                i18nKey='signUp.agreement'
+                components={{
+                  terms: (
+                    <Link
+                      href='terms'
+                      className='hover:text-vital-blue-700 underline'
+                    />
+                  ),
+                  privacy: (
+                    <Link
+                      href='privacy'
+                      className='hover:text-vital-blue-700 underline'
+                    />
+                  ),
+                }}
+              />
             </p>
           </div>
         </CardFooter>

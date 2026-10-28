@@ -1,8 +1,10 @@
+import enAuth from './en/auth.json' with { type: 'json' }
 import enAvatar from './en/avatar.json' with { type: 'json' }
 import enCommon from './en/common.json' with { type: 'json' }
 import enGlossary from './en/glossary.json' with { type: 'json' }
 import enPatientDashboard from './en/patient-dashboard.json' with { type: 'json' }
 import enValidation from './en/validation.json' with { type: 'json' }
+import elAuth from './el/auth.json' with { type: 'json' }
 import elAvatar from './el/avatar.json' with { type: 'json' }
 import elCommon from './el/common.json' with { type: 'json' }
 import elGlossary from './el/glossary.json' with { type: 'json' }
@@ -13,6 +15,7 @@ export const TRANSLATION_LOCALES = ['en', 'el'] as const
 export type TranslationLocale = (typeof TRANSLATION_LOCALES)[number]
 
 export const TRANSLATION_NAMESPACES = [
+  'auth',
   'avatar',
   'common',
   'glossary',
@@ -57,6 +60,7 @@ export function unflattenMessages(flat: FlatMessages): NestedMessages {
 
 /** English defaults: the one source of translation keys. */
 export const translationCatalog: Record<TranslationNamespace, FlatMessages> = {
+  auth: flatten(enAuth),
   avatar: flatten(enAvatar),
   common: flatten(enCommon),
   glossary: flatten(enGlossary),
@@ -66,6 +70,7 @@ export const translationCatalog: Record<TranslationNamespace, FlatMessages> = {
 
 /** Greek drafts, served until a human approves or edits a key. */
 export const greekDrafts: Record<TranslationNamespace, FlatMessages> = {
+  auth: flatten(elAuth),
   avatar: flatten(elAvatar),
   common: flatten(elCommon),
   glossary: flatten(elGlossary),

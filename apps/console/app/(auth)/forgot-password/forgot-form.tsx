@@ -16,16 +16,19 @@ import { z } from 'zod/v4'
 import { authClient } from '@/auth-client'
 import { CheckCircle } from 'lucide-react'
 import { getConsoleUrl } from '@virtality/shared/types'
+import { useClientT } from '@/i18n/use-client-t'
+import { translateMessage } from '@/i18n/translate-message'
 
 const baseURL = getConsoleUrl()
 
 const ResetSchema = z.object({
-  email: z.email({ message: '• Provide valid email (example@domain.com)' }),
+  email: z.email({ error: translateMessage('invalid_email') }),
 })
 
 type ForgotForm = z.infer<typeof ResetSchema>
 
 const ForgotForm = () => {
+  const { t } = useClientT(['auth', 'common'])
   const form = useForm<ForgotForm>({
     resolver: zodResolver(ResetSchema),
     mode: 'onChange',
@@ -45,18 +48,17 @@ const ForgotForm = () => {
     <Card className='w-full max-w-lg'>
       <CardHeader>
         <CardTitle className='text-2xl font-bold'>
-          Reset your password
+          {t('forgotPassword.title')}
         </CardTitle>
         <CardDescription className='text-muted-foreground text-sm'>
-          Enter your account email and we will send a link to reset your
-          password.
+          {t('forgotPassword.description')}
         </CardDescription>
       </CardHeader>
       <CardContent>
         {isSubmitSuccessful ? (
           <div>
             <CheckCircle />
-            <p>Reset email was send successfully, check your email.</p>
+            <p>{t('forgotPassword.sent')}</p>
           </div>
         ) : (
           <form
@@ -67,7 +69,7 @@ const ForgotForm = () => {
             <FormInput
               control={form.control}
               name='email'
-              label='Email'
+              label={t('common:form.email')}
               type='email'
             />
           </form>
@@ -77,7 +79,7 @@ const ForgotForm = () => {
         <div className='flex w-full gap-2'>
           <Button asChild>
             <Link href='/' className='flex-1'>
-              Back
+              {t('common:btn.back')}
             </Link>
           </Button>
           <Button
@@ -87,7 +89,9 @@ const ForgotForm = () => {
             className='flex-1'
             disabled={isSubmitSuccessful}
           >
-            {isSubmitting ? 'Sending...' : 'Send reset email'}
+            {isSubmitting
+              ? t('forgotPassword.sending')
+              : t('forgotPassword.send')}
           </Button>
         </div>
       </CardFooter>

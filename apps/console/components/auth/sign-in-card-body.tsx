@@ -14,6 +14,7 @@ import {
   signUpHref,
 } from '@/lib/auth-access-code-url'
 import { resolvePostLoginPath } from '@/lib/sign-in-redirect'
+import { useClientT } from '@/i18n/use-client-t'
 
 const TESTER_CODE_STORAGE_KEY = 'virtality_tester_code'
 
@@ -41,6 +42,7 @@ export const clearStoredTesterCode = () => {
 }
 
 const SignInCardBody = () => {
+  const { t } = useClientT('auth')
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectParam = searchParams.get('redirect')
@@ -63,7 +65,7 @@ const SignInCardBody = () => {
             htmlFor='tester-code'
             className='text-muted-foreground text-xs'
           >
-            Redeem code
+            {t('field.redeemCode')}
           </Label>
           <Input
             id='tester-code'
@@ -85,22 +87,22 @@ const SignInCardBody = () => {
       />
       <div className='flex w-full flex-col gap-2'>
         <p className='text-muted-foreground mt-6 text-sm'>
-          {"Don't have an account? "}
+          {t('signIn.noAccount')}{' '}
           <Link
             href={signUpHref(testerCode)}
             className='text-blue-600 hover:underline'
             aria-disabled
           >
-            Sign up here
+            {t('signIn.signUpLink')}
           </Link>
         </p>
         <p className='text-muted-foreground text-sm'>
-          Forgot your password?{' '}
+          {t('signIn.forgotPrompt')}{' '}
           <Link
             href='/forgot-password'
             className='text-blue-600 hover:underline'
           >
-            Reset it
+            {t('signIn.resetLink')}
           </Link>
         </p>
       </div>

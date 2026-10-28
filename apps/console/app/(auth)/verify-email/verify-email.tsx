@@ -18,6 +18,7 @@ import {
   useIsUserVerified,
 } from '@virtality/react-query'
 import { getConsoleUrl } from '@virtality/shared/types'
+import { useClientT } from '@/i18n/use-client-t'
 
 const COOKIE_NAME = 'verification_time'
 
@@ -25,6 +26,7 @@ const baseURL = getConsoleUrl()
 
 const VerifyEmail = ({ remainingTime }: { remainingTime?: number }) => {
   const router = useRouter()
+  const { t } = useClientT('auth')
   const [countdown, setCountdown] = useState(remainingTime ?? 60)
   const [canResend, setCanResend] = useState(
     (!remainingTime && countdown <= 0) || remainingTime === 0,
@@ -87,10 +89,10 @@ const VerifyEmail = ({ remainingTime }: { remainingTime?: number }) => {
             </div>
             <div className='space-y-2'>
               <CardTitle className='text-2xl font-semibold text-balance'>
-                Email verified
+                {t('verifyEmail.verifiedTitle')}
               </CardTitle>
               <CardDescription className='text-base text-pretty'>
-                Redirecting you now...
+                {t('verifyEmail.redirecting')}
               </CardDescription>
             </div>
           </CardHeader>
@@ -108,10 +110,10 @@ const VerifyEmail = ({ remainingTime }: { remainingTime?: number }) => {
           </div>
           <div className='space-y-2'>
             <CardTitle className='text-2xl font-semibold text-balance'>
-              Check your email
+              {t('verifyEmail.title')}
             </CardTitle>
             <CardDescription className='text-base text-pretty'>
-              {"We've sent a verification link to"}
+              {t('verifyEmail.sentTo')}
             </CardDescription>
           </div>
         </CardHeader>
@@ -124,9 +126,7 @@ const VerifyEmail = ({ remainingTime }: { remainingTime?: number }) => {
             <div className='bg-muted/50 flex items-start gap-3 rounded-lg p-4'>
               <CheckCircle2 className='text-vital-blue-700 mt-0.5 size-5 shrink-0' />
               <p className='text-muted-foreground text-sm leading-relaxed'>
-                {
-                  "Click the link in the email to verify your account. If you don't see it, check your spam folder."
-                }
+                {t('verifyEmail.instructions')}
               </p>
             </div>
 
@@ -139,21 +139,21 @@ const VerifyEmail = ({ remainingTime }: { remainingTime?: number }) => {
                 size='lg'
               >
                 {isResending
-                  ? 'Sending...'
+                  ? t('verifyEmail.sending')
                   : canResend
-                    ? 'Resend verification email'
-                    : `Resend in ${countdown}s`}
+                    ? t('verifyEmail.resend')
+                    : t('verifyEmail.resendIn', { seconds: countdown })}
               </Button>
             </div>
 
             <p className='text-muted-foreground text-center text-xs'>
-              Wrong email address?{' '}
+              {t('verifyEmail.wrongEmail')}{' '}
               <Button asChild variant='link'>
                 <Link
                   href='/'
                   className='text-vital-blue-700 p-0! hover:underline'
                 >
-                  Go back
+                  {t('verifyEmail.goBack')}
                 </Link>
               </Button>
             </p>

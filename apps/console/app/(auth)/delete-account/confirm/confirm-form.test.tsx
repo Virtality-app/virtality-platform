@@ -24,6 +24,10 @@ const mocks = vi.hoisted(() => ({
   approveOptions: null as ApproveOptions | null,
 }))
 
+vi.mock('@/i18n/use-client-t', async () =>
+  (await import('@/i18n/test-t')).useClientTMock(),
+)
+
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: mocks.push }),
 }))

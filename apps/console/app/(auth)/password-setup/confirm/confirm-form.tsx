@@ -19,22 +19,22 @@ import {
   useORPC,
 } from '@virtality/react-query'
 import { useQueryClient } from '@tanstack/react-query'
-import { INVALID_APPROVAL_LINK_MESSAGE } from '@virtality/shared/utils'
+import { useClientT } from '@/i18n/use-client-t'
 
 type Session = ReturnType<typeof authClient.useSession>['data']
 
 const getReturnNavigation = (
   session: Session,
   canReturnToProfile: boolean,
-): { href: string; label: string } => {
+): { href: string; labelKey: string } => {
   if (canReturnToProfile && session?.user) {
     return {
       href: `/user/${session.user.id}/profile`,
-      label: 'Back to profile',
+      labelKey: 'approval.backToProfile',
     }
   }
 
-  return { href: '/sign-in', label: 'Sign in' }
+  return { href: '/sign-in', labelKey: 'approval.signIn' }
 }
 
 const InvalidLinkCard = ({
@@ -44,17 +44,22 @@ const InvalidLinkCard = ({
   session: Session
   canReturnToProfile: boolean
 }) => {
+  const { t } = useClientT(['auth', 'common'])
   const returnNavigation = getReturnNavigation(session, canReturnToProfile)
 
   return (
     <Card className='w-full max-w-lg'>
       <CardHeader>
-        <CardTitle className='text-2xl font-bold'>Invalid link</CardTitle>
-        <CardDescription>{INVALID_APPROVAL_LINK_MESSAGE}</CardDescription>
+        <CardTitle className='text-2xl font-bold'>
+          {t('approval.invalidTitle')}
+        </CardTitle>
+        <CardDescription>{t('approval.invalidMessage')}</CardDescription>
       </CardHeader>
       <CardFooter>
         <Button asChild className='ml-auto'>
-          <Link href={returnNavigation.href}>{returnNavigation.label}</Link>
+          <Link href={returnNavigation.href}>
+            {t(returnNavigation.labelKey)}
+          </Link>
         </Button>
       </CardFooter>
     </Card>
@@ -63,6 +68,7 @@ const InvalidLinkCard = ({
 
 const PasswordSetupConfirmForm = ({ token }: { token?: string }) => {
   const router = useRouter()
+  const { t } = useClientT(['auth', 'common'])
   const orpc = useORPC()
   const queryClient = useQueryClient()
   const { data: session } = authClient.useSession()
@@ -88,7 +94,7 @@ const PasswordSetupConfirmForm = ({ token }: { token?: string }) => {
         setErrorMessage(null)
       },
       onError: () => {
-        setErrorMessage(INVALID_APPROVAL_LINK_MESSAGE)
+        setErrorMessage(t('approval.invalidMessage'))
       },
     })
 
@@ -106,11 +112,9 @@ const PasswordSetupConfirmForm = ({ token }: { token?: string }) => {
       <Card className='w-full max-w-lg'>
         <CardHeader>
           <CardTitle className='text-2xl font-bold'>
-            Checking approval link
+            {t('approval.checkingTitle')}
           </CardTitle>
-          <CardDescription>
-            Please wait while we verify your link.
-          </CardDescription>
+          <CardDescription>{t('approval.checkingDescription')}</CardDescription>
         </CardHeader>
       </Card>
     )
@@ -133,12 +137,14 @@ const PasswordSetupConfirmForm = ({ token }: { token?: string }) => {
       <Card className='w-full max-w-lg'>
         <CardHeader>
           <CardTitle className='text-2xl font-bold'>
-            {isChange ? 'Password changed' : 'Password set'}
+            {isChange
+              ? t('passwordSetup.changedTitle')
+              : t('passwordSetup.setTitle')}
           </CardTitle>
           <CardDescription>
             {isChange
-              ? 'Your new password has been approved and is now active.'
-              : 'Your password has been approved. You can now sign in with email and password.'}
+              ? t('passwordSetup.changedDescription')
+              : t('passwordSetup.setDescription')}
           </CardDescription>
         </CardHeader>
         <CardFooter>
@@ -146,7 +152,7 @@ const PasswordSetupConfirmForm = ({ token }: { token?: string }) => {
             className='ml-auto'
             onClick={() => router.push(returnNavigation.href)}
           >
-            {returnNavigation.label}
+            {t(returnNavigation.labelKey)}
           </Button>
         </CardFooter>
       </Card>
@@ -157,12 +163,14 @@ const PasswordSetupConfirmForm = ({ token }: { token?: string }) => {
     <Card className='w-full max-w-lg'>
       <CardHeader>
         <CardTitle className='text-2xl font-bold'>
-          {isChange ? 'Approve password change' : 'Approve password setup'}
+          {isChange
+            ? t('passwordSetup.approveChangeTitle')
+            : t('passwordSetup.approveSetupTitle')}
         </CardTitle>
         <CardDescription>
           {isChange
-            ? 'Confirm that you want to change your account password.'
-            : 'Confirm that you want to add password sign-in to your account.'}
+            ? t('passwordSetup.confirmChange')
+            : t('passwordSetup.confirmSetup')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -170,22 +178,24 @@ const PasswordSetupConfirmForm = ({ token }: { token?: string }) => {
           <p className='text-destructive text-sm'>{errorMessage}</p>
         ) : (
           <p className='text-muted-foreground text-sm'>
-            Press approve to finish{' '}
-            {isChange ? 'changing your password' : 'setting your password'}.
-            Opening this page did not change your account.
+            {isChange
+              ? t('passwordSetup.pressApproveChange')
+              : t('passwordSetup.pressApproveSetup')}
           </p>
         )}
       </CardContent>
       <CardFooter className='flex gap-2'>
         <Button asChild variant='outline'>
-          <Link href={returnNavigation.href}>Cancel</Link>
+          <Link href={returnNavigation.href}>{t('common:btn.cancel')}</Link>
         </Button>
         <Button
           className='ml-auto'
           disabled={isApproving}
           onClick={() => approve({ token })}
         >
-          {isApproving ? 'Approving...' : 'Approve'}
+          {isApproving
+            ? t('passwordSetup.approving')
+            : t('passwordSetup.approve')}
         </Button>
       </CardFooter>
     </Card>

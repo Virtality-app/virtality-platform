@@ -17,22 +17,22 @@ import {
   useApprovePendingAccountDeletion,
   useInspectPendingAccountDeletion,
 } from '@virtality/react-query'
-import { INVALID_APPROVAL_LINK_MESSAGE } from '@virtality/shared/utils'
+import { useClientT } from '@/i18n/use-client-t'
 
 type Session = ReturnType<typeof authClient.useSession>['data']
 
 const getReturnNavigation = (
   session: Session,
   canReturnToProfile: boolean,
-): { href: string; label: string } => {
+): { href: string; labelKey: string } => {
   if (canReturnToProfile && session?.user) {
     return {
       href: `/user/${session.user.id}/profile`,
-      label: 'Back to profile',
+      labelKey: 'approval.backToProfile',
     }
   }
 
-  return { href: '/sign-in', label: 'Sign in' }
+  return { href: '/sign-in', labelKey: 'approval.signIn' }
 }
 
 const InvalidLinkCard = ({
@@ -42,17 +42,22 @@ const InvalidLinkCard = ({
   session: Session
   canReturnToProfile: boolean
 }) => {
+  const { t } = useClientT(['auth', 'common'])
   const returnNavigation = getReturnNavigation(session, canReturnToProfile)
 
   return (
     <Card className='w-full max-w-lg'>
       <CardHeader>
-        <CardTitle className='text-2xl font-bold'>Invalid link</CardTitle>
-        <CardDescription>{INVALID_APPROVAL_LINK_MESSAGE}</CardDescription>
+        <CardTitle className='text-2xl font-bold'>
+          {t('approval.invalidTitle')}
+        </CardTitle>
+        <CardDescription>{t('approval.invalidMessage')}</CardDescription>
       </CardHeader>
       <CardFooter>
         <Button asChild className='ml-auto'>
-          <Link href={returnNavigation.href}>{returnNavigation.label}</Link>
+          <Link href={returnNavigation.href}>
+            {t(returnNavigation.labelKey)}
+          </Link>
         </Button>
       </CardFooter>
     </Card>
@@ -61,6 +66,7 @@ const InvalidLinkCard = ({
 
 const DeleteAccountConfirmForm = ({ token }: { token?: string }) => {
   const router = useRouter()
+  const { t } = useClientT(['auth', 'common'])
   const { data: session } = authClient.useSession()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
@@ -78,7 +84,7 @@ const DeleteAccountConfirmForm = ({ token }: { token?: string }) => {
         router.push('/goodbye')
       },
       onError: () => {
-        setErrorMessage(INVALID_APPROVAL_LINK_MESSAGE)
+        setErrorMessage(t('approval.invalidMessage'))
       },
     })
 
@@ -96,11 +102,9 @@ const DeleteAccountConfirmForm = ({ token }: { token?: string }) => {
       <Card className='w-full max-w-lg'>
         <CardHeader>
           <CardTitle className='text-2xl font-bold'>
-            Checking approval link
+            {t('approval.checkingTitle')}
           </CardTitle>
-          <CardDescription>
-            Please wait while we verify your link.
-          </CardDescription>
+          <CardDescription>{t('approval.checkingDescription')}</CardDescription>
         </CardHeader>
       </Card>
     )
@@ -119,26 +123,24 @@ const DeleteAccountConfirmForm = ({ token }: { token?: string }) => {
     <Card className='w-full max-w-lg'>
       <CardHeader>
         <CardTitle className='text-2xl font-bold'>
-          Approve account deletion
+          {t('deleteAccount.title')}
         </CardTitle>
-        <CardDescription>
-          Confirm that you want to permanently delete your account. This action
-          cannot be undone.
-        </CardDescription>
+        <CardDescription>{t('deleteAccount.description')}</CardDescription>
       </CardHeader>
       <CardContent>
         {errorMessage ? (
           <p className='text-destructive text-sm'>{errorMessage}</p>
         ) : (
           <p className='text-muted-foreground text-sm'>
-            Press approve to permanently delete your account. Opening this page
-            did not delete your account.
+            {t('deleteAccount.pressApprove')}
           </p>
         )}
       </CardContent>
       <CardFooter className='flex gap-2'>
         <Button asChild variant='outline'>
-          <Link href={getReturnNavigation(session, true).href}>Cancel</Link>
+          <Link href={getReturnNavigation(session, true).href}>
+            {t('common:btn.cancel')}
+          </Link>
         </Button>
         <Button
           className='ml-auto'
@@ -146,7 +148,9 @@ const DeleteAccountConfirmForm = ({ token }: { token?: string }) => {
           disabled={isApproving}
           onClick={() => approve({ token })}
         >
-          {isApproving ? 'Deleting...' : 'Delete account'}
+          {isApproving
+            ? t('deleteAccount.deleting')
+            : t('deleteAccount.delete')}
         </Button>
       </CardFooter>
     </Card>
