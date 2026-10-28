@@ -7,7 +7,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@virtality/ui/components/dropdown-menu'
 import { ColumnDef } from '@tanstack/react-table'
 import { Copy, Ellipsis, Pencil, Trash2 } from 'lucide-react'
 import ColumnHeader from '@/components/tables/header-cell'

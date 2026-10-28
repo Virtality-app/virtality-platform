@@ -23,7 +23,7 @@ import {
   PopoverTrigger,
   PopoverContent,
   PopoverArrow,
-} from '@/components/ui/popover'
+} from '@virtality/ui/components/popover'
 import ExerciseSettings from '@/components/exercise-library/exercise-settings'
 import { motion } from 'motion/react'
 import { useExercise } from '@virtality/react-query'
@@ -45,7 +45,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip'
+} from '@virtality/ui/components/tooltip'
 
 const ExerciseList = ({ className }: { className?: string }) => {
   const { state, handler, currExercise, requestDirectExerciseSelection } =

@@ -14,8 +14,8 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover'
-import { SelectItem } from '@/components/ui/select'
+} from '@virtality/ui/components/popover'
+import { SelectItem } from '@virtality/ui/components/select'
 import { cn } from '@/lib/utils'
 import { PatientFormInput } from '@/lib/definitions'
 import {

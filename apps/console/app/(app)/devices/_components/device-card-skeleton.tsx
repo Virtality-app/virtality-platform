@@ -1,4 +1,4 @@
-import { Skeleton } from '@/components/ui/skeleton'
+import { Skeleton } from '@virtality/ui/components/skeleton'
 
 const DeviceCardSkeleton = () => {
   return (

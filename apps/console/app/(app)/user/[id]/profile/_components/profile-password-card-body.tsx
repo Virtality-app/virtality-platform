@@ -1,7 +1,7 @@
 'use client'
 import { CardContent, CardFooter } from '@virtality/ui/components/card'
 import { type ActivePendingPasswordChange } from '@virtality/react-query'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Skeleton } from '@virtality/ui/components/skeleton'
 import { PasswordField } from './profile-password-field'
 import { SetPasswordField } from './profile-set-password-field'
 import { PendingPasswordState } from './profile-pending-password-state'

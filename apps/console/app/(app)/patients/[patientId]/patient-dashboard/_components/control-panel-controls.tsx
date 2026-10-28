@@ -15,7 +15,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip'
+} from '@virtality/ui/components/tooltip'
 
 let wakeLock: WakeLockSentinel | null = null
 

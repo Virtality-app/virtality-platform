@@ -1,6 +1,9 @@
 import { Suspense } from 'react'
 import { cookies } from 'next/headers'
-import { SidebarProvider, SIDEBAR_COOKIE_NAME } from '@/components/ui/sidebar'
+import {
+  SidebarProvider,
+  SIDEBAR_COOKIE_NAME,
+} from '@virtality/ui/components/sidebar'
 import RootSidebar from '@/components/layout/sidebar'
 import Navbar from '@/components/layout/navbar'
 import { RenewPromptBanner } from '@/components/layout/renew-prompt-banner'

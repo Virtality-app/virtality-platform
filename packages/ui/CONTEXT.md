@@ -27,11 +27,11 @@ Shared sidebar stack used by console and adminboard:
 
 Apps keep local nav config and layout composition; only the primitives live here.
 
-## Console re-exports
+## Importing shared primitives
 
-The console's `components/ui/` files for `dropdown-menu`, `popover`, `select`, `sheet`, `sidebar`, `skeleton`, `switch` and `tooltip` are one-line `export *` re-exports of the shared primitive. Change the shared file, not the re-export. Console-specific styling goes at the call site through `className`.
+Apps import a shared primitive straight from `@virtality/ui/components/<name>`. Don't add a local file that re-exports it. Change the shared file for shared behaviour, and pass app-specific styling at the call site through `className`.
 
-The console's `components/ui/` holds generic primitives only. Feature components live in `components/<feature>/` or in a route `_components/` folder.
+The console's `components/ui/` holds only primitives that have no shared version yet. Feature components live in `components/<feature>/` or in a route `_components/` folder.
 
 ## Primitive Migration Triage
 

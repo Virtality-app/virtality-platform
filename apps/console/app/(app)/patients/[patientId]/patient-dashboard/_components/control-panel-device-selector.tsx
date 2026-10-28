@@ -5,7 +5,7 @@ import {
   PopoverArrow,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover'
+} from '@virtality/ui/components/popover'
 import { Button } from '@virtality/ui/components/button'
 import VRControlPanel from '@/components/vr-control/vr-control-panel'
 import { cn } from '@/lib/utils'

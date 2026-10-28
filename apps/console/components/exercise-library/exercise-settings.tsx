@@ -6,7 +6,7 @@ import { CompleteExercise } from '@/types/models'
 import { useRef } from 'react'
 import { PatientDashboardValue } from '@/context/patient-dashboard-context'
 import { cn } from '@/lib/utils'
-import { Switch } from '@/components/ui/switch'
+import { Switch } from '@virtality/ui/components/switch'
 import { useFeatureFlagResult } from 'posthog-js/react'
 
 const applyBulkUpdate = (

@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import type { ComponentProps } from 'react'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import ModeSelector from './control-panel-mode-selector'
-import { TooltipProvider } from '@/components/ui/tooltip'
+import { TooltipProvider } from '@virtality/ui/components/tooltip'
 
 beforeAll(() => {
   Element.prototype.hasPointerCapture ??= () => false

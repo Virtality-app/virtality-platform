@@ -6,14 +6,14 @@ import {
   PopoverArrow,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover'
+} from '@virtality/ui/components/popover'
 import MapSelector from './map-selector'
 import AvatarSelector from './avatar-selector'
 import { PatientDashboardValue } from '@/context/patient-dashboard-context'
 import { Button } from '@virtality/ui/components/button'
 import { PROGRAM_EVENT } from '@virtality/shared/types'
 import { parseHeadsetBoolean, subscribe } from '@/lib/device-event-controller'
-import { Switch } from '@/components/ui/switch'
+import { Switch } from '@virtality/ui/components/switch'
 import { Label } from '@virtality/ui/components/label'
 import { cn } from '@/lib/utils'
 

@@ -7,7 +7,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover'
+} from '@virtality/ui/components/popover'
 import { cn } from '@/lib/utils'
 import { useImmersiveVideoSession } from '@/context/immersive-video-session-context'
 import { isImmersivePlaybackBlocking } from '@/lib/immersive-video-playback-reducer'

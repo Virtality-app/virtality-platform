@@ -6,7 +6,7 @@ import {
   TooltipTrigger,
   TooltipContent,
   TooltipArrow,
-} from '@/components/ui/tooltip'
+} from '@virtality/ui/components/tooltip'
 import {
   Card,
   CardContent,

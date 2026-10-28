@@ -26,7 +26,7 @@ import { Button } from '@virtality/ui/components/button'
 import { format } from 'date-fns'
 import { Activity, Calendar as CalendarIcon, TrendingUp } from 'lucide-react'
 import { motion } from 'motion/react'
-import { TooltipProvider } from '@/components/ui/tooltip'
+import { TooltipProvider } from '@virtality/ui/components/tooltip'
 import { SessionDatePicker } from './session-date-picker'
 import MetricInfo from './session-metric-info'
 

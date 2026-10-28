@@ -6,7 +6,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from '@virtality/ui/components/select'
 import { VRDevice } from '@/types/models'
 import { MouseEvent } from 'react'
 import useSocketConnection, {

@@ -7,7 +7,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from '@/components/ui/sidebar'
+} from '@virtality/ui/components/sidebar'
 import { authClient } from '@/auth-client'
 import { useBillingFeatureEnabled } from '@/hooks/use-billing-feature'
 import { useLiveEntitlementStanding } from '@/hooks/use-live-entitlement-standing'

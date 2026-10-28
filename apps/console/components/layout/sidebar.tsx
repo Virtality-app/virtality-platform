@@ -10,7 +10,7 @@ import {
   SidebarMenuItem,
   SidebarTrigger,
   useSidebar,
-} from '@/components/ui/sidebar'
+} from '@virtality/ui/components/sidebar'
 import { getVisibleSidebarLinks } from '@/data/static/sidebar-links'
 import Link from 'next/link'
 import SmallLogo from './sm-logo'

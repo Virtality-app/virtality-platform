@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Skeleton } from '@virtality/ui/components/skeleton'
 import { cn } from '@/lib/utils'
 import {
   formatHomeWindow,

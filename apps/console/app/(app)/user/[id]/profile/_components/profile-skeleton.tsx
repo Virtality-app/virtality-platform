@@ -5,7 +5,7 @@ import {
   CardHeader,
 } from '@virtality/ui/components/card'
 import { Separator } from '@virtality/ui/components/separator'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Skeleton } from '@virtality/ui/components/skeleton'
 import { cn } from '@/lib/utils'
 
 function ProfileTabsSkeleton() {

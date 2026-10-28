@@ -14,7 +14,7 @@ import {
   TooltipArrow,
   TooltipContent,
   TooltipTrigger,
-} from '@/components/ui/tooltip'
+} from '@virtality/ui/components/tooltip'
 
 export const SignInMethods = () => {
   const orpc = useORPC()

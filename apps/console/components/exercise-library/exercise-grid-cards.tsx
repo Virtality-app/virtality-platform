@@ -2,7 +2,7 @@ import {
   familyMembersForLibrarySelection,
   libraryFamilySelectionState,
 } from '@virtality/shared/utils'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Skeleton } from '@virtality/ui/components/skeleton'
 import FlipCard from './flip-card'
 import { directionBadgesWithSelection } from './exercise-grid-format'
 import type { ExerciseGridState } from './use-exercise-grid'

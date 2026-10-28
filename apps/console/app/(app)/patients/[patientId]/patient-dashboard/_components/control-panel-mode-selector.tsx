@@ -6,14 +6,14 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from '@virtality/ui/components/select'
 import { PatientDashboardValue } from '@/context/patient-dashboard-context'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip'
+} from '@virtality/ui/components/tooltip'
 import {
   canEnterImmersiveMode,
   isDashboardMode,

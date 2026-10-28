@@ -12,7 +12,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Input } from '@virtality/ui/components/input'
-import { SelectItem } from '@/components/ui/select'
+import { SelectItem } from '@virtality/ui/components/select'
 import { ControllerRenderProps, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {

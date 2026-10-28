@@ -9,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@virtality/ui/components/dropdown-menu'
 
 interface HeaderPropsCell<
   TData,

@@ -6,7 +6,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@virtality/ui/components/dropdown-menu'
 import { ColumnDef } from '@tanstack/react-table'
 import { Copy, Ellipsis, NotebookPen } from 'lucide-react'
 import { format } from 'date-fns'

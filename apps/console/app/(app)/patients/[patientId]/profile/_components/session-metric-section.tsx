@@ -15,7 +15,7 @@ import {
 import { ExtendedPatientSession } from '@/types/models'
 import { Exercise } from '@virtality/db'
 import { BarChart3, Zap, Target } from 'lucide-react'
-import { TooltipProvider } from '@/components/ui/tooltip'
+import { TooltipProvider } from '@virtality/ui/components/tooltip'
 import MetricInfo from './session-metric-info'
 
 const MetricSection = ({

@@ -1,6 +1,6 @@
 'use client'
 
-import { Skeleton } from '@/components/ui/skeleton'
+import { Skeleton } from '@virtality/ui/components/skeleton'
 
 export function homeGreeting(hour: number): string {
   if (hour < 12) return 'Good morning'

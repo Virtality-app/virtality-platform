@@ -8,7 +8,11 @@ import {
   parsePhoneNumber,
   Country,
 } from 'react-phone-number-input'
-import { Popover, PopoverContent, PopoverTrigger } from './popover'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@virtality/ui/components/popover'
 import { Button } from '@virtality/ui/components/button'
 import {
   Command,

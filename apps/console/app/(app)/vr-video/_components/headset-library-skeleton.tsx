@@ -1,4 +1,4 @@
-import { Skeleton } from '@/components/ui/skeleton'
+import { Skeleton } from '@virtality/ui/components/skeleton'
 import { cn } from '@/lib/utils'
 
 const ROW_TITLE_WIDTHS = ['w-48', 'w-36', 'w-56', 'w-40'] as const

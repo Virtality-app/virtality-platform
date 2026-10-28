@@ -6,7 +6,7 @@ import {
   Popover,
   PopoverTrigger,
   PopoverContent,
-} from '@/components/ui/popover'
+} from '@virtality/ui/components/popover'
 import { Label } from '@virtality/ui/components/label'
 import { Input } from '@virtality/ui/components/input'
 import { ChangeEvent, useState } from 'react'

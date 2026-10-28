@@ -2,7 +2,7 @@
 
 import { Play } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Skeleton } from '@virtality/ui/components/skeleton'
 import { START_SESSION_ANCHOR } from '@/lib/home-getting-started'
 import type { HomeDashboardData } from './use-home-dashboard-data'
 import { useStartSessionPicker } from './use-start-session-picker'

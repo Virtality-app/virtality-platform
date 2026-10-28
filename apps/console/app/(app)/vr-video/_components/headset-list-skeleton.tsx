@@ -1,4 +1,4 @@
-import { Skeleton } from '@/components/ui/skeleton'
+import { Skeleton } from '@virtality/ui/components/skeleton'
 import { cn } from '@/lib/utils'
 
 // Staggered widths so the placeholder rows read as distinct headsets rather

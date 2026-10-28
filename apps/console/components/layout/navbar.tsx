@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Avatar from '@/components/layout/avatar'
 import { Button } from '@virtality/ui/components/button'
-import { SidebarTrigger } from '@/components/ui/sidebar'
+import { SidebarTrigger } from '@virtality/ui/components/sidebar'
 import { Sidebar } from 'lucide-react'
 import { SubscribeRenewBanner } from '@/components/layout/subscribe-renew-banner'
 

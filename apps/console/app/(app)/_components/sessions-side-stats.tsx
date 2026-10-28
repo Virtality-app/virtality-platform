@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { formatRelative } from 'date-fns'
 import { Badge } from '@virtality/ui/components/badge'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Skeleton } from '@virtality/ui/components/skeleton'
 import { cn } from '@/lib/utils'
 import {
   formatHeadsetTime,

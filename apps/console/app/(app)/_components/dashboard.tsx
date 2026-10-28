@@ -3,7 +3,7 @@
 import { useMemo } from 'react'
 import useIsAuthed from '@/hooks/use-is-authed'
 import useMounted from '@/hooks/use-mounted'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Skeleton } from '@virtality/ui/components/skeleton'
 import AdminTool from './admin-tool'
 import AccountMismatchDialog from './account-mismatch-dialog'
 import HomeHeader from './home-header'

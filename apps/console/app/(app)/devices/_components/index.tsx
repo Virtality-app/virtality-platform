@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { SelectItem } from '@/components/ui/select'
+import { SelectItem } from '@virtality/ui/components/select'
 import { FormInput, FormSelect } from '@/components/ui/form'
 import DeviceCard from './device-card'
 import AddDeviceCard from './add-device-card'

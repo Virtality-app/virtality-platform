@@ -10,14 +10,14 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from '@virtality/ui/components/select'
 import {
   Tooltip,
   TooltipArrow,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip'
+} from '@virtality/ui/components/tooltip'
 import { Avatar } from '@virtality/db'
 import { X, Info } from 'lucide-react'
 import Image from 'next/image'

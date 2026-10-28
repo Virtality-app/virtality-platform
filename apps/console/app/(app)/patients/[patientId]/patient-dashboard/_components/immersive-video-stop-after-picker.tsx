@@ -8,7 +8,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover'
+} from '@virtality/ui/components/popover'
 import { useImmersiveVideoSession } from '@/context/immersive-video-session-context'
 import { formatStopAfterLabel } from '@/lib/immersive-video-auto-stop'
 import { cn } from '@/lib/utils'
