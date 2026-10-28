@@ -32,6 +32,7 @@ import {
 import { cn } from '@/lib/utils'
 import { PatientFormInput } from '@/lib/definitions'
 import {
+  ignoreEmptySelectValue,
   patientLanguageSelectValue,
   patientSexSelectValue,
 } from '@/lib/patient-form-validation'
@@ -287,8 +288,8 @@ const BasicInfo = ({ form, patient }: BasicInfoProps) => {
                     <FormLabel>{t('form.sex')} *</FormLabel>
                     <Select
                       name='sex'
-                      onValueChange={field.onChange}
-                      value={patientSexSelectValue(field.value)}
+                      onValueChange={ignoreEmptySelectValue(field.onChange)}
+                      value={patientSexSelectValue(field.value) ?? ''}
                     >
                       <FormControl>
                         <SelectTrigger
@@ -347,8 +348,8 @@ const BasicInfo = ({ form, patient }: BasicInfoProps) => {
                     <FormLabel>{t('language', { ns: 'glossary' })} *</FormLabel>
                     <Select
                       name='language'
-                      onValueChange={field.onChange}
-                      value={patientLanguageSelectValue(field.value)}
+                      onValueChange={ignoreEmptySelectValue(field.onChange)}
+                      value={patientLanguageSelectValue(field.value) ?? ''}
                     >
                       <FormControl>
                         <SelectTrigger
