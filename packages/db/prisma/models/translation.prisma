@@ -1,0 +1,15 @@
+// Console Translation Domain
+
+model Translation {
+  id          String   @id @default(uuid())
+  locale      String
+  namespace   String
+  key         String
+  value       String
+  sourceHash  String
+  updatedById String?
+  createdAt   DateTime @default(now()) @db.Timestamp(6)
+  updatedAt   DateTime @updatedAt @db.Timestamp(6)
+
+  @@unique([locale, namespace, key])
+}

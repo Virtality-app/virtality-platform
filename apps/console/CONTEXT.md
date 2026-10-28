@@ -358,3 +358,21 @@ Domain expert: "No, use **Settings-First Authoring** so they land on settings fi
 
 Dev: "Can they still open a separate Exercise Library dialog from the settings step?"  
 Domain expert: "Not in **Settings-First Authoring** flows: use Add exercises to open the catalog step."
+
+## Translations
+
+**Translation Key**:
+A namespaced identifier (for example `common` / `btn.save`) that code owns. Developers add keys with their English text in the repo; staff cannot create keys.
+_Avoid_: String id, message id
+
+**Translation Catalog**:
+The keys and English defaults in `packages/shared/src/translations/en/`, together with the Greek drafts in `el/`. It is the one source of keys for the console, server and adminboard.
+_Avoid_: Locale files, dictionary
+
+**Greek Draft**:
+A Greek value written in the repo by the agent that adds a key. Clinicians see it until a Greek speaker approves or edits the key in the adminboard, which saves a `Translation` row.
+_Avoid_: Machine translation, seed
+
+**Outdated Translation**:
+A saved value whose `sourceHash` no longer matches the current English of its key.
+_Avoid_: Stale, broken translation

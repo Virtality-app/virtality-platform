@@ -42,8 +42,10 @@ import { pendingAccountDeletion } from './procedures/pending-account-deletion/in
 import { devicePairing } from './procedures/device-pairing/index.ts'
 import { immersiveVideo } from './procedures/immersive-video.ts'
 import { deviceVideo } from './procedures/device-video.ts'
+import { translation } from './procedures/translation.ts'
 
 export const router = {
+  translation,
   me,
   user,
   pendingPasswordChange,
