@@ -1,5 +1,4 @@
 'use client'
-import { Input } from '@virtality/ui/components/input'
 import { Button } from '@virtality/ui/components/button'
 import {
   Dialog,
@@ -8,21 +7,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
+import { SelectItem } from '@/components/ui/select'
+import { FormInput, FormSelect } from '@/components/ui/form'
 import DeviceCard from './device-card'
 import AddDeviceCard from './add-device-card'
 import { DeviceSchema } from '@/lib/definitions'
@@ -103,94 +89,45 @@ const Devices = () => {
               <DialogTitle>Add New Device</DialogTitle>
             </DialogHeader>
 
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className='space-y-4'
+            <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+              <FormInput
+                control={form.control}
+                name='name'
+                label='Device Name'
+                autoComplete='off'
+                placeholder='Enter device name'
+                data-tour='device-name'
+              />
+
+              <FormSelect
+                control={form.control}
+                name='model'
+                label={<span className='sr-only'>Device Model</span>}
+                placeholder='Select a model'
+                triggerClassName='dark:border-zinc-200 dark:hover:border-zinc-400'
+                contentClassName='dark:border-zinc-200 dark:bg-zinc-800'
               >
-                <FormField
-                  control={form.control}
-                  name='name'
-                  render={({ field }) => (
-                    <FormItem className='flex flex-col justify-center'>
-                      <FormLabel className='dark:text-vital-blue-400 font-medium text-gray-800'>
-                        Device Name
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          autoComplete='off'
-                          placeholder='Enter device name'
-                          data-tour='device-name'
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage className='text-red-500 dark:text-red-500' />
-                    </FormItem>
-                  )}
-                />
+                <SelectItem
+                  value='Meta Quest 3S'
+                  className='dark:hover:bg-zinc-700'
+                >
+                  Meta Quest 3S
+                </SelectItem>
+              </FormSelect>
 
-                <FormField
-                  control={form.control}
-                  name='model'
-                  render={({ field }) => (
-                    <FormItem id='model'>
-                      <FormLabel hidden>Device Model</FormLabel>
-                      <Select
-                        name='model'
-                        onValueChange={field.onChange}
-                        defaultValue={field.value ?? ''}
-                      >
-                        <FormControl>
-                          <SelectTrigger className='dark:border-zinc-200 dark:hover:border-zinc-400'>
-                            <SelectValue placeholder='Select a model' />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className='dark:border-zinc-200 dark:bg-zinc-800'>
-                          {/* <SelectItem
-                            value='Meta Quest 3'
-                            className='dark:hover:bg-zinc-700'
-                          >
-                            Meta Quest 3
-                          </SelectItem> */}
-                          <SelectItem
-                            value='Meta Quest 3S'
-                            className='dark:hover:bg-zinc-700'
-                          >
-                            Meta Quest 3S
-                          </SelectItem>
-                          {/* <SelectItem
-                            value='Meta Quest Pro'
-                            className='dark:hover:bg-zinc-700'
-                          >
-                            Meta Quest Pro
-                          </SelectItem>
-                          <SelectItem
-                            value='Meta Quest 2'
-                            className='dark:hover:bg-zinc-700'
-                          >
-                            Meta Quest 2
-                          </SelectItem> */}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage className='text-red-500 dark:text-red-500' />
-                    </FormItem>
-                  )}
-                />
-
-                <DialogFooter className='pt-4'>
-                  <Button
-                    type='button'
-                    variant='outline'
-                    onClick={handleDialogOpen}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type='submit' data-tour='device-submit'>
-                    Add Device
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
+              <DialogFooter className='pt-4'>
+                <Button
+                  type='button'
+                  variant='outline'
+                  onClick={handleDialogOpen}
+                >
+                  Cancel
+                </Button>
+                <Button type='submit' data-tour='device-submit'>
+                  Add Device
+                </Button>
+              </DialogFooter>
+            </form>
           </DialogContent>
         </Dialog>
       </div>

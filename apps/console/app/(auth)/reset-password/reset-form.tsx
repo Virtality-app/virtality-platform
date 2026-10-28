@@ -13,15 +13,7 @@ import {
   CardTitle,
 } from '@virtality/ui/components/card'
 import Link from 'next/link'
-import { Input } from '@virtality/ui/components/input'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
+import { FormInput } from '@/components/ui/form'
 import { authClient } from '@/auth-client'
 import { useRouter } from 'next/navigation'
 import { notify } from '@/lib/notify'
@@ -76,27 +68,18 @@ const ResetForm = ({ token }: { token?: string }) => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form
-            id='reset-password-form'
-            onSubmit={form.handleSubmit(onSubmit)}
-            className='space-y-4'
-          >
-            <FormField
-              control={form.control}
-              name='newPassword'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>New Password</FormLabel>
-                  <FormControl>
-                    <Input {...field} type='password' />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </form>
-        </Form>
+        <form
+          id='reset-password-form'
+          onSubmit={form.handleSubmit(onSubmit)}
+          className='space-y-4'
+        >
+          <FormInput
+            control={form.control}
+            name='newPassword'
+            label='New Password'
+            type='password'
+          />
+        </form>
       </CardContent>
       <CardFooter className='flex-col gap-4'>
         <div className='flex w-full gap-2'>

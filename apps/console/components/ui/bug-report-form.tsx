@@ -12,23 +12,14 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Input } from '@virtality/ui/components/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Textarea } from '@virtality/ui/components/textarea'
+import { SelectItem } from '@/components/ui/select'
 import { ControllerRenderProps, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
-  Form,
-  FormControl,
   FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+  FormInput,
+  FormSelect,
+  FormTextarea,
 } from '@/components/ui/form'
 import Image from 'next/image'
 import { CheckCircle, Loader2, Trash2 } from 'lucide-react'
@@ -147,150 +138,102 @@ export const BugReportForm = ({ children }: BugReportFormProps) => {
                 Fill out the form below to report a bug.
               </DialogDescription>
             </DialogHeader>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className='space-y-4'
+            <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+              <FormInput
+                control={form.control}
+                name='title'
+                label={capitalize(t('form.title'))}
+                placeholder='Bug title'
+              />
+
+              <FormSelect
+                control={form.control}
+                name='platform'
+                label={capitalize(t('platform', { ns: 'glossary' }))}
+                placeholder='Select platform'
+                triggerClassName='w-full'
               >
-                <FormField
-                  control={form.control}
-                  name='title'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className='text-right'>
-                        {capitalize(t('form.title'))}
-                      </FormLabel>
-                      <FormControl>
-                        <Input placeholder='Bug title' {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <SelectItem value='web'>
+                  Web {capitalize(t('platform', { ns: 'glossary' }))}
+                </SelectItem>
+                <SelectItem value='vr'>
+                  VR {capitalize(t('application', { ns: 'glossary' }))}
+                </SelectItem>
+              </FormSelect>
 
-                <FormField
-                  control={form.control}
-                  name='platform'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className='text-right'>
-                        {capitalize(t('platform', { ns: 'glossary' }))}
-                      </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value ?? ''}
-                      >
-                        <FormControl className='col-span-3'>
-                          <SelectTrigger className='w-full'>
-                            <SelectValue placeholder='Select platform' />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value='web'>
-                            Web {capitalize(t('platform', { ns: 'glossary' }))}
-                          </SelectItem>
-                          <SelectItem value='vr'>
-                            VR{' '}
-                            {capitalize(t('application', { ns: 'glossary' }))}
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <FormTextarea
+                control={form.control}
+                name='description'
+                label={capitalize(t('form.description'))}
+                placeholder='Describe the bug...'
+              />
 
-                <FormField
-                  control={form.control}
-                  name='description'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className='text-right'>
-                        {capitalize(t('form.description'))}
-                      </FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder='Describe the bug...'
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name='image'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className='flex flex-col items-start text-right'>
-                        <span>{'Image'}</span>
-                        <span className='w-full rounded-md border p-2 text-left'>
-                          Choose Files
-                          <span className='font-normal'>
-                            {imageFiles.length === 0
-                              ? ' No files chosen'
-                              : ` ${imageFiles.length} File(s) chosen`}
-                          </span>
-                        </span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          type='file'
-                          accept='image/*'
-                          onChange={(event) => {
-                            handlePhotoUpload(event, field)
-                          }}
-                          multiple
-                          className='hidden'
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {imageFiles.length > 0 && (
-                  <div className='flex flex-wrap gap-2 pt-2'>
-                    {imageFiles.map((file, index) => (
-                      <div key={index} className='relative'>
-                        <Image
-                          src={file.previewUrl}
-                          alt={`Preview ${index + 1}`}
-                          width={80}
-                          height={80}
-                          className='size-20 rounded-md object-cover'
-                        />
-                        <div
-                          onClick={() => handlePhotoRemoval(file.previewUrl)}
-                          className='absolute top-0 flex size-20 cursor-pointer items-center rounded-md hover:bg-zinc-200/20 [&_svg]:hidden hover:[&_svg]:block'
-                        >
-                          <Trash2 className='mx-auto text-red-500' />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+              <FormField control={form.control} name='image' label='Image'>
+                {(field) => (
+                  <>
+                    <label
+                      htmlFor={field.id}
+                      className='w-full cursor-pointer rounded-md border p-2 text-left text-sm font-medium'
+                    >
+                      Choose Files
+                      <span className='font-normal'>
+                        {imageFiles.length === 0
+                          ? ' No files chosen'
+                          : ` ${imageFiles.length} File(s) chosen`}
+                      </span>
+                    </label>
+                    <Input
+                      id={field.id}
+                      name={field.name}
+                      type='file'
+                      accept='image/*'
+                      onChange={(event) => handlePhotoUpload(event, field)}
+                      multiple
+                      className='hidden'
+                    />
+                  </>
                 )}
+              </FormField>
 
-                <DialogFooter>
-                  <Button
-                    type='button'
-                    variant='outline'
-                    onClick={handleClearForm}
-                  >
-                    {t('btn.clear')}
-                  </Button>
-                  <Button variant='primary'>
-                    {isPending ? (
-                      <Loader2 className='animate-spin' />
-                    ) : (
-                      t('btn.submit')
-                    )}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
+              {imageFiles.length > 0 && (
+                <div className='flex flex-wrap gap-2 pt-2'>
+                  {imageFiles.map((file, index) => (
+                    <div key={index} className='relative'>
+                      <Image
+                        src={file.previewUrl}
+                        alt={`Preview ${index + 1}`}
+                        width={80}
+                        height={80}
+                        className='size-20 rounded-md object-cover'
+                      />
+                      <div
+                        onClick={() => handlePhotoRemoval(file.previewUrl)}
+                        className='absolute top-0 flex size-20 cursor-pointer items-center rounded-md hover:bg-zinc-200/20 [&_svg]:hidden hover:[&_svg]:block'
+                      >
+                        <Trash2 className='mx-auto text-red-500' />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <DialogFooter>
+                <Button
+                  type='button'
+                  variant='outline'
+                  onClick={handleClearForm}
+                >
+                  {t('btn.clear')}
+                </Button>
+                <Button variant='primary'>
+                  {isPending ? (
+                    <Loader2 className='animate-spin' />
+                  ) : (
+                    t('btn.submit')
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
           </>
         )}
       </DialogContent>

@@ -6,7 +6,6 @@ import { useForm } from 'react-hook-form'
 import { patientFormDefaultValues } from '@/lib/patient-form-defaults'
 import { PatientFormSchema, PatientFormInput } from '@/lib/definitions'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Form } from '@/components/ui/form'
 import { BodyAreas } from '@/types/models'
 import { getUUID } from '@/lib/utils'
 import useNavigationGuard from '@/hooks/use-navigation-guard'
@@ -150,35 +149,30 @@ const PatientForm = () => {
           </TabsTrigger>
           <TabsTrigger value='medical-history'>Medical History</TabsTrigger>
         </TabsList>
-        <Form {...form}>
-          <form
-            id='patient-form'
-            onSubmit={form.handleSubmit(onSubmit, onInvalid)}
-            className='max-h-[77svh] overflow-auto'
-          >
-            {/* Basic Info */}
-            <TabsContent
-              value='basic-info'
-              className='flex h-full flex-col pr-2'
-            >
-              {mounted && <BasicInfo form={form} />}
-            </TabsContent>
+        <form
+          id='patient-form'
+          onSubmit={form.handleSubmit(onSubmit, onInvalid)}
+          className='max-h-[77svh] overflow-auto'
+        >
+          {/* Basic Info */}
+          <TabsContent value='basic-info' className='flex h-full flex-col pr-2'>
+            {mounted && <BasicInfo form={form} />}
+          </TabsContent>
 
-            {/* Medical History */}
-            <TabsContent
-              value='medical-history'
-              className='mx-auto space-y-4 pr-2'
-            >
-              <MedicalHistory
-                form={form}
-                medHistoryDeltas={medHistoryDeltas}
-                initialBodyAreas={initialBodyAreas}
-                bodyAreas={bodyAreas}
-                onBodyAreasChange={setBodyAreas}
-              />
-            </TabsContent>
-          </form>
-        </Form>
+          {/* Medical History */}
+          <TabsContent
+            value='medical-history'
+            className='mx-auto space-y-4 pr-2'
+          >
+            <MedicalHistory
+              form={form}
+              medHistoryDeltas={medHistoryDeltas}
+              initialBodyAreas={initialBodyAreas}
+              bodyAreas={bodyAreas}
+              onBodyAreasChange={setBodyAreas}
+            />
+          </TabsContent>
+        </form>
       </Tabs>
 
       <Separator />

@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { usePatientDashboard } from '@/context/patient-dashboard-context'
-import { FormCheckbox, FormInput } from '@/components/ui/form-v2'
+import { FormCheckbox, FormInput } from '@/components/ui/form'
 import {
   PatientSessionSchema,
   PatientSessionForm,

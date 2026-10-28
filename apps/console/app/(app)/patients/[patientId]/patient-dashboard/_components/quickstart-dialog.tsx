@@ -21,7 +21,7 @@ import {
   ReusableProgramForm,
   reusableProgramExercisesForCreateSubmit,
 } from '@/lib/program-library-submit'
-import { FormInput } from '@/components/ui/form-v2'
+import { FormInput } from '@/components/ui/form'
 import { Exercise } from '@virtality/db'
 import { notify } from '@/lib/notify'
 import { generateUUID } from '@virtality/shared/utils'

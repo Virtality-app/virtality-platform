@@ -1,13 +1,6 @@
 import { Input } from '@virtality/ui/components/input'
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
+import { FormField, FormInput } from '@/components/ui/form'
+import { FieldDescription } from '@/components/ui/field'
 import { SignUpForm } from '@/lib/definitions'
 import { UseFormReturn, useWatch } from 'react-hook-form'
 import { User } from '@/auth-client'
@@ -26,7 +19,7 @@ const PasswordRequirement = ({
   satisfied: boolean
   label: string
 }) => (
-  <FormDescription>
+  <FieldDescription>
     <span
       className={
         satisfied
@@ -37,7 +30,7 @@ const PasswordRequirement = ({
       {satisfied ? '✓' : '✗'}
     </span>{' '}
     {label}
-  </FormDescription>
+  </FieldDescription>
 )
 
 const SignupForm = ({ id, form, onSubmit }: SignupFormProps) => {
@@ -45,69 +38,38 @@ const SignupForm = ({ id, form, onSubmit }: SignupFormProps) => {
   const passwordRequirementStatus = getPasswordRequirementStatus(password)
 
   return (
-    <Form {...form}>
-      <form
-        id={id}
-        onSubmit={form.handleSubmit(onSubmit)}
-        className='space-y-4'
+    <form id={id} onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+      <FormInput control={form.control} name='name' label='Name *' />
+      <FormInput control={form.control} name='email' label='Email *' />
+      <FormField
+        control={form.control}
+        name='password'
+        label='Password *'
+        hideError
       >
-        <FormField
-          control={form.control}
-          name='name'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Name *</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name='email'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email *</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name='password'
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Password *</FormLabel>
-              <FormControl>
-                <Input type='password' {...field} value={field.value ?? ''} />
-              </FormControl>
-
-              <PasswordRequirement
-                satisfied={passwordRequirementStatus.length}
-                label='Password must be between 8 and 16 characters long.'
-              />
-              <PasswordRequirement
-                satisfied={passwordRequirementStatus.uppercase}
-                label='Password must contain at least one uppercase letter.'
-              />
-              <PasswordRequirement
-                satisfied={passwordRequirementStatus.lowercase}
-                label='Password must contain at least one lowercase letter.'
-              />
-              <PasswordRequirement
-                satisfied={passwordRequirementStatus.digit}
-                label='Password must contain at least one digit.'
-              />
-            </FormItem>
-          )}
-        />
-      </form>
-    </Form>
+        {(field) => (
+          <div className='grid gap-2'>
+            <Input type='password' {...field} value={field.value ?? ''} />
+            <PasswordRequirement
+              satisfied={passwordRequirementStatus.length}
+              label='Password must be between 8 and 16 characters long.'
+            />
+            <PasswordRequirement
+              satisfied={passwordRequirementStatus.uppercase}
+              label='Password must contain at least one uppercase letter.'
+            />
+            <PasswordRequirement
+              satisfied={passwordRequirementStatus.lowercase}
+              label='Password must contain at least one lowercase letter.'
+            />
+            <PasswordRequirement
+              satisfied={passwordRequirementStatus.digit}
+              label='Password must contain at least one digit.'
+            />
+          </div>
+        )}
+      </FormField>
+    </form>
   )
 }
 

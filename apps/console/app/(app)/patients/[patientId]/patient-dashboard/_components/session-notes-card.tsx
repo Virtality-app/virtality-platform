@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from '@virtality/ui/components/card'
 import { Button } from '@virtality/ui/components/button'
-import { FormTextarea } from '@/components/ui/form-v2'
+import { FormTextarea } from '@/components/ui/form'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { SessionNotesSchema, SessionNotes } from '@virtality/shared/types'

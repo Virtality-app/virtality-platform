@@ -23,16 +23,3 @@ export function patientLanguageSelectValue(
 ): PatientLanguage | undefined {
   return language != null && isPatientLanguage(language) ? language : undefined
 }
-
-/**
- * Wraps a Radix Select `onValueChange` so it drops `''`. Radix's hidden
- * native select fires a change with `''` while the form resets to loaded
- * values, which would wipe the saved sex or language.
- */
-export function ignoreEmptySelectValue(
-  onChange: (value: string) => void,
-): (value: string) => void {
-  return (value) => {
-    if (value) onChange(value)
-  }
-}

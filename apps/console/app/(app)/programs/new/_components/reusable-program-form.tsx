@@ -6,18 +6,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useClientT } from '@/i18n/use-client-t'
 import { useRouter } from 'next/navigation'
 import { H2, P } from '@/components/ui/typography'
-import capitalize from 'lodash.capitalize'
 import ExerciseLibraryList from '@/components/ui/exercise-library-list'
 import ExerciseGrid from '@/components/ui/exercise-grid'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@virtality/ui/components/input'
+import { FormInput } from '@/components/ui/form'
 import { useExerciseLibrary } from '@/context/exercise-library-context'
 import LoadingScreen from '@/components/ui/loading-screen'
 import { generateUUID } from '@virtality/shared/utils'
@@ -222,32 +213,17 @@ const ReusableProgramFormView = ({
               </Button>
             </div>
           </div>
-          <Form {...form}>
-            <form
-              id='reusableProgramForm'
-              onSubmit={form.handleSubmit(onSubmit)}
-            >
-              {showProgramNameField && (
-                <FormField
-                  name='name'
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{capitalize(field.name)}</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          data-tour='program-name'
-                          className='max-w-62.5'
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
-            </form>
-          </Form>
+          <form id='reusableProgramForm' onSubmit={form.handleSubmit(onSubmit)}>
+            {showProgramNameField && (
+              <FormInput
+                control={form.control}
+                name='name'
+                label='Name'
+                data-tour='program-name'
+                inputClassName='max-w-62.5'
+              />
+            )}
+          </form>
           <div className='overflow-auto'>
             <ExerciseLibraryList showExerciseLibraryAccess={false} />
           </div>

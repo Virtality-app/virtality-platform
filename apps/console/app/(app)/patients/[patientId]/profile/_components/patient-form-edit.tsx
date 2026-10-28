@@ -7,7 +7,6 @@ import { useForm } from 'react-hook-form'
 import { patientFormDefaultValues } from '@/lib/patient-form-defaults'
 import { PatientFormSchema, PatientFormInput } from '@/lib/definitions'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Form } from '@/components/ui/form'
 import { BodyAreas, MedHistoryDeltas } from '@/types/models'
 import { cn } from '@/lib/utils'
 import useNavigationGuard from '@/hooks/use-navigation-guard'
@@ -259,34 +258,30 @@ const PatientFormEdit = ({ patientId }: PatientFormEditProps) => {
           <TabsTrigger value='medical-history'>Medical History</TabsTrigger>
           <TabsTrigger value='sessions'>Sessions</TabsTrigger>
         </TabsList>
-        <Form {...form}>
-          <form
-            id='patient-form'
-            onSubmit={form.handleSubmit(onSubmit, onInvalid)}
-            className='max-h-[73svh] overflow-auto'
-          >
-            {/* Basic Info */}
-            <TabsContent value='basic-info' className='flex flex-col pr-2'>
-              {mounted && patient && (
-                <BasicInfo form={form} patient={patient} />
-              )}
-            </TabsContent>
+        <form
+          id='patient-form'
+          onSubmit={form.handleSubmit(onSubmit, onInvalid)}
+          className='max-h-[73svh] overflow-auto'
+        >
+          {/* Basic Info */}
+          <TabsContent value='basic-info' className='flex flex-col pr-2'>
+            {mounted && patient && <BasicInfo form={form} patient={patient} />}
+          </TabsContent>
 
-            {/* Medical History */}
-            <TabsContent
-              value='medical-history'
-              className='mx-auto space-y-4 pr-2'
-            >
-              <MedicalHistory
-                form={form}
-                medHistoryDeltas={deltas}
-                initialBodyAreas={initialBodyAreas}
-                bodyAreas={bodyAreas}
-                onBodyAreasChange={setBodyAreas}
-              />
-            </TabsContent>
-          </form>
-        </Form>
+          {/* Medical History */}
+          <TabsContent
+            value='medical-history'
+            className='mx-auto space-y-4 pr-2'
+          >
+            <MedicalHistory
+              form={form}
+              medHistoryDeltas={deltas}
+              initialBodyAreas={initialBodyAreas}
+              bodyAreas={bodyAreas}
+              onBodyAreasChange={setBodyAreas}
+            />
+          </TabsContent>
+        </form>
 
         <TabsContent value='sessions' className='flex flex-col'>
           <SessionTab patientId={patientId} />

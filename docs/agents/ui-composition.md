@@ -56,6 +56,10 @@ These files may exceed budget and may keep a dense body:
 - SVG or path catalogs
 - static data modules
 
+## Forms
+
+In the console, build form fields from `@/components/ui/form`: `FormInput`, `FormTextarea`, `FormSelect`, `FormCheckbox` and `FormFileInput`. Each takes the form's `control`, a `name` and a `label`, and renders the label, control and validation error. For any other control (a date picker, a rich-text editor, a slider), wrap it in `FormField` and render the control from its `field` argument. Don't wire react-hook-form's `Controller` by hand.
+
 ## Toasts
 
 In the console, show toasts with `notify.success`, `notify.error`, `notify.info` or `notify.attention` from `@/lib/notify`. Don't import `toast` from `react-toastify` anywhere else.

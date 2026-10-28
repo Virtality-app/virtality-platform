@@ -1,5 +1,4 @@
 'use client'
-import { Input } from '@virtality/ui/components/input'
 import { Button } from '@virtality/ui/components/button'
 import {
   Card,
@@ -10,14 +9,7 @@ import {
   CardTitle,
 } from '@virtality/ui/components/card'
 import Link from 'next/link'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
+import { FormInput } from '@/components/ui/form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod/v4'
@@ -67,27 +59,18 @@ const ForgotForm = () => {
             <p>Reset email was send successfully, check your email.</p>
           </div>
         ) : (
-          <Form {...form}>
-            <form
-              id='reset-password-form'
-              onSubmit={form.handleSubmit(onSubmit)}
-              className='space-y-4'
-            >
-              <FormField
-                control={form.control}
-                name='email'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input {...field} type='email' />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </form>
-          </Form>
+          <form
+            id='reset-password-form'
+            onSubmit={form.handleSubmit(onSubmit)}
+            className='space-y-4'
+          >
+            <FormInput
+              control={form.control}
+              name='email'
+              label='Email'
+              type='email'
+            />
+          </form>
         )}
       </CardContent>
       <CardFooter className='flex-col gap-4'>
