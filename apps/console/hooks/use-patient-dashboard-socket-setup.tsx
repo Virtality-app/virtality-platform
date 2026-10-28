@@ -12,8 +12,7 @@ import {
 import { RefObject, useEffect, useRef } from 'react'
 import { Store } from 'tinybase'
 import useDashboardState from './use-patient-dashboard-state'
-import SuccessToasty from '../components/ui/SuccessToasty'
-import NotifyDoctorToasty from '../components/ui/NotifyDoctorToasty'
+import { notify } from '@/lib/notify'
 import { getDisplayName } from '@/lib/utils'
 import usePlotData from './use-plot-data'
 import {
@@ -60,7 +59,6 @@ import {
   shouldPersistSessionWorkingCopy,
 } from '@/lib/session-working-copy-sync'
 import { generateUUID } from '@virtality/shared/utils'
-import ErrorToasty from '../components/ui/ErrorToasty'
 
 type ProgressDataPerExercise = {
   [key: string]: ProgressDataPoint[]
@@ -225,7 +223,7 @@ const usePatientDashboardSocketSetup = ({
 
     writeFlowState(result.state)
     clearPendingExerciseChange()
-    ErrorToasty(resolveExerciseChangeFailureMessage(confirmedExerciseName))
+    notify.error(resolveExerciseChangeFailureMessage(confirmedExerciseName))
   }
 
   const setPendingExerciseChangeTimeout = () => {
@@ -318,7 +316,7 @@ const usePatientDashboardSocketSetup = ({
     resetSessionState()
     socket?.emit(PROGRAM_EVENT.End)
     selectedDevice?.events.program.End()
-    ErrorToasty('Failed to start session. Please try again.')
+    notify.error('Failed to start session. Please try again.')
     setProgramState(resolveProgramStateAfterStartAckPersistenceFailure())
   }
 
@@ -514,19 +512,19 @@ const usePatientDashboardSocketSetup = ({
   }
 
   const handleCalibrateHeightAck = () => {
-    SuccessToasty('Height calibrated successfully.')
+    notify.success('Height calibrated successfully.')
   }
 
   const handleResetPositionAck = () => {
-    SuccessToasty('Position reset successfully.')
+    notify.success('Position reset successfully.')
   }
 
   const handleSettingsChangeAck = () => {
-    SuccessToasty('Settings changed successfully.')
+    notify.success('Settings changed successfully.')
   }
 
   const handleNotifyDoctor = () => {
-    NotifyDoctorToasty('Patient needs attention')
+    notify.attention('Patient needs attention')
   }
 
   const handleUnexpectedSessionEnd = async () => {
@@ -542,10 +540,10 @@ const usePatientDashboardSocketSetup = ({
       await persistRemoteUpserts(result.remoteUpserts)
       writeFlowState(result.state)
       await interruptPatientSession({ id: sessionId })
-      ErrorToasty('Session was interrupted before completion.')
+      notify.error('Session was interrupted before completion.')
     } catch (error) {
       console.error(error)
-      ErrorToasty('Failed to save interrupted session progress.')
+      notify.error('Failed to save interrupted session progress.')
     } finally {
       currExercise.current = 0
       resetSessionState()

@@ -1,13 +1,12 @@
 import { useEffect } from 'react'
 import { usePatientDashboard } from '@/context/patient-dashboard-context'
-import { toast } from 'react-toastify'
+import { notify } from '@/lib/notify'
 // import { getClientT } from '@/i18n/get-client-t';
 import useSocketConnection from '@/hooks/use-socket-connection'
 import { useDeviceContext } from '@/context/device-context'
 import { useRow, useStore, useValue } from 'tinybase/ui-react'
 import { PatientLocalData } from '@/types/models'
 import { type ProgramStartPayload } from '@virtality/shared/types'
-import ErrorToasty from '@/components/ui/ErrorToasty'
 import useNavigationGuard from '@/hooks/use-navigation-guard'
 import {
   useExercise,
@@ -109,7 +108,7 @@ const useControlPanel = () => {
 
   const programStart = () => {
     if (!exercises?.length)
-      return ErrorToasty('Please select program or use quick start!')
+      return notify.error('Select a program or use Quick Start.')
 
     const launchError = getTreatmentLaunchError({
       consoleConnected: connected,
@@ -117,10 +116,10 @@ const useControlPanel = () => {
       entitlementAllowsLaunch: canLaunchVr,
       entitlementPending,
     })
-    if (launchError) return ErrorToasty(launchError)
+    if (launchError) return notify.error(launchError)
 
     if (!state.selectedAvatar || !state.selectedMap)
-      return toast.error(
+      return notify.error(
         'You need to select both an avatar and map. Find them in Scene Settings.',
       )
 
@@ -192,7 +191,7 @@ const useControlPanel = () => {
 
   const handleWarmupStart = () => {
     if (missingSettings)
-      return toast.error(
+      return notify.error(
         'You need to select both an avatar and map. Find them in Scene Settings.',
       )
 
@@ -202,7 +201,7 @@ const useControlPanel = () => {
       entitlementAllowsLaunch: canLaunchVr,
       entitlementPending,
     })
-    if (launchError) return ErrorToasty(launchError)
+    if (launchError) return notify.error(launchError)
 
     const payload = {
       settings: {

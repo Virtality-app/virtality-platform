@@ -9,7 +9,7 @@ import {
   useUpdatePatientSession,
 } from '@virtality/react-query'
 import { useState } from 'react'
-import { toast } from 'react-toastify'
+import { notify } from '@/lib/notify'
 import { trackAnalyticsEvent } from '@/lib/analytics-contract'
 
 const SessionCardNotes = ({
@@ -26,7 +26,7 @@ const SessionCardNotes = ({
 
   const { mutate: updatePatientSession, isPending } = useUpdatePatientSession({
     onSuccess: () => {
-      toast.success('Notes updated successfully.')
+      notify.success('Notes updated successfully.')
 
       trackAnalyticsEvent('session_notes_saved', {
         session_id: session.id,

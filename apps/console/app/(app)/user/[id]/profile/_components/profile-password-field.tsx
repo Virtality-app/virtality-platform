@@ -1,7 +1,7 @@
 'use client'
 import { Input } from '@virtality/ui/components/input'
 import { Button } from '@virtality/ui/components/button'
-import { toast } from 'react-toastify'
+import { notify } from '@/lib/notify'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CardContent, CardFooter } from '@virtality/ui/components/card'
@@ -32,11 +32,11 @@ export const PasswordField = () => {
       await queryClient.invalidateQueries({
         queryKey: orpc.pendingPasswordChange.getActive.key(),
       })
-      toast.success('Check your email to approve the password change.')
+      notify.success('Check your email to approve the password change.')
     },
     onError: (error) => {
       console.error(error)
-      toast.error('Failed to start password change')
+      notify.error('Failed to start password change')
     },
   })
 

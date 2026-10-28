@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { toast } from 'react-toastify'
+import { notify } from '@/lib/notify'
 import type { DashboardMode, VRDevice } from '@/types/models'
 import {
   AUTO_LAUNCH_TIMEOUT_MS,
@@ -94,7 +94,7 @@ export function useLaunchIntentFromUrl({
     if (!clockRunning) return
     const timer = setTimeout(() => {
       setArmed(false)
-      toast.error(
+      notify.error(
         resolveAutoLaunchGaveUpMessage(gateRef.current, launchErrorRef.current),
       )
     }, AUTO_LAUNCH_TIMEOUT_MS)

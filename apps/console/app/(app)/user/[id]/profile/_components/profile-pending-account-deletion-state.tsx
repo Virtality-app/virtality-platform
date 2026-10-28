@@ -1,6 +1,6 @@
 'use client'
 import { Button } from '@virtality/ui/components/button'
-import { toast } from 'react-toastify'
+import { notify } from '@/lib/notify'
 import { CardContent, CardFooter } from '@virtality/ui/components/card'
 import {
   type ActivePendingAccountDeletion,
@@ -25,11 +25,11 @@ export const PendingAccountDeletionState = ({
     useResendPendingAccountDeletion({
       onSuccess: async () => {
         await invalidateActivePendingAccountDeletion(queryClient, orpc)
-        toast.success('Approval email resent.')
+        notify.success('Approval email resent.')
       },
       onError: (error) => {
         console.error(error)
-        toast.error('Failed to resend approval email')
+        notify.error('Failed to resend approval email')
       },
     })
 
@@ -37,11 +37,11 @@ export const PendingAccountDeletionState = ({
     useCancelPendingAccountDeletion({
       onSuccess: async () => {
         await invalidateActivePendingAccountDeletion(queryClient, orpc)
-        toast.success('Account deletion request cancelled.')
+        notify.success('Account deletion request cancelled.')
       },
       onError: (error) => {
         console.error(error)
-        toast.error('Failed to cancel pending deletion request')
+        notify.error('Failed to cancel pending deletion request')
       },
     })
 

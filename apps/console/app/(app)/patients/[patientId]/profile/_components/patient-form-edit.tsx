@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AlertCircle, Loader2 } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
 import { Separator } from '@virtality/ui/components/separator'
@@ -12,7 +12,7 @@ import { BodyAreas, MedHistoryDeltas } from '@/types/models'
 import { cn } from '@/lib/utils'
 import useNavigationGuard from '@/hooks/use-navigation-guard'
 import { NavigationGuardDialog } from '@/components/ui/navigation-guard-dialog'
-import { toast } from 'react-toastify'
+import { notify } from '@/lib/notify'
 import { useClientT } from '@/i18n/use-client-t'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import BasicInfo from '@/app/(app)/patients/_components/basic-info'
@@ -111,8 +111,6 @@ const PatientFormEdit = ({ patientId }: PatientFormEditProps) => {
     }
   }, [medHistory?.bodyFront, medHistory?.bodyBack])
 
-  const submittedValues = useRef<PatientFormInput | null>(null)
-
   const { mutate: updatePatient, isPending: isFormPending } = useUpdatePatient({
     onSuccess: () => {
       trackAnalyticsEvent('patient_profile_updated', {})
@@ -144,7 +142,7 @@ const PatientFormEdit = ({ patientId }: PatientFormEditProps) => {
     values,
   })
 
-  const { errors, isSubmitSuccessful, isSubmitting, isDirty } = form.formState
+  const { errors, isDirty } = form.formState
 
   const onSubmit = (values: PatientFormInput) => {
     if (!patient || !medHistory) return
@@ -211,15 +209,25 @@ const PatientFormEdit = ({ patientId }: PatientFormEditProps) => {
       patientId: patientId,
     }
 
-    submittedValues.current = values
-
-    updatePatient({
-      data: {
-        patient: updatedPatient,
-        medicalHistory: updatedMedicalHistoryData,
+    // Runs after the hook-level onSuccess has refetched the patient, which
+    // resets the form to the server values and clears isSubmitSuccessful.
+    updatePatient(
+      {
+        data: {
+          patient: updatedPatient,
+          medicalHistory: updatedMedicalHistoryData,
+        },
       },
-    })
+      {
+        onSuccess: () => {
+          notify.success('Patient information saved.')
+          form.reset(values, { keepDirty: false })
+        },
+      },
+    )
   }
+
+  const onInvalid = () => notify.error('Some required fields are empty.')
 
   const handleDialogToggle = () => setDialogOpen(!isDialogOpen)
 
@@ -230,24 +238,6 @@ const PatientFormEdit = ({ patientId }: PatientFormEditProps) => {
   }
 
   const hasErrors = Object.keys(errors).length > 0 && Object.keys(errors).length
-
-  useEffect(() => {
-    if (!isFormPending && isSubmitSuccessful && submittedValues.current) {
-      toast.success('Patient information saved.')
-      form.reset(submittedValues.current, { keepDirty: false })
-    }
-
-    if (isSubmitting && hasErrors) {
-      toast.error('Some required field are empty.')
-    }
-  }, [
-    isFormPending,
-    hasErrors,
-    isSubmitSuccessful,
-    isSubmitting,
-    form,
-    patient?.id,
-  ])
 
   useBeforeUnload(isDirty)
   const { guard } = useNavigationGuard(isDirty)
@@ -272,8 +262,7 @@ const PatientFormEdit = ({ patientId }: PatientFormEditProps) => {
         <Form {...form}>
           <form
             id='patient-form'
-            // eslint-disable-next-line react-hooks/refs
-            onSubmit={form.handleSubmit(onSubmit)}
+            onSubmit={form.handleSubmit(onSubmit, onInvalid)}
             className='max-h-[73svh] overflow-auto'
           >
             {/* Basic Info */}

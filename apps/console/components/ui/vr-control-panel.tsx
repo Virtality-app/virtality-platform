@@ -13,7 +13,7 @@ import useSocketConnection, {
   type SocketConnectionState,
 } from '@/hooks/use-socket-connection'
 import { useStore } from 'tinybase/ui-react'
-import ErrorToasty from './ErrorToasty'
+import { notify } from '@/lib/notify'
 import { cn } from '@/lib/utils'
 import { usePatientDashboard } from '@/context/patient-dashboard-context'
 import { useVrPresencePolling } from '@/hooks/use-vr-presence-polling'
@@ -87,7 +87,7 @@ const VRControlPanel = ({ devices, isOpen }: VRControlPanelProps) => {
     const deviceId = selectedDevice?.data.deviceId
 
     if (!selectedDevice || !deviceId) {
-      return ErrorToasty('Device not paired.')
+      return notify.error('Device not paired.')
     }
 
     if (!connected) {
@@ -95,7 +95,7 @@ const VRControlPanel = ({ devices, isOpen }: VRControlPanelProps) => {
       try {
         await connect({ timeoutMs: 10_500 })
       } catch (error) {
-        ErrorToasty(
+        notify.error(
           error instanceof Error
             ? error.message
             : 'Unable to connect to device.',

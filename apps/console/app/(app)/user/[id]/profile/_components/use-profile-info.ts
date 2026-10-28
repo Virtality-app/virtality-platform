@@ -1,6 +1,6 @@
 'use client'
 import { useCallback, useState } from 'react'
-import { toast } from 'react-toastify'
+import { notify } from '@/lib/notify'
 import { authClient } from '@/auth-client'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -54,12 +54,12 @@ export const useProfileInfo = (user: SessionUser) => {
   const { mutate: updateUserInfo, isPending: isUpdatingUser } =
     useUpdateUserInfo({
       onSuccess: async () => {
-        toast.success('Profile updated successfully')
+        notify.success('Profile updated successfully')
         await syncFormFromSession()
       },
       onError: (error) => {
         console.error(error)
-        toast.error('Failed to update profile')
+        notify.error('Failed to update profile')
       },
     })
 
@@ -81,12 +81,12 @@ export const useProfileInfo = (user: SessionUser) => {
       callbackURL: `${baseURL}/user/${user.id}/profile`,
       fetchOptions: {
         onSuccess: () =>
-          void toast.success(
+          void notify.success(
             'Please check your new email for a verification link.',
           ),
         onError: (error) => {
           console.error(error)
-          toast.error('Failed to update email')
+          notify.error('Failed to update email')
         },
       },
     })
@@ -100,11 +100,11 @@ export const useProfileInfo = (user: SessionUser) => {
     useStartAccountDeletion({
       onSuccess: async () => {
         await invalidateActivePendingAccountDeletion(queryClient, orpc)
-        toast.success('Check your email to approve account deletion.')
+        notify.success('Check your email to approve account deletion.')
       },
       onError: (error) => {
         console.error(error)
-        toast.error('Failed to start account deletion')
+        notify.error('Failed to start account deletion')
       },
     })
 

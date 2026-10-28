@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { toast } from 'react-toastify'
+import { notify } from '@/lib/notify'
 import { authClient } from '@/auth-client'
 import {
   CYCLE_PLAN_CHANGE_SCHEDULED_TOAST,
@@ -38,7 +38,7 @@ async function runBillingAction(
   setPending: (pending: boolean) => void,
   busyMessage: string,
   action: () => Promise<ConsoleBetterAuthBillingResult>,
-  notify?: ToastNotifyOptions,
+  toastOptions?: ToastNotifyOptions,
 ): Promise<ConsoleBetterAuthBillingResult> {
   if (isPending) {
     return { ok: false, message: busyMessage }
@@ -48,9 +48,9 @@ async function runBillingAction(
   try {
     const result = await action()
     return notifyConsoleBillingAuthResult(result, {
-      successToast: notify?.successToast,
-      toastError: toast.error,
-      toastSuccess: toast.success,
+      successToast: toastOptions?.successToast,
+      toastError: notify.error,
+      toastSuccess: notify.success,
     })
   } finally {
     setPending(false)

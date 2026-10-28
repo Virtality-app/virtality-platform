@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { AlertCircle } from 'lucide-react'
 import { Separator } from '@virtality/ui/components/separator'
 import { useForm } from 'react-hook-form'
@@ -12,7 +12,7 @@ import { getUUID } from '@/lib/utils'
 import useNavigationGuard from '@/hooks/use-navigation-guard'
 import { NavigationGuardDialog } from '@/components/ui/navigation-guard-dialog'
 import { useRouter } from 'next/navigation'
-import { toast } from 'react-toastify'
+import { notify } from '@/lib/notify'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import BasicInfo from '../../_components/basic-info'
 import PatientFormActions from './patient-form-actions'
@@ -129,15 +129,11 @@ const PatientForm = () => {
 
   const [bodyAreas, setBodyAreas] = useState<BodyAreas>(initialBodyAreas)
 
-  const { errors, isSubmitting, isDirty } = form.formState
+  const { errors, isDirty } = form.formState
 
   const hasErrors = Object.keys(errors).length > 0 && Object.keys(errors).length
 
-  useEffect(() => {
-    if (isSubmitting && hasErrors) {
-      toast.error('Some required field are empty.')
-    }
-  }, [isSubmitting, hasErrors])
+  const onInvalid = () => notify.error('Some required fields are empty.')
 
   useBeforeUnload(isDirty)
   const { guard } = useNavigationGuard(isDirty)
@@ -157,7 +153,7 @@ const PatientForm = () => {
         <Form {...form}>
           <form
             id='patient-form'
-            onSubmit={form.handleSubmit(onSubmit)}
+            onSubmit={form.handleSubmit(onSubmit, onInvalid)}
             className='max-h-[77svh] overflow-auto'
           >
             {/* Basic Info */}

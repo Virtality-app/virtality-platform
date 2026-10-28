@@ -1,6 +1,6 @@
 'use client'
 import { Button } from '@virtality/ui/components/button'
-import { toast } from 'react-toastify'
+import { notify } from '@/lib/notify'
 import { authClient } from '@/auth-client'
 import { Field, FieldSet } from '@/components/ui/field'
 import { useListAccounts, useORPC } from '@virtality/react-query'
@@ -26,7 +26,7 @@ export const SignInMethods = () => {
       providerId: account.providerId,
       fetchOptions: {
         onSuccess: () => {
-          toast.success('Account unlinked successfully')
+          notify.success('Account unlinked successfully')
 
           queryClient.invalidateQueries({
             queryKey: orpc.account.list.key(),
@@ -34,7 +34,7 @@ export const SignInMethods = () => {
         },
         onError: (error) => {
           console.error(error)
-          toast.error('Failed to unlink account')
+          notify.error('Failed to unlink account')
         },
       },
     })

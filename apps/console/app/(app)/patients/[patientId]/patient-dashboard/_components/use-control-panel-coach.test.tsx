@@ -83,7 +83,7 @@ vi.mock('@/hooks/use-navigation-guard', () => ({
     guard: { open: false, onStay: vi.fn(), onLeave: vi.fn() },
   }),
 }))
-vi.mock('@/components/ui/ErrorToasty', () => ({ default: vi.fn() }))
+vi.mock('@/lib/notify', () => ({ notify: { error: vi.fn() } }))
 vi.mock('tinybase/ui-react', () => ({
   useRow: () => ({ lastHeadset: 'device' }),
   useValue: () => undefined,

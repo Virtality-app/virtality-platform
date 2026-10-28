@@ -10,7 +10,7 @@ import {
   useWriteHeadsetLibrary,
   type HeadsetLibraryWriteError,
 } from '@virtality/react-query'
-import ErrorToasty from '@/components/ui/ErrorToasty'
+import { notify } from '@/lib/notify'
 import { mirrorWriteErrorMessage } from '@/lib/headset-library-mirror-errors'
 import {
   asLibraryVideos,
@@ -30,7 +30,7 @@ export const PROGRESS_WRITE_INTERVAL_MS = 10_000
 export function useHeadsetLibraryMirror(deviceId: string | null | undefined) {
   const onError = useCallback((error: HeadsetLibraryWriteError) => {
     const message = mirrorWriteErrorMessage(error)
-    if (message) ErrorToasty(message)
+    if (message) notify.error(message)
   }, [])
   const { reportLibraryState, requestDownload, applyEvent, remove } =
     useWriteHeadsetLibrary({ onError })

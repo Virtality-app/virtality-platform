@@ -1,7 +1,7 @@
 'use client'
 import { Input } from '@virtality/ui/components/input'
 import { Button } from '@virtality/ui/components/button'
-import { toast } from 'react-toastify'
+import { notify } from '@/lib/notify'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { CardContent, CardFooter } from '@virtality/ui/components/card'
@@ -28,11 +28,11 @@ export const SetPasswordField = () => {
     onSuccess: async () => {
       setPasswordForm.reset({ newPassword: '' }, { keepDirty: false })
       await invalidateActivePendingPasswordChange(queryClient, orpc)
-      toast.success('Check your email to approve password setup.')
+      notify.success('Check your email to approve password setup.')
     },
     onError: (error) => {
       console.error(error)
-      toast.error('Failed to start password setup')
+      notify.error('Failed to start password setup')
     },
   })
 

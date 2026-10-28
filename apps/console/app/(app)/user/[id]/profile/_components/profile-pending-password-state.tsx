@@ -1,6 +1,6 @@
 'use client'
 import { Button } from '@virtality/ui/components/button'
-import { toast } from 'react-toastify'
+import { notify } from '@/lib/notify'
 import { CardContent, CardFooter } from '@virtality/ui/components/card'
 import {
   type ActivePendingPasswordChange,
@@ -35,11 +35,11 @@ export const PendingPasswordState = ({
     useResendPendingPasswordChange({
       onSuccess: async () => {
         await invalidateActivePendingPasswordChange(queryClient, orpc)
-        toast.success('Approval email resent.')
+        notify.success('Approval email resent.')
       },
       onError: (error) => {
         console.error(error)
-        toast.error('Failed to resend approval email')
+        notify.error('Failed to resend approval email')
       },
     })
 
@@ -47,11 +47,11 @@ export const PendingPasswordState = ({
     useCancelPendingPasswordChange({
       onSuccess: async () => {
         await invalidateActivePendingPasswordChange(queryClient, orpc)
-        toast.success(PENDING_PASSWORD_CANCEL_SUCCESS[kind])
+        notify.success(PENDING_PASSWORD_CANCEL_SUCCESS[kind])
       },
       onError: (error) => {
         console.error(error)
-        toast.error('Failed to cancel pending password request')
+        notify.error('Failed to cancel pending password request')
       },
     })
 

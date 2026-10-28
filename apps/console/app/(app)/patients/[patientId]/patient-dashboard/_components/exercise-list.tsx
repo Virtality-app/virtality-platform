@@ -27,7 +27,7 @@ import {
 import ExerciseSettings from '@/components/ui/exercise-settings'
 import { motion } from 'motion/react'
 import { useExercise } from '@virtality/react-query'
-import SuccessToasty from '@/components/ui/SuccessToasty'
+import { notify } from '@/lib/notify'
 import {
   isDirectExerciseSelectionDisabled,
   resolveCurrentExerciseIndex,
@@ -121,7 +121,7 @@ const ExerciseList = ({ className }: { className?: string }) => {
       } catch (error) {
         console.error(error)
       } finally {
-        SuccessToasty('Settings applied to current exercise')
+        notify.success('Settings applied to current exercise')
       }
     }
 
@@ -150,7 +150,7 @@ const ExerciseList = ({ className }: { className?: string }) => {
     } catch (error) {
       console.error(error)
     } finally {
-      SuccessToasty('Settings applied to all exercises')
+      notify.success('Settings applied to all exercises')
     }
   }
 

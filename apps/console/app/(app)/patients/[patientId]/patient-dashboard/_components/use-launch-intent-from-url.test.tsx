@@ -11,7 +11,7 @@ import type { VRDevice } from '@/types/models'
 const mocks = vi.hoisted(() => ({
   replace: vi.fn(),
   search: new URLSearchParams(),
-  toastError: vi.fn(),
+  notifyError: vi.fn(),
 }))
 
 vi.mock('next/navigation', () => ({
@@ -19,7 +19,7 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/patients/p1/patient-dashboard',
   useSearchParams: () => mocks.search,
 }))
-vi.mock('react-toastify', () => ({ toast: { error: mocks.toastError } }))
+vi.mock('@/lib/notify', () => ({ notify: { error: mocks.notifyError } }))
 
 const readyGate: AutoLaunchGate = {
   selectedMode: 'main',
@@ -147,7 +147,7 @@ describe('useLaunchIntentFromUrl', () => {
 
     expect(programStart).not.toHaveBeenCalled()
     expect(result.current.autoLaunchArmed).toBe(false)
-    expect(mocks.toastError).toHaveBeenCalledWith(
+    expect(mocks.notifyError).toHaveBeenCalledWith(
       'Waiting for the VR headset to connect.',
     )
   })
@@ -158,7 +158,7 @@ describe('useLaunchIntentFromUrl', () => {
     act(() => vi.advanceTimersByTime(AUTO_LAUNCH_TIMEOUT_MS))
 
     expect(result.current.autoLaunchArmed).toBe(false)
-    expect(mocks.toastError).toHaveBeenCalledWith(
+    expect(mocks.notifyError).toHaveBeenCalledWith(
       AUTO_LAUNCH_GAVE_UP.noExercises,
     )
   })

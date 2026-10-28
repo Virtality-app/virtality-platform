@@ -55,3 +55,7 @@ These files may exceed budget and may keep a dense body:
 - generated primitives under `packages/ui` and app `components/ui` shadcn copies
 - SVG or path catalogs
 - static data modules
+
+## Toasts
+
+In the console, show toasts with `notify.success`, `notify.error`, `notify.info` or `notify.attention` from `@/lib/notify`. Don't import `toast` from `react-toastify` anywhere else.

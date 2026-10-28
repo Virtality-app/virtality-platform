@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/form'
 import { authClient } from '@/auth-client'
 import { useRouter } from 'next/navigation'
-import { toast } from 'react-toastify'
+import { notify } from '@/lib/notify'
 
 const ResetSchema = z.object({
   newPassword: z.string().check(isValidPassword),
@@ -53,14 +53,14 @@ const ResetForm = ({ token }: { token?: string }) => {
       const { error } = await authClient.resetPassword({ newPassword, token })
 
       if (error) {
-        toast.error(error.message ?? 'Failed to reset password')
+        notify.error(error.message ?? 'Failed to reset password')
         return
       }
 
       router.push('/')
     } catch (error) {
       console.error(error)
-      toast.error('Failed to reset password')
+      notify.error('Failed to reset password')
     }
   }
 

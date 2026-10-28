@@ -28,7 +28,7 @@ import {
   useCreateReusableProgramExercises,
   useExercise,
 } from '@virtality/react-query'
-import { toast } from 'react-toastify'
+import { notify } from '@/lib/notify'
 import { useEffect } from 'react'
 import type { CompleteReusableProgram } from '@/types/models'
 import { withRom } from '@/lib/with-rom'
@@ -148,7 +148,7 @@ const ReusableProgramFormView = ({
 
     if (submitCheck.ok === false) {
       if (submitCheck.reason === 'exercises') {
-        return toast.error(ZERO_ENABLED_VARIANTS_MESSAGE)
+        return notify.error(ZERO_ENABLED_VARIANTS_MESSAGE)
       }
       return
     }

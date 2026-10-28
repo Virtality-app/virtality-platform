@@ -7,7 +7,7 @@ import {
   StopCircle,
 } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
-import { Id } from 'react-toastify'
+import type { NotifyId } from '@/lib/notify'
 import { PatientDashboardValue } from '@/context/patient-dashboard-context'
 import { type SkipDirection } from '@/lib/session-exercise-skip'
 import {
@@ -26,9 +26,9 @@ interface ControlsProps {
   isProgramActive: boolean
   isProgramLaunching: boolean
   treatmentLaunchReady: boolean
-  programStart: () => Id | undefined
+  programStart: () => NotifyId | undefined
   programEnd: () => void
-  handleWarmupStart: () => Id | undefined
+  handleWarmupStart: () => NotifyId | undefined
   skipExercise: (direction: SkipDirection) => void
   isForwardSkipDisabled: boolean
   isBackSkipDisabled: boolean

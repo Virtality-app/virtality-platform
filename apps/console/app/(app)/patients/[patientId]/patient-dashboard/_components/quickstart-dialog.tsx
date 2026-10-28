@@ -23,7 +23,7 @@ import {
 } from '@/lib/program-library-submit'
 import { FormInput } from '@/components/ui/form-v2'
 import { Exercise } from '@virtality/db'
-import ErrorToasty from '@/components/ui/ErrorToasty'
+import { notify } from '@/lib/notify'
 import { generateUUID } from '@virtality/shared/utils'
 import posthog from 'posthog-js'
 import {
@@ -179,7 +179,7 @@ const QuickStartDialog = () => {
     if (!exerciseInfo) return
 
     if (!canFinalize) {
-      return ErrorToasty(ZERO_ENABLED_VARIANTS_MESSAGE)
+      return notify.error(ZERO_ENABLED_VARIANTS_MESSAGE)
     }
 
     posthog.capture('quickstart_continue')
@@ -199,7 +199,7 @@ const QuickStartDialog = () => {
     if (!exerciseInfo) return
 
     if (!canFinalize) {
-      return ErrorToasty(ZERO_ENABLED_VARIANTS_MESSAGE)
+      return notify.error(ZERO_ENABLED_VARIANTS_MESSAGE)
     }
 
     promptForm.reset({ name: form.getValues('name') })
@@ -228,7 +228,7 @@ const QuickStartDialog = () => {
 
   const saveAsHandler = async (values: ReusableProgramForm) => {
     if (!canFinalize) {
-      return ErrorToasty(ZERO_ENABLED_VARIANTS_MESSAGE)
+      return notify.error(ZERO_ENABLED_VARIANTS_MESSAGE)
     }
 
     posthog.capture('quickstart_program_created')
@@ -238,7 +238,7 @@ const QuickStartDialog = () => {
 
   const saveFromPrompt = promptForm.handleSubmit(async (values) => {
     if (!canFinalize) {
-      return ErrorToasty(ZERO_ENABLED_VARIANTS_MESSAGE)
+      return notify.error(ZERO_ENABLED_VARIANTS_MESSAGE)
     }
 
     posthog.capture('quickstart_continue_save_prompt_saved')

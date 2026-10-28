@@ -10,7 +10,7 @@ import {
 import { Label } from '@virtality/ui/components/label'
 import { Input } from '@virtality/ui/components/input'
 import { ChangeEvent, useState } from 'react'
-import { toast } from 'react-toastify'
+import { notify } from '@/lib/notify'
 import { authClient } from '@/auth-client'
 import useIsAuthed from '@/hooks/use-is-authed'
 import useMounted from '@/hooks/use-mounted'
@@ -66,7 +66,7 @@ const AdminTool = ({ isImpersonating }: { isImpersonating?: boolean }) => {
       })
     } catch (error) {
       console.error(error)
-      toast.error('Failed to send verification email')
+      notify.error('Failed to send verification email')
     }
   }
 

@@ -12,8 +12,7 @@ import { subscribe } from '@/lib/device-event-controller'
 import { isReplacementNoticeError } from '@/lib/socket-replacement-notice'
 import type { HeadsetDidNotConfirmReason } from '@/lib/headset-did-not-confirm'
 import { useHeadsetLibraryMirror } from '@/hooks/use-headset-library-mirror'
-import ErrorToasty from '@/components/ui/ErrorToasty'
-import SuccessToasty from '@/components/ui/SuccessToasty'
+import { notify } from '@/lib/notify'
 import { videoFailureMessage } from '@/lib/video-failure-message'
 import {
   applyDownloadAck,
@@ -211,16 +210,16 @@ export function useHeadsetLibrary(
       },
       // The ack already dropped the row; these only tell the physio the outcome.
       DownloadCancelComplete: (videoId: string) => {
-        SuccessToasty(`Download cancelled (${videoId})`)
+        notify.success(`Download cancelled (${videoId})`)
       },
       DownloadCancelFailed: (payload) => {
-        ErrorToasty(videoFailureMessage('Cancel failed', payload))
+        notify.error(videoFailureMessage('Cancel failed', payload))
       },
       DeleteComplete: (videoId: string) => {
-        SuccessToasty(`Video deleted (${videoId})`)
+        notify.success(`Video deleted (${videoId})`)
       },
       DeleteFailed: (payload) => {
-        ErrorToasty(videoFailureMessage('Delete failed', payload))
+        notify.error(videoFailureMessage('Delete failed', payload))
       },
     })
 

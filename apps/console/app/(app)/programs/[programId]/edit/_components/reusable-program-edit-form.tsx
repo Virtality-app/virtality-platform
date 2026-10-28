@@ -34,7 +34,7 @@ import {
   reusableProgramExercisesForCatalogSeed,
   reusableProgramMetadataForEdit,
 } from '@/lib/reusable-program-edit-seed'
-import { toast } from 'react-toastify'
+import { notify } from '@/lib/notify'
 import {
   ReusableProgramFormSchema,
   type ReusableProgramForm,
@@ -96,7 +96,7 @@ const ReusableProgramEditForm = ({
     if (!existingProgram || !exercises) return
 
     if (isStarterTemplateProgram(existingProgram)) {
-      toast.error('Starter templates cannot be edited.')
+      notify.error('Starter templates cannot be edited.')
       router.replace('/programs')
       return
     }
@@ -132,7 +132,7 @@ const ReusableProgramEditForm = ({
 
     if (submitCheck.ok === false) {
       if (submitCheck.reason === 'exercises') {
-        return toast.error(ZERO_ENABLED_VARIANTS_MESSAGE)
+        return notify.error(ZERO_ENABLED_VARIANTS_MESSAGE)
       }
       return
     }
