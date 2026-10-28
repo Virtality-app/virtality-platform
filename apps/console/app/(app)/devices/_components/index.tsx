@@ -20,14 +20,18 @@ import DeviceCardSkeleton from './device-card-skeleton'
 import { v4 as uuid } from 'uuid'
 import { useDeviceContext } from '@/context/device-context'
 import useIsAuthed from '@/hooks/use-is-authed'
+import { useClientT } from '@/i18n/use-client-t'
 import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
+
+const META_QUEST_3S = 'Meta Quest 3S'
 
 const defaultValues: DeviceForm = {
   name: '',
-  model: 'Meta Quest 3S',
+  model: META_QUEST_3S,
 }
 
 const Devices = () => {
+  const { t } = useClientT(['devices', 'common'])
   const { isPending } = useIsAuthed()
   usePageViewTracking({
     props: { route_group: 'device' },
@@ -82,36 +86,36 @@ const Devices = () => {
 
         <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent
-            aria-describedby='Form to add a new device.'
+            aria-describedby={undefined}
             className='sm:max-w-106.25 dark:border-zinc-400 dark:bg-zinc-950 dark:text-zinc-200'
           >
             <DialogHeader>
-              <DialogTitle>Add New Device</DialogTitle>
+              <DialogTitle>{t('addNewDevice')}</DialogTitle>
             </DialogHeader>
 
             <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
               <FormInput
                 control={form.control}
                 name='name'
-                label='Device Name'
+                label={t('deviceName')}
                 autoComplete='off'
-                placeholder='Enter device name'
+                placeholder={t('deviceNamePlaceholder')}
                 data-tour='device-name'
               />
 
               <FormSelect
                 control={form.control}
                 name='model'
-                label={<span className='sr-only'>Device Model</span>}
-                placeholder='Select a model'
+                label={<span className='sr-only'>{t('deviceModel')}</span>}
+                placeholder={t('modelPlaceholder')}
                 triggerClassName='dark:border-zinc-200 dark:hover:border-zinc-400'
                 contentClassName='dark:border-zinc-200 dark:bg-zinc-800'
               >
                 <SelectItem
-                  value='Meta Quest 3S'
+                  value={META_QUEST_3S}
                   className='dark:hover:bg-zinc-700'
                 >
-                  Meta Quest 3S
+                  {META_QUEST_3S}
                 </SelectItem>
               </FormSelect>
 
@@ -121,10 +125,10 @@ const Devices = () => {
                   variant='outline'
                   onClick={handleDialogOpen}
                 >
-                  Cancel
+                  {t('common:btn.cancel')}
                 </Button>
                 <Button type='submit' data-tour='device-submit'>
-                  Add Device
+                  {t('addDeviceSubmit')}
                 </Button>
               </DialogFooter>
             </form>

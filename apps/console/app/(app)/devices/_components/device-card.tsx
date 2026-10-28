@@ -17,12 +17,14 @@ import { useReturnHomeOnPair } from './use-return-home-on-pair'
 import { H3, P } from '@/components/typography'
 import { cn } from '@/lib/utils'
 import useDevice from '@/hooks/use-device'
+import { useClientT } from '@/i18n/use-client-t'
 
 interface DeviceProps {
   device: VRDevice
 }
 
 const DeviceCard = ({ device }: DeviceProps) => {
+  const { t } = useClientT('devices')
   const { connected } = useSocketConnection({ device })
   const { removeDevice } = useDevice()
 
@@ -75,7 +77,7 @@ const DeviceCard = ({ device }: DeviceProps) => {
               MetaQuest3s) ||
             placeholder
           }
-          alt={`${device.data.model} device`}
+          alt={t('deviceImageAlt', { model: device.data.model })}
           fill
           priority
           sizes='(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'
@@ -87,11 +89,11 @@ const DeviceCard = ({ device }: DeviceProps) => {
         >
           {isPaired ? (
             <>
-              <Wifi className='mr-1 size-3' /> Paired
+              <Wifi className='mr-1 size-3' /> {t('paired')}
             </>
           ) : (
             <>
-              <WifiOff className='mr-1 size-3' /> Not Paired
+              <WifiOff className='mr-1 size-3' /> {t('notPaired')}
             </>
           )}
         </Badge>
@@ -113,11 +115,11 @@ const DeviceCard = ({ device }: DeviceProps) => {
             <div className='flex items-center justify-between'>
               <P className='text-sm'>{device.data.model}</P>
               {isCodeFieldOpen && !error && (
-                <span>Remaining time: {countdown} sec</span>
+                <span>{t('remainingTime', { seconds: countdown })}</span>
               )}
             </div>
             {status === 'pairing' && !isCodeFieldOpen && !error && (
-              <P className='text-sm'>Preparing to pair...</P>
+              <P className='text-sm'>{t('preparing')}</P>
             )}
             {error && (
               <p className='text-destructive text-sm' role='alert'>

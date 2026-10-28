@@ -5,6 +5,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { getQueryClient, useORPC } from '@virtality/react-query'
 import { useStore } from 'tinybase/ui-react'
 import { VRDevice } from '@/types/models'
+import { useClientT } from '@/i18n/use-client-t'
 
 type PairingState = {
   status: 'paired' | 'pairing' | 'unpaired'
@@ -86,6 +87,7 @@ function errorMessage(error: unknown, fallback: string) {
 }
 
 const useDeviceCardState = ({ device }: { device: VRDevice }) => {
+  const { t } = useClientT('devices')
   const [state, dispatch] = useReducer(stateReducer, initialState)
   const orpc = useORPC()
   const queryClient = getQueryClient()
@@ -152,10 +154,10 @@ const useDeviceCardState = ({ device }: { device: VRDevice }) => {
 
     const terminalMessage =
       pairingStatus === 'expired'
-        ? 'Pairing code expired. Please generate a new code.'
+        ? t('error.expired')
         : pairingStatus === 'superseded'
-          ? 'This pairing attempt was replaced or could not be completed.'
-          : 'Pairing was cancelled.'
+          ? t('error.superseded')
+          : t('error.cancelled')
 
     dispatch({
       type: 'update',
@@ -175,6 +177,7 @@ const useDeviceCardState = ({ device }: { device: VRDevice }) => {
     state.status,
     statusQuery.data?.state,
     store,
+    t,
   ])
 
   useEffect(() => {
@@ -182,10 +185,10 @@ const useDeviceCardState = ({ device }: { device: VRDevice }) => {
     dispatch({
       type: 'update',
       payload: {
-        error: 'Unable to refresh pairing status. Retrying automatically.',
+        error: t('error.refresh'),
       },
     })
-  }, [state.status, statusQuery.error])
+  }, [state.status, statusQuery.error, t])
 
   const startPairing = async () => {
     dispatch({
@@ -219,10 +222,7 @@ const useDeviceCardState = ({ device }: { device: VRDevice }) => {
         payload: {
           status: 'unpaired',
           isCodeFieldOpen: false,
-          error: errorMessage(
-            error,
-            'Unable to start pairing. Please try again.',
-          ),
+          error: errorMessage(error, t('error.start')),
         },
       })
     }
@@ -241,10 +241,7 @@ const useDeviceCardState = ({ device }: { device: VRDevice }) => {
       dispatch({
         type: 'update',
         payload: {
-          error: errorMessage(
-            error,
-            'Unable to cancel pairing. The code will expire automatically.',
-          ),
+          error: errorMessage(error, t('error.cancel')),
         },
       })
     }

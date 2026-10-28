@@ -1,5 +1,6 @@
 import { Button } from '@virtality/ui/components/button'
 import { Input } from '@virtality/ui/components/input'
+import { useClientT } from '@/i18n/use-client-t'
 
 /** Footer of a device card: pair, show the Pairing Code, retry, or remove. */
 const DeviceCardActions = ({
@@ -26,14 +27,16 @@ const DeviceCardActions = ({
   onCancel: () => void
   onRemove: () => void
 }) => {
+  const { t } = useClientT(['devices', 'common'])
+
   if (error && !isCodeFieldOpen) {
     return (
       <div className='flex w-full gap-2'>
         <Button onClick={onCancel} disabled={isCancelling} className='flex-1'>
-          Cancel
+          {t('common:btn.cancel')}
         </Button>
         <Button onClick={onPair} disabled={isStarting} className='flex-1'>
-          Retry
+          {t('common:btn.retry')}
         </Button>
       </div>
     )
@@ -52,7 +55,7 @@ const DeviceCardActions = ({
           disabled
         />
         <Button onClick={onCancel} disabled={isCancelling}>
-          Cancel
+          {t('common:btn.cancel')}
         </Button>
       </div>
     )
@@ -61,7 +64,7 @@ const DeviceCardActions = ({
   if (isPaired) {
     return (
       <Button variant='destructive' onClick={onRemove} className='w-full'>
-        Remove
+        {t('remove')}
       </Button>
     )
   }
@@ -74,7 +77,7 @@ const DeviceCardActions = ({
         onClick={onRemove}
         className='flex-1'
       >
-        Remove
+        {t('remove')}
       </Button>
       <Button
         variant='default'
@@ -83,7 +86,7 @@ const DeviceCardActions = ({
         data-tour='device-pair'
         className='flex-1'
       >
-        Pair
+        {t('pair')}
       </Button>
     </div>
   )

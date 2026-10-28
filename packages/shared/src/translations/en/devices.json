@@ -1,0 +1,24 @@
+{
+  "addDevice": "Add device",
+  "addDeviceSubmit": "Add Device",
+  "addNewDevice": "Add New Device",
+  "deviceName": "Device Name",
+  "deviceNamePlaceholder": "Enter device name",
+  "deviceModel": "Device Model",
+  "modelPlaceholder": "Select a model",
+  "deviceImageAlt": "{{model}} device",
+  "paired": "Paired",
+  "notPaired": "Not Paired",
+  "remainingTime": "Remaining time: {{seconds}} sec",
+  "preparing": "Preparing to pair...",
+  "pair": "Pair",
+  "remove": "Remove",
+  "error": {
+    "expired": "Pairing code expired. Please generate a new code.",
+    "superseded": "This pairing attempt was replaced or could not be completed.",
+    "cancelled": "Pairing was cancelled.",
+    "refresh": "Unable to refresh pairing status. Retrying automatically.",
+    "start": "Unable to start pairing. Please try again.",
+    "cancel": "Unable to cancel pairing. The code will expire automatically."
+  }
+}

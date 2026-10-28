@@ -1,5 +1,6 @@
 import { Plus } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
+import { useClientT } from '@/i18n/use-client-t'
 import { Card, CardContent } from '@virtality/ui/components/card'
 
 const AddDeviceCard = ({
@@ -7,6 +8,8 @@ const AddDeviceCard = ({
 }: {
   handleDialogOpen: () => void
 }) => {
+  const { t } = useClientT('devices')
+
   return (
     <Card
       id='add-new-device'
@@ -18,7 +21,9 @@ const AddDeviceCard = ({
         <Button className='mb-4 rounded-full p-3! dark:bg-zinc-200'>
           <Plus className='h-6 w-6 text-zinc-200 dark:text-zinc-900' />
         </Button>
-        <p className='text-lg font-medium dark:text-zinc-200'>Add device</p>
+        <p className='text-lg font-medium dark:text-zinc-200'>
+          {t('addDevice')}
+        </p>
       </CardContent>
     </Card>
   )
