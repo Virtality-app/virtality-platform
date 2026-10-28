@@ -1,6 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
+import { useClientT } from '@/i18n/use-client-t'
 import { storageUsedRatio } from '@/lib/headset-library-format'
 import { HeadsetStatusLine } from './headset-status-line'
 
@@ -25,6 +26,7 @@ export function HeadsetListRow({
   selected: boolean
   onSelect: () => void
 }) {
+  const { t } = useClientT('vr-video')
   const usedRatio = storageUsedRatio(usedBytes, freeBytes)
 
   return (
@@ -39,7 +41,7 @@ export function HeadsetListRow({
       <div className='min-w-0'>
         <p className='truncate font-medium'>{name}</p>
         <p className='text-muted-foreground text-xs'>
-          {readyCount} of {totalCount} videos
+          {t('headsets.videoCount', { ready: readyCount, total: totalCount })}
         </p>
         <HeadsetStatusLine
           online={online}

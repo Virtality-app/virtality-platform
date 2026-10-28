@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@virtality/ui/components/button'
+import { useClientT } from '@/i18n/use-client-t'
 import { stalledSuffix } from '@/lib/headset-library-format'
 import { HEADSET_VIDEO_SUPPORT } from '@/lib/immersive-video-headset-support'
 import { LibraryCellCancelButton } from './library-cell-cancel-button'
@@ -18,13 +19,15 @@ export function LibraryCellDownloading({
   onPause: () => void
   onCancel: () => void
 }) {
+  const { t } = useClientT(['vr-video', 'common'])
+
   return (
     <div className='flex items-center gap-2'>
       <div className='bg-muted h-1.5 w-24 overflow-hidden rounded-full'>
         <div className='bg-primary h-full' style={{ width: `${percent}%` }} />
       </div>
       <span className='text-muted-foreground text-xs whitespace-nowrap'>
-        {percent} %{stalledSuffix(stalled)}
+        {percent} %{stalledSuffix(stalled, t)}
       </span>
       <LibraryCellCancelButton disabled={disabled} onCancel={onCancel} />
       {HEADSET_VIDEO_SUPPORT.downloadPause ? (
@@ -35,7 +38,7 @@ export function LibraryCellDownloading({
           disabled={disabled}
           onClick={onPause}
         >
-          Pause
+          {t('btn.pause', { ns: 'common' })}
         </Button>
       ) : null}
     </div>

@@ -1,0 +1,71 @@
+{
+  "headsets": {
+    "title": "Headsets",
+    "empty": "Συνδέστε ένα headset στις Συσκευές για να κατεβάσετε βίντεο εμβύθισης.",
+    "videoCount": "{{ready}} από {{total}} βίντεο",
+    "select": "Επιλέξτε headset",
+    "selectPrompt": "Επιλέξτε ένα headset για να διαχειριστείτε τη βιβλιοθήκη του."
+  },
+  "banner": {
+    "connecting": "Σύνδεση με το headset…",
+    "turnOn": "Ανοίξτε το headset και την εφαρμογή για να κατεβάσετε βίντεο."
+  },
+  "status": {
+    "online": "Συνδεδεμένο",
+    "offline": "Εκτός σύνδεσης",
+    "free": "{{size}} ελεύθερα",
+    "lastSeen": "τελευταία σύνδεση {{ago}}",
+    "neverConnected": "δεν έχει συνδεθεί ποτέ",
+    "connecting": "Σύνδεση…"
+  },
+  "activity": {
+    "CYCLING": "Ποδηλασία",
+    "WALKING": "Περπάτημα"
+  },
+  "cell": {
+    "onHeadset": "Στο headset",
+    "onHeadsetAgo": "Στο headset · {{ago}}",
+    "requested": "Ζητήθηκε",
+    "waitingForHeadset": "Αναμονή για το headset",
+    "notOnHeadset": "Δεν υπάρχει στο headset",
+    "notInCatalog": "Εκτός καταλόγου",
+    "download": "Λήψη ({{size}})",
+    "downloading": "Λήψη {{percent}}%",
+    "stalled": "σταματημένη",
+    "paused": "Σε παύση · {{downloaded}} από {{size}}",
+    "tryAgain": "Δοκιμάστε ξανά",
+    "deleteFromHeadset": "Διαγραφή από το headset"
+  },
+  "failure": {
+    "insufficient_storage": "Δεν υπάρχει αρκετός χώρος στο headset. Ελευθερώστε χώρο και δοκιμάστε ξανά.",
+    "network": "Η λήψη απέτυχε. Δοκιμάστε ξανά.",
+    "checksum_mismatch": "Το αρχείο αλλοιώθηκε κατά τη μεταφορά. Δοκιμάστε ξανά.",
+    "url_expired": "Η λήψη απέτυχε. Δοκιμάστε ξανά.",
+    "unavailable": "Αυτό το βίντεο δεν είναι πλέον διαθέσιμο."
+  },
+  "deleteDialog": {
+    "title": "Διαγραφή αυτού του βίντεο από το headset;",
+    "description": "Το βίντεο αφαιρείται από το headset και δεν θα μπορεί να αναπαραχθεί μέχρι να κατέβει ξανά."
+  },
+  "prepDialog": {
+    "title": "Πριν από τη λήψη",
+    "description": "Οι λήψεις διαρκούν αρκετά και σταματούν όταν το headset κοιμηθεί. Ρυθμίστε πρώτα το headset ώστε η λήψη να ολοκληρωθεί.",
+    "chargingTitle": "Κρατήστε το headset στη φόρτιση",
+    "chargingDescription": "Συνδέστε το headset στο ρεύμα και αφήστε το συνδεδεμένο μέχρι να ολοκληρωθεί η λήψη.",
+    "sleepTitle": "Ορίστε την αναστολή λειτουργίας στις 4 ώρες",
+    "start": "Έναρξη λήψης"
+  },
+  "sleepPath": {
+    "pressMeta": "Πατήστε το κουμπί <icon/>",
+    "metaButton": "Meta",
+    "settings": "Ανοίξτε τις Ρυθμίσεις",
+    "general": "Γενικά",
+    "power": "Ενέργεια",
+    "sleepMode": "Από το αναπτυσσόμενο μενού Αναστολή λειτουργίας, επιλέξτε 4 ώρες"
+  },
+  "storageDialog": {
+    "title": "Δεν υπάρχει αρκετός ελεύθερος χώρος",
+    "description": "Το headset έχει {{free}} ελεύθερα και το βίντεο είναι {{size}}. Η λήψη θα αποτύχει αν δεν ελευθερωθεί χώρος.",
+    "confirm": "Λήψη παρ' όλα αυτά"
+  }
+}

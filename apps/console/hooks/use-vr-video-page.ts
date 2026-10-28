@@ -5,6 +5,7 @@ import {
   useDeviceVideosForUser,
   useImmersiveVideoList,
 } from '@virtality/react-query'
+import { useClientT } from '@/i18n/use-client-t'
 import { useDeviceContext } from '@/context/device-context'
 import { useHeadsetLibrary } from '@/hooks/use-headset-library'
 import { useVrPresencePolling } from '@/hooks/use-vr-presence-polling'
@@ -23,6 +24,7 @@ import {
 } from '@/lib/vr-video-page-state'
 
 export function useVrVideoPage() {
+  const { t } = useClientT('vr-video')
   const { devices } = useDeviceContext()
   const catalogQuery = useImmersiveVideoList()
   const mirrorQuery = useDeviceVideosForUser()
@@ -122,11 +124,14 @@ export function useVrVideoPage() {
   const selectedReportedAt = selectedMirror?.report?.reportedAt ?? null
 
   const banner = selectedMirror
-    ? vrVideoBanner({
-        roomComplete: library.roomComplete,
-        replaced: library.replaced,
-        pollOnline,
-      })
+    ? vrVideoBanner(
+        {
+          roomComplete: library.roomComplete,
+          replaced: library.replaced,
+          pollOnline,
+        },
+        t,
+      )
     : null
 
   return {
@@ -134,7 +139,7 @@ export function useVrVideoPage() {
     headsets,
     selectedId,
     setSelectedId: library.replaced ? () => undefined : setSelectedId,
-    selectedName: selectedMirror?.name ?? 'Select a headset',
+    selectedName: selectedMirror?.name ?? t('headsets.select'),
     selectedOnline,
     selectedFreeBytes,
     selectedReportedAt,

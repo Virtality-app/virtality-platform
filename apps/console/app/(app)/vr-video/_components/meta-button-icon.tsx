@@ -1,9 +1,15 @@
+'use client'
+
+import { useClientT } from '@/i18n/use-client-t'
+
 // Meta wordmark glyph from simple-icons (CC0), rendered in a circle to read
 // as the physical Meta button on the right Quest controller.
 export function MetaButtonIcon() {
+  const { t } = useClientT('vr-video')
+
   return (
     <span
-      aria-label='Meta'
+      aria-label={t('sleepPath.metaButton')}
       role='img'
       className='bg-foreground text-background inline-flex size-6 shrink-0 items-center justify-center rounded-full'
     >

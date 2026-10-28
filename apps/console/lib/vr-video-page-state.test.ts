@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { createTestI18n } from '@/i18n/test-i18n'
 import {
   resolveHeadsetSnapshot,
   selectedHeadsetOnline,
@@ -6,34 +7,46 @@ import {
   vrVideoBanner,
 } from './vr-video-page-state.js'
 
+const i18n = createTestI18n()
+const t = i18n.t.bind(i18n)
+
 describe('vrVideoBanner', () => {
   it('asks the physio to turn the headset on when the poll is offline', () => {
     expect(
-      vrVideoBanner({
-        roomComplete: false,
-        replaced: false,
-        pollOnline: false,
-      }),
+      vrVideoBanner(
+        {
+          roomComplete: false,
+          replaced: false,
+          pollOnline: false,
+        },
+        t,
+      ),
     ).toBe('Turn the headset on and open the app to download videos.')
   })
 
   it('shows connecting copy when the poll is online but the room is not complete', () => {
     expect(
-      vrVideoBanner({
-        roomComplete: false,
-        replaced: false,
-        pollOnline: true,
-      }),
+      vrVideoBanner(
+        {
+          roomComplete: false,
+          replaced: false,
+          pollOnline: true,
+        },
+        t,
+      ),
     ).toBe('Connecting to headset…')
   })
 
   it('hides the banner once the room is complete', () => {
     expect(
-      vrVideoBanner({
-        roomComplete: true,
-        replaced: false,
-        pollOnline: false,
-      }),
+      vrVideoBanner(
+        {
+          roomComplete: true,
+          replaced: false,
+          pollOnline: false,
+        },
+        t,
+      ),
     ).toBeNull()
   })
 })

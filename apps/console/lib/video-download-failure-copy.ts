@@ -1,4 +1,5 @@
 import type { VideoDownloadFailureReason } from '@virtality/shared/types'
+import type { Translate } from '@/i18n/translate'
 
 export type VideoDownloadFailureAction = 'Download' | 'Download (fresh)' | null
 
@@ -7,34 +8,23 @@ export type VideoDownloadFailureCopy = {
   action: VideoDownloadFailureAction
 }
 
-const FAILURE_COPY: Record<
+const FAILURE_ACTION: Record<
   VideoDownloadFailureReason,
-  VideoDownloadFailureCopy
+  VideoDownloadFailureAction
 > = {
-  insufficient_storage: {
-    copy: 'Not enough space on the headset. Free up space and try again.',
-    action: 'Download',
-  },
-  network: {
-    copy: 'The download failed. Try again.',
-    action: 'Download',
-  },
-  checksum_mismatch: {
-    copy: 'The file was corrupted in transfer. Try again.',
-    action: 'Download (fresh)',
-  },
-  url_expired: {
-    copy: 'The download failed. Try again.',
-    action: 'Download',
-  },
-  unavailable: {
-    copy: 'This video is no longer available.',
-    action: null,
-  },
+  insufficient_storage: 'Download',
+  network: 'Download',
+  checksum_mismatch: 'Download (fresh)',
+  url_expired: 'Download',
+  unavailable: null,
 }
 
 export function videoDownloadFailureCopy(
   reason: VideoDownloadFailureReason,
+  t: Translate,
 ): VideoDownloadFailureCopy {
-  return FAILURE_COPY[reason]
+  return {
+    copy: t(`failure.${reason}`, { ns: 'vr-video' }),
+    action: FAILURE_ACTION[reason],
+  }
 }

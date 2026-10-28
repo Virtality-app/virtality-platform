@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Trash2 } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
+import { useClientT } from '@/i18n/use-client-t'
 import { DeleteFromHeadsetDialog } from './delete-from-headset-dialog'
 
 export function DeleteFromHeadsetButton({
@@ -12,6 +13,7 @@ export function DeleteFromHeadsetButton({
   disabled: boolean
   onDelete: () => void
 }) {
+  const { t } = useClientT('vr-video')
   const [confirmOpen, setConfirmOpen] = useState(false)
 
   return (
@@ -22,7 +24,7 @@ export function DeleteFromHeadsetButton({
         size='icon-sm'
         className='text-destructive hover:text-destructive hover:bg-destructive/10'
         disabled={disabled}
-        aria-label='Delete from headset'
+        aria-label={t('cell.deleteFromHeadset')}
         onClick={() => setConfirmOpen(true)}
       >
         <Trash2 />

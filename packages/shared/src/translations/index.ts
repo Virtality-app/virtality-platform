@@ -7,6 +7,7 @@ import enPatients from './en/patients.json' with { type: 'json' }
 import enPatientDashboard from './en/patient-dashboard.json' with { type: 'json' }
 import enPrograms from './en/programs.json' with { type: 'json' }
 import enValidation from './en/validation.json' with { type: 'json' }
+import enVrVideo from './en/vr-video.json' with { type: 'json' }
 import elAuth from './el/auth.json' with { type: 'json' }
 import elAvatar from './el/avatar.json' with { type: 'json' }
 import elCommon from './el/common.json' with { type: 'json' }
@@ -16,6 +17,7 @@ import elPatients from './el/patients.json' with { type: 'json' }
 import elPatientDashboard from './el/patient-dashboard.json' with { type: 'json' }
 import elPrograms from './el/programs.json' with { type: 'json' }
 import elValidation from './el/validation.json' with { type: 'json' }
+import elVrVideo from './el/vr-video.json' with { type: 'json' }
 
 export const TRANSLATION_LOCALES = ['en', 'el'] as const
 export type TranslationLocale = (typeof TRANSLATION_LOCALES)[number]
@@ -30,6 +32,7 @@ export const TRANSLATION_NAMESPACES = [
   'patients',
   'programs',
   'validation',
+  'vr-video',
 ] as const
 export type TranslationNamespace = (typeof TRANSLATION_NAMESPACES)[number]
 
@@ -78,6 +81,7 @@ export const translationCatalog: Record<TranslationNamespace, FlatMessages> = {
   patients: flatten(enPatients),
   programs: flatten(enPrograms),
   validation: flatten(enValidation),
+  'vr-video': flatten(enVrVideo),
 }
 
 /** Greek drafts, served until a human approves or edits a key. */
@@ -91,4 +95,5 @@ export const greekDrafts: Record<TranslationNamespace, FlatMessages> = {
   patients: flatten(elPatients),
   programs: flatten(elPrograms),
   validation: flatten(elValidation),
+  'vr-video': flatten(elVrVideo),
 }

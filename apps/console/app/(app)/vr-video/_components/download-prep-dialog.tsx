@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@virtality/ui/components/button'
+import { useClientT } from '@/i18n/use-client-t'
 import { SleepModePath } from './sleep-mode-path'
 
 export function DownloadPrepDialog({
@@ -20,6 +21,8 @@ export function DownloadPrepDialog({
   onCancel: () => void
   onConfirm: () => void
 }) {
+  const { t } = useClientT(['vr-video', 'common'])
+
   return (
     <Dialog
       open={open}
@@ -29,31 +32,27 @@ export function DownloadPrepDialog({
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Before you download</DialogTitle>
-          <DialogDescription>
-            Downloads take a while and stop when the headset goes to sleep. Set
-            up the headset first so the download can finish.
-          </DialogDescription>
+          <DialogTitle>{t('prepDialog.title')}</DialogTitle>
+          <DialogDescription>{t('prepDialog.description')}</DialogDescription>
         </DialogHeader>
         <ol className='list-decimal space-y-3 pl-5 text-sm'>
           <li>
-            <p className='font-medium'>Keep the headset charging</p>
+            <p className='font-medium'>{t('prepDialog.chargingTitle')}</p>
             <p className='text-muted-foreground'>
-              Plug the headset in and leave it connected until the download
-              finishes.
+              {t('prepDialog.chargingDescription')}
             </p>
           </li>
           <li>
-            <p className='font-medium'>Set sleep mode to 4 hours</p>
+            <p className='font-medium'>{t('prepDialog.sleepTitle')}</p>
             <SleepModePath />
           </li>
         </ol>
         <DialogFooter>
           <Button variant='outline' onClick={onCancel}>
-            Cancel
+            {t('btn.cancel', { ns: 'common' })}
           </Button>
           <Button variant='primary' onClick={onConfirm}>
-            Start download
+            {t('prepDialog.start')}
           </Button>
         </DialogFooter>
       </DialogContent>

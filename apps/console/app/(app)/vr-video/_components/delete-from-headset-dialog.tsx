@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@virtality/ui/components/button'
+import { useClientT } from '@/i18n/use-client-t'
 
 export function DeleteFromHeadsetDialog({
   open,
@@ -19,6 +20,8 @@ export function DeleteFromHeadsetDialog({
   onCancel: () => void
   onConfirm: () => void
 }) {
+  const { t } = useClientT(['vr-video', 'common'])
+
   return (
     <Dialog
       open={open}
@@ -28,18 +31,15 @@ export function DeleteFromHeadsetDialog({
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Delete this video from the headset?</DialogTitle>
-          <DialogDescription>
-            The video is removed from the headset and will not be playable until
-            it is downloaded again.
-          </DialogDescription>
+          <DialogTitle>{t('deleteDialog.title')}</DialogTitle>
+          <DialogDescription>{t('deleteDialog.description')}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant='outline' onClick={onCancel}>
-            Cancel
+            {t('btn.cancel', { ns: 'common' })}
           </Button>
           <Button variant='destructive' onClick={onConfirm}>
-            Delete
+            {t('btn.delete', { ns: 'common' })}
           </Button>
         </DialogFooter>
       </DialogContent>

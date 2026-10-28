@@ -1,4 +1,6 @@
 import { formatDistanceToNow } from 'date-fns'
+import { el } from 'date-fns/locale'
+import type { Translate } from '@/i18n/translate'
 
 export function formatByteSize(bytes: number): string {
   if (bytes >= 1_000_000_000) {
@@ -28,13 +30,16 @@ export function formatDurationLabel(durationSec: number | null): string | null {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`
 }
 
-export function formatVideoMetaLine(input: {
-  activity: 'CYCLING' | 'WALKING' | null
-  durationSec: number | null
-  sizeBytes: number
-}): string {
+export function formatVideoMetaLine(
+  input: {
+    activity: 'CYCLING' | 'WALKING' | null
+    durationSec: number | null
+    sizeBytes: number
+  },
+  t: Translate,
+): string {
   return [
-    formatActivityLabel(input.activity),
+    input.activity ? t(`activity.${input.activity}`, { ns: 'vr-video' }) : null,
     formatDurationLabel(input.durationSec),
     formatByteSize(input.sizeBytes),
   ]
@@ -59,36 +64,53 @@ export function storageUsedRatio(usedBytes: number, freeBytes: number): number {
   return Math.min(1, Math.max(0, usedBytes / total))
 }
 
-export function stalledSuffix(stalled: boolean): string {
-  return stalled ? ' · stalled' : ''
+export function stalledSuffix(stalled: boolean, t: Translate): string {
+  return stalled ? ` · ${t('cell.stalled', { ns: 'vr-video' })}` : ''
 }
 
 export function pausedProgressLabel(
   bytesDownloaded: number,
   sizeBytes: number,
+  t: Translate,
 ): string {
-  return `Paused · ${formatByteSize(bytesDownloaded)} of ${formatByteSize(sizeBytes)}`
+  return t('cell.paused', {
+    ns: 'vr-video',
+    downloaded: formatByteSize(bytesDownloaded),
+    size: formatByteSize(sizeBytes),
+  })
 }
 
-export function formatReportedAgo(reportedAt?: string | null): string | null {
+export function formatReportedAgo(
+  reportedAt?: string | null,
+  language?: string,
+): string | null {
   if (!reportedAt) return null
-  return formatDistanceToNow(new Date(reportedAt), { addSuffix: true })
+  return formatDistanceToNow(new Date(reportedAt), {
+    addSuffix: true,
+    locale: language === 'el' ? el : undefined,
+  })
 }
 
-export function headsetStorageSubtitle(input: {
-  online: boolean
-  freeBytes: number | null
-  reportedAt: string | null
-}): string {
+/** What follows "Online" / "Offline" in a headset's status line. */
+export function headsetStorageSubtitle(
+  input: {
+    online: boolean
+    freeBytes: number | null
+    reportedAt: string | null
+  },
+  t: Translate,
+  language?: string,
+): string {
   if (input.online && input.freeBytes != null) {
-    return `${formatByteSize(input.freeBytes)} free`
+    return t('status.free', {
+      ns: 'vr-video',
+      size: formatByteSize(input.freeBytes),
+    })
   }
-  const reportedAgo = formatReportedAgo(input.reportedAt)
+  const reportedAgo = formatReportedAgo(input.reportedAt, language)
   if (!input.online && reportedAgo) {
-    return `Offline · last seen ${reportedAgo}`
+    return t('status.lastSeen', { ns: 'vr-video', ago: reportedAgo })
   }
-  if (!input.online) {
-    return 'Offline · never connected'
-  }
-  return 'Connecting…'
+  if (!input.online) return t('status.neverConnected', { ns: 'vr-video' })
+  return t('status.connecting', { ns: 'vr-video' })
 }

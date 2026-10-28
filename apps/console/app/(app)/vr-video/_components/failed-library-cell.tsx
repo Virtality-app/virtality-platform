@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@virtality/ui/components/button'
+import { useClientT } from '@/i18n/use-client-t'
 import { videoDownloadFailureCopy } from '@/lib/video-download-failure-copy'
 import type { VideoDownloadFailureReason } from '@virtality/shared/types'
 
@@ -20,7 +21,8 @@ export function FailedLibraryCell({
   disabled: boolean
   onDownload?: () => void
 }) {
-  const failure = videoDownloadFailureCopy(reason)
+  const { t } = useClientT('vr-video')
+  const failure = videoDownloadFailureCopy(reason, t)
   const retry = TRY_AGAIN_REASONS.has(reason)
 
   return (
@@ -36,7 +38,7 @@ export function FailedLibraryCell({
           disabled={disabled}
           onClick={onDownload}
         >
-          {retry ? 'Try again' : 'Download'}
+          {retry ? t('cell.tryAgain') : t('btn.download', { ns: 'common' })}
         </Button>
       ) : null}
     </div>

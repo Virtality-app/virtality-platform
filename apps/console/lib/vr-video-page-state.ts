@@ -1,3 +1,4 @@
+import type { Translate } from '@/i18n/translate'
 import type { VideoDownloadFailureReason } from '@virtality/shared/types'
 import type {
   HeadsetCatalogVideo,
@@ -45,14 +46,17 @@ export function toLibrarySnapshot(
   }
 }
 
-export function vrVideoBanner(input: {
-  roomComplete: boolean
-  replaced: boolean
-  pollOnline: boolean
-}): string | null {
+export function vrVideoBanner(
+  input: {
+    roomComplete: boolean
+    replaced: boolean
+    pollOnline: boolean
+  },
+  t: Translate,
+): string | null {
   if (input.replaced || input.roomComplete) return null
-  if (input.pollOnline) return 'Connecting to headset…'
-  return 'Turn the headset on and open the app to download videos.'
+  if (input.pollOnline) return t('banner.connecting', { ns: 'vr-video' })
+  return t('banner.turnOn', { ns: 'vr-video' })
 }
 
 export function selectedHeadsetOnline(input: {

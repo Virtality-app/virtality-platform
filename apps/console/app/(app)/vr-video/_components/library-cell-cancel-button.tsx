@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@virtality/ui/components/button'
+import { useClientT } from '@/i18n/use-client-t'
 
 export function LibraryCellCancelButton({
   disabled,
@@ -9,6 +10,8 @@ export function LibraryCellCancelButton({
   disabled: boolean
   onCancel: () => void
 }) {
+  const { t } = useClientT('common')
+
   return (
     <Button
       type='button'
@@ -17,7 +20,7 @@ export function LibraryCellCancelButton({
       disabled={disabled}
       onClick={onCancel}
     >
-      Cancel
+      {t('btn.cancel')}
     </Button>
   )
 }

@@ -1,5 +1,6 @@
 'use client'
 
+import { useClientT } from '@/i18n/use-client-t'
 import { formatVideoMetaLine } from '@/lib/headset-library-format'
 import type { HeadsetLibraryRow } from '@/lib/headset-library-rows'
 import { LibraryCell } from './library-cell'
@@ -23,6 +24,8 @@ export function HeadsetLibraryRowView({
   onCancel: () => void
   onDelete: () => void
 }) {
+  const { t } = useClientT('vr-video')
+
   return (
     <div className='flex items-center gap-3 py-2'>
       {row.thumbnailUrl ? (
@@ -40,11 +43,14 @@ export function HeadsetLibraryRowView({
       <div className='min-w-0 flex-1'>
         <p className='truncate font-medium'>{row.title}</p>
         <p className='text-muted-foreground truncate text-xs'>
-          {formatVideoMetaLine({
-            activity: row.activity,
-            durationSec: row.durationSec,
-            sizeBytes: row.sizeBytes,
-          })}
+          {formatVideoMetaLine(
+            {
+              activity: row.activity,
+              durationSec: row.durationSec,
+              sizeBytes: row.sizeBytes,
+            },
+            t,
+          )}
         </p>
       </div>
       <LibraryCell

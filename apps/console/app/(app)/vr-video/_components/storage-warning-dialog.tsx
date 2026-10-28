@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@virtality/ui/components/button'
+import { useClientT } from '@/i18n/use-client-t'
 
 export function StorageWarningDialog({
   open,
@@ -21,6 +22,8 @@ export function StorageWarningDialog({
   onCancel: () => void
   onConfirm: () => void
 }) {
+  const { t } = useClientT(['vr-video', 'common'])
+
   return (
     <Dialog
       open={open}
@@ -30,15 +33,15 @@ export function StorageWarningDialog({
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Not enough free space</DialogTitle>
+          <DialogTitle>{t('storageDialog.title')}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant='outline' onClick={onCancel}>
-            Cancel
+            {t('btn.cancel', { ns: 'common' })}
           </Button>
           <Button variant='primary' onClick={onConfirm}>
-            Download anyway
+            {t('storageDialog.confirm')}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -51,11 +54,4 @@ export function needsStorageWarning(
   freeBytes: number | null,
 ): boolean {
   return freeBytes != null && sizeBytes > freeBytes
-}
-
-export function storageWarningCopy(
-  freeLabel: string,
-  sizeLabel: string,
-): string {
-  return `This headset has ${freeLabel} free and the video is ${sizeLabel}. The download will fail unless space is freed.`
 }

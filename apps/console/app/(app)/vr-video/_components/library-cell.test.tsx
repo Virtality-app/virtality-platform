@@ -1,9 +1,22 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { createTestI18n } from '@/i18n/test-i18n'
 import { LibraryCell } from './library-cell'
 import { needsStorageWarning } from './storage-warning-dialog'
 
+const mocks = vi.hoisted(() => ({ language: 'en' as 'en' | 'el' }))
+const instances = { en: createTestI18n('en'), el: createTestI18n('el') }
+
+vi.mock('@/i18n/use-client-t', async () => {
+  const { useTranslation } = await import('react-i18next')
+  return {
+    useClientT: (ns: string | string[]) =>
+      useTranslation(ns, { i18n: instances[mocks.language] }),
+  }
+})
+
 afterEach(() => {
+  mocks.language = 'en'
   cleanup()
   vi.clearAllMocks()
 })
@@ -110,5 +123,25 @@ describe('LibraryCell', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Delete' }))
 
     expect(absentHandlers.onDelete).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows no English in the download steps when Greek is selected', () => {
+    mocks.language = 'el'
+    render(
+      <LibraryCell
+        cell={{ type: 'absent' }}
+        roomComplete={true}
+        frozen={false}
+        sizeBytes={1_000_000}
+        freeBytes={10_000_000}
+        {...absentHandlers}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /Λήψη/ }))
+
+    expect(screen.getByText('Πριν από τη λήψη')).toBeInTheDocument()
+    expect(screen.queryByText('Before you download')).not.toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'Meta' })).toBeInTheDocument()
   })
 })

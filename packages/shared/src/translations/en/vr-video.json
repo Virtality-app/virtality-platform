@@ -1,0 +1,71 @@
+{
+  "headsets": {
+    "title": "Headsets",
+    "empty": "Pair a headset on Devices to download immersive videos.",
+    "videoCount": "{{ready}} of {{total}} videos",
+    "select": "Select a headset",
+    "selectPrompt": "Select a headset to manage its library."
+  },
+  "banner": {
+    "connecting": "Connecting to headset…",
+    "turnOn": "Turn the headset on and open the app to download videos."
+  },
+  "status": {
+    "online": "Online",
+    "offline": "Offline",
+    "free": "{{size}} free",
+    "lastSeen": "last seen {{ago}}",
+    "neverConnected": "never connected",
+    "connecting": "Connecting…"
+  },
+  "activity": {
+    "CYCLING": "Cycling",
+    "WALKING": "Walking"
+  },
+  "cell": {
+    "onHeadset": "On headset",
+    "onHeadsetAgo": "On headset · {{ago}}",
+    "requested": "Requested",
+    "waitingForHeadset": "Waiting for the headset",
+    "notOnHeadset": "Not on headset",
+    "notInCatalog": "Not in catalog",
+    "download": "Download ({{size}})",
+    "downloading": "Downloading {{percent}}%",
+    "stalled": "stalled",
+    "paused": "Paused · {{downloaded}} of {{size}}",
+    "tryAgain": "Try again",
+    "deleteFromHeadset": "Delete from headset"
+  },
+  "failure": {
+    "insufficient_storage": "Not enough space on the headset. Free up space and try again.",
+    "network": "The download failed. Try again.",
+    "checksum_mismatch": "The file was corrupted in transfer. Try again.",
+    "url_expired": "The download failed. Try again.",
+    "unavailable": "This video is no longer available."
+  },
+  "deleteDialog": {
+    "title": "Delete this video from the headset?",
+    "description": "The video is removed from the headset and will not be playable until it is downloaded again."
+  },
+  "prepDialog": {
+    "title": "Before you download",
+    "description": "Downloads take a while and stop when the headset goes to sleep. Set up the headset first so the download can finish.",
+    "chargingTitle": "Keep the headset charging",
+    "chargingDescription": "Plug the headset in and leave it connected until the download finishes.",
+    "sleepTitle": "Set sleep mode to 4 hours",
+    "start": "Start download"
+  },
+  "sleepPath": {
+    "pressMeta": "Press the <icon/> button",
+    "metaButton": "Meta",
+    "settings": "Open Settings",
+    "general": "General",
+    "power": "Power",
+    "sleepMode": "From the Sleep mode dropdown, select 4 hours"
+  },
+  "storageDialog": {
+    "title": "Not enough free space",
+    "description": "This headset has {{free}} free and the video is {{size}}. The download will fail unless space is freed.",
+    "confirm": "Download anyway"
+  }
+}

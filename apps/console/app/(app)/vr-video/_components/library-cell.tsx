@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from 'react'
 import { Button } from '@virtality/ui/components/button'
 import { Badge } from '@virtality/ui/components/badge'
+import { useClientT } from '@/i18n/use-client-t'
 import {
   formatByteSize,
   formatReportedAgo,
@@ -19,7 +20,6 @@ import { LibraryCellPaused } from './library-cell-paused'
 import {
   StorageWarningDialog,
   needsStorageWarning,
-  storageWarningCopy,
 } from './storage-warning-dialog'
 
 export function LibraryCell({
@@ -43,6 +43,7 @@ export function LibraryCell({
   onCancel: () => void
   onDelete: () => void
 }) {
+  const { t, i18n } = useClientT(['vr-video', 'common'])
   const [prepOpen, setPrepOpen] = useState(false)
   const [warningOpen, setWarningOpen] = useState(false)
   const disabled = !roomComplete || frozen
@@ -66,7 +67,7 @@ export function LibraryCell({
     case 'on-headset':
       content = (
         <div className='flex items-center gap-2'>
-          <Badge variant='secondary'>On headset</Badge>
+          <Badge variant='secondary'>{t('cell.onHeadset')}</Badge>
           <DeleteFromHeadsetButton disabled={disabled} onDelete={onDelete} />
         </div>
       )
@@ -110,14 +111,14 @@ export function LibraryCell({
           disabled={disabled}
           onClick={requestDownload}
         >
-          Download ({formatByteSize(sizeBytes)})
+          {t('cell.download', { size: formatByteSize(sizeBytes) })}
         </Button>
       )
       break
     case 'requested':
       content = (
         <div className='flex items-center gap-2'>
-          <Badge variant='secondary'>Requested</Badge>
+          <Badge variant='secondary'>{t('cell.requested')}</Badge>
           <LibraryCellCancelButton disabled={disabled} onCancel={onCancel} />
         </div>
       )
@@ -125,29 +126,31 @@ export function LibraryCell({
     case 'offline-requested':
       content = (
         <div className='text-right'>
-          <Badge variant='secondary'>Requested</Badge>
+          <Badge variant='secondary'>{t('cell.requested')}</Badge>
           <p className='text-muted-foreground mt-1 text-xs'>
-            Waiting for the headset
+            {t('cell.waitingForHeadset')}
           </p>
         </div>
       )
       break
     case 'offline-on-headset': {
-      const reportedAgo = formatReportedAgo(cell.reportedAt)
+      const reportedAgo = formatReportedAgo(cell.reportedAt, i18n.language)
       content = (
         <Badge variant='secondary'>
-          On headset{reportedAgo ? ` · ${reportedAgo}` : ''}
+          {reportedAgo
+            ? t('cell.onHeadsetAgo', { ago: reportedAgo })
+            : t('cell.onHeadset')}
         </Badge>
       )
       break
     }
     case 'offline-absent':
-      content = <Badge variant='outline'>Not on headset</Badge>
+      content = <Badge variant='outline'>{t('cell.notOnHeadset')}</Badge>
       break
     case 'not-in-catalog':
       content = (
         <div className='flex items-center gap-2'>
-          <Badge variant='outline'>Not in catalog</Badge>
+          <Badge variant='outline'>{t('cell.notInCatalog')}</Badge>
           <DeleteFromHeadsetButton disabled={disabled} onDelete={onDelete} />
         </div>
       )
@@ -155,14 +158,15 @@ export function LibraryCell({
     case 'offline-downloading':
       content = (
         <Badge variant='secondary'>
-          Downloading {cell.percent}%{stalledSuffix(cell.stalled)}
+          {t('cell.downloading', { percent: cell.percent })}
+          {stalledSuffix(cell.stalled, t)}
         </Badge>
       )
       break
     case 'offline-paused':
       content = (
         <Badge variant='secondary'>
-          {pausedProgressLabel(cell.bytesDownloaded, cell.sizeBytes)}
+          {pausedProgressLabel(cell.bytesDownloaded, cell.sizeBytes, t)}
         </Badge>
       )
       break
@@ -181,10 +185,10 @@ export function LibraryCell({
       />
       <StorageWarningDialog
         open={warningOpen}
-        description={storageWarningCopy(
-          formatByteSize(freeBytes ?? 0),
-          formatByteSize(sizeBytes),
-        )}
+        description={t('storageDialog.description', {
+          free: formatByteSize(freeBytes ?? 0),
+          size: formatByteSize(sizeBytes),
+        })}
         onCancel={() => setWarningOpen(false)}
         onConfirm={() => {
           setWarningOpen(false)

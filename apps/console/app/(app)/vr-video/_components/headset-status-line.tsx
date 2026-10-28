@@ -1,8 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-
-const OFFLINE_PREFIX = 'Offline'
+import { useClientT } from '@/i18n/use-client-t'
 
 export function HeadsetStatusLine({
   online,
@@ -13,20 +12,14 @@ export function HeadsetStatusLine({
   subtitle: string
   className?: string
 }) {
-  // Offline subtitles already lead with "Offline"; online ones ("2 GB free",
-  // "Connecting…") get the word prepended so both states show a colored word.
-  const detail = online
-    ? ` · ${subtitle}`
-    : subtitle.startsWith(OFFLINE_PREFIX)
-      ? subtitle.slice(OFFLINE_PREFIX.length)
-      : ` · ${subtitle}`
+  const { t } = useClientT('vr-video')
 
   return (
     <p className={cn('text-muted-foreground', className)}>
       <span className={online ? 'text-green-600' : 'text-red-600'}>
-        {online ? 'Online' : 'Offline'}
+        {online ? t('status.online') : t('status.offline')}
       </span>
-      {detail}
+      {` · ${subtitle}`}
     </p>
   )
 }

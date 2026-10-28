@@ -13,18 +13,24 @@ import { HeadsetDidNotConfirmDialog } from './headset-did-not-confirm-dialog'
 import { HeadsetLibrary } from './headset-library'
 import { HeadsetList } from './headset-list'
 import { VrVideoPageSkeleton } from './vr-video-page-skeleton'
+import { useClientT } from '@/i18n/use-client-t'
 import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
 
 export function VrVideoPage() {
   usePageViewTracking({
     props: { route_group: 'device' },
   })
+  const { t, i18n } = useClientT('vr-video')
   const page = useVrVideoPage()
-  const subtitle = headsetStorageSubtitle({
-    online: page.selectedOnline,
-    freeBytes: page.selectedFreeBytes,
-    reportedAt: page.selectedReportedAt,
-  })
+  const subtitle = headsetStorageSubtitle(
+    {
+      online: page.selectedOnline,
+      freeBytes: page.selectedFreeBytes,
+      reportedAt: page.selectedReportedAt,
+    },
+    t,
+    i18n.language,
+  )
 
   if (page.catalogPending) return <VrVideoPageSkeleton />
 
@@ -33,7 +39,7 @@ export function VrVideoPage() {
       <div className='grid gap-4 lg:grid-cols-3'>
         <Card className='lg:col-span-1'>
           <CardHeader>
-            <CardTitle>Headsets</CardTitle>
+            <CardTitle>{t('headsets.title')}</CardTitle>
           </CardHeader>
           <CardContent>
             <HeadsetList
@@ -62,7 +68,7 @@ export function VrVideoPage() {
               />
             ) : (
               <p className='text-muted-foreground text-sm'>
-                Select a headset to manage its library.
+                {t('headsets.selectPrompt')}
               </p>
             )}
           </CardContent>
