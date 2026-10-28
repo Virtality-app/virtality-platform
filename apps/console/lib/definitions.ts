@@ -21,20 +21,18 @@ export const UserSchema = z.object({
     .nullable(),
 })
 
-export const UserProfileSchema = z
-  .object({
-    name: z
-      .string()
-      .min(1, { message: 'Name cannot be empty' })
-      .max(32, { message: 'Name cannot be more than 32 characters' }),
-    email: z.email({ message: 'Provide valid email example@domain.com' }),
-    // image: z.string().nullable().optional(),
-    phoneNumber: z
-      .string()
-      .max(15, { message: 'Phone number cannot be more than 15 digits' })
-      .nullable(),
-  })
-  .superRefine((data, ctx) => {})
+export const UserProfileSchema = z.object({
+  name: z
+    .string()
+    .min(1, { message: 'Name cannot be empty' })
+    .max(32, { message: 'Name cannot be more than 32 characters' }),
+  email: z.email({ message: 'Provide valid email example@domain.com' }),
+  // image: z.string().nullable().optional(),
+  phoneNumber: z
+    .string()
+    .max(15, { message: 'Phone number cannot be more than 15 digits' })
+    .nullable(),
+})
 
 export type UserProfile = z.infer<typeof UserProfileSchema>
 

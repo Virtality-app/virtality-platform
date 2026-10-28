@@ -6,16 +6,11 @@ import { SignInForm, SignInSchema } from '@/lib/definitions'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { ChangeEvent, useState } from 'react'
+import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { Field, FieldError, FieldLabel } from '../ui/field'
 import { warmUpSocketServer } from '@/lib/warm-up-socket-server'
 import { DEFAULT_POST_LOGIN_PATH } from '@/lib/sign-in-redirect'
-
-type SignInDataType = {
-  email: string
-  password: string
-}
 
 type EmailSignInProps = {
   postLoginPath?: string
@@ -29,17 +24,6 @@ const EmailSignIn = ({
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
-  const [signInData, setSignInData] = useState<SignInDataType>({
-    email: '',
-    password: '',
-  })
-
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const target = e.target
-    const { value, name } = target
-    setSignInData({ ...signInData, [name]: value })
-  }
-
   const form = useForm<SignInForm>({
     resolver: zodResolver(SignInSchema),
     defaultValues: {
@@ -49,30 +33,28 @@ const EmailSignIn = ({
   })
 
   const onSubmit = async (values: SignInForm) => {
-    if (signInData) {
-      setLoading(true)
-      try {
-        await authClient.signIn.email({
-          ...values,
-          // testerCode isn't part of the signIn.email schema, but the
-          // server reads it off the raw request body (readSignUpCodeFromUnknown).
-          ...(testerCode ? ({ testerCode } as object) : {}),
-          fetchOptions: {
-            onSuccess: () => {
-              void warmUpSocketServer()
-              router.push(postLoginPath)
-            },
-            onError: (ctx) => {
-              setLoading(false)
-              setAuthError(ctx.error.message)
-            },
+    setLoading(true)
+    try {
+      await authClient.signIn.email({
+        ...values,
+        // testerCode isn't part of the signIn.email schema, but the
+        // server reads it off the raw request body (readSignUpCodeFromUnknown).
+        ...(testerCode ? ({ testerCode } as object) : {}),
+        fetchOptions: {
+          onSuccess: () => {
+            void warmUpSocketServer()
+            router.push(postLoginPath)
           },
-        })
-      } catch (error) {
-        console.error('Error signing in: ', error)
-        setLoading(false)
-        setAuthError('Unexpected error occurred. Please contact support.')
-      }
+          onError: (ctx) => {
+            setLoading(false)
+            setAuthError(ctx.error.message)
+          },
+        },
+      })
+    } catch (error) {
+      console.error('Error signing in: ', error)
+      setLoading(false)
+      setAuthError('Unexpected error occurred. Please contact support.')
     }
   }
 

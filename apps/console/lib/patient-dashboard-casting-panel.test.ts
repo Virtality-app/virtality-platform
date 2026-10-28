@@ -99,9 +99,6 @@ describe('patient dashboard casting panel video', () => {
   })
 
   it('never exposes native video controls', () => {
-    expect(shouldShowVideoControls('idle')).toBe(false)
-    expect(shouldShowVideoControls('loading')).toBe(false)
-    expect(shouldShowVideoControls('connected')).toBe(false)
-    expect(shouldShowVideoControls('error')).toBe(false)
+    expect(shouldShowVideoControls()).toBe(false)
   })
 })

@@ -22,7 +22,6 @@ const useDevice = () => {
       return () => setDevices([])
     }
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDevices(
       initialDevices.map((device) => {
         const socket = createSocket()

@@ -114,7 +114,7 @@ describe('skip-safe active-session progress flow regression', () => {
   })
 
   it('preserves partial progress when skipping forward or back', () => {
-    let state = createFlowState()
+    const state = createFlowState()
     const afterRep = applyRepEndToFlow(state, repEndPayload(0, 0.7)).state
 
     const forwardSkip = requestExerciseSkipInFlow(afterRep, { kind: 'forward' })

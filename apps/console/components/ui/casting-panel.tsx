@@ -53,7 +53,7 @@ export function CastingPanel({
   const controlAction = getCastingControlAction(status)
   const controlDisabled = isCastingControlDisabled(status, connected)
   const mountVideo = shouldShowVideoElement(playerView)
-  const showVideoControls = shouldShowVideoControls(playerView)
+  const showVideoControls = shouldShowVideoControls()
   const isStreamVisible = playerView === 'connected'
   const { showTimeoutPrompt, handleWait } = useCastingLoadTimeout(playerView)
 

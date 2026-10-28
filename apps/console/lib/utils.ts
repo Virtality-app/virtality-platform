@@ -2,7 +2,6 @@ import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { Exercise } from '@virtality/db'
 import { v4 as uuid } from 'uuid'
-import { ParsePayload } from 'zod/v4/core'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))

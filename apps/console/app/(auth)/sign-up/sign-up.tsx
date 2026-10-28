@@ -16,7 +16,6 @@ import { SignUpSchema, SignUpForm } from '@/lib/definitions'
 import { authClient } from '@/auth-client'
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useClientT } from '@/i18n/use-client-t'
 import { Loader2 } from 'lucide-react'
 import SignupForm from '@/components/auth/sign-up-form'
 import { Label } from '@virtality/ui/components/label'
@@ -37,7 +36,6 @@ const SignUp = () => {
   const urlAccessCode = readAccessCodeFromSearchParams(searchParams)
   const [testerCode, setTesterCode] = useState(urlAccessCode)
   const [submitError, setSubmitError] = useState<string | null>(null)
-  const { i18n } = useClientT()
 
   const form = useForm<SignUpForm>({
     resolver: zodResolver(SignUpSchema),

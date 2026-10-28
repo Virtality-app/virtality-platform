@@ -62,7 +62,6 @@ const ExerciseList = ({ className }: { className?: string }) => {
   const { data: defaultExercises } = useExercise()
 
   const isProgramActive = programState === 'started'
-  const isProgramInactive = programState === 'ready'
   const isProgramPaused = programState === 'paused'
 
   const isMain = selectedMode === 'main'

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useEntitlementStanding } from '@virtality/react-query'
 import { projectLiveEntitlementStanding } from '@virtality/shared/utils'
 import { authClient } from '@/auth-client'
@@ -25,7 +25,7 @@ export type CheckoutEntitlementRestoreState = {
 export function useCheckoutEntitlementRestore(): CheckoutEntitlementRestoreState {
   const { data: session } = authClient.useSession()
   const query = useEntitlementStanding()
-  const restoreStartedAtMs = useRef(Date.now())
+  const [restoreStartedAtMs] = useState(() => Date.now())
   const [timedOut, setTimedOut] = useState(false)
   const [nowMs, setNowMs] = useState(() => Date.now())
 
@@ -47,12 +47,11 @@ export function useCheckoutEntitlementRestore(): CheckoutEntitlementRestoreState
     if (query.isPending) return
     if (entitled) return
 
-    const startedAtMs = restoreStartedAtMs.current
     const tick = () => {
       const keepPolling = shouldPollCheckoutEntitlementRestore({
         intent: 'success',
         entitled: false,
-        startedAtMs,
+        startedAtMs: restoreStartedAtMs,
         nowMs: Date.now(),
       })
       if (!keepPolling) {
@@ -75,7 +74,7 @@ export function useCheckoutEntitlementRestore(): CheckoutEntitlementRestoreState
       window.clearInterval(pollId)
       window.clearTimeout(stopId)
     }
-  }, [entitled, query.isPending, query.refetch])
+  }, [entitled, query.isPending, query.refetch, restoreStartedAtMs])
 
   return {
     entitled,

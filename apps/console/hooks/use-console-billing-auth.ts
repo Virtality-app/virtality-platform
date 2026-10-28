@@ -66,10 +66,7 @@ export function useConsoleBillingAuth(standing?: SubscribeCheckoutStanding) {
   const scheduleCycleMutation = useScheduleConsoleCyclePlanChange()
   const startSubscribeCheckoutMutation = useStartConsoleSubscribeCheckout()
 
-  const checkoutSuccessIntent = useMemo(
-    () => resolveCheckoutSuccessIntent(standing),
-    [standing?.hadPaidBilling, standing?.plan, standing?.status],
-  )
+  const checkoutSuccessIntent = resolveCheckoutSuccessIntent(standing)
 
   const billing = useMemo(
     () =>

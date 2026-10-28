@@ -8,7 +8,7 @@ import { useEffect } from 'react'
 
 const websiteURL = getWebsiteUrl()
 
-const ErrorPage = ({ error }: { error?: Error }) => {
+const ErrorPage = () => {
   const message = useSearchParams().get('message')
 
   useEffect(() => {

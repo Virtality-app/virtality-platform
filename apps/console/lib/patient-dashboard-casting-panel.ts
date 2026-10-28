@@ -75,7 +75,7 @@ export function shouldShowVideoElement(view: CastingPlayerView): boolean {
   return view === 'loading' || view === 'connected'
 }
 
-export function shouldShowVideoControls(_view: CastingPlayerView): boolean {
+export function shouldShowVideoControls(): boolean {
   return false
 }
 

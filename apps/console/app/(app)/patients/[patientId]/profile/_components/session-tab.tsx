@@ -38,7 +38,10 @@ export default function SessionTab({ patientId }: SessionTabProps) {
       },
     })
 
-  const clinicalHistorySessions = allSessions ?? []
+  const clinicalHistorySessions = useMemo(
+    () => allSessions ?? [],
+    [allSessions],
+  )
 
   const filteredSessions = useMemo(() => {
     if (!clinicalHistorySessions.length) return []

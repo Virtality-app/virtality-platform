@@ -4,6 +4,7 @@ import VerifyEmail from './verify-email'
 const VerifyEmailPage = async () => {
   const cookieStore = await cookies()
   const initialTimeCookie = cookieStore.get('verification_time')
+  // eslint-disable-next-line react-hooks/purity -- server component, runs once per request
   const now = Date.now()
 
   let remainingTime: number | undefined

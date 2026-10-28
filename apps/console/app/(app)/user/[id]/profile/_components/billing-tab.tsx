@@ -33,7 +33,6 @@ export function BillingTab() {
     isCatalogUnavailable,
     standing,
     productName,
-    selectedInterval,
     setSelectedInterval,
     prices,
     cardDisplay,

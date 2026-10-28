@@ -30,7 +30,6 @@ export default function CookieBanner() {
     if (localStorage.getItem('analytics:consent') !== 'granted') {
       localStorage.setItem('analytics:consent', 'granted')
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setAcknowledged(localStorage.getItem(NOTICE_ACK_KEY) === '1')
   }, [])
 

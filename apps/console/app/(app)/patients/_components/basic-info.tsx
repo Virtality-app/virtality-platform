@@ -79,7 +79,6 @@ const BasicInfo = ({ form, patient }: BasicInfoProps) => {
   const removeImage = () => {
     setPreviewUrl(null)
     setImage(false)
-    if (patient) patient.image = null
     form.setValue('image', null, { shouldDirty: true })
   }
 

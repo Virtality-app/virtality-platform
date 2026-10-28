@@ -34,8 +34,6 @@ export function useImmersiveVideoPlayback(
   const playTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const stopTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const reattachTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const deviceRef = useRef(device)
-  deviceRef.current = device
 
   const clearPlayTimeout = () => {
     if (playTimeoutRef.current) {

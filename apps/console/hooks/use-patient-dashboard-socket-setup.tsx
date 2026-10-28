@@ -90,7 +90,6 @@ const usePatientDashboardSocketSetup = ({
   const {
     selectedProgram,
     programState,
-    isDialogOpen,
     exercises,
     selectedDevice,
     activeExerciseData,

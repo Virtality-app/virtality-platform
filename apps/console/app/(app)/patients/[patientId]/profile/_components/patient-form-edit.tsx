@@ -114,7 +114,7 @@ const PatientFormEdit = ({ patientId }: PatientFormEditProps) => {
   const submittedValues = useRef<PatientFormInput | null>(null)
 
   const { mutate: updatePatient, isPending: isFormPending } = useUpdatePatient({
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       trackAnalyticsEvent('patient_profile_updated', {})
       return Promise.all([
         queryClient.invalidateQueries({

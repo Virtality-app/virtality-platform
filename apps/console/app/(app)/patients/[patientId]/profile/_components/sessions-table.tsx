@@ -58,16 +58,22 @@ const SessionsTable = ({
   })
 
   const usesProvidedSessions = sessionsProp !== undefined
-  const tableData =
-    (usesProvidedSessions ? sessionsProp : fetchedSessions) ?? []
   const rows = useMemo(() => {
+    const tableData =
+      (usesProvidedSessions ? sessionsProp : fetchedSessions) ?? []
     const visibleIds = new Set(
       filterSessionsBySearch(tableData, globalFilter).map((s) => s.id),
     )
     return buildSessionListRows(historySessions ?? tableData).filter((row) =>
       visibleIds.has(row.id),
     )
-  }, [tableData, historySessions, globalFilter])
+  }, [
+    usesProvidedSessions,
+    sessionsProp,
+    fetchedSessions,
+    historySessions,
+    globalFilter,
+  ])
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
