@@ -28,7 +28,7 @@ import { type BugReportForm as BugReportFormType } from '@/lib/definitions'
 import { BugReportFormSchema } from '@/lib/definitions'
 import { useClientT } from '@/i18n/use-client-t'
 import capitalize from 'lodash.capitalize'
-import { P } from './typography'
+import { P } from '@/components/typography'
 
 interface BugReportFormProps {
   children: React.ReactNode

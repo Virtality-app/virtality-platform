@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { H2, H3, P } from '@/components/ui/typography'
+import { H2, H3, P } from '@/components/typography'
 import { ReactNode } from 'react'
 import Instructions from './instructions.mdx'
 import {

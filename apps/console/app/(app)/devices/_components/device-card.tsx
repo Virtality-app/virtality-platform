@@ -14,7 +14,7 @@ import MetaQuest3s from '@/public/meta_quest_3s.webp'
 import DeviceCardSkeleton from './device-card-skeleton'
 import DeviceCardActions from './device-card-actions'
 import { useReturnHomeOnPair } from './use-return-home-on-pair'
-import { H3, P } from '@/components/ui/typography'
+import { H3, P } from '@/components/typography'
 import { cn } from '@/lib/utils'
 import useDevice from '@/hooks/use-device'
 

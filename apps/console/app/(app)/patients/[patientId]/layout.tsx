@@ -1,4 +1,4 @@
-import TabBar from '@/components/ui/tab-bar'
+import TabBar from './_components/tab-bar'
 import PageTransition from '@/components/ui/page-transition'
 
 export default async function PatientsLayout({

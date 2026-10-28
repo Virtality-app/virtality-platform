@@ -103,6 +103,7 @@ const SceneSettings = ({
               id='sitting'
               checked={isSitting}
               onCheckedChange={sittingChangeHandler}
+              className='data-[state=checked]:bg-green-500'
             />
             <Label htmlFor='sitting'>Sitting</Label>
           </div>
@@ -112,6 +113,7 @@ const SceneSettings = ({
               checked={coachEnabled}
               onCheckedChange={onCoachEnabledChange}
               disabled={coachToggleDisabled}
+              className='data-[state=checked]:bg-green-500'
             />
             <Label htmlFor='coach-enabled'>Coach</Label>
           </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { ErrorDisplay } from '@/components/ui/error-display'
+import { ErrorDisplay } from '@/components/feedback/error-display'
 import { getWebsiteUrl } from '@virtality/shared/types'
 import { isTrialRedeemWaitlistRedirect } from '@virtality/shared/utils'
 import { useSearchParams } from 'next/navigation'

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from '@virtality/ui/components/button'
-import { H2, P } from '@/components/ui/typography'
+import { H2, P } from '@/components/typography'
 import { useClientT } from '@/i18n/use-client-t'
 import { useRouter } from 'next/navigation'
 import { ExerciseLibraryProvider } from '@/context/exercise-library-context'

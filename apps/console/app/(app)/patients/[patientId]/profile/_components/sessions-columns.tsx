@@ -13,7 +13,7 @@ import { format } from 'date-fns'
 import ColumnHeader from '@/components/tables/header-cell'
 import { getClinicalHistorySessionStatusLabel } from '@/lib/session-history'
 import type { SessionListRowModel } from '@/lib/session-list-row'
-import { Badge } from '@/components/ui/badge'
+import { Badge } from '@virtality/ui/components/badge'
 import { cn } from '@/lib/utils'
 import SessionProgressDelta from './session-progress-delta'
 

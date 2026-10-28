@@ -10,7 +10,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { BodyAreas, MedHistoryDeltas } from '@/types/models'
 import { cn } from '@/lib/utils'
 import useNavigationGuard from '@/hooks/use-navigation-guard'
-import { NavigationGuardDialog } from '@/components/ui/navigation-guard-dialog'
+import { NavigationGuardDialog } from '@/components/dialogs/navigation-guard-dialog'
 import { notify } from '@/lib/notify'
 import { useClientT } from '@/i18n/use-client-t'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -24,7 +24,7 @@ import {
 } from '@virtality/db'
 import { useRouter } from 'next/navigation'
 import useMounted from '@/hooks/use-mounted'
-import DeleteConfirmDialog from '@/components/ui/delete-confirm-dialog'
+import DeleteConfirmDialog from '@/components/dialogs/delete-confirm-dialog'
 import SessionTab from './session-tab'
 import {
   getQueryClient,

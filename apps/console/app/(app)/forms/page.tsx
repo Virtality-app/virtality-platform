@@ -14,7 +14,7 @@ import {
   ItemGroup,
   ItemTitle,
 } from '@/components/ui/item'
-import { H1 } from '@/components/ui/typography'
+import { H1 } from '@/components/typography'
 import { CircleQuestionMark } from 'lucide-react'
 import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
 import { FormItemDialog } from './_components/form-item-dialog'

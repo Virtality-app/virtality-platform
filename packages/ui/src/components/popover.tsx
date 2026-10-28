@@ -39,6 +39,12 @@ function PopoverContent({
   )
 }
 
+function PopoverArrow({
+  ...props
+}: React.ComponentProps<typeof PopoverPrimitive.Arrow>) {
+  return <PopoverPrimitive.Arrow data-slot='popover-arrow' {...props} />
+}
+
 function PopoverAnchor({
   ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Anchor>) {
@@ -82,6 +88,7 @@ export {
   Popover,
   PopoverTrigger,
   PopoverContent,
+  PopoverArrow,
   PopoverAnchor,
   PopoverHeader,
   PopoverTitle,

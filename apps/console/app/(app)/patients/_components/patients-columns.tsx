@@ -13,7 +13,7 @@ import { Copy, Ellipsis, Pencil, Trash2 } from 'lucide-react'
 import ColumnHeader from '@/components/tables/header-cell'
 import { format } from 'date-fns'
 import { PatientListItem } from '@/types/models'
-import DeleteConfirmDialog from '@/components/ui/delete-confirm-dialog'
+import DeleteConfirmDialog from '@/components/dialogs/delete-confirm-dialog'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {

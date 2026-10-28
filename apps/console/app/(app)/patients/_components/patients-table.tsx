@@ -18,7 +18,7 @@ import { Button } from '@virtality/ui/components/button'
 import Link from 'next/link'
 import { PlusSquare, Trash2 } from 'lucide-react'
 import { columns } from './patients-columns'
-import DeleteConfirmDialog from '@/components/ui/delete-confirm-dialog'
+import DeleteConfirmDialog from '@/components/dialogs/delete-confirm-dialog'
 import useIsAuthed from '@/hooks/use-is-authed'
 import {
   usePatients,

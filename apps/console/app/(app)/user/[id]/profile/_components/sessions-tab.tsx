@@ -9,7 +9,7 @@ import {
 } from '@virtality/ui/components/card'
 import { Badge } from '@virtality/ui/components/badge'
 import { Monitor, Smartphone, Trash2 } from 'lucide-react'
-import { H3, P } from '@/components/ui/typography'
+import { H3, P } from '@/components/typography'
 import { Button } from '@virtality/ui/components/button'
 import { useRouter } from 'next/navigation'
 import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'

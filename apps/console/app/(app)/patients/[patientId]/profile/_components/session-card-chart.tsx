@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@virtality/ui/components/button'
-import Chart from '@/components/ui/progress-chart'
+import Chart from '@/components/charts/progress-chart'
 import { ExtendedPatientSession, ProgressDataPoint } from '@/types/models'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useState } from 'react'

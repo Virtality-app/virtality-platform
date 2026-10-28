@@ -2,7 +2,7 @@
 import { Fragment } from 'react'
 import { cn, getDisplayName } from '@/lib/utils'
 import { usePatientDashboard } from '@/context/patient-dashboard-context'
-import ExerciseDescriptionCard from '@/components/ui/exercise-description-card'
+import ExerciseDescriptionCard from '@/components/exercise-library/exercise-description-card'
 import {
   Card,
   CardContent,
@@ -24,7 +24,7 @@ import {
   PopoverContent,
   PopoverArrow,
 } from '@/components/ui/popover'
-import ExerciseSettings from '@/components/ui/exercise-settings'
+import ExerciseSettings from '@/components/exercise-library/exercise-settings'
 import { motion } from 'motion/react'
 import { useExercise } from '@virtality/react-query'
 import { notify } from '@/lib/notify'

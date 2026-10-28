@@ -27,6 +27,12 @@ Shared sidebar stack used by console and adminboard:
 
 Apps keep local nav config and layout composition; only the primitives live here.
 
+## Console re-exports
+
+The console's `components/ui/` files for `dropdown-menu`, `popover`, `select`, `sheet`, `sidebar`, `skeleton`, `switch` and `tooltip` are one-line `export *` re-exports of the shared primitive. Change the shared file, not the re-export. Console-specific styling goes at the call site through `className`.
+
+The console's `components/ui/` holds generic primitives only. Feature components live in `components/<feature>/` or in a route `_components/` folder.
+
 ## Primitive Migration Triage
 
 Current duplicate UI primitives with conflicts (not zero-conflict yet):
@@ -38,14 +44,9 @@ Current duplicate UI primitives with conflicts (not zero-conflict yet):
 - `combo-select`
 - `command`
 - `dialog`
-- `dropdown-menu`
 - `exercise-input-pill`
 - `field`
 - `form`
 - `navigation-menu`
-- `popover`
-- `select`
-- `skeleton`
-- `switch`
 - `table`
 - `tabs`

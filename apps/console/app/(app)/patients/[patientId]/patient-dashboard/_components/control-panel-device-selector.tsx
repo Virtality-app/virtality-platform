@@ -7,7 +7,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { Button } from '@virtality/ui/components/button'
-import VRControlPanel from '@/components/ui/vr-control-panel'
+import VRControlPanel from '@/components/vr-control/vr-control-panel'
 import { cn } from '@/lib/utils'
 import { DeviceContextValue } from '@/context/device-context'
 

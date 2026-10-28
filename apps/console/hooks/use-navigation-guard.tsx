@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import type { NavigationGuardDialogProps } from '@/components/ui/navigation-guard-dialog'
+import type { NavigationGuardDialogProps } from '@/components/dialogs/navigation-guard-dialog'
 
 /** Props for `NavigationGuardDialog`; callers spread `guard` and add title/description. */
 export type NavigationGuardState = Pick<

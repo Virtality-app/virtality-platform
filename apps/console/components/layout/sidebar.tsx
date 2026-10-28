@@ -14,7 +14,7 @@ import {
 import { getVisibleSidebarLinks } from '@/data/static/sidebar-links'
 import Link from 'next/link'
 import SmallLogo from './sm-logo'
-import { BugReportForm } from '../ui/bug-report-form'
+import { BugReportForm } from '@/components/bug-report/bug-report-form'
 import { Flag, Sidebar as SidebarIcon } from 'lucide-react'
 import {
   AnalyticsEventProps,

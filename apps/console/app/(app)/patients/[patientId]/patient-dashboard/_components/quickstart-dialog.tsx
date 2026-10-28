@@ -7,8 +7,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { usePatientDashboard } from '@/context/patient-dashboard-context'
-import ExerciseGrid from '@/components/ui/exercise-grid'
-import ExerciseLibraryList from '@/components/ui/exercise-library-list'
+import ExerciseGrid from '@/components/exercise-library/exercise-grid'
+import ExerciseLibraryList from '@/components/exercise-library/exercise-library-list'
 import { Button } from '@virtality/ui/components/button'
 import { useEffect, useRef, useState } from 'react'
 import { ArrowLeft, ArrowRight, Save, Zap } from 'lucide-react'

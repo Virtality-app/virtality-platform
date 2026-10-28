@@ -1,6 +1,8 @@
 import { createElement } from 'react'
 import { toast, type Id, type ToastOptions } from 'react-toastify'
-import NotifyToast, { type NotifyVariant } from '@/components/ui/notify-toast'
+import NotifyToast, {
+  type NotifyVariant,
+} from '@/components/feedback/notify-toast'
 import { playAttentionSound } from '@/lib/notify-sound'
 
 export type NotifyId = Id

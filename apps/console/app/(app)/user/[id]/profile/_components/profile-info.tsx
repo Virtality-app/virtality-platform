@@ -17,7 +17,7 @@ import {
   useActivePendingPasswordChange,
   useHasPassword,
 } from '@virtality/react-query'
-import { ControllerField } from '@/components/ui/controller'
+import { ControllerField } from './controller-field'
 import { ImageField } from './profile-image-field'
 import { PasswordCardBody } from './profile-password-card-body'
 import { PendingAccountDeletionState } from './profile-pending-account-deletion-state'

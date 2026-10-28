@@ -13,7 +13,7 @@ import {
   FieldLabel,
   FieldLegend,
   FieldSet,
-} from './field'
+} from '@/components/ui/field'
 import { FieldMeta } from '@virtality/shared/types'
 import { cn } from '@virtality/ui/lib/utils'
 

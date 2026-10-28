@@ -6,7 +6,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from './select'
+} from '@/components/ui/select'
 import { VRDevice } from '@/types/models'
 import { MouseEvent } from 'react'
 import useSocketConnection, {

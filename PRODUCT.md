@@ -29,7 +29,7 @@ Virtality's core claim is neuro-driven movement. The VR environment gets patient
 
 ## Capabilities and Constraints
 
-- Monorepo built with pnpm and Turborepo. All three apps run Next.js 16 (with breaking changes from earlier versions), React 19, and Tailwind 4. Shared UI primitives live in `packages/ui` (`@virtality/ui`; see `packages/ui/CONTRACT.md`).
+- Monorepo built with pnpm and Turborepo. All three apps run Next.js 16 (with breaking changes from earlier versions), React 19, and Tailwind 4. Shared UI primitives live in `packages/ui` (`@virtality/ui`; see `packages/ui/CONTEXT.md`).
 - **Market:** Greek private clinics first. The Console ships in English and Greek (`apps/console/i18n`, fallback `en`), so every Console string needs to work in both languages. The website is English-only for now and also aims for international reach.
 - The headset app itself isn't in this repo. Use the Simulated Headset (`docs/agents/headset-sim.md`) to check headset-facing Console features.
 - Features gated behind flags: billing UI (`NEXT_PUBLIC_BILLING_FEATURE_ENABLED`) and the VR Experiences nav entry (`NEXT_PUBLIC_VR_EXPERIENCES_NAV_ENABLED`).

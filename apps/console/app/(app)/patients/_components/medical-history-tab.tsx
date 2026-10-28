@@ -1,6 +1,6 @@
 import { FormField } from '@/components/ui/form'
-import HumanBack from '@/components/ui/human-back'
-import HumanFront from '@/components/ui/human-front'
+import HumanBack from '@/components/body-map/human-back'
+import HumanFront from '@/components/body-map/human-front'
 import { cn } from '@/lib/utils'
 import { Slider } from '@/components/ui/slider'
 import dynamic from 'next/dynamic'
@@ -11,7 +11,7 @@ import { useRef, useState } from 'react'
 import { HumanState } from '@/data/static/human-body'
 import useBeforeUnload from '@/hooks/use-before-unload'
 import useNavigationGuard from '@/hooks/use-navigation-guard'
-import { NavigationGuardDialog } from '@/components/ui/navigation-guard-dialog'
+import { NavigationGuardDialog } from '@/components/dialogs/navigation-guard-dialog'
 import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
 
 /** Compare by which parts are active; null and all-inactive are treated as equal. */

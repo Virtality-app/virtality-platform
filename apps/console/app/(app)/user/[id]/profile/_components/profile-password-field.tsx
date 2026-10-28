@@ -8,7 +8,7 @@ import { CardContent, CardFooter } from '@virtality/ui/components/card'
 import { FieldGroup } from '@/components/ui/field'
 import { useORPC, useStartPasswordChange } from '@virtality/react-query'
 import { useQueryClient } from '@tanstack/react-query'
-import { ControllerField } from '@/components/ui/controller'
+import { ControllerField } from './controller-field'
 import {
   PasswordFormSchema,
   passwordFormField,

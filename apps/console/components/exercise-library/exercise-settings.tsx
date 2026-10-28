@@ -1,12 +1,12 @@
 import { Slider } from '@/components/ui/slider'
-import ExerciseInput from '@/components/ui/exercise-input'
+import ExerciseInput from './exercise-input'
 import { Label } from '@virtality/ui/components/label'
-import ExerciseInputPill from '@/components/ui/exercise-input-pill'
+import ExerciseInputPill from './exercise-input-pill'
 import { CompleteExercise } from '@/types/models'
 import { useRef } from 'react'
 import { PatientDashboardValue } from '@/context/patient-dashboard-context'
 import { cn } from '@/lib/utils'
-import { Switch } from './switch'
+import { Switch } from '@/components/ui/switch'
 import { useFeatureFlagResult } from 'posthog-js/react'
 
 const applyBulkUpdate = (
@@ -257,6 +257,7 @@ const ExerciseSettings = ({
               checked={ex.romMode === 1}
               onCheckedChange={romModeChangeHandler}
               disabled={readOnly}
+              className='data-[state=checked]:bg-green-500'
             />
           </div>
         ))}

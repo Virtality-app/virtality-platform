@@ -1,6 +1,6 @@
 'use client'
 import { Button } from '@virtality/ui/components/button'
-import { H2, P } from '@/components/ui/typography'
+import { H2, P } from '@/components/typography'
 import Link from 'next/link'
 import { useEffect } from 'react'
 

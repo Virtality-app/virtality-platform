@@ -1,7 +1,7 @@
 import { act, cleanup, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import useNavigationGuard from '@/hooks/use-navigation-guard'
-import { NavigationGuardDialog } from '@/components/ui/navigation-guard-dialog'
+import { NavigationGuardDialog } from '@/components/dialogs/navigation-guard-dialog'
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),

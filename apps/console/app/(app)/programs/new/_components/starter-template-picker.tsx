@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { Button } from '@virtality/ui/components/button'
-import { H2, P } from '@/components/ui/typography'
+import { H2, P } from '@/components/typography'
 import { useClientT } from '@/i18n/use-client-t'
 import {
   Command,
@@ -15,7 +15,7 @@ import {
 import { useExercise, useStarterTemplates } from '@virtality/react-query'
 import type { CompleteReusableProgram } from '@/types/models'
 import { starterTemplateExercisesForPreview } from '@/lib/starter-template-create'
-import LoadingScreen from '@/components/ui/loading-screen'
+import LoadingScreen from '@/components/feedback/loading-screen'
 import StarterTemplateExercisePreviewItem from './starter-template-exercise-preview-item'
 
 interface StarterTemplatePickerProps {
