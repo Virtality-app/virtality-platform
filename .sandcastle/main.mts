@@ -28,16 +28,15 @@ import * as sandcastle from '@ai-hero/sandcastle'
 import { docker } from '@ai-hero/sandcastle/sandboxes/docker'
 import { z } from 'zod'
 
-// const AGENT_MODEL = 'cursor-grok-4.5-medium'
-// const AGENT_MODEL = 'composer-2.5'
-
 // Sandcastle also injects `.sandcastle/.env` into sandboxes. Prefer running via
 // `pnpm sandcastle` so `--env-file` populates process.env for this check.
 for (const key of [
   'GH_REPO',
   'GH_TOKEN',
-  'CURSOR_API_KEY',
-  'AGENT_MODEL',
+  'PLANNER_MODEL',
+  'IMPLEMENTER_MODEL',
+  'REVIEWER_MODEL',
+  'MERGER_MODEL',
 ] as const) {
   if (!process.env[key]) {
     throw new Error(
@@ -46,7 +45,19 @@ for (const key of [
   }
 }
 
-const AGENT_MODEL = process.env.AGENT_MODEL!
+// Claude Code in the sandbox accepts either a subscription OAuth token
+// (`claude setup-token`) or an Anthropic API key.
+if (!process.env.CLAUDE_CODE_OAUTH_TOKEN && !process.env.ANTHROPIC_API_KEY) {
+  throw new Error(
+    'Set CLAUDE_CODE_OAUTH_TOKEN or ANTHROPIC_API_KEY in .sandcastle/.env (see .env.example) or export it in your shell.',
+  )
+}
+
+// One Claude model per phase, passed straight to `claude --model`.
+const PLANNER_MODEL = process.env.PLANNER_MODEL!
+const IMPLEMENTER_MODEL = process.env.IMPLEMENTER_MODEL!
+const REVIEWER_MODEL = process.env.REVIEWER_MODEL!
+const MERGER_MODEL = process.env.MERGER_MODEL!
 
 // The planner emits its plan as JSON inside <plan> tags; Output.object extracts
 // and validates it against this schema. We use Zod here, but any Standard
@@ -96,7 +107,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
   // -------------------------------------------------------------------------
   // Phase 1: Plan
   //
-  // The planning agent (opus, for deeper reasoning) reads the open issue list,
+  // The planning agent (PLANNER_MODEL) reads the open issue list,
   // builds a dependency graph, and selects the issues that can be worked in
   // parallel right now (i.e., no blocking dependencies on other open issues).
   //
@@ -111,8 +122,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     // One iteration is enough: the planner just needs to read and reason,
     // not write code. (Structured output requires maxIterations: 1.)
     maxIterations: 1,
-    // Opus for planning: dependency analysis benefits from deeper reasoning.
-    agent: sandcastle.cursor(AGENT_MODEL),
+    agent: sandcastle.claudeCode(PLANNER_MODEL),
     promptFile: './.sandcastle/plan-prompt.md',
     // Extract and validate the <plan> JSON into a typed object. Throws
     // StructuredOutputError if the tag is missing, the JSON is malformed, or
@@ -159,7 +169,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
         const implement = await sandbox.run({
           name: 'implementer',
           maxIterations: 100,
-          agent: sandcastle.cursor(AGENT_MODEL),
+          agent: sandcastle.claudeCode(IMPLEMENTER_MODEL),
           promptFile: './.sandcastle/implement-prompt.md',
           promptArgs: {
             TASK_ID: issue.id,
@@ -205,7 +215,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
             const review = await sandbox.run({
               name: 'reviewer',
               maxIterations: 1,
-              agent: sandcastle.cursor(AGENT_MODEL),
+              agent: sandcastle.claudeCode(REVIEWER_MODEL),
               promptFile: './.sandcastle/review-prompt.md',
               promptArgs: {
                 BRANCH: issue.branch,
@@ -294,7 +304,7 @@ for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     copyToWorktree,
     name: 'merger',
     maxIterations: 1,
-    agent: sandcastle.cursor(AGENT_MODEL),
+    agent: sandcastle.claudeCode(MERGER_MODEL),
     promptFile: './.sandcastle/merge-prompt.md',
     promptArgs: {
       // A markdown list of branch names, one per line.

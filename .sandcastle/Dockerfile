@@ -31,10 +31,10 @@ ARG AGENT_GID=1000
 RUN groupmod -g $AGENT_GID node && usermod -u $AGENT_UID -g $AGENT_GID -d /home/agent -m -l agent node
 USER ${AGENT_UID}:${AGENT_GID}
 
-# Install Cursor Agent CLI
-RUN curl https://cursor.com/install -fsS | bash
+# Install Claude Code CLI
+RUN curl -fsSL https://claude.ai/install.sh | bash
 
-# Add Cursor CLI to PATH
+# Add Claude Code CLI to PATH
 ENV PATH="/home/agent/.local/bin:$PATH"
 
 WORKDIR /home/agent

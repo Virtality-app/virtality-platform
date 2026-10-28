@@ -12,12 +12,7 @@ The skills speak in terms of five canonical triage roles. This file maps those r
 
 When a skill mentions a role (e.g. "apply the AFK-ready triage label"), use the corresponding label string from this table.
 
-## Companion label rule
-
-When applying `ready-for-agent`, always add `Sandcastle` in the same operation.
-
-- Required pair: `ready-for-agent` + `Sandcastle`
-- Do not leave `ready-for-agent` issues without `Sandcastle`
+Sandcastle picks up every open `ready-for-agent` issue (see `.sandcastle/plan-prompt.md`). No companion label is needed.
 
 ## Other repo-specific labels
 
