@@ -5,6 +5,7 @@ import { ArrowRight } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
 import { Skeleton } from '@virtality/ui/components/skeleton'
 import { cn } from '@/lib/utils'
+import { useClientT } from '@/i18n/use-client-t'
 import {
   formatHomeWindow,
   formatWeekDelta,
@@ -21,16 +22,17 @@ const SessionsOverviewCard = ({
   summary: HomeSessionsSummary
   isLoading: boolean
 }) => {
+  const { t } = useClientT('home')
   const delta = summary.deltaVsPriorWeek
 
   return (
     <section className='bg-card text-card-foreground grid overflow-hidden rounded-xl border shadow-sm lg:grid-cols-[minmax(0,1fr)_300px]'>
       <div className='flex min-w-0 flex-col gap-3.5 p-6'>
         <div className='flex items-center justify-between'>
-          <HomeSectionLabel>Sessions · last 7 days</HomeSectionLabel>
+          <HomeSectionLabel>{t('sessions.title')}</HomeSectionLabel>
           <Button asChild variant='ghost' size='sm'>
             <Link href='/patients'>
-              All patients <ArrowRight />
+              {t('sessions.allPatients')} <ArrowRight />
             </Link>
           </Button>
         </div>
@@ -52,7 +54,7 @@ const SessionsOverviewCard = ({
                   delta === 0 && 'bg-muted text-muted-foreground',
                 )}
               >
-                {formatWeekDelta(delta)}
+                {formatWeekDelta(delta, t)}
               </span>
             </>
           )}

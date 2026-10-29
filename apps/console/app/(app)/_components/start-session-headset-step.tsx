@@ -5,18 +5,19 @@ import { RectangleGoggles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { isHeadsetSelectable } from '@/lib/home-session-picker'
 import { withReturnTo } from '@/lib/home-picker-return'
+import { useClientT } from '@/i18n/use-client-t'
 import type { DeviceVrPresenceStatus } from '@/lib/vr-presence-status'
 import type { HomeDashboardData } from './use-home-dashboard-data'
 import StartSessionStep from './start-session-step'
 import StartSessionOption from './start-session-option'
 import type { StartSessionPicker } from './use-start-session-picker'
 
-const presenceLabel: Record<DeviceVrPresenceStatus, string> = {
-  online: 'Online',
-  offline: 'Offline',
-  loading: 'Checking…',
-  unpaired: 'Not paired',
-}
+const presenceKey = {
+  online: 'startSession.presence.online',
+  offline: 'startSession.presence.offline',
+  loading: 'startSession.presence.loading',
+  unpaired: 'startSession.presence.unpaired',
+} as const satisfies Record<DeviceVrPresenceStatus, string>
 
 const StartSessionHeadsetStep = ({
   devices,
@@ -27,12 +28,13 @@ const StartSessionHeadsetStep = ({
   presenceById: HomeDashboardData['presenceById']
   picker: StartSessionPicker
 }) => {
+  const { t } = useClientT('home')
   const { selection, selectDevice, returnTo } = picker
 
   return (
     <StartSessionStep
       number={3}
-      label='Headset'
+      label={t('startSession.headset')}
       tourTarget='session-headset'
       done={Boolean(selection.deviceId)}
       footer={
@@ -40,13 +42,14 @@ const StartSessionHeadsetStep = ({
           href={withReturnTo('/devices', returnTo)}
           className='text-muted-foreground hover:text-foreground flex items-center gap-2 text-[13px]'
         >
-          <RectangleGoggles className='size-4' /> Pair a headset
+          <RectangleGoggles className='size-4' />{' '}
+          {t('startSession.pairHeadset')}
         </Link>
       }
     >
       {devices.length === 0 ? (
         <p className='text-muted-foreground text-[13px]'>
-          No headsets yet. Add one and pair it to launch a session.
+          {t('startSession.noHeadsets')}
         </p>
       ) : null}
       {devices.map(({ data }) => {
@@ -75,7 +78,7 @@ const StartSessionHeadsetStep = ({
                 {data.name}
               </div>
               <small className='text-muted-foreground block text-xs'>
-                {presenceLabel[status]}
+                {t(presenceKey[status])}
               </small>
             </div>
           </StartSessionOption>

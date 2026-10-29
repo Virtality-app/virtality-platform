@@ -1,0 +1,61 @@
+{
+  "tour": {
+    "label": "Guided tour",
+    "end": "End tour",
+    "done": "Done",
+    "next": "Next",
+    "waiting": "Waiting…",
+    "clickHighlight": "Click the highlight"
+  },
+  "avatar": {
+    "alt": "User avatar.",
+    "adminboard": "Adminboard",
+    "theme": "Theme"
+  },
+  "cookie": {
+    "notice": "Notice",
+    "agreement": "By choosing to use Virtality, you agree to our {{terms}} and {{privacy}}.",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "understand": "Understand"
+  },
+  "expiredUpgrade": {
+    "title": "Subscribe to start VR programs",
+    "description": "Your access has ended. Subscribe to a plan to start VR programs again. You can keep browsing Console while you decide.",
+    "notNow": "Not now",
+    "viewPlans": "View billing plans"
+  },
+  "navbar": {
+    "dashboard": "Dashboard"
+  },
+  "remainingTime": {
+    "canceled": "Canceled",
+    "active": "Active",
+    "subscription": "Subscription",
+    "remaining": "Remaining Time"
+  },
+  "renew": {
+    "tomorrow": "Your access renews tomorrow",
+    "inDays": "Your access renews in {{count}} days",
+    "description": "Review your plan and billing before Remaining Time runs out.",
+    "manageBilling": "Manage billing",
+    "dismiss": "Dismiss renewal reminder"
+  },
+  "sidebar": {
+    "brand": "Virtality",
+    "reportProblem": "Report Problem"
+  },
+  "dialog": {
+    "close": "Close"
+  },
+  "phoneInput": {
+    "searchCountry": "Search country...",
+    "countryNotFound": "Country not found.",
+    "enterNumber": "Enter phone number",
+    "internationalIcon": "International"
+  },
+  "headset": {
+    "downloadCancelled": "Download cancelled ({{videoId}})",
+    "videoDeleted": "Video deleted ({{videoId}})"
+  }
+}

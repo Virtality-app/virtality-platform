@@ -1,3 +1,4 @@
+import { useClientT } from '@/i18n/use-client-t'
 import Image from 'next/image'
 import { shouldBypassVercelImageOptimization } from '@virtality/shared/utils'
 import {
@@ -26,6 +27,7 @@ interface ExerciseDescriptionCardProps {
 const ExerciseDescriptionCard = ({
   exercise,
 }: ExerciseDescriptionCardProps) => {
+  const { t } = useClientT('shared')
   const [open, setOpen] = useState(false)
   const [isPreviewPlaying, setIsPreviewPlaying] = useState(false)
   const videoRef = useRef<HTMLVideoElement | null>(null)
@@ -56,7 +58,9 @@ const ExerciseDescriptionCard = ({
                 {!isPreviewPlaying ? (
                   <Image
                     src={exercise.image ?? '/placeholder.svg'}
-                    alt={getDisplayName(exercise) + ' image'}
+                    alt={t('exerciseLibrary.imageAlt', {
+                      name: getDisplayName(exercise),
+                    })}
                     width={260}
                     height={260}
                     unoptimized={shouldBypassVercelImageOptimization(
@@ -83,8 +87,8 @@ const ExerciseDescriptionCard = ({
                   onClick={handlePreviewToggle}
                   aria-label={
                     isPreviewPlaying
-                      ? 'Pause preview video'
-                      : 'Play preview video'
+                      ? t('exerciseLibrary.pausePreview')
+                      : t('exerciseLibrary.playPreview')
                   }
                   className='absolute top-2 right-2 z-10 rounded-full bg-black/65 p-2 text-white shadow-md transition hover:scale-105 hover:bg-black/80 focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black focus-visible:outline-none'
                 >
@@ -96,7 +100,7 @@ const ExerciseDescriptionCard = ({
                 </Button>
               </div>
               <div className='flex-1'>
-                <h4 className='text-lg'>Description</h4>
+                <h4 className='text-lg'>{t('exerciseLibrary.description')}</h4>
                 <p className='text-base'>{exercise.description}</p>
               </div>
             </CardContent>

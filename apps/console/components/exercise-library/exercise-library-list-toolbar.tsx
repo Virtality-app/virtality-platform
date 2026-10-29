@@ -1,3 +1,4 @@
+import { useClientT } from '@/i18n/use-client-t'
 import { FolderClosed, Trash2 } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -19,6 +20,7 @@ const ExerciseLibraryListToolbar = ({
   canDeleteSelected,
   onDeleteSelected,
 }: ExerciseLibraryListToolbarProps) => {
+  const { t } = useClientT('shared')
   return (
     <div className='flex justify-between dark:bg-zinc-950'>
       <div className='flex items-center'>
@@ -27,12 +29,12 @@ const ExerciseLibraryListToolbar = ({
           checked={globalCheck}
           onCheckedChange={onCheckAll}
         />
-        <span className='text-sm'>Edit all</span>
+        <span className='text-sm'>{t('exerciseLibrary.editAll')}</span>
       </div>
 
       {showExerciseLibraryAccess && (
         <div className='flex items-center gap-2'>
-          <span>Exercise library</span>
+          <span>{t('exerciseLibrary.library')}</span>
 
           <Button variant='ghost' size='icon' onClick={onOpenLibrary}>
             <FolderClosed />
@@ -41,7 +43,7 @@ const ExerciseLibraryListToolbar = ({
       )}
 
       <div className='flex items-center'>
-        <span>Remove Selected</span>
+        <span>{t('exerciseLibrary.removeSelected')}</span>
         <Button
           size='icon'
           variant='destructive'

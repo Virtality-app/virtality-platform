@@ -210,13 +210,21 @@ export function useHeadsetLibrary(
       },
       // The ack already dropped the row; these only tell the physio the outcome.
       DownloadCancelComplete: (videoId: string) => {
-        notify.success(`Download cancelled (${videoId})`)
+        notify.success({
+          key: 'headset.downloadCancelled',
+          ns: 'layout',
+          options: { videoId },
+        })
       },
       DownloadCancelFailed: (payload) => {
         notify.error(videoFailureMessage('Cancel failed', payload))
       },
       DeleteComplete: (videoId: string) => {
-        notify.success(`Video deleted (${videoId})`)
+        notify.success({
+          key: 'headset.videoDeleted',
+          ns: 'layout',
+          options: { videoId },
+        })
       },
       DeleteFailed: (payload) => {
         notify.error(videoFailureMessage('Delete failed', payload))

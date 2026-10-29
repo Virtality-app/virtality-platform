@@ -1,23 +1,32 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import GettingStartedCard from './getting-started-card'
+import { createCatalogTranslate } from '@/i18n/catalog-translate'
 import { buildGettingStarted } from '@/lib/home-getting-started'
 
-const fresh = buildGettingStarted({
-  deviceCount: 0,
-  pairedDeviceCount: 0,
-  patientCount: 1,
-  programCount: 0,
-  sessionCount: 0,
-})
+const t = createCatalogTranslate('home')
 
-const done = buildGettingStarted({
-  deviceCount: 1,
-  pairedDeviceCount: 1,
-  patientCount: 2,
-  programCount: 1,
-  sessionCount: 3,
-})
+const fresh = buildGettingStarted(
+  {
+    deviceCount: 0,
+    pairedDeviceCount: 0,
+    patientCount: 1,
+    programCount: 0,
+    sessionCount: 0,
+  },
+  t,
+)
+
+const done = buildGettingStarted(
+  {
+    deviceCount: 1,
+    pairedDeviceCount: 1,
+    patientCount: 2,
+    programCount: 1,
+    sessionCount: 3,
+  },
+  t,
+)
 
 afterEach(cleanup)
 

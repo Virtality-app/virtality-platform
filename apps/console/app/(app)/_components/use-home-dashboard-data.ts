@@ -6,6 +6,7 @@ import {
   useRecentPatientSessions,
   useReusablePrograms,
 } from '@virtality/react-query'
+import { useClientT } from '@/i18n/use-client-t'
 import { useDeviceContext } from '@/context/device-context'
 import { useVrPresencePolling } from '@/hooks/use-vr-presence-polling'
 import {
@@ -18,6 +19,7 @@ export type HomeDashboardData = ReturnType<typeof useHomeDashboardData>
 
 /** Everything the home dashboard cards read, fetched once and shared. */
 export function useHomeDashboardData(now: Date) {
+  const { t } = useClientT('home')
   const since = useMemo(() => homeFetchSince(now), [now])
 
   const patients = usePatients({ orderBy: { updatedAt: 'desc' } })
@@ -45,13 +47,16 @@ export function useHomeDashboardData(now: Date) {
     0,
   )
 
-  const gettingStarted = buildGettingStarted({
-    deviceCount: devices.length,
-    pairedDeviceCount: devices.filter(({ data }) => data.deviceId).length,
-    patientCount: patientList.length,
-    programCount: programList.length,
-    sessionCount: totalSessions,
-  })
+  const gettingStarted = buildGettingStarted(
+    {
+      deviceCount: devices.length,
+      pairedDeviceCount: devices.filter(({ data }) => data.deviceId).length,
+      patientCount: patientList.length,
+      programCount: programList.length,
+      sessionCount: totalSessions,
+    },
+    t,
+  )
 
   const isLoading =
     patients.isPending ||

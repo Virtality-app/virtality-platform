@@ -5,10 +5,12 @@ import { getWebsiteUrl } from '@virtality/shared/types'
 import { isTrialRedeemWaitlistRedirect } from '@virtality/shared/utils'
 import { useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
+import { useClientT } from '@/i18n/use-client-t'
 
 const websiteURL = getWebsiteUrl()
 
 const ErrorPage = () => {
+  const { t } = useClientT('home')
   const message = useSearchParams().get('message')
 
   useEffect(() => {
@@ -24,8 +26,8 @@ const ErrorPage = () => {
   return (
     <ErrorDisplay
       variant='page'
-      title='Something went wrong'
-      message={message ?? 'Unknown error'}
+      title={t('error.title')}
+      message={message ?? t('error.unknown')}
     />
   )
 }

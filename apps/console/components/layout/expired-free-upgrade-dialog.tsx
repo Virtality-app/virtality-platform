@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { useClientT } from '@/i18n/use-client-t'
 import { useExpiredFreeUpgradePrompt } from '@/hooks/use-expired-free-upgrade-prompt'
 import { profileBillingHref } from '@/lib/renew-prompt-dismiss'
 
@@ -19,6 +20,7 @@ import { profileBillingHref } from '@/lib/renew-prompt-dismiss'
  * Deep-links to Profile Billing and does not block non-launch Console use.
  */
 export function ExpiredFreeUpgradeDialog() {
+  const { t } = useClientT('layout')
   const { open, dismiss, userId } = useExpiredFreeUpgradePrompt()
 
   return (
@@ -30,21 +32,20 @@ export function ExpiredFreeUpgradeDialog() {
     >
       <DialogContent showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle>Subscribe to start VR programs</DialogTitle>
+          <DialogTitle>{t('expiredUpgrade.title')}</DialogTitle>
           <DialogDescription>
-            Your access has ended. Subscribe to a plan to start VR programs
-            again. You can keep browsing Console while you decide.
+            {t('expiredUpgrade.description')}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button type='button' variant='outline' onClick={dismiss}>
-            Not now
+            {t('expiredUpgrade.notNow')}
           </Button>
           {userId && (
             <Button asChild variant='primary'>
               <Link href={profileBillingHref(userId)} onClick={dismiss}>
                 <CreditCard />
-                View billing plans
+                {t('expiredUpgrade.viewPlans')}
               </Link>
             </Button>
           )}

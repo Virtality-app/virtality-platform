@@ -3,6 +3,9 @@ import enAvatar from './en/avatar.json' with { type: 'json' }
 import enCommon from './en/common.json' with { type: 'json' }
 import enDevices from './en/devices.json' with { type: 'json' }
 import enGlossary from './en/glossary.json' with { type: 'json' }
+import enShared from './en/shared.json' with { type: 'json' }
+import enLayout from './en/layout.json' with { type: 'json' }
+import enHome from './en/home.json' with { type: 'json' }
 import enPatients from './en/patients.json' with { type: 'json' }
 import enPatientDashboard from './en/patient-dashboard.json' with { type: 'json' }
 import enPrograms from './en/programs.json' with { type: 'json' }
@@ -14,6 +17,9 @@ import elAvatar from './el/avatar.json' with { type: 'json' }
 import elCommon from './el/common.json' with { type: 'json' }
 import elDevices from './el/devices.json' with { type: 'json' }
 import elGlossary from './el/glossary.json' with { type: 'json' }
+import elShared from './el/shared.json' with { type: 'json' }
+import elLayout from './el/layout.json' with { type: 'json' }
+import elHome from './el/home.json' with { type: 'json' }
 import elPatients from './el/patients.json' with { type: 'json' }
 import elPatientDashboard from './el/patient-dashboard.json' with { type: 'json' }
 import elPrograms from './el/programs.json' with { type: 'json' }
@@ -30,6 +36,9 @@ export const TRANSLATION_NAMESPACES = [
   'common',
   'devices',
   'glossary',
+  'home',
+  'layout',
+  'shared',
   'patient-dashboard',
   'patients',
   'programs',
@@ -80,6 +89,9 @@ export const translationCatalog: Record<TranslationNamespace, FlatMessages> = {
   common: flatten(enCommon),
   devices: flatten(enDevices),
   glossary: flatten(enGlossary),
+  home: flatten(enHome),
+  layout: flatten(enLayout),
+  shared: flatten(enShared),
   'patient-dashboard': flatten(enPatientDashboard),
   patients: flatten(enPatients),
   programs: flatten(enPrograms),
@@ -95,6 +107,9 @@ export const greekDrafts: Record<TranslationNamespace, FlatMessages> = {
   common: flatten(elCommon),
   devices: flatten(elDevices),
   glossary: flatten(elGlossary),
+  home: flatten(elHome),
+  layout: flatten(elLayout),
+  shared: flatten(elShared),
   'patient-dashboard': flatten(elPatientDashboard),
   patients: flatten(elPatients),
   programs: flatten(elPrograms),

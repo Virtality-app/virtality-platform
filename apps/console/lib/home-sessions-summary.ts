@@ -1,3 +1,4 @@
+import type { Translate } from '@/i18n/translate'
 import { addDays, differenceInMinutes, format, startOfDay } from 'date-fns'
 import { isCompletedClinicalSession } from '@virtality/shared/utils'
 import { getSessionSourceProgramDisplayName } from '@/lib/session-history'
@@ -160,18 +161,20 @@ export function buildHomeSessionsSummary(
 }
 
 /** "3 h 40 m", "20 min", or "0 min". */
-export function formatHeadsetTime(minutes: number): string {
-  if (minutes < 60) return `${minutes} min`
+export function formatHeadsetTime(minutes: number, t: Translate): string {
+  if (minutes < 60) return t('sessions.minutes', { count: minutes })
   const hours = Math.floor(minutes / 60)
   const rest = minutes % 60
-  return rest ? `${hours} h ${rest} m` : `${hours} h`
+  return rest
+    ? t('sessions.hoursMinutes', { hours, minutes: rest })
+    : t('sessions.hours', { hours })
 }
 
 /** "+4 vs last week", "−2 vs last week", "Same as last week". */
-export function formatWeekDelta(delta: number): string {
-  if (delta === 0) return 'Same as last week'
+export function formatWeekDelta(delta: number, t: Translate): string {
+  if (delta === 0) return t('sessions.sameAsLastWeek')
   const sign = delta > 0 ? '+' : '−'
-  return `${sign}${Math.abs(delta)} vs last week`
+  return t('sessions.vsLastWeek', { sign, count: Math.abs(delta) })
 }
 
 /** "Sun 14 – Sat 20 Sep" (or with both months when the window spans two). */

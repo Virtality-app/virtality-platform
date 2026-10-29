@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@virtality/ui/components/button'
 import { ReactNode, useState } from 'react'
+import { useClientT } from '@/i18n/use-client-t'
 import { resolveDialogOpen } from '@/lib/resolve-dialog-open'
 
 interface DeleteConfirmDialogProps {
@@ -32,6 +33,7 @@ const DeleteConfirmDialog = ({
   title,
   description,
 }: DeleteConfirmDialogProps) => {
+  const { t } = useClientT('common')
   const [_open, _setOpen] = useState(false)
   const isControlled = open !== undefined
   const resolvedOpen = resolveDialogOpen(open, _open)
@@ -62,10 +64,10 @@ const DeleteConfirmDialog = ({
         </DialogHeader>
         <DialogFooter>
           <Button variant='outline' onClick={cancelHandler}>
-            Cancel
+            {t('btn.cancel')}
           </Button>
           <Button variant='destructive' onClick={handleConfirm}>
-            Delete
+            {t('btn.delete')}
           </Button>
         </DialogFooter>
       </DialogContent>

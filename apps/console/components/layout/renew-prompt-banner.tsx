@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { AnimatePresence, motion } from 'motion/react'
 import { Clock, CreditCard, X } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
+import { useClientT } from '@/i18n/use-client-t'
 import { authClient } from '@/auth-client'
 import { useBillingFeatureEnabled } from '@/hooks/use-billing-feature'
 import { useRenewPromptSession } from '@/hooks/use-renew-prompt-session'
@@ -25,6 +26,7 @@ import { useRenewBannerHeight } from '@/components/layout/use-renew-banner-heigh
  * Gated by `useBillingFeatureEnabled` (preview/local only) with the Billing tab.
  */
 export function RenewPromptBanner() {
+  const { t } = useClientT('layout')
   const { data: session } = authClient.useSession()
   const billingEnabled = useBillingFeatureEnabled()
   const { prompts } = useRenewPromptSession()
@@ -67,9 +69,9 @@ export function RenewPromptBanner() {
 
   const title =
     effectiveDaysBefore === 1
-      ? 'Your access renews tomorrow'
+      ? t('renew.tomorrow')
       : effectiveDaysBefore != null
-        ? `Your access renews in ${effectiveDaysBefore} days`
+        ? t('renew.inDays', { count: effectiveDaysBefore })
         : null
 
   return (
@@ -95,7 +97,7 @@ export function RenewPromptBanner() {
                 {title}
               </p>
               <p className='mt-0.5 text-sm text-amber-900/75 dark:text-amber-100/70'>
-                Review your plan and billing before Remaining Time runs out.
+                {t('renew.description')}
               </p>
             </div>
 
@@ -108,7 +110,7 @@ export function RenewPromptBanner() {
               >
                 <Link href={profileBillingHref(effectiveUserId)}>
                   <CreditCard />
-                  Manage billing
+                  {t('renew.manageBilling')}
                 </Link>
               </Button>
               <Button
@@ -116,7 +118,7 @@ export function RenewPromptBanner() {
                 variant='primary'
                 size='icon-sm'
                 className='sm:hidden'
-                aria-label='Manage billing'
+                aria-label={t('renew.manageBilling')}
               >
                 <Link href={profileBillingHref(effectiveUserId)}>
                   <CreditCard />
@@ -126,7 +128,7 @@ export function RenewPromptBanner() {
                 type='button'
                 variant='ghost'
                 size='icon-sm'
-                aria-label='Dismiss renewal reminder'
+                aria-label={t('renew.dismiss')}
                 className='text-amber-900/70 hover:bg-amber-100/80 hover:text-amber-950 dark:text-amber-100/70 dark:hover:bg-amber-900/50 dark:hover:text-amber-50'
                 onClick={() => {
                   if (forced) {

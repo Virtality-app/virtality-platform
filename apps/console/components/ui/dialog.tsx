@@ -4,6 +4,7 @@ import * as React from 'react'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { XIcon } from 'lucide-react'
 
+import { useClientT } from '@/i18n/use-client-t'
 import { cn } from '@/lib/utils'
 
 function Dialog({
@@ -56,6 +57,7 @@ function DialogContent({
   onOpenChange?: () => void
   showCloseButton?: boolean
 }) {
+  const { t } = useClientT('layout')
   return (
     <DialogPortal data-slot='dialog-portal'>
       <DialogOverlay />
@@ -75,7 +77,7 @@ function DialogContent({
             className="absolute top-4 right-4 rounded-xs opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:ring-2 focus:ring-zinc-950 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none data-[state=open]:bg-zinc-100 data-[state=open]:text-zinc-500 dark:ring-offset-zinc-950 dark:focus:ring-zinc-300 dark:data-[state=open]:bg-zinc-800 dark:data-[state=open]:text-zinc-400 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
           >
             <XIcon />
-            <span className='sr-only'>Close</span>
+            <span className='sr-only'>{t('dialog.close')}</span>
           </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Content>

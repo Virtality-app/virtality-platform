@@ -3,6 +3,7 @@
 import { Play } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
 import { Skeleton } from '@virtality/ui/components/skeleton'
+import { useClientT } from '@/i18n/use-client-t'
 import { START_SESSION_ANCHOR } from '@/lib/home-getting-started'
 import type { HomeDashboardData } from './use-home-dashboard-data'
 import { useStartSessionPicker } from './use-start-session-picker'
@@ -11,6 +12,7 @@ import StartSessionProgramStep from './start-session-program-step'
 import StartSessionHeadsetStep from './start-session-headset-step'
 
 const StartSessionCard = ({ data }: { data: HomeDashboardData }) => {
+  const { t } = useClientT('home')
   const picker = useStartSessionPicker(data)
   const { pickerSummary, canLaunch, launch } = picker
 
@@ -20,9 +22,9 @@ const StartSessionCard = ({ data }: { data: HomeDashboardData }) => {
       className='bg-card text-card-foreground flex scroll-mt-20 flex-col gap-5 rounded-xl border p-6 shadow-sm'
     >
       <div>
-        <h2 className='text-base font-semibold'>Start a session</h2>
+        <h2 className='text-base font-semibold'>{t('startSession.title')}</h2>
         <p className='text-muted-foreground text-sm'>
-          Pick a patient, a program, and a headset.
+          {t('startSession.subtitle')}
         </p>
       </div>
 
@@ -64,7 +66,7 @@ const StartSessionCard = ({ data }: { data: HomeDashboardData }) => {
           onClick={launch}
         >
           <Play className='fill-current' />
-          Launch on headset
+          {t('startSession.launch')}
         </Button>
       </div>
     </section>

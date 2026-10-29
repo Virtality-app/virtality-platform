@@ -1,10 +1,12 @@
 'use client'
 
+import { useClientT } from '@/i18n/use-client-t'
 import { CheckoutSuccessHomeCta } from '../../../billing/success/_components/checkout-success-home-cta'
 import { TrialWelcomeConfettiLazy } from './trial-welcome-confetti-lazy'
 import { useTrialWelcomePage } from './use-trial-welcome-page'
 
 export function TrialWelcomePage() {
+  const { t } = useClientT('home')
   const { ready } = useTrialWelcomePage()
 
   return (
@@ -15,11 +17,10 @@ export function TrialWelcomePage() {
         <div className='relative z-10 space-y-8 text-center'>
           <div className='space-y-3'>
             <h1 className='text-3xl font-bold text-balance md:text-4xl'>
-              Welcome to Virtality!
+              {t('welcome.title')}
             </h1>
             <p className='text-muted-foreground mx-auto max-w-xl text-lg leading-relaxed text-pretty'>
-              Full access is unlocked. Feel free to explore Virtality at your
-              own pace.
+              {t('welcome.subtitle')}
             </p>
           </div>
           <CheckoutSuccessHomeCta enabled />

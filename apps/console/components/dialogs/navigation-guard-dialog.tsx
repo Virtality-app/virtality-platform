@@ -8,6 +8,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Button } from '@virtality/ui/components/button'
+import { useClientT } from '@/i18n/use-client-t'
 
 export interface NavigationGuardDialogProps {
   open: boolean
@@ -29,6 +30,7 @@ export function NavigationGuardDialog({
   title,
   description,
 }: NavigationGuardDialogProps) {
+  const { t } = useClientT('shared')
   return (
     <Dialog open={open} onOpenChange={(o) => (o ? undefined : onStay())}>
       <DialogContent>
@@ -38,10 +40,10 @@ export function NavigationGuardDialog({
         </DialogHeader>
         <DialogFooter>
           <Button variant='destructive' onClick={onLeave}>
-            Leave
+            {t('navigationGuard.leave')}
           </Button>
           <Button variant='primary' onClick={onStay}>
-            Stay
+            {t('navigationGuard.stay')}
           </Button>
         </DialogFooter>
       </DialogContent>

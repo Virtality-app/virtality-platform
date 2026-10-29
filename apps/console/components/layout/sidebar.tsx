@@ -13,6 +13,7 @@ import {
 } from '@virtality/ui/components/sidebar'
 import { getVisibleSidebarLinks } from '@/data/static/sidebar-links'
 import Link from 'next/link'
+import { useClientT } from '@/i18n/use-client-t'
 import SmallLogo from './sm-logo'
 import { BugReportForm } from '@/components/bug-report/bug-report-form'
 import { Flag, Sidebar as SidebarIcon } from 'lucide-react'
@@ -23,6 +24,7 @@ import {
 import { RemainingTimeSidebar } from './remaining-time-sidebar'
 
 const RootSidebar = () => {
+  const { t } = useClientT('layout')
   const { isMobile, setOpenMobile } = useSidebar()
   const sidebarLinks = getVisibleSidebarLinks()
 
@@ -43,7 +45,7 @@ const RootSidebar = () => {
               ) : (
                 <Link href='/'>
                   <SmallLogo className='size-6' />
-                  <span>Virtality</span>
+                  <span>{t('sidebar.brand')}</span>
                 </Link>
               )}
             </SidebarMenuButton>
@@ -77,10 +79,10 @@ const RootSidebar = () => {
               <BugReportForm>
                 <SidebarMenuButton
                   className='cursor-pointer text-base'
-                  tooltip={'Report Problem'}
+                  tooltip={t('sidebar.reportProblem')}
                 >
                   <Flag />
-                  <span>Report Problem</span>
+                  <span>{t('sidebar.reportProblem')}</span>
                 </SidebarMenuButton>
               </BugReportForm>
             </SidebarMenuItem>

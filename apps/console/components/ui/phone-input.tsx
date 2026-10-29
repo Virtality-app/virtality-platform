@@ -22,6 +22,7 @@ import {
   CommandItem,
   CommandList,
 } from './command'
+import { useClientT } from '@/i18n/use-client-t'
 import { cn } from '@/lib/utils'
 import { Check } from 'lucide-react'
 
@@ -41,6 +42,7 @@ const MemoPhoneInput = ({
   onChange,
   placeholder,
 }: PhoneInputProps) => {
+  const { t } = useClientT('layout')
   const [country, setCountry] = useState<Country | undefined>(undefined)
   const [open, setOpen] = useState(false)
 
@@ -149,9 +151,12 @@ const MemoPhoneInput = ({
         </PopoverTrigger>
         <PopoverContent align='start' className='p-0 dark:border-zinc-600'>
           <Command>
-            <CommandInput placeholder='Search country...' className='h-9' />
+            <CommandInput
+              placeholder={t('phoneInput.searchCountry')}
+              className='h-9'
+            />
             <CommandList>
-              <CommandEmpty>Country not found.</CommandEmpty>
+              <CommandEmpty>{t('phoneInput.countryNotFound')}</CommandEmpty>
               <CommandGroup>
                 {countries?.map((countryCode) => (
                   <CommandItem
@@ -188,7 +193,7 @@ const MemoPhoneInput = ({
         id={id}
         value={displayValue}
         onChange={handlePhoneNumberChange}
-        placeholder={placeholder || 'Enter phone number'}
+        placeholder={placeholder || t('phoneInput.enterNumber')}
         maxLength={20}
         className='rounded-tl-none rounded-bl-none'
       />
@@ -200,13 +205,14 @@ const PhoneInput = memo(MemoPhoneInput)
 export default PhoneInput
 
 const InternationalIcon = () => {
+  const { t } = useClientT('layout')
   return (
     <svg
       xmlns='http://www.w3.org/2000/svg'
       viewBox='0 0 75 50'
       className='size-4'
     >
-      <title>InternationalIcon</title>
+      <title>{t('phoneInput.internationalIcon')}</title>
       <g
         className='PhoneInputInternationalIconGlobe'
         stroke='currentColor'

@@ -16,6 +16,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
+import { useClientT } from '@/i18n/use-client-t'
 import type { PatientListItem } from '@/types/models'
 import PatientInitialsAvatar from './patient-initials-avatar'
 
@@ -28,6 +29,7 @@ const PinPatientPopover = ({
   disabled: boolean
   onPin: (patientId: string) => void
 }) => {
+  const { t } = useClientT('home')
   const [open, setOpen] = useState(false)
 
   return (
@@ -39,14 +41,14 @@ const PinPatientPopover = ({
           className='self-start'
           disabled={disabled || candidates.length === 0}
         >
-          <Plus /> Pin a patient
+          <Plus /> {t('pinned.pin')}
         </Button>
       </PopoverTrigger>
       <PopoverContent align='start' className='w-72 p-0'>
         <Command>
-          <CommandInput placeholder='Search patients…' />
+          <CommandInput placeholder={t('pinned.searchPlaceholder')} />
           <CommandList>
-            <CommandEmpty>No patient found.</CommandEmpty>
+            <CommandEmpty>{t('pinned.noneFound')}</CommandEmpty>
             <CommandGroup>
               {candidates.map((patient) => (
                 <CommandItem

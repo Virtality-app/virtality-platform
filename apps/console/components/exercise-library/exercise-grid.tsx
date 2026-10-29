@@ -1,3 +1,4 @@
+import { useClientT } from '@/i18n/use-client-t'
 import { bodyGroupIconSrcForCategory } from '@/lib/body-group-icon'
 import { equipmentIconSrcForItem } from '@/lib/equipment-icon'
 import ExerciseFilterSection from './exercise-filter-section'
@@ -7,13 +8,14 @@ import { equipmentChipLabel } from './exercise-grid-format'
 import { useExerciseGrid } from './use-exercise-grid'
 
 const ExerciseGrid = () => {
+  const { t } = useClientT('shared')
   const grid = useExerciseGrid()
 
   return (
     <div className='flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-x-hidden overflow-y-auto p-2'>
       <ExerciseFilterSection
         dataTour='exercise-filters'
-        title='Select By Body Part'
+        title={t('exerciseLibrary.selectByBodyPart')}
         options={grid.categories}
         selected={grid.selectedBodyParts}
         onToggle={grid.toggleBodyPart}
@@ -22,7 +24,7 @@ const ExerciseGrid = () => {
       />
 
       <ExerciseFilterSection
-        title='Select By Equipment'
+        title={t('exerciseLibrary.selectByEquipment')}
         options={grid.equipmentKeys}
         selected={grid.selectedEquipmentKeys}
         onToggle={grid.toggleEquipment}

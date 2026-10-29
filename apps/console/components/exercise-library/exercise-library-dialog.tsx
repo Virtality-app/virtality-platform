@@ -1,3 +1,4 @@
+import { useClientT } from '@/i18n/use-client-t'
 import { useState } from 'react'
 import {
   Dialog,
@@ -12,6 +13,7 @@ import { Button } from '@virtality/ui/components/button'
 import { useExerciseLibrary } from '@/context/exercise-library-context'
 
 const ExerciseLibraryDialog = () => {
+  const { t } = useClientT(['shared', 'common'])
   const { state, handler } = useExerciseLibrary()
   const { isLibraryOpen } = state
   const { setLibraryOpen } = handler
@@ -26,12 +28,14 @@ const ExerciseLibraryDialog = () => {
     <Dialog open={isLibraryOpen} onOpenChange={handleOpenChange}>
       <DialogContent className='z-1000 grid h-full max-h-[calc(100svh-40px)] min-h-0 max-w-[calc(100svw-40px)]! grid-rows-[auto_minmax(0,1fr)_auto]'>
         <DialogHeader>
-          <DialogTitle className='text-xl font-bold'>Exercises</DialogTitle>
+          <DialogTitle className='text-xl font-bold'>
+            {t('exerciseLibrary.title')}
+          </DialogTitle>
         </DialogHeader>
         <ExerciseGrid key={gridKey} />
         <DialogFooter>
           <DialogClose asChild>
-            <Button>Confirm</Button>
+            <Button>{t('btn.confirm', { ns: 'common' })}</Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

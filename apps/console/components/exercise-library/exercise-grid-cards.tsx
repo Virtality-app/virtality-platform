@@ -1,3 +1,4 @@
+import { useClientT } from '@/i18n/use-client-t'
 import {
   familyMembersForLibrarySelection,
   libraryFamilySelectionState,
@@ -12,6 +13,7 @@ interface ExerciseGridCardsProps {
 }
 
 const ExerciseGridCards = ({ grid }: ExerciseGridCardsProps) => {
+  const { t } = useClientT('shared')
   const { isSelected } = grid
 
   return (
@@ -27,7 +29,7 @@ const ExerciseGridCards = ({ grid }: ExerciseGridCardsProps) => {
         </>
       ) : grid.showEmptyState ? (
         <p className='text-muted-foreground col-span-full py-8 text-center text-sm'>
-          No exercises match your filters.
+          {t('exerciseLibrary.noMatches')}
         </p>
       ) : (
         grid.displayedFamilies?.map((family, index) => {

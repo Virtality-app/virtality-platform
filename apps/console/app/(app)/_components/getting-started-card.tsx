@@ -9,6 +9,7 @@ import {
 } from '@virtality/ui/components/collapsible'
 import { Button } from '@virtality/ui/components/button'
 import { cn } from '@/lib/utils'
+import { useClientT } from '@/i18n/use-client-t'
 import {
   gettingStartedHeadline,
   gettingStartedSubline,
@@ -27,6 +28,7 @@ const GettingStartedCard = ({
 }: {
   gettingStarted: GettingStarted
 }) => {
+  const { t } = useClientT('home')
   const [open, setOpen] = useState(!gettingStarted.complete)
 
   // Completing the last step collapses the card; a new gap reopens it.
@@ -46,17 +48,19 @@ const GettingStartedCard = ({
           total={gettingStarted.steps.length}
         />
         <div>
-          <HomeSectionLabel>Getting started</HomeSectionLabel>
+          <HomeSectionLabel>{t('gettingStarted.title')}</HomeSectionLabel>
           <p className='mt-1 text-lg leading-6 font-semibold text-balance'>
-            {gettingStartedHeadline(gettingStarted)}
+            {gettingStartedHeadline(gettingStarted, t)}
           </p>
           <p className='text-muted-foreground mt-1.5 text-[13px]'>
-            {gettingStartedSubline(gettingStarted)}
+            {gettingStartedSubline(gettingStarted, t)}
           </p>
         </div>
         <CollapsibleTrigger asChild>
           <Button variant='ghost' size='sm'>
-            {open ? 'Hide steps' : 'Show steps'}
+            {open
+              ? t('gettingStarted.hideSteps')
+              : t('gettingStarted.showSteps')}
             <ChevronDown
               className={cn('transition-transform', open && 'rotate-180')}
             />

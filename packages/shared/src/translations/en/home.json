@@ -1,0 +1,150 @@
+{
+  "noSessionsYet": "No sessions yet",
+  "accountMismatch": {
+    "title": "That link is for a different account",
+    "description": "The link you followed belongs to another account. Sign out and sign back in with that account to use it, or continue here with the account you're currently signed in as.",
+    "dismiss": "Got it"
+  },
+  "admin": {
+    "verificationEmailFailed": "Failed to send verification email",
+    "userId": "User ID",
+    "impersonate": "Impersonate",
+    "stopImpersonate": "Stop Impersonate",
+    "sendEmail": "Send Email",
+    "hideRenewPrompt": "Hide Renew Prompt Banner",
+    "forceRenewPrompt": "Force Renew Prompt Banner"
+  },
+  "gettingStarted": {
+    "title": "Getting started",
+    "hideSteps": "Hide steps",
+    "showSteps": "Show steps",
+    "device": {
+      "title": "Pair a headset",
+      "paired_one": "{{count}} headset paired",
+      "paired_other": "{{count}} headsets paired",
+      "unpaired": "A headset is added but not paired yet.",
+      "empty": "Add a headset and pair it with the 6-digit code."
+    },
+    "patient": {
+      "title": "Add your first patient",
+      "onFile_one": "{{count}} patient on file",
+      "onFile_other": "{{count}} patients on file",
+      "empty": "Name and basic info is enough to start."
+    },
+    "program": {
+      "title": "Create an exercise program",
+      "inLibrary_one": "{{count}} program in your library",
+      "inLibrary_other": "{{count}} programs in your library",
+      "empty": "Start from a Starter Template or pick exercises yourself. Takes about 3 minutes."
+    },
+    "session": {
+      "title": "Start a session",
+      "done": "First session done",
+      "empty": "Put the headset on the patient, pick the program, press Launch."
+    },
+    "headline": {
+      "allSet": "You are all set.",
+      "stepsLeft_one": "{{count}} step left before your first session.",
+      "stepsLeft_other": "{{count}} steps left before your first session."
+    },
+    "subline": {
+      "complete": "Every step is done. Expand it any time to revisit them.",
+      "pending": "Once these are done this card collapses to a summary."
+    }
+  },
+  "header": {
+    "dashboard": "Dashboard",
+    "greetingMorning": "Good morning",
+    "greetingAfternoon": "Good afternoon",
+    "greetingEvening": "Good evening"
+  },
+  "pinned": {
+    "title": "Pinned patients",
+    "empty": "Pin the patients you see most often to keep them one click away.",
+    "pin": "Pin a patient",
+    "searchPlaceholder": "Search patients…",
+    "noneFound": "No patient found.",
+    "unpin": "Unpin {{name}}"
+  },
+  "sessions": {
+    "chartLabel": "Sessions per day over the last seven days",
+    "title": "Sessions · last 7 days",
+    "allPatients": "All patients",
+    "completed": "Completed",
+    "interrupted": "Interrupted",
+    "avgLength": "Avg length",
+    "headsetTime": "Headset time",
+    "minutes": "{{count}} min",
+    "byProgram": "By program",
+    "noneThisWeek": "No sessions this week yet.",
+    "lastSession": "Last session",
+    "done": "Done",
+    "hoursMinutes": "{{hours}} h {{minutes}} m",
+    "hours": "{{hours}} h",
+    "sameAsLastWeek": "Same as last week",
+    "vsLastWeek": "{{sign}}{{count}} vs last week"
+  },
+  "startSession": {
+    "title": "Start a session",
+    "subtitle": "Pick a patient, a program, and a headset.",
+    "launch": "Launch on headset",
+    "headset": "Headset",
+    "pairHeadset": "Pair a headset",
+    "noHeadsets": "No headsets yet. Add one and pair it to launch a session.",
+    "presence": {
+      "online": "Online",
+      "offline": "Offline",
+      "loading": "Checking…",
+      "unpaired": "Not paired"
+    },
+    "patient": "Patient",
+    "newPatient": "New patient",
+    "searchPatients": "Search patients",
+    "noPatients": "No patients yet. Add your first one to start a session.",
+    "noMatches": "No patient matches.",
+    "program": "Program",
+    "quickStart": "Quick Start",
+    "quickStartHint": "Build the list on the fly",
+    "newProgram": "New program",
+    "noPrograms": "No programs yet. Quick Start builds the list on the fly.",
+    "exercises_one": "{{count}} exercise",
+    "exercises_other": "{{count}} exercises",
+    "lastUsed": "Last used"
+  },
+  "forms": {
+    "title": "Forms",
+    "doctors": "Doctors",
+    "mainGroup": "Patients (Main Group)",
+    "controlGroup": "Patients (Control Group)",
+    "loading": "Loading…"
+  },
+  "guides": {
+    "additionalInfo": "Additional Info:"
+  },
+  "error": {
+    "title": "Something went wrong",
+    "unknown": "Unknown error"
+  },
+  "checkout": {
+    "activating": "Activating your access…",
+    "backToDashboard": "Back to Dashboard",
+    "timeout": "Access is taking longer than expected. Check Profile Billing for status.",
+    "openBilling": "Open Profile Billing"
+  },
+  "welcome": {
+    "title": "Welcome to Virtality!",
+    "subtitle": "Full access is unlocked. Feel free to explore Virtality at your own pace."
+  },
+  "goodbye": {
+    "logoAlt": "Company small logo",
+    "title": "We're sorry to see you go",
+    "description": "Your account has been successfully deleted. We appreciate the time you spent with us and hope we were able to help you along the way.",
+    "nextTitle": "What happens next?",
+    "nextData": "All your personal data has been permanently removed from our systems",
+    "nextEmails": "You will no longer receive any emails or notifications from us",
+    "nextWelcomeBack": "You're always welcome to create a new account if you change your mind",
+    "returnHome": "Return to Homepage",
+    "shareFeedback": "Share Feedback",
+    "thanks": "Thank you for being part of our community. We wish you all the best!"
+  }
+}

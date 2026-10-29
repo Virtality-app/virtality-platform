@@ -1,3 +1,4 @@
+import { useClientT } from '@/i18n/use-client-t'
 import { cn } from '@/lib/utils'
 import ExerciseSettings from './exercise-settings'
 import { CompleteExercise } from '@/types/models'
@@ -22,6 +23,7 @@ const SegmentSettings = ({
   updateExercises,
   deferredRemoval,
 }: SegmentSettingsProps) => {
+  const { t } = useClientT('shared')
   const { isPair, primary, secondary, primaryIndex, secondaryIndex } = row
   const primaryDeferred = isDeferredRemoval(deferredRemoval, primary.id)
   const secondaryDeferred =
@@ -31,7 +33,9 @@ const SegmentSettings = ({
     return (
       <div className='flex w-full flex-col gap-4'>
         <div className={cn('space-y-1', primaryDeferred && 'opacity-50')}>
-          <p className='text-muted-foreground text-xs font-medium'>Left</p>
+          <p className='text-muted-foreground text-xs font-medium'>
+            {t('exerciseLibrary.left')}
+          </p>
           <ExerciseSettings
             key={`${primary.id}-left`}
             ex={primary}
@@ -43,7 +47,9 @@ const SegmentSettings = ({
           />
         </div>
         <div className={cn('space-y-1', secondaryDeferred && 'opacity-50')}>
-          <p className='text-muted-foreground text-xs font-medium'>Right</p>
+          <p className='text-muted-foreground text-xs font-medium'>
+            {t('exerciseLibrary.right')}
+          </p>
           <ExerciseSettings
             key={`${secondary.id}-right`}
             ex={secondary}

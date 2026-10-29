@@ -55,7 +55,7 @@ const Avatar = () => {
   const mounted = useMounted()
   const { setTheme, resolvedTheme, theme, themes } = useTheme()
   const { state, setState } = useTour()
-  const { t, i18n } = useClientT(['avatar', 'glossary'])
+  const { t, i18n } = useClientT(['avatar', 'glossary', 'layout'])
   const isMobile = useIsMobile()
 
   const handleSignOut = async () => {
@@ -97,7 +97,7 @@ const Avatar = () => {
           )}
           <div className='size-12 items-center overflow-hidden rounded-full border-2 border-black hover:scale-105 dark:border-white'>
             <Image
-              alt='User avatar.'
+              alt={t('avatar.alt', { ns: 'layout' })}
               src={user?.image ? user.image : placeholder}
               width={50}
               height={50}
@@ -119,7 +119,7 @@ const Avatar = () => {
             <DropdownMenuItem asChild className='cursor-pointer'>
               <Link href={adminboardURL} className='flex w-full'>
                 <LayoutDashboard />
-                Adminboard
+                {t('avatar.adminboard', { ns: 'layout' })}
               </Link>
             </DropdownMenuItem>
           )}
@@ -167,7 +167,7 @@ const Avatar = () => {
                       ) : (
                         <Sun className='text-muted-foreground size-4' />
                       )}
-                      Theme
+                      {t('avatar.theme', { ns: 'layout' })}
                     </DropdownMenuSubTrigger>
                     <DropdownMenuSubContent className='dark:bg-zinc-950'>
                       {themes.map((th) => (

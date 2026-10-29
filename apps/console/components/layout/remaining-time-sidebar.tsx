@@ -8,6 +8,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@virtality/ui/components/sidebar'
+import { useClientT } from '@/i18n/use-client-t'
 import { authClient } from '@/auth-client'
 import { useBillingFeatureEnabled } from '@/hooks/use-billing-feature'
 import { useLiveEntitlementStanding } from '@/hooks/use-live-entitlement-standing'
@@ -21,6 +22,7 @@ import { cn } from '@/lib/utils'
  * (preview/local only). CTA opens Profile → Billing.
  */
 export function RemainingTimeSidebar() {
+  const { t } = useClientT('layout')
   const { state, isMobile, setOpenMobile } = useSidebar()
   const { data: session } = authClient.useSession()
   const billingEnabled = useBillingFeatureEnabled()
@@ -55,7 +57,11 @@ export function RemainingTimeSidebar() {
                 ? 'border-amber-200 text-amber-700 dark:border-amber-900 dark:text-amber-300'
                 : 'border-green-200 text-green-700 dark:border-green-900 dark:text-green-300',
             )}
-            tooltip={isCanceled ? 'Canceled' : 'Active'}
+            tooltip={
+              isCanceled
+                ? t('remainingTime.canceled')
+                : t('remainingTime.active')
+            }
           >
             {collapsed ? (
               <CreditCard />
@@ -68,12 +74,14 @@ export function RemainingTimeSidebar() {
                       : 'text-muted-foreground text-xs'
                   }
                 >
-                  Subscription
+                  {t('remainingTime.subscription')}
                 </span>
                 <span className='flex items-center gap-1.5'>
                   <CreditCard className='size-4 shrink-0' />
                   <span className='truncate font-medium'>
-                    {isCanceled ? 'Canceled' : 'Active'}
+                    {isCanceled
+                      ? t('remainingTime.canceled')
+                      : t('remainingTime.active')}
                   </span>
                 </span>
               </span>
@@ -123,7 +131,7 @@ export function RemainingTimeSidebar() {
                       : 'text-muted-foreground text-xs'
                   }
                 >
-                  Remaining Time
+                  {t('remainingTime.remaining')}
                 </span>
                 <span className='flex items-center gap-1.5'>
                   <Clock

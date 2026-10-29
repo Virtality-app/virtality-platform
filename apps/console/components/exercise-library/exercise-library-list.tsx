@@ -1,3 +1,4 @@
+import { useClientT } from '@/i18n/use-client-t'
 import { Separator } from '@virtality/ui/components/separator'
 import { cn } from '@/lib/utils'
 import ExerciseLibraryDialog from './exercise-library-dialog'
@@ -16,6 +17,7 @@ const ExerciseLibraryList = ({
   className,
   showExerciseLibraryAccess = true,
 }: ExerciseLibraryListProps) => {
+  const { t } = useClientT('shared')
   const list = useExerciseLibraryList()
   const { rows } = list
 
@@ -43,7 +45,7 @@ const ExerciseLibraryList = ({
             />
           ))
         ) : (
-          <P>Exercise list is empty.</P>
+          <P>{t('exerciseLibrary.empty')}</P>
         )}
       </ul>
 

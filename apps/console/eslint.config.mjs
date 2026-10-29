@@ -20,7 +20,7 @@ export default [
       // Flags new hard-coded strings in JSX text, user-facing attributes and
       // toast calls. className and other non-UI strings are not checked.
       'i18next/no-literal-string': [
-        'warn',
+        'error',
         {
           mode: 'jsx-only',
           'jsx-attributes': { include: USER_FACING_ATTRIBUTES },

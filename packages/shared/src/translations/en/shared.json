@@ -1,0 +1,66 @@
+{
+  "bugReport": {
+    "submitted": "Report submitted",
+    "thanks": "Thank you for taking the time to make our platform better.",
+    "hangTight": "Hang in tight while we work to resolve the issue.",
+    "title": "Report a Bug",
+    "description": "Fill out the form below to report a bug.",
+    "titlePlaceholder": "Bug title",
+    "platformPlaceholder": "Select platform",
+    "webPlatform": "Web platform",
+    "vrApplication": "VR application",
+    "descriptionPlaceholder": "Describe the bug...",
+    "image": "Image",
+    "chooseFiles": "Choose Files",
+    "noFiles": "No files chosen",
+    "filesChosen": "{{count}} File(s) chosen"
+  },
+  "navigationGuard": {
+    "leave": "Leave",
+    "stay": "Stay"
+  },
+  "table": {
+    "asc": "Asc",
+    "desc": "Desc",
+    "hide": "Hide"
+  },
+  "errorDisplay": {
+    "dismissError": "Dismiss error",
+    "toggleDetails": "Toggle error details",
+    "dismiss": "Dismiss",
+    "hideDetails": "Hide details",
+    "showDetails": "Show details",
+    "hideErrorDetails": "Hide error details",
+    "viewErrorDetails": "View error details"
+  },
+  "exerciseLibrary": {
+    "imageAlt": "{{name}} image",
+    "pausePreview": "Pause preview video",
+    "playPreview": "Play preview video",
+    "description": "Description",
+    "noMatches": "No exercises match your filters.",
+    "searchPlaceholder": "Search...",
+    "showFavoritesOnly": "Show favorites only",
+    "favorites": "Favorites",
+    "selectByBodyPart": "Select By Body Part",
+    "selectByEquipment": "Select By Equipment",
+    "title": "Exercises",
+    "editAll": "Edit all",
+    "library": "Exercise library",
+    "removeSelected": "Remove Selected",
+    "empty": "Exercise list is empty.",
+    "reps": "Reps",
+    "sets": "Sets",
+    "restTime": "Rest (sec)",
+    "holdTime": "Hold time (sec)",
+    "speed": "Speed",
+    "removeFavorite": "Remove from Favorites",
+    "addFavorite": "Add to Favorites",
+    "information": "Information",
+    "flipBack": "Flip Back",
+    "tapToSelect": "Tap card to select",
+    "clickToSelect": "Click card to select",
+    "left": "Left",
+    "right": "Right"
+  }
+}

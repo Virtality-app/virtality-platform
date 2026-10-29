@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/item'
 import { H1 } from '@/components/typography'
 import { CircleQuestionMark } from 'lucide-react'
+import { useClientT } from '@/i18n/use-client-t'
 import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
 import { FormItemDialog } from './_components/form-item-dialog'
 import { HelpDialog } from './_components/help-dialog'
@@ -88,6 +89,7 @@ const controlGroupList: Questioner[] = [
 ]
 
 const FormsPage = () => {
+  const { t } = useClientT(['home', 'common'])
   usePageViewTracking({
     props: { route_group: 'user' },
   })
@@ -99,7 +101,7 @@ const FormsPage = () => {
         className='m-auto max-w-3xl py-6 max-lg:max-w-xl'
       >
         <H1 className='flex items-center gap-3'>
-          Forms
+          {t('forms.title')}
           <HelpDialog>
             <Button size='icon' variant='ghost'>
               <CircleQuestionMark />
@@ -107,7 +109,7 @@ const FormsPage = () => {
           </HelpDialog>
         </H1>
         <AccordionItem value='item-1'>
-          <AccordionTrigger>Doctors</AccordionTrigger>
+          <AccordionTrigger>{t('forms.doctors')}</AccordionTrigger>
           <AccordionContent>
             <ItemGroup className='space-y-6 py-6'>
               {doctorList.map((item, index) => (
@@ -117,7 +119,7 @@ const FormsPage = () => {
                   </ItemContent>
                   <ItemActions>
                     <FormItemDialog formItem={item}>
-                      <Button>Open</Button>
+                      <Button>{t('common:btn.open')}</Button>
                     </FormItemDialog>
                   </ItemActions>
                 </Item>
@@ -126,7 +128,7 @@ const FormsPage = () => {
           </AccordionContent>
         </AccordionItem>
         <AccordionItem value='item-2'>
-          <AccordionTrigger>Patients (Main Group)</AccordionTrigger>
+          <AccordionTrigger>{t('forms.mainGroup')}</AccordionTrigger>
           <AccordionContent>
             <ItemGroup className='space-y-6 py-6'>
               {mainGroupList.map((item, index) => (
@@ -136,7 +138,7 @@ const FormsPage = () => {
                   </ItemContent>
                   <ItemActions>
                     <FormItemDialog formItem={item}>
-                      <Button>Open</Button>
+                      <Button>{t('common:btn.open')}</Button>
                     </FormItemDialog>
                   </ItemActions>
                 </Item>
@@ -145,7 +147,7 @@ const FormsPage = () => {
           </AccordionContent>
         </AccordionItem>
         <AccordionItem value='item-3'>
-          <AccordionTrigger>Patients (Control Group)</AccordionTrigger>
+          <AccordionTrigger>{t('forms.controlGroup')}</AccordionTrigger>
           <AccordionContent>
             <ItemGroup className='space-y-6 py-6'>
               {controlGroupList.map((item, index) => (
@@ -155,7 +157,7 @@ const FormsPage = () => {
                   </ItemContent>
                   <ItemActions>
                     <FormItemDialog formItem={item}>
-                      <Button>Open</Button>
+                      <Button>{t('common:btn.open')}</Button>
                     </FormItemDialog>
                   </ItemActions>
                 </Item>

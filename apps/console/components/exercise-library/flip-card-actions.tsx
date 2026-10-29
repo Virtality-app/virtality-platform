@@ -1,3 +1,4 @@
+import { useClientT } from '@/i18n/use-client-t'
 import { MouseEvent } from 'react'
 import { Ellipsis, Info, Star } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
@@ -32,6 +33,7 @@ const FlipCardActions = ({
   familyFavoriteTargets,
   handleFlip,
 }: FlipCardActionsProps) => {
+  const { t } = useClientT('shared')
   const queryClient = getQueryClient()
   const orpc = useORPC()
 
@@ -85,18 +87,18 @@ const FlipCardActions = ({
           {anyFavorited ? (
             <>
               <Star fill='yellow' />
-              Remove from Favorites
+              {t('exerciseLibrary.removeFavorite')}
             </>
           ) : (
             <>
               <Star />
-              Add to Favorites
+              {t('exerciseLibrary.addFavorite')}
             </>
           )}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleFlip}>
           <Info />
-          Information
+          {t('exerciseLibrary.information')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

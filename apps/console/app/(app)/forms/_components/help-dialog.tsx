@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { H2, H3, P } from '@/components/typography'
 import { ReactNode } from 'react'
+import { useClientT } from '@/i18n/use-client-t'
 import Instructions from './instructions.mdx'
 import {
   Table,
@@ -23,6 +24,7 @@ import {
 } from '@virtality/ui/components/table'
 
 export function HelpDialog({ children }: { children: ReactNode }) {
+  const { t } = useClientT('common')
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
@@ -70,7 +72,7 @@ export function HelpDialog({ children }: { children: ReactNode }) {
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button>Close</Button>
+            <Button>{t('btn.close')}</Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

@@ -32,11 +32,14 @@ const PasswordRequirement = ({
           : 'text-red-500 dark:text-red-500'
       }
     >
-      {satisfied ? '✓' : '✗'}
+      {satisfied ? CHECK_MARK : CROSS_MARK}
     </span>{' '}
     {label}
   </FieldDescription>
 )
+
+const CHECK_MARK = '✓'
+const CROSS_MARK = '✗'
 
 const SignupForm = ({ id, form, onSubmit }: SignupFormProps) => {
   const { t } = useClientT('auth')

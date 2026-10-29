@@ -6,6 +6,7 @@ import { PinOff, User } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
 import { Skeleton } from '@virtality/ui/components/skeleton'
 import { useSetPatientPinned } from '@virtality/react-query'
+import { useClientT } from '@/i18n/use-client-t'
 import type { PatientListItem } from '@/types/models'
 import HomeSectionLabel from './home-section-label'
 import PatientInitialsAvatar from './patient-initials-avatar'
@@ -18,6 +19,7 @@ const PinnedPatientsCard = ({
   patients: PatientListItem[]
   isLoading: boolean
 }) => {
+  const { t } = useClientT('home')
   const setPinned = useSetPatientPinned()
   const pinned = patients
     .filter((patient) => patient.pinnedAt)
@@ -31,7 +33,7 @@ const PinnedPatientsCard = ({
   return (
     <section className='bg-card text-card-foreground flex flex-col gap-4 rounded-xl border p-6 shadow-sm'>
       <div className='flex items-center justify-between'>
-        <HomeSectionLabel>Pinned patients</HomeSectionLabel>
+        <HomeSectionLabel>{t('pinned.title')}</HomeSectionLabel>
         <User className='text-muted-foreground size-3.5' />
       </div>
 
@@ -41,9 +43,7 @@ const PinnedPatientsCard = ({
           <Skeleton className='h-9' />
         </div>
       ) : pinned.length === 0 ? (
-        <p className='text-muted-foreground text-[13px]'>
-          Pin the patients you see most often to keep them one click away.
-        </p>
+        <p className='text-muted-foreground text-[13px]'>{t('pinned.empty')}</p>
       ) : (
         <ul className='flex flex-col divide-y'>
           {pinned.map((patient) => (
@@ -67,7 +67,7 @@ const PinnedPatientsCard = ({
                           new Date(patient.lastSessionAt),
                           new Date(),
                         )
-                      : 'No sessions yet'}
+                      : t('noSessionsYet')}
                     {patient.activeProgramName
                       ? ` · ${patient.activeProgramName}`
                       : ''}
@@ -77,7 +77,7 @@ const PinnedPatientsCard = ({
               <Button
                 variant='ghost'
                 size='icon-sm'
-                aria-label={`Unpin ${patient.name}`}
+                aria-label={t('pinned.unpin', { name: patient.name })}
                 className='opacity-0 group-focus-within:opacity-100 group-hover:opacity-100'
                 disabled={setPinned.isPending}
                 onClick={() =>

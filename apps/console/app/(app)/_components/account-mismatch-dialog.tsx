@@ -3,6 +3,7 @@
 import { Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@virtality/ui/components/button'
+import { useClientT } from '@/i18n/use-client-t'
 import {
   Dialog,
   DialogContent,
@@ -17,6 +18,7 @@ import {
 } from '@/lib/account-mismatch'
 
 const AccountMismatchDialogInner = () => {
+  const { t } = useClientT(['home', 'common'])
   const router = useRouter()
   const searchParams = useSearchParams()
   const open =
@@ -29,16 +31,14 @@ const AccountMismatchDialogInner = () => {
     <Dialog open={open} onOpenChange={(next) => !next && dismiss()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>That link is for a different account</DialogTitle>
+          <DialogTitle>{t('accountMismatch.title')}</DialogTitle>
           <DialogDescription>
-            The link you followed belongs to another account. Sign out and sign
-            back in with that account to use it, or continue here with the
-            account you&apos;re currently signed in as.
+            {t('accountMismatch.description')}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button type='button' variant='primary' onClick={dismiss}>
-            Got it
+            {t('accountMismatch.dismiss')}
           </Button>
         </DialogFooter>
       </DialogContent>

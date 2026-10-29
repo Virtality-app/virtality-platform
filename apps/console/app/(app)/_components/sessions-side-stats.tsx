@@ -5,6 +5,7 @@ import { formatRelative } from 'date-fns'
 import { Badge } from '@virtality/ui/components/badge'
 import { Skeleton } from '@virtality/ui/components/skeleton'
 import { cn } from '@/lib/utils'
+import { useClientT } from '@/i18n/use-client-t'
 import {
   formatHeadsetTime,
   type HomeSessionsSummary,
@@ -20,6 +21,7 @@ const SessionsSideStats = ({
   summary: HomeSessionsSummary
   isLoading: boolean
 }) => {
+  const { t } = useClientT('home')
   const maxProgram = summary.byProgram[0]?.count ?? 0
   const last = summary.lastSession
 
@@ -35,31 +37,38 @@ const SessionsSideStats = ({
   return (
     <aside className='bg-sidebar flex flex-col gap-5 border-t p-6 lg:border-t-0 lg:border-l'>
       <div className='grid grid-cols-2 gap-x-4 gap-y-2.5'>
-        <SessionsStat label='Completed' value={summary.completed} />
         <SessionsStat
-          label='Interrupted'
+          label={t('sessions.completed')}
+          value={summary.completed}
+        />
+        <SessionsStat
+          label={t('sessions.interrupted')}
           value={summary.interrupted}
           className={cn(
             summary.interrupted > 0 && 'text-amber-700 dark:text-amber-300',
           )}
         />
         <SessionsStat
-          label='Avg length'
+          label={t('sessions.avgLength')}
           value={
-            summary.avgLengthMin === null ? '—' : `${summary.avgLengthMin} min`
+            summary.avgLengthMin === null
+              ? '—'
+              : t('sessions.minutes', { count: summary.avgLengthMin })
           }
         />
         <SessionsStat
-          label='Headset time'
-          value={formatHeadsetTime(summary.headsetMinutes)}
+          label={t('sessions.headsetTime')}
+          value={formatHeadsetTime(summary.headsetMinutes, t)}
         />
       </div>
 
       <div>
-        <HomeSectionLabel className='mb-2.5 block'>By program</HomeSectionLabel>
+        <HomeSectionLabel className='mb-2.5 block'>
+          {t('sessions.byProgram')}
+        </HomeSectionLabel>
         {summary.byProgram.length === 0 ? (
           <p className='text-muted-foreground text-[13px]'>
-            No sessions this week yet.
+            {t('sessions.noneThisWeek')}
           </p>
         ) : (
           <div className='flex flex-col gap-2'>
@@ -87,7 +96,7 @@ const SessionsSideStats = ({
       {last ? (
         <div>
           <HomeSectionLabel className='mb-2.5 block'>
-            Last session
+            {t('sessions.lastSession')}
           </HomeSectionLabel>
           <Link
             href={`/patients/${last.patientId}/profile`}
@@ -101,7 +110,9 @@ const SessionsSideStats = ({
               <div className='truncate font-medium'>{last.patientName}</div>
               <small className='text-muted-foreground block truncate'>
                 {formatRelative(last.at, new Date())}
-                {last.durationMin !== null ? ` · ${last.durationMin} min` : ''}
+                {last.durationMin !== null
+                  ? ` · ${t('sessions.minutes', { count: last.durationMin })}`
+                  : ''}
                 {` · ${last.programName}`}
               </small>
             </div>
@@ -113,7 +124,7 @@ const SessionsSideStats = ({
                   : 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300',
               )}
             >
-              {last.completed ? 'Done' : 'Interrupted'}
+              {last.completed ? t('sessions.done') : t('sessions.interrupted')}
             </Badge>
           </Link>
         </div>

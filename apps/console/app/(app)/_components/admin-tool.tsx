@@ -11,6 +11,7 @@ import { Label } from '@virtality/ui/components/label'
 import { Input } from '@virtality/ui/components/input'
 import { ChangeEvent, useState } from 'react'
 import { notify } from '@/lib/notify'
+import { useClientT } from '@/i18n/use-client-t'
 import { authClient } from '@/auth-client'
 import useIsAuthed from '@/hooks/use-is-authed'
 import useMounted from '@/hooks/use-mounted'
@@ -20,6 +21,7 @@ import {
 } from '@/lib/dev-force-renew-prompt'
 
 const AdminTool = ({ isImpersonating }: { isImpersonating?: boolean }) => {
+  const { t } = useClientT('home')
   const { data, isPending } = useIsAuthed()
   const mounted = useMounted()
   const user = data?.user
@@ -66,7 +68,7 @@ const AdminTool = ({ isImpersonating }: { isImpersonating?: boolean }) => {
       })
     } catch (error) {
       console.error(error)
-      notify.error('Failed to send verification email')
+      notify.error({ key: 'admin.verificationEmailFailed', ns: 'home' })
     }
   }
 
@@ -86,7 +88,7 @@ const AdminTool = ({ isImpersonating }: { isImpersonating?: boolean }) => {
       </PopoverTrigger>
       <PopoverContent>
         <div className='grid grid-rows-2 gap-1'>
-          <Label htmlFor='userId'>User ID</Label>
+          <Label htmlFor='userId'>{t('admin.userId')}</Label>
           <Input
             type='text'
             id='userId'
@@ -94,15 +96,17 @@ const AdminTool = ({ isImpersonating }: { isImpersonating?: boolean }) => {
             onChange={handleInputChange}
           />
 
-          <Button onClick={handleImpersonate}>Impersonate</Button>
-          <Button onClick={handleStopImpersonate}>Stop Impersonate</Button>
+          <Button onClick={handleImpersonate}>{t('admin.impersonate')}</Button>
+          <Button onClick={handleStopImpersonate}>
+            {t('admin.stopImpersonate')}
+          </Button>
           <Button disabled onClick={testVerificationEmail}>
-            Send Email
+            {t('admin.sendEmail')}
           </Button>
           <Button onClick={() => setForceRenewPrompt(!forceRenewPrompt)}>
             {forceRenewPrompt
-              ? 'Hide Renew Prompt Banner'
-              : 'Force Renew Prompt Banner'}
+              ? t('admin.hideRenewPrompt')
+              : t('admin.forceRenewPrompt')}
           </Button>
         </div>
       </PopoverContent>

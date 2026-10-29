@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { MousePointerClick } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
+import { useClientT } from '@/i18n/use-client-t'
 import { cn } from '@/lib/utils'
 import { coachCardPosition, type Rect, type TourStep } from '@/lib/guided-tour'
 
@@ -31,6 +32,7 @@ const TourCoachCard = ({
   onNext: () => void
   onEnd: () => void
 }) => {
+  const { t } = useClientT('layout')
   const ref = useRef<HTMLElement>(null)
   const [size, setSize] = useState({ width: 320, height: 160 })
   const [hintFor, setHintFor] = useState<string | null>(null)
@@ -76,7 +78,7 @@ const TourCoachCard = ({
   return (
     <aside
       ref={ref}
-      aria-label='Guided tour'
+      aria-label={t('tour.label')}
       aria-live='polite'
       style={position}
       className={cn(
@@ -91,18 +93,20 @@ const TourCoachCard = ({
       <p className='text-muted-foreground mt-1 text-sm'>{step.body}</p>
       <div className='mt-3 flex items-center justify-between gap-2'>
         <Button variant='ghost' size='sm' onClick={onEnd}>
-          End tour
+          {t('tour.end')}
         </Button>
         {step.advance.on === 'next' ? (
           <Button variant='primary' size='sm' onClick={onNext}>
-            {isLast ? 'Done' : 'Next'}
+            {isLast ? t('tour.done') : t('tour.next')}
           </Button>
         ) : !rect ? (
-          <span className='text-muted-foreground text-xs'>Waiting…</span>
+          <span className='text-muted-foreground text-xs'>
+            {t('tour.waiting')}
+          </span>
         ) : showHint ? (
           <span className='text-muted-foreground animate-in fade-in flex items-center gap-1.5 text-xs'>
             <MousePointerClick className='size-4' />
-            Click the highlight
+            {t('tour.clickHighlight')}
           </span>
         ) : null}
       </div>

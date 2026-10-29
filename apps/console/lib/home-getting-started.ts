@@ -1,3 +1,4 @@
+import type { Translate } from '@/i18n/translate'
 import { tourHref } from './guided-tour'
 import { withReturnTo } from './home-picker-return'
 
@@ -46,6 +47,7 @@ const DEVICE_PAIR_STEP = 'device-pair'
 
 export function buildGettingStarted(
   input: GettingStartedInput,
+  t: Translate,
 ): GettingStarted {
   const hasPaired = input.pairedDeviceCount > 0
   const hasUnpaired = input.deviceCount > input.pairedDeviceCount
@@ -56,39 +58,39 @@ export function buildGettingStarted(
   const steps: Omit<GettingStartedStep, 'current'>[] = [
     {
       id: 'device',
-      title: 'Pair a headset',
+      title: t('gettingStarted.device.title'),
       detail: hasPaired
-        ? `${input.pairedDeviceCount} headset${input.pairedDeviceCount === 1 ? '' : 's'} paired`
+        ? t('gettingStarted.device.paired', { count: input.pairedDeviceCount })
         : input.deviceCount > 0
-          ? 'A headset is added but not paired yet.'
-          : 'Add a headset and pair it with the 6-digit code.',
+          ? t('gettingStarted.device.unpaired')
+          : t('gettingStarted.device.empty'),
       done: hasPaired,
       href: missionHref('device', hasUnpaired ? DEVICE_PAIR_STEP : undefined),
     },
     {
       id: 'patient',
-      title: 'Add your first patient',
+      title: t('gettingStarted.patient.title'),
       detail: hasPatient
-        ? `${input.patientCount} patient${input.patientCount === 1 ? '' : 's'} on file`
-        : 'Name and basic info is enough to start.',
+        ? t('gettingStarted.patient.onFile', { count: input.patientCount })
+        : t('gettingStarted.patient.empty'),
       done: hasPatient,
       href: missionHref('patient'),
     },
     {
       id: 'program',
-      title: 'Create an exercise program',
+      title: t('gettingStarted.program.title'),
       detail: hasProgram
-        ? `${input.programCount} program${input.programCount === 1 ? '' : 's'} in your library`
-        : 'Start from a Starter Template or pick exercises yourself. Takes about 3 minutes.',
+        ? t('gettingStarted.program.inLibrary', { count: input.programCount })
+        : t('gettingStarted.program.empty'),
       done: hasProgram,
       href: missionHref('program'),
     },
     {
       id: 'session',
-      title: 'Start a session',
+      title: t('gettingStarted.session.title'),
       detail: hasSession
-        ? 'First session done'
-        : 'Put the headset on the patient, pick the program, press Launch.',
+        ? t('gettingStarted.session.done')
+        : t('gettingStarted.session.empty'),
       done: hasSession,
       href: tourHref('session'),
     },
@@ -108,17 +110,21 @@ export function buildGettingStarted(
 }
 
 /** The line under the header; also the collapsed card's whole story. */
-export function gettingStartedHeadline(gettingStarted: GettingStarted): string {
+export function gettingStartedHeadline(
+  gettingStarted: GettingStarted,
+  t: Translate,
+): string {
   const left = gettingStarted.steps.length - gettingStarted.doneCount
-  if (left === 0) return 'You are all set.'
-  const words = ['One', 'Two', 'Three', 'Four']
-  const word = words[left - 1] ?? String(left)
-  return `${word} step${left === 1 ? '' : 's'} left before your first session.`
+  if (left === 0) return t('gettingStarted.headline.allSet')
+  return t('gettingStarted.headline.stepsLeft', { count: left })
 }
 
 /** Explains what the card does next, under the headline. */
-export function gettingStartedSubline(gettingStarted: GettingStarted): string {
+export function gettingStartedSubline(
+  gettingStarted: GettingStarted,
+  t: Translate,
+): string {
   return gettingStarted.complete
-    ? 'Every step is done. Expand it any time to revisit them.'
-    : 'Once these are done this card collapses to a summary.'
+    ? t('gettingStarted.subline.complete')
+    : t('gettingStarted.subline.pending')
 }

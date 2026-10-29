@@ -1,3 +1,4 @@
+import { useClientT } from '@/i18n/use-client-t'
 import { Column } from '@tanstack/react-table'
 import { ArrowDown, ArrowUp, ChevronsUpDown, EyeOff } from 'lucide-react'
 
@@ -25,6 +26,7 @@ const HeaderCell = <TData, TValue>({
   className,
 }: HeaderPropsCell<TData, TValue>) => {
   'use no memo'
+  const { t } = useClientT('shared')
   if (!column.getCanSort()) {
     return <div className={cn(className)}>{title}</div>
   }
@@ -51,16 +53,16 @@ const HeaderCell = <TData, TValue>({
         <DropdownMenuContent align='start'>
           <DropdownMenuItem onClick={() => column.toggleSorting(false)}>
             <ArrowUp />
-            Asc
+            {t('table.asc')}
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => column.toggleSorting(true)}>
             <ArrowDown />
-            Desc
+            {t('table.desc')}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={() => column.toggleVisibility(false)}>
             <EyeOff />
-            Hide
+            {t('table.hide')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

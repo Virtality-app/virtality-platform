@@ -1,5 +1,6 @@
 'use client'
 
+import { useClientT } from '@/i18n/use-client-t'
 import * as React from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import {
@@ -79,6 +80,7 @@ function InlineError({
   retryLabel = 'Retry',
   className,
 }: ErrorDisplayProps) {
+  const { t } = useClientT('shared')
   const Icon = ERROR_ICONS[icon]
   const text = message ?? title
 
@@ -111,7 +113,7 @@ function InlineError({
           <button
             type='button'
             onClick={onDismiss}
-            aria-label='Dismiss error'
+            aria-label={t('errorDisplay.dismissError')}
             className='rounded p-0.5 hover:bg-red-100 dark:hover:bg-red-900/30'
           >
             <X className='size-3.5' />
@@ -134,6 +136,7 @@ function BannerError({
   error,
   className,
 }: ErrorDisplayProps) {
+  const { t } = useClientT('shared')
   const [expanded, setExpanded] = React.useState(false)
   const Icon = ERROR_ICONS[icon]
   const errorDetails =
@@ -188,7 +191,7 @@ function BannerError({
               onClick={() => setExpanded((v) => !v)}
               aria-expanded={expanded}
               className='rounded p-1 text-red-500 hover:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/30'
-              aria-label='Toggle error details'
+              aria-label={t('errorDisplay.toggleDetails')}
             >
               <ChevronDown
                 className={cn(
@@ -202,7 +205,7 @@ function BannerError({
             <button
               type='button'
               onClick={onDismiss}
-              aria-label='Dismiss'
+              aria-label={t('errorDisplay.dismiss')}
               className='rounded p-1 text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30'
             >
               <X className='size-4' />
@@ -244,6 +247,7 @@ function CardError({
   error,
   className,
 }: ErrorDisplayProps) {
+  const { t } = useClientT('shared')
   const [expanded, setExpanded] = React.useState(false)
   const Icon = ERROR_ICONS[icon]
   const errorDetails =
@@ -320,7 +324,9 @@ function CardError({
                 expanded && 'rotate-180',
               )}
             />
-            {expanded ? 'Hide' : 'Show'} details
+            {expanded
+              ? t('errorDisplay.hideDetails')
+              : t('errorDisplay.showDetails')}
           </button>
           <AnimatePresence>
             {expanded && (
@@ -372,6 +378,7 @@ function PageError({
   error,
   className,
 }: ErrorDisplayProps) {
+  const { t } = useClientT('shared')
   const [expanded, setExpanded] = React.useState(false)
   const Icon = ERROR_ICONS[icon]
   const errorDetails =
@@ -464,7 +471,9 @@ function PageError({
                   expanded && 'rotate-180',
                 )}
               />
-              {expanded ? 'Hide' : 'View'} error details
+              {expanded
+                ? t('errorDisplay.hideErrorDetails')
+                : t('errorDisplay.viewErrorDetails')}
             </button>
             <AnimatePresence>
               {expanded && (

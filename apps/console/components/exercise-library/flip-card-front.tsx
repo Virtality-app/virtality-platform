@@ -1,3 +1,4 @@
+import { useClientT } from '@/i18n/use-client-t'
 import { MouseEvent } from 'react'
 import { Pause, Play } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
@@ -45,6 +46,7 @@ const FlipCardFront = ({
   handleFlip,
   handlePreviewToggle,
 }: FlipCardFrontProps) => {
+  const { t } = useClientT('shared')
   const primaryLabel = footerTitle ?? getDisplayName(exercise)
   return (
     <Card
@@ -73,7 +75,9 @@ const FlipCardFront = ({
               type='button'
               onClick={handlePreviewToggle}
               aria-label={
-                isPreviewPlaying ? 'Pause preview video' : 'Play preview video'
+                isPreviewPlaying
+                  ? t('exerciseLibrary.pausePreview')
+                  : t('exerciseLibrary.playPreview')
               }
               size='icon'
               className='absolute top-2 left-2 z-10 rounded-full bg-black/65 p-2 text-white shadow-md transition hover:scale-105 hover:bg-black/80 focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black focus-visible:outline-none'

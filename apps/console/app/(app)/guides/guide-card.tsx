@@ -5,12 +5,14 @@ import Video from './video'
 import { Guide } from '@/data/static/guides'
 import { Info } from 'lucide-react'
 import Link from 'next/link'
+import { useClientT } from '@/i18n/use-client-t'
 
 interface GuideCardProps {
   item: Guide
 }
 
 const GuideCard = ({ item }: GuideCardProps) => {
+  const { t } = useClientT('home')
   return (
     <Card>
       <CardContent className='flex gap-6'>
@@ -27,7 +29,7 @@ const GuideCard = ({ item }: GuideCardProps) => {
               <div className='flex items-center gap-2'>
                 <>
                   <Info className='size-4' />
-                  <span>Additional Info:</span>
+                  <span>{t('guides.additionalInfo')}</span>
                   <Link
                     href={item.metaData?.additionalInfoURL || ''}
                     target='_blank'

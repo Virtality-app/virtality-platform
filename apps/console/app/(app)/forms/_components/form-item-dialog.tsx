@@ -11,6 +11,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { ReactNode } from 'react'
+import { useClientT } from '@/i18n/use-client-t'
 
 export function FormItemDialog({
   children,
@@ -19,6 +20,7 @@ export function FormItemDialog({
   children: ReactNode
   formItem: { title: string; url: string }
 }) {
+  const { t } = useClientT(['home', 'common'])
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
@@ -28,13 +30,13 @@ export function FormItemDialog({
         </DialogHeader>
         <div className='flex-1'>
           <iframe src={formItem.url} width='auto' className='size-full'>
-            Loading…
+            {t('forms.loading')}
           </iframe>
         </div>
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button>Close</Button>
+            <Button>{t('common:btn.close')}</Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>

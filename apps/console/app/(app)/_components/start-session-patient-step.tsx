@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { formatRelative } from 'date-fns'
 import { Plus, Search } from 'lucide-react'
 import { Input } from '@virtality/ui/components/input'
+import { useClientT } from '@/i18n/use-client-t'
 import type { PatientListItem } from '@/types/models'
 import { filterPatientsBySearch } from '@/lib/patient-list'
 import { withReturnTo } from '@/lib/home-picker-return'
@@ -36,6 +37,7 @@ const StartSessionPatientStep = ({
   patients: PatientListItem[]
   picker: StartSessionPicker
 }) => {
+  const { t } = useClientT('home')
   const { selection, patientQuery, setPatientQuery, selectPatient, returnTo } =
     picker
   const rows = patientRows(patients, patientQuery)
@@ -43,7 +45,7 @@ const StartSessionPatientStep = ({
   return (
     <StartSessionStep
       number={1}
-      label='Patient'
+      label={t('startSession.patient')}
       tourTarget='session-patient'
       done={Boolean(selection.patientId)}
       footer={
@@ -51,7 +53,7 @@ const StartSessionPatientStep = ({
           href={withReturnTo('/patients/new', returnTo)}
           className='text-muted-foreground hover:text-foreground flex items-center gap-2 text-[13px]'
         >
-          <Plus className='size-4' /> New patient
+          <Plus className='size-4' /> {t('startSession.newPatient')}
         </Link>
       }
       toolbar={
@@ -61,8 +63,8 @@ const StartSessionPatientStep = ({
             <Input
               value={patientQuery}
               onChange={(event) => setPatientQuery(event.target.value)}
-              placeholder='Search patients…'
-              aria-label='Search patients'
+              placeholder={t('pinned.searchPlaceholder')}
+              aria-label={t('startSession.searchPatients')}
               className='pl-8'
             />
           </div>
@@ -71,10 +73,12 @@ const StartSessionPatientStep = ({
     >
       {patients.length === 0 ? (
         <p className='text-muted-foreground text-[13px]'>
-          No patients yet. Add your first one to start a session.
+          {t('startSession.noPatients')}
         </p>
       ) : rows.length === 0 ? (
-        <p className='text-muted-foreground text-[13px]'>No patient matches.</p>
+        <p className='text-muted-foreground text-[13px]'>
+          {t('startSession.noMatches')}
+        </p>
       ) : (
         rows.map((patient) => (
           <StartSessionOption
@@ -92,7 +96,7 @@ const StartSessionPatientStep = ({
               <small className='text-muted-foreground block truncate text-xs'>
                 {patient.lastSessionAt
                   ? formatRelative(new Date(patient.lastSessionAt), new Date())
-                  : 'No sessions yet'}
+                  : t('noSessionsYet')}
                 {patient.activeProgramName
                   ? ` · ${patient.activeProgramName}`
                   : ''}

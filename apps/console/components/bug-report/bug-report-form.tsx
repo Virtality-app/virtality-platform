@@ -35,7 +35,7 @@ interface BugReportFormProps {
 }
 
 export const BugReportForm = ({ children }: BugReportFormProps) => {
-  const { t } = useClientT('common')
+  const { t } = useClientT(['shared', 'common'])
   const [imageFiles, setImageFiles] = useState<
     { previewUrl: string; file: File }[]
   >([])
@@ -119,10 +119,11 @@ export const BugReportForm = ({ children }: BugReportFormProps) => {
           <>
             <DialogHeader>
               <DialogTitle className='flex items-center gap-2'>
-                Report submitted <CheckCircle className='text-green-500' />
+                {t('bugReport.submitted', { ns: 'shared' })}{' '}
+                <CheckCircle className='text-green-500' />
               </DialogTitle>
-              <P>Thank you for taking the time to make our platform better.</P>
-              <P>Hang in tight while we work to resolve the issue.</P>
+              <P>{t('bugReport.thanks', { ns: 'shared' })}</P>
+              <P>{t('bugReport.hangTight', { ns: 'shared' })}</P>
             </DialogHeader>
             <DialogFooter>
               <DialogClose asChild>
@@ -133,9 +134,11 @@ export const BugReportForm = ({ children }: BugReportFormProps) => {
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle>Report a Bug</DialogTitle>
+              <DialogTitle>
+                {t('bugReport.title', { ns: 'shared' })}
+              </DialogTitle>
               <DialogDescription>
-                Fill out the form below to report a bug.
+                {t('bugReport.description', { ns: 'shared' })}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
@@ -143,21 +146,23 @@ export const BugReportForm = ({ children }: BugReportFormProps) => {
                 control={form.control}
                 name='title'
                 label={capitalize(t('form.title'))}
-                placeholder='Bug title'
+                placeholder={t('bugReport.titlePlaceholder', { ns: 'shared' })}
               />
 
               <FormSelect
                 control={form.control}
                 name='platform'
                 label={capitalize(t('platform', { ns: 'glossary' }))}
-                placeholder='Select platform'
+                placeholder={t('bugReport.platformPlaceholder', {
+                  ns: 'shared',
+                })}
                 triggerClassName='w-full'
               >
                 <SelectItem value='web'>
-                  Web {capitalize(t('platform', { ns: 'glossary' }))}
+                  {t('bugReport.webPlatform', { ns: 'shared' })}
                 </SelectItem>
                 <SelectItem value='vr'>
-                  VR {capitalize(t('application', { ns: 'glossary' }))}
+                  {t('bugReport.vrApplication', { ns: 'shared' })}
                 </SelectItem>
               </FormSelect>
 
@@ -165,21 +170,27 @@ export const BugReportForm = ({ children }: BugReportFormProps) => {
                 control={form.control}
                 name='description'
                 label={capitalize(t('form.description'))}
-                placeholder='Describe the bug...'
+                placeholder={t('bugReport.descriptionPlaceholder', {
+                  ns: 'shared',
+                })}
               />
 
-              <FormField control={form.control} name='image' label='Image'>
+              <FormField
+                control={form.control}
+                name='image'
+                label={t('bugReport.image', { ns: 'shared' })}
+              >
                 {(field) => (
                   <>
                     <label
                       htmlFor={field.id}
                       className='w-full cursor-pointer rounded-md border p-2 text-left text-sm font-medium'
                     >
-                      Choose Files
+                      {t('bugReport.chooseFiles', { ns: 'shared' })}
                       <span className='font-normal'>
                         {imageFiles.length === 0
-                          ? ' No files chosen'
-                          : ` ${imageFiles.length} File(s) chosen`}
+                          ? ` ${t('bugReport.noFiles', { ns: 'shared' })}`
+                          : ` ${t('bugReport.filesChosen', { ns: 'shared', count: imageFiles.length })}`}
                       </span>
                     </label>
                     <Input

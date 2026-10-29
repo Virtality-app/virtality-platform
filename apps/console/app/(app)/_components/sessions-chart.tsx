@@ -8,6 +8,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from '@/components/ui/chart'
+import { useClientT } from '@/i18n/use-client-t'
 import type { HomeSessionDay } from '@/lib/home-sessions-summary'
 
 const chartConfig = {
@@ -18,6 +19,7 @@ const chartConfig = {
 } satisfies ChartConfig
 
 const SessionsChart = ({ days }: { days: HomeSessionDay[] }) => {
+  const { t } = useClientT('home')
   const max = Math.max(4, ...days.map((day) => day.count))
 
   return (
@@ -25,7 +27,7 @@ const SessionsChart = ({ days }: { days: HomeSessionDay[] }) => {
       config={chartConfig}
       className='aspect-auto h-38 w-full'
       role='img'
-      aria-label='Sessions per day over the last seven days'
+      aria-label={t('sessions.chartLabel')}
     >
       <AreaChart
         data={days}

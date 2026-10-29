@@ -1,3 +1,4 @@
+import { createCatalogTranslate } from '@/i18n/catalog-translate'
 import { describe, expect, it } from 'vitest'
 import {
   buildHomeSessionsSummary,
@@ -28,6 +29,8 @@ function session(
     ...overrides,
   }
 }
+
+const t = createCatalogTranslate('home')
 
 describe('home window', () => {
   it('starts at local midnight six days before now', () => {
@@ -159,16 +162,16 @@ describe('buildHomeSessionsSummary', () => {
 
 describe('formatters', () => {
   it('formats headset time', () => {
-    expect(formatHeadsetTime(0)).toBe('0 min')
-    expect(formatHeadsetTime(20)).toBe('20 min')
-    expect(formatHeadsetTime(120)).toBe('2 h')
-    expect(formatHeadsetTime(220)).toBe('3 h 40 m')
+    expect(formatHeadsetTime(0, t)).toBe('0 min')
+    expect(formatHeadsetTime(20, t)).toBe('20 min')
+    expect(formatHeadsetTime(120, t)).toBe('2 h')
+    expect(formatHeadsetTime(220, t)).toBe('3 h 40 m')
   })
 
   it('formats the week delta', () => {
-    expect(formatWeekDelta(4)).toBe('+4 vs last week')
-    expect(formatWeekDelta(-2)).toBe('−2 vs last week')
-    expect(formatWeekDelta(0)).toBe('Same as last week')
+    expect(formatWeekDelta(4, t)).toBe('+4 vs last week')
+    expect(formatWeekDelta(-2, t)).toBe('−2 vs last week')
+    expect(formatWeekDelta(0, t)).toBe('Same as last week')
   })
 
   it('formats the window range', () => {

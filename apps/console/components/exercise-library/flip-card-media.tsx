@@ -1,3 +1,4 @@
+import { useClientT } from '@/i18n/use-client-t'
 import Image from 'next/image'
 import { shouldBypassVercelImageOptimization } from '@virtality/shared/utils'
 import { Exercise } from '@virtality/db'
@@ -17,16 +18,17 @@ const FlipCardMedia = ({
   isTouchDevice,
   videoRef,
 }: FlipCardMediaProps) => {
+  const { t } = useClientT('shared')
   const selectHint = isTouchDevice
-    ? 'Tap card to select'
-    : 'Click card to select'
+    ? t('exerciseLibrary.tapToSelect')
+    : t('exerciseLibrary.clickToSelect')
 
   if (!isPreviewPlaying) {
     return (
       <>
         <Image
           src={exercise.image ?? '/placeholder.svg'}
-          alt={primaryLabel + ' image'}
+          alt={t('exerciseLibrary.imageAlt', { name: primaryLabel })}
           fill
           unoptimized={shouldBypassVercelImageOptimization(exercise.image)}
           className='object-contain'

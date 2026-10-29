@@ -1,3 +1,4 @@
+import { useClientT } from '@/i18n/use-client-t'
 import { Slider } from '@/components/ui/slider'
 import ExerciseInput from './exercise-input'
 import { Label } from '@virtality/ui/components/label'
@@ -132,6 +133,7 @@ const ExerciseSettings = ({
   orientation = 'horizontal',
   readOnly = false,
 }: ExerciseSettingsProps) => {
+  const { t } = useClientT('shared')
   const sliderRef = useRef<HTMLSpanElement | null>(null)
   const romRef = useRef<HTMLButtonElement | null>(null)
 
@@ -194,7 +196,7 @@ const ExerciseSettings = ({
       )}
     >
       <div className='flex items-center gap-2'>
-        <Label htmlFor={'reps,' + index}>Reps</Label>
+        <Label htmlFor={'reps,' + index}>{t('exerciseLibrary.reps')}</Label>
         <ExerciseInputPill
           id={'reps,' + index}
           name='reps'
@@ -205,7 +207,7 @@ const ExerciseSettings = ({
         />
       </div>
       <div className='flex items-center gap-2'>
-        <Label htmlFor={'sets,' + index}>Sets</Label>
+        <Label htmlFor={'sets,' + index}>{t('exerciseLibrary.sets')}</Label>
         <ExerciseInputPill
           id={'sets,' + index}
           name='sets'
@@ -216,7 +218,9 @@ const ExerciseSettings = ({
         />
       </div>
       <div className='flex items-center gap-2'>
-        <Label htmlFor={'restTime,' + index}>Rest (sec)</Label>
+        <Label htmlFor={'restTime,' + index}>
+          {t('exerciseLibrary.restTime')}
+        </Label>
         <ExerciseInput
           id={'restTime,' + index}
           name='restTime'
@@ -232,7 +236,9 @@ const ExerciseSettings = ({
         />
       </div>
       <div className='flex items-center gap-2'>
-        <Label htmlFor={'holdTime,' + index}>Hold time (sec)</Label>
+        <Label htmlFor={'holdTime,' + index}>
+          {t('exerciseLibrary.holdTime')}
+        </Label>
         <ExerciseInput
           id={'holdTime,' + index}
           name='holdTime'
@@ -262,7 +268,7 @@ const ExerciseSettings = ({
           </div>
         ))}
       <div className='flex items-center gap-2'>
-        <Label htmlFor={'speed,' + index}>Speed</Label>
+        <Label htmlFor={'speed,' + index}>{t('exerciseLibrary.speed')}</Label>
         <Slider
           ref={sliderRef}
           id={'speed,' + index}

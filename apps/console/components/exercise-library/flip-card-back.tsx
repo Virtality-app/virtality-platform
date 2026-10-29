@@ -1,3 +1,4 @@
+import { useClientT } from '@/i18n/use-client-t'
 import { MouseEvent } from 'react'
 import { RotateCcw } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
@@ -25,6 +26,7 @@ const FlipCardBack = ({
   footerTitle,
   handleFlip,
 }: FlipCardBackProps) => {
+  const { t } = useClientT('shared')
   const primaryLabel = footerTitle ?? getDisplayName(exercise)
   return (
     <Card
@@ -44,7 +46,7 @@ const FlipCardBack = ({
       <CardFooter className='justify-end p-2'>
         <Button variant='outline' onClick={handleFlip} type='button'>
           <RotateCcw className='mr-2 size-4 transition-transform group-hover:rotate-90' />
-          Flip Back
+          {t('exerciseLibrary.flipBack')}
         </Button>
       </CardFooter>
     </Card>
