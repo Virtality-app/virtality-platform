@@ -8,15 +8,18 @@ import { CardContent, CardFooter } from '@virtality/ui/components/card'
 import { FieldGroup } from '@/components/ui/field'
 import { useORPC, useStartPasswordSetup } from '@virtality/react-query'
 import { useQueryClient } from '@tanstack/react-query'
+import { useClientT } from '@/i18n/use-client-t'
 import { ControllerField } from './controller-field'
 import {
   SetPasswordFormSchema,
   invalidateActivePendingPasswordChange,
-  setPasswordFormField,
+  getSetPasswordFormField,
   type SetPasswordForm,
 } from './profile-info-form'
 
 export const SetPasswordField = () => {
+  const { t } = useClientT(['user', 'common'])
+  const setPasswordFormField = getSetPasswordFormField(t)
   const orpc = useORPC()
   const queryClient = useQueryClient()
   const setPasswordForm = useForm<SetPasswordForm>({
@@ -28,11 +31,11 @@ export const SetPasswordField = () => {
     onSuccess: async () => {
       setPasswordForm.reset({ newPassword: '' }, { keepDirty: false })
       await invalidateActivePendingPasswordChange(queryClient, orpc)
-      notify.success('Check your email to approve password setup.')
+      notify.success({ key: 'profile.toast.passwordSetupStarted', ns: 'user' })
     },
     onError: (error) => {
       console.error(error)
-      notify.error('Failed to start password setup')
+      notify.error({ key: 'profile.toast.passwordSetupFailed', ns: 'user' })
     },
   })
 
@@ -44,8 +47,7 @@ export const SetPasswordField = () => {
     <form onSubmit={setPasswordForm.handleSubmit(onSubmitSetPassword)}>
       <CardContent>
         <p className='text-muted-foreground mb-4 text-sm'>
-          You have not set a password yet. Add one to sign in with email and
-          password.
+          {t('profile.noPassword')}
         </p>
         <FieldGroup className='mb-6'>
           <ControllerField
@@ -74,7 +76,7 @@ export const SetPasswordField = () => {
           className='ml-auto'
           disabled={!setPasswordForm.formState.isDirty || isPending}
         >
-          {isPending ? 'Sending...' : 'Set Password'}
+          {isPending ? t('profile.sending') : t('profile.setPassword')}
         </Button>
       </CardFooter>
     </form>

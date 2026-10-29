@@ -14,10 +14,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  BILLING_DISCOUNT_TIMING_COPY,
-  PROMO_REMOVE_NO_RESTORE_COPY,
-} from '@/lib/profile-billing'
+import { useClientT } from '@/i18n/use-client-t'
+import { translateRich } from '@/i18n/translate-rich'
 
 type RemovePromoConfirmDialogProps = {
   open: boolean
@@ -34,39 +32,40 @@ export function RemovePromoConfirmDialog({
   onConfirm,
   confirming = false,
 }: RemovePromoConfirmDialogProps) {
+  const { t } = useClientT(['user', 'common'])
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent showCloseButton={!confirming}>
         <DialogHeader>
-          <DialogTitle>Remove Promotion Code?</DialogTitle>
+          <DialogTitle>{t('billing.promo.removeTitle')}</DialogTitle>
           <DialogDescription asChild>
             <div className='space-y-3 pt-1 text-sm text-zinc-500'>
               {promotionCode ? (
                 <p>
-                  This removes Promotion Code{' '}
-                  <span className='font-mono font-medium text-zinc-800 dark:text-zinc-200'>
-                    {promotionCode}
-                  </span>{' '}
-                  from your subscription.
+                  {translateRich(t, 'billing.promo.removeBodyWithCode', {
+                    code: (
+                      <span className='font-mono font-medium text-zinc-800 dark:text-zinc-200'>
+                        {promotionCode}
+                      </span>
+                    ),
+                  })}
                 </p>
               ) : (
-                <p>
-                  This removes the Promotion Code discount from your
-                  subscription.
-                </p>
+                <p>{t('billing.promo.removeBody')}</p>
               )}
               <p>
-                Your next invoice will be at catalog list price.{' '}
-                {BILLING_DISCOUNT_TIMING_COPY}
+                {t('billing.promo.removeNextInvoice', {
+                  timing: t('billing.discountTiming'),
+                })}
               </p>
-              <p>{PROMO_REMOVE_NO_RESTORE_COPY}</p>
+              <p>{t('billing.removeNoRestore')}</p>
             </div>
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <DialogClose asChild>
             <Button type='button' variant='outline' disabled={confirming}>
-              Cancel
+              {t('common:btn.cancel')}
             </Button>
           </DialogClose>
           <Button
@@ -75,7 +74,9 @@ export function RemovePromoConfirmDialog({
             disabled={confirming}
             onClick={onConfirm}
           >
-            {confirming ? 'Removing…' : 'Remove discount'}
+            {confirming
+              ? t('billing.promo.removing')
+              : t('billing.promo.removeDiscount')}
           </Button>
         </DialogFooter>
       </DialogContent>

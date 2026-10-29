@@ -6,6 +6,7 @@ import enGlossary from './en/glossary.json' with { type: 'json' }
 import enPatients from './en/patients.json' with { type: 'json' }
 import enPatientDashboard from './en/patient-dashboard.json' with { type: 'json' }
 import enPrograms from './en/programs.json' with { type: 'json' }
+import enUser from './en/user.json' with { type: 'json' }
 import enValidation from './en/validation.json' with { type: 'json' }
 import enVrVideo from './en/vr-video.json' with { type: 'json' }
 import elAuth from './el/auth.json' with { type: 'json' }
@@ -16,6 +17,7 @@ import elGlossary from './el/glossary.json' with { type: 'json' }
 import elPatients from './el/patients.json' with { type: 'json' }
 import elPatientDashboard from './el/patient-dashboard.json' with { type: 'json' }
 import elPrograms from './el/programs.json' with { type: 'json' }
+import elUser from './el/user.json' with { type: 'json' }
 import elValidation from './el/validation.json' with { type: 'json' }
 import elVrVideo from './el/vr-video.json' with { type: 'json' }
 
@@ -31,6 +33,7 @@ export const TRANSLATION_NAMESPACES = [
   'patient-dashboard',
   'patients',
   'programs',
+  'user',
   'validation',
   'vr-video',
 ] as const
@@ -80,6 +83,7 @@ export const translationCatalog: Record<TranslationNamespace, FlatMessages> = {
   'patient-dashboard': flatten(enPatientDashboard),
   patients: flatten(enPatients),
   programs: flatten(enPrograms),
+  user: flatten(enUser),
   validation: flatten(enValidation),
   'vr-video': flatten(enVrVideo),
 }
@@ -94,6 +98,7 @@ export const greekDrafts: Record<TranslationNamespace, FlatMessages> = {
   'patient-dashboard': flatten(elPatientDashboard),
   patients: flatten(elPatients),
   programs: flatten(elPrograms),
+  user: flatten(elUser),
   validation: flatten(elValidation),
   'vr-video': flatten(elVrVideo),
 }

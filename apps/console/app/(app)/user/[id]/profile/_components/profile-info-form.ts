@@ -3,8 +3,11 @@ import { FieldMeta, getConsoleUrl } from '@virtality/shared/types'
 import { UserSchema } from '@virtality/db/definitions'
 import { useORPC } from '@virtality/react-query'
 import z from 'zod/v4'
+import i18next from '@/i18n/i18next'
+import type { Translate } from '@/i18n/translate'
+import { translateMessage } from '@/i18n/translate-message'
+import { createPasswordCheck } from '@/lib/translated-password-check'
 import {
-  isValidPassword,
   PASSWORD_MAX_LENGTH,
   PASSWORD_MIN_LENGTH,
 } from '@virtality/shared/utils'
@@ -28,8 +31,16 @@ export type EmailForm = Pick<z.infer<typeof UserSchema>, 'email'>
 
 export const EmailFormSchema = UserSchema.pick({ email: true })
 
+// Resolved when the form is validated, so messages follow the selected language.
+const isValidPassword = createPasswordCheck((key, options) =>
+  i18next.t(key, options),
+)
+
 export const PasswordFormSchema = z.object({
-  currentPassword: z.string().nonempty('Current password is required').trim(),
+  currentPassword: z
+    .string()
+    .nonempty({ error: translateMessage('current_password_required') })
+    .trim(),
   newPassword: z.string().trim().check(isValidPassword),
 })
 
@@ -40,50 +51,52 @@ export const SetPasswordFormSchema = z.object({
 export type PasswordForm = z.infer<typeof PasswordFormSchema>
 export type SetPasswordForm = z.infer<typeof SetPasswordFormSchema>
 
-export const basicInfoFormFields = {
-  image: {
-    label: 'Image',
-    description: 'Click on the photo to upload a custom one.',
-    hint: 'The image will be used as your profile picture.',
-  },
-  name: {
-    label: 'Name',
-    placeholder: 'John Doe',
-    description: 'Please enter your full name.',
-    hint: 'Please use 32 characters at maximum.',
-  },
-  phoneNumber: {
-    label: 'Phone Number',
-    placeholder: '+1234567890',
-    description: 'Please enter your phone number.',
-    hint: 'A code will be sent to verify.',
-  },
-} satisfies FieldMeta<UserForm>
+export const getBasicInfoFormFields = (t: Translate) =>
+  ({
+    image: {
+      label: t('profile.fields.image.label'),
+      description: t('profile.fields.image.description'),
+      hint: t('profile.fields.image.hint'),
+    },
+    name: {
+      label: t('profile.fields.name.label'),
+      placeholder: t('profile.fields.name.placeholder'),
+      description: t('profile.fields.name.description'),
+      hint: t('profile.fields.name.hint'),
+    },
+    phoneNumber: {
+      label: t('common:form.phone'),
+      placeholder: '+1234567890',
+      description: t('profile.fields.phoneNumber.description'),
+      hint: t('profile.fields.phoneNumber.hint'),
+    },
+  }) satisfies FieldMeta<UserForm>
 
-export const emailFormField = {
-  email: {
-    label: 'Email',
-    placeholder: 'example@domain.com',
-    description:
-      'Your primary email will be used for account-related notifications.',
-    hint: 'Emails must be verified to be used as primary email.',
-  },
-} satisfies FieldMeta<EmailForm>
+export const getEmailFormField = (t: Translate) =>
+  ({
+    email: {
+      label: t('common:form.email'),
+      placeholder: 'example@domain.com',
+      description: t('profile.fields.email.description'),
+      hint: t('profile.fields.email.hint'),
+    },
+  }) satisfies FieldMeta<EmailForm>
 
-export const passwordFormField = {
-  currentPassword: {
-    label: 'Current Password',
-    placeholder: '********',
-    description: 'Please enter your current password.',
-    hint: 'Please enter your current password.',
-  },
-  newPassword: {
-    label: 'New Password',
-    placeholder: '********',
-    description: 'Please enter your new password.',
-    hint: 'Please enter your new password.',
-  },
-} satisfies FieldMeta<PasswordForm>
+export const getPasswordFormField = (t: Translate) =>
+  ({
+    currentPassword: {
+      label: t('profile.fields.currentPassword.label'),
+      placeholder: '********',
+      description: t('profile.fields.currentPassword.description'),
+      hint: t('profile.fields.currentPassword.hint'),
+    },
+    newPassword: {
+      label: t('profile.fields.newPassword.label'),
+      placeholder: '********',
+      description: t('profile.fields.newPassword.description'),
+      hint: t('profile.fields.newPassword.hint'),
+    },
+  }) satisfies FieldMeta<PasswordForm>
 
 export type SessionUser = NonNullable<
   ReturnType<typeof authClient.useSession>['data']
@@ -95,14 +108,18 @@ export const toFormValues = (user: SessionUser | undefined): UserForm => ({
   image: user?.image ?? null,
 })
 
-export const setPasswordFormField = {
-  newPassword: {
-    label: 'New Password',
-    placeholder: '********',
-    description: 'Choose a password for email and password sign-in.',
-    hint: `Password must be ${PASSWORD_MIN_LENGTH}-${PASSWORD_MAX_LENGTH} characters with upper, lower, and digit.`,
-  },
-} satisfies FieldMeta<SetPasswordForm>
+export const getSetPasswordFormField = (t: Translate) =>
+  ({
+    newPassword: {
+      label: t('profile.fields.newPassword.label'),
+      placeholder: '********',
+      description: t('profile.fields.setPassword.description'),
+      hint: t('profile.fields.setPassword.hint', {
+        min: PASSWORD_MIN_LENGTH,
+        max: PASSWORD_MAX_LENGTH,
+      }),
+    },
+  }) satisfies FieldMeta<SetPasswordForm>
 
 export const invalidateActivePendingPasswordChange = async (
   queryClient: QueryClient,

@@ -6,14 +6,11 @@
  */
 
 import { Button } from '@virtality/ui/components/button'
-import { cn } from '@/lib/utils'
 import {
-  BILLING_SOFT_UNAVAILABLE_COPY,
   profileBillingCardActiveAction,
   profileBillingIsLapsedAccessGateTrial,
-  profileBillingStatusDetail,
-  profileBillingStatusHeadline,
 } from '@/lib/profile-billing'
+import { BillingStatusHeader } from './billing-status-header'
 import { PlanCard } from './billing-plan-card'
 import { BillingSoftUnavailableBanner } from './billing-soft-unavailable-banner'
 import { PromoRedeemSection } from './promo-redeem-section'
@@ -24,9 +21,11 @@ import { IntervalUpgradeConfirmDialog } from './interval-upgrade-confirm-dialog'
 import { IntervalCancelConfirmDialog } from './interval-cancel-confirm-dialog'
 import { PendingCancellationBanner } from './pending-cancellation-banner'
 import { PendingPlanChangeBanner } from './pending-plan-change-banner'
+import { useBillingCopy } from './use-billing-copy'
 import { useBillingTab } from './use-billing-tab'
 
 export function BillingTab() {
+  const { t } = useBillingCopy()
   const {
     isStandingPending,
     isCatalogPending,
@@ -85,9 +84,11 @@ export function BillingTab() {
     return (
       <div className='rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950'>
         <p className='text-sm text-zinc-500'>
-          {isCatalogUnavailable
-            ? BILLING_SOFT_UNAVAILABLE_COPY
-            : 'Billing prices are unavailable right now. Try again shortly.'}
+          {t(
+            isCatalogUnavailable
+              ? 'billing.softUnavailable'
+              : 'billing.unavailable',
+          )}
         </p>
       </div>
     )
@@ -96,7 +97,6 @@ export function BillingTab() {
   const showPortalCta = cta != null
   const isLapsedAccessGateTrial =
     profileBillingIsLapsedAccessGateTrial(standing)
-  const lapsedTrialAccent = 'text-red-600 dark:text-red-500'
   const monthlyCheckout = showPlanCardCheckout
     ? profileBillingCardActiveAction(planCardActionFor('month'))
     : null
@@ -108,27 +108,11 @@ export function BillingTab() {
   return (
     <div className='rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950'>
       <div className='space-y-6'>
-        <header className='space-y-2'>
-          <p
-            className={cn(
-              'text-xs font-medium tracking-wide uppercase',
-              isLapsedAccessGateTrial ? lapsedTrialAccent : 'text-zinc-500',
-            )}
-          >
-            Billing
-          </p>
-          <h2
-            className={cn(
-              'text-2xl font-semibold tracking-tight',
-              isLapsedAccessGateTrial && lapsedTrialAccent,
-            )}
-          >
-            {profileBillingStatusHeadline(standing, productName)}
-          </h2>
-          <p className='text-sm text-zinc-500'>
-            {profileBillingStatusDetail(standing, productName)}
-          </p>
-        </header>
+        <BillingStatusHeader
+          standing={standing}
+          productName={productName}
+          lapsed={isLapsedAccessGateTrial}
+        />
 
         {pendingCancellationBanner ? (
           <PendingCancellationBanner message={pendingCancellationBanner} />
@@ -144,7 +128,7 @@ export function BillingTab() {
 
         <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
           <PlanCard
-            title='Monthly'
+            title={t('billing.monthly')}
             disabled={standing.billingInterval === 'month'}
             onSelect={() => setSelectedInterval('month')}
             monthlyRows={cardDisplay.monthlyRows}
@@ -160,7 +144,7 @@ export function BillingTab() {
             }
           />
           <PlanCard
-            title='Annual'
+            title={t('billing.annual')}
             disabled={standing.billingInterval === 'year'}
             onSelect={() => setSelectedInterval('year')}
             yearlyRows={cardDisplay.yearlyRows}
@@ -199,7 +183,7 @@ export function BillingTab() {
               void handlePrimaryCta()
             }}
           >
-            {portalPending ? 'Opening portal…' : cta}
+            {portalPending ? t('billing.openingPortal') : cta}
           </Button>
         ) : null}
 

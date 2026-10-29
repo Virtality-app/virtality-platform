@@ -17,6 +17,7 @@ import {
   startDefaultSubscriptionCheckout,
   type DefaultCheckoutUpgradeInput,
 } from './subscription-checkout'
+import type { NotifyMessage } from './notify-message'
 
 export type ConsoleBetterAuthBillingUpgradeFn = (
   input: DefaultCheckoutUpgradeInput,
@@ -52,16 +53,22 @@ export type ConsoleBetterAuthBilling = {
 }
 
 /** Clinician toast after a successful period-end Default interval schedule. */
-export const CYCLE_PLAN_CHANGE_SCHEDULED_TOAST =
-  'Plan change scheduled. It starts at your next billing cycle.'
+export const CYCLE_PLAN_CHANGE_SCHEDULED_TOAST: NotifyMessage = {
+  key: 'billing.toast.planChangeScheduled',
+  ns: 'user',
+}
 
 /** Clinician toast after releasing a scheduled period-end plan change. */
-export const CANCEL_SCHEDULE_RESTORE_TOAST =
-  'Scheduled plan change canceled. You stay on your current plan.'
+export const CANCEL_SCHEDULE_RESTORE_TOAST: NotifyMessage = {
+  key: 'billing.toast.scheduleCanceled',
+  ns: 'user',
+}
 
 /** Clinician toast after undoing cancel-at-period-end. */
-export const UNDO_CANCELLATION_RESTORE_TOAST =
-  'Cancellation stopped. Your subscription will renew as usual.'
+export const UNDO_CANCELLATION_RESTORE_TOAST: NotifyMessage = {
+  key: 'billing.toast.cancellationStopped',
+  ns: 'user',
+}
 
 /**
  * Maps shared restore results onto the Console billing result shape (drops
@@ -83,9 +90,9 @@ function toConsoleBillingResult(
 export function notifyConsoleBillingAuthResult(
   result: ConsoleBetterAuthBillingResult,
   options: {
-    successToast?: string
+    successToast?: NotifyMessage
     toastError: (message: string) => void
-    toastSuccess: (message: string) => void
+    toastSuccess: (message: NotifyMessage) => void
   },
 ): ConsoleBetterAuthBillingResult {
   if (!result.ok) {

@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { CreditCard, Key, UserIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useClientT } from '@/i18n/use-client-t'
 import { useBillingFeatureEnabled } from '@/hooks/use-billing-feature'
 import {
   profileTabHref,
@@ -48,6 +49,7 @@ export function ProfileTabs({
   sessions,
 }: ProfileTabsProps) {
   const pathname = usePathname()
+  const { t } = useClientT(['user', 'common'])
   const billingEnabled = useBillingFeatureEnabled()
   const activeTab = resolveProfileTab(requestedTab, billingEnabled)
 
@@ -56,17 +58,17 @@ export function ProfileTabs({
       <TabsList className='w-full gap-2'>
         <ProfileTabLink tab='info' pathname={pathname}>
           <UserIcon />
-          Info
+          {t('tabs.info')}
         </ProfileTabLink>
         {billingEnabled ? (
           <ProfileTabLink tab='billing' pathname={pathname}>
             <CreditCard />
-            Billing
+            {t('tabs.billing')}
           </ProfileTabLink>
         ) : null}
         <ProfileTabLink tab='sessions' pathname={pathname}>
           <Key />
-          Sessions
+          {t('tabs.sessions')}
         </ProfileTabLink>
       </TabsList>
       <TabsContent value='info'>{info}</TabsContent>

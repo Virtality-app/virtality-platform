@@ -6,6 +6,7 @@
 
 import { Badge } from '@virtality/ui/components/badge'
 import { Button } from '@virtality/ui/components/button'
+import { useClientT } from '@/i18n/use-client-t'
 
 export function PendingPromoHoldRow({
   code,
@@ -16,6 +17,7 @@ export function PendingPromoHoldRow({
   canceling: boolean
   onCancel: () => void
 }) {
+  const { t } = useClientT(['user', 'common'])
   return (
     <div className='flex flex-wrap items-center justify-between gap-3 rounded-lg border border-zinc-200 px-3 py-2.5 dark:border-zinc-800'>
       <div className='flex flex-wrap items-center gap-2'>
@@ -23,7 +25,7 @@ export function PendingPromoHoldRow({
           {code}
         </Badge>
         <span className='text-sm text-zinc-600 dark:text-zinc-400'>
-          Saved for Checkout
+          {t('billing.promo.savedForCheckout')}
         </span>
       </div>
       <Button
@@ -33,7 +35,7 @@ export function PendingPromoHoldRow({
         disabled={canceling}
         onClick={onCancel}
       >
-        {canceling ? 'Canceling…' : 'Cancel'}
+        {canceling ? t('billing.action.canceling') : t('common:btn.cancel')}
       </Button>
     </div>
   )

@@ -8,14 +8,17 @@ import { CardContent, CardFooter } from '@virtality/ui/components/card'
 import { FieldGroup } from '@/components/ui/field'
 import { useORPC, useStartPasswordChange } from '@virtality/react-query'
 import { useQueryClient } from '@tanstack/react-query'
+import { useClientT } from '@/i18n/use-client-t'
 import { ControllerField } from './controller-field'
 import {
   PasswordFormSchema,
-  passwordFormField,
+  getPasswordFormField,
   type PasswordForm,
 } from './profile-info-form'
 
 export const PasswordField = () => {
+  const { t } = useClientT(['user', 'common'])
+  const passwordFormField = getPasswordFormField(t)
   const orpc = useORPC()
   const queryClient = useQueryClient()
   const changePasswordForm = useForm<PasswordForm>({
@@ -32,11 +35,11 @@ export const PasswordField = () => {
       await queryClient.invalidateQueries({
         queryKey: orpc.pendingPasswordChange.getActive.key(),
       })
-      notify.success('Check your email to approve the password change.')
+      notify.success({ key: 'profile.toast.passwordChangeStarted', ns: 'user' })
     },
     onError: (error) => {
       console.error(error)
-      notify.error('Failed to start password change')
+      notify.error({ key: 'profile.toast.passwordChangeFailed', ns: 'user' })
     },
   })
 
@@ -95,7 +98,7 @@ export const PasswordField = () => {
           className='ml-auto'
           disabled={!changePasswordForm.formState.isDirty || isPending}
         >
-          {isPending ? 'Sending...' : 'Change'}
+          {isPending ? t('profile.sending') : t('profile.change')}
         </Button>
       </CardFooter>
     </form>

@@ -19,10 +19,10 @@ import {
   useSavePendingPromotionCode,
 } from '@virtality/react-query'
 import { authClient } from '@/auth-client'
+import { useBillingCopy } from './use-billing-copy'
 import { useConsoleBillingAuth } from '@/hooks/use-console-billing-auth'
 import { useLiveEntitlementStanding } from '@/hooks/use-live-entitlement-standing'
 import {
-  BILLING_DISCOUNT_TIMING_COPY,
   DEFAULT_PLAN_PRODUCT_NAME_FALLBACK,
   billingCatalogMinor,
   billingCatalogPrices,
@@ -48,7 +48,6 @@ import {
   UNDO_CANCELLATION_RESTORE_TOAST,
 } from '@/lib/console-better-auth-billing'
 import {
-  formatAccessCodeAppliedMessage,
   isProfileBillingAccessCode,
   readAccessCodePrefill,
   TRIAL_WELCOME_PATH,
@@ -56,13 +55,6 @@ import {
 
 const STANDING_REFETCH_ATTEMPTS = 5
 const STANDING_REFETCH_DELAY_MS = 250
-
-function redeemSuccessCopy(promotionCode: string, replaced: boolean): string {
-  if (replaced) {
-    return `Promotion Code ${promotionCode} applied (replaced previous discount). ${BILLING_DISCOUNT_TIMING_COPY}`
-  }
-  return `Promotion Code ${promotionCode} applied. ${BILLING_DISCOUNT_TIMING_COPY}`
-}
 
 function errorMessage(error: unknown, fallback: string): string {
   return error instanceof Error ? error.message : fallback
@@ -78,6 +70,8 @@ function readInitialClientSearch<T>(
 
 export function useBillingTab() {
   const router = useRouter()
+  const copy = useBillingCopy()
+  const { t } = copy
   const { data: session } = authClient.useSession()
   const standingQuery = useLiveEntitlementStanding()
   const catalogQuery = useConsoleBillingCatalog()
@@ -151,20 +145,21 @@ export function useBillingTab() {
     (session?.user as { stripeCustomerId?: string | null } | undefined)
       ?.stripeCustomerId,
   )
-  const cta = profileBillingPrimaryCtaLabel(standing)
+  const cta = profileBillingPrimaryCtaLabel(copy, standing)
   const showPlanCardCheckout = profileBillingShowsPlanCardCheckout(
     standing,
     hasStripeCustomer,
   )
   const planCardActionFor = (interval: BillingInterval) =>
-    resolveProfileBillingCardAction(standing, hasStripeCustomer, interval)
+    resolveProfileBillingCardAction(copy, standing, hasStripeCustomer, interval)
   const pendingCancellationBanner = profileBillingPendingCancellationBanner(
+    copy,
     standing,
     productName,
   )
   const pendingPlanChangeBanner = pendingCancellationBanner
     ? null
-    : profileBillingPendingPlanChangeBanner(standing)
+    : profileBillingPendingPlanChangeBanner(copy, standing)
   const upgradeConfirmCopy =
     upgradeConfirmInterval == null
       ? null
@@ -185,9 +180,12 @@ export function useBillingTab() {
   const pendingHold = pendingHoldQuery.data ?? null
   const pendingHoldCode = pendingHold?.code ?? null
   const pendingHoldSuccessMessage = pendingHold
-    ? hasEligibleSubscription
-      ? `Promotion Code ${pendingHold.code} applied.`
-      : `Promotion Code ${pendingHold.code} saved for Checkout.`
+    ? t(
+        hasEligibleSubscription
+          ? 'billing.promo.holdApplied'
+          : 'billing.promo.holdSaved',
+        { code: pendingHold.code },
+      )
     : null
   const promoSuccessBanner = redeemSuccessMessage ?? pendingHoldSuccessMessage
 
@@ -239,6 +237,7 @@ export function useBillingTab() {
   function handlePlanCardCheckout(interval: BillingInterval) {
     setSelectedInterval(interval)
     const action: ProfileBillingCardAction = resolveProfileBillingCardAction(
+      copy,
       standing,
       hasStripeCustomer,
       interval,
@@ -324,7 +323,9 @@ export function useBillingTab() {
       try {
         const result = await accessCodeMutation.mutateAsync({ code: trimmed })
         setRemoveSuccess(false)
-        setRedeemSuccessMessage(formatAccessCodeAppliedMessage(result))
+        setRedeemSuccessMessage(
+          `${t('billing.accessCode.applied')} ${t(`billing.accessCode.${result.effect}`)}`,
+        )
         await refetchStandingUntil((data) => data != null)
         setPromoCode('')
         if (result.effect === 'trial_grant_created') {
@@ -332,7 +333,7 @@ export function useBillingTab() {
         }
         return true
       } catch (error) {
-        setRedeemError(errorMessage(error, 'Could not apply that Access Code.'))
+        setRedeemError(errorMessage(error, t('billing.accessCode.applyFailed')))
         return false
       }
     }
@@ -349,13 +350,19 @@ export function useBillingTab() {
       })
       setRemoveSuccess(false)
       setRedeemSuccessMessage(
-        redeemSuccessCopy(result.promotionCode, result.replaced),
+        t(
+          result.replaced
+            ? 'billing.promo.appliedReplaced'
+            : 'billing.promo.appliedPlain',
+          {
+            code: result.promotionCode,
+            timing: t('billing.discountTiming'),
+          },
+        ),
       )
       return true
     } catch (error) {
-      setRedeemError(
-        errorMessage(error, 'Could not apply that Promotion Code.'),
-      )
+      setRedeemError(errorMessage(error, t('billing.promo.applyFailed')))
       return false
     }
   }
@@ -367,9 +374,7 @@ export function useBillingTab() {
       setRemoveSuccess(true)
       setRedeemSuccessMessage(null)
     } catch (error) {
-      setRedeemError(
-        errorMessage(error, 'Could not remove that Promotion Code.'),
-      )
+      setRedeemError(errorMessage(error, t('billing.promo.removeFailed')))
       setRemoveOpen(false)
     }
   }
@@ -380,9 +385,7 @@ export function useBillingTab() {
       await cancelPendingMutation.mutateAsync(undefined)
       setRedeemSuccessMessage(null)
     } catch (error) {
-      setRedeemError(
-        errorMessage(error, 'Could not cancel that Promotion Code.'),
-      )
+      setRedeemError(errorMessage(error, t('billing.promo.cancelFailed')))
     }
   }
 

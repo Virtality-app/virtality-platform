@@ -1,0 +1,217 @@
+{
+  "tabs": {
+    "info": "Info",
+    "billing": "Billing",
+    "sessions": "Sessions"
+  },
+  "profile": {
+    "fields": {
+      "image": {
+        "label": "Image",
+        "description": "Click on the photo to upload a custom one.",
+        "hint": "The image will be used as your profile picture."
+      },
+      "name": {
+        "label": "Name",
+        "placeholder": "John Doe",
+        "description": "Please enter your full name.",
+        "hint": "Please use 32 characters at maximum."
+      },
+      "phoneNumber": {
+        "description": "Please enter your phone number.",
+        "hint": "A code will be sent to verify."
+      },
+      "email": {
+        "description": "Your primary email will be used for account-related notifications.",
+        "hint": "Emails must be verified to be used as primary email."
+      },
+      "currentPassword": {
+        "label": "Current Password",
+        "description": "Please enter your current password.",
+        "hint": "Please enter your current password."
+      },
+      "newPassword": {
+        "label": "New Password",
+        "description": "Please enter your new password.",
+        "hint": "Please enter your new password."
+      },
+      "setPassword": {
+        "description": "Choose a password for email and password sign-in.",
+        "hint": "Password must be {{min}}-{{max}} characters with upper, lower, and digit."
+      }
+    },
+    "imageAlt": "Profile picture",
+    "clearChanges": "Clear Changes",
+    "saving": "Saving...",
+    "sending": "Sending...",
+    "change": "Change",
+    "setPassword": "Set Password",
+    "noPassword": "You have not set a password yet. Add one to sign in with email and password.",
+    "signInMethods": "Sign-in methods",
+    "unlink": "Unlink",
+    "password": {
+      "title": "Password",
+      "setup": "Password setup",
+      "change": "Password change"
+    },
+    "deleteAccount": {
+      "title": "Delete Account",
+      "description": "Permanently remove your Personal Account and all of its contents from Virtality. This action is not reversible, so please continue with caution.",
+      "starting": "Starting...",
+      "action": "Delete account"
+    },
+    "pending": {
+      "approval": "{{what}} is pending approval. Check {{email}} for the approval email.",
+      "accountDeletionApproval": "Account deletion is pending approval. Check {{email}} for the approval email.",
+      "expires": "The approval link expires at {{date}}.",
+      "cancelling": "Cancelling...",
+      "cancelRequest": "Cancel request",
+      "resending": "Resending...",
+      "resendEmail": "Resend email"
+    },
+    "toast": {
+      "updated": "Profile updated successfully",
+      "updateFailed": "Failed to update profile",
+      "emailVerification": "Please check your new email for a verification link.",
+      "emailUpdateFailed": "Failed to update email",
+      "deletionStarted": "Check your email to approve account deletion.",
+      "deletionStartFailed": "Failed to start account deletion",
+      "approvalResent": "Approval email resent.",
+      "approvalResendFailed": "Failed to resend approval email",
+      "deletionCancelled": "Account deletion request cancelled.",
+      "deletionCancelFailed": "Failed to cancel pending deletion request",
+      "passwordSetupCancelled": "Password setup request cancelled.",
+      "passwordChangeCancelled": "Password change request cancelled.",
+      "passwordCancelFailed": "Failed to cancel pending password request",
+      "passwordChangeStarted": "Check your email to approve the password change.",
+      "passwordChangeFailed": "Failed to start password change",
+      "passwordSetupStarted": "Check your email to approve password setup.",
+      "passwordSetupFailed": "Failed to start password setup",
+      "accountUnlinked": "Account unlinked successfully",
+      "accountUnlinkFailed": "Failed to unlink account"
+    }
+  },
+  "sessions": {
+    "other": "Other Active Sessions",
+    "revokeAll": "Revoke All Sessions",
+    "none": "No other sessions",
+    "current": "Current Session",
+    "created": "Created: {{date}}",
+    "expires": "Expires: {{date}}",
+    "unknownDevice": "Unknown Device"
+  },
+  "billing": {
+    "title": "Billing",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "annual": "Annual",
+    "currentPlan": "current plan",
+    "codeFieldLabel": "Discount Code",
+    "unavailable": "Billing prices are unavailable right now. Try again shortly.",
+    "softUnavailable": "Discount details unavailable right now. Showing catalog list prices only; check Manage in portal or try again shortly.",
+    "discountTiming": "Takes effect on the next invoice.",
+    "staffRedeemBlock": "A staff-applied Discount is already on this subscription, so a Promotion Code cannot be applied. Contact support if you expected a change.",
+    "removeNoRestore": "This will not restore a prior staff or campaign discount.",
+    "manageBilling": "Manage billing",
+    "openingPortal": "Opening portal…",
+    "action": {
+      "subscribe": "Subscribe",
+      "renew": "Renew",
+      "upgrade": "Upgrade",
+      "downgrade": "Downgrade",
+      "cancelUpgrade": "Cancel Upgrade",
+      "cancelDowngrade": "Cancel Downgrade",
+      "dontCancel": "Don't cancel",
+      "active": "Active",
+      "upgrading": "Upgrading…",
+      "downgrading": "Downgrading…",
+      "restoring": "Restoring…",
+      "canceling": "Canceling…",
+      "startingCheckout": "Starting Checkout…"
+    },
+    "pendingPlanChange": {
+      "withDate": "Switching to {{interval}} on {{date}}. Keep your current plan until then. Payment starts at that renewal.",
+      "withoutDate": "Switching to {{interval}} at your next billing cycle. Keep your current plan until then."
+    },
+    "pendingCancellation": {
+      "withDate": "Your subscription ends on {{date}}. You'll keep {{product}} access until then.",
+      "withoutDate": "Your subscription ends at the next billing cycle. You'll keep {{product}} access until then."
+    },
+    "confirm": {
+      "switchTitle": "Switch to {{interval}}?",
+      "switchBodyWithDate": "Payment starts at your next billing cycle on {{date}}. Keep using {{current}} until then.",
+      "switchBody": "Payment starts at your next billing cycle. Keep using {{current}} until then.",
+      "cancelSwitchTitle": "Cancel switch to {{interval}}?",
+      "cancelSwitchBody": "You'll stay on your current plan and renew as usual.",
+      "keepScheduled": "Keep scheduled change",
+      "keepCurrent": "Keep current plan"
+    },
+    "status": {
+      "expired": "Expired",
+      "trialInProgress": "Trial in progress",
+      "noPlan": "No plan",
+      "productYearly": "{{product}} · Yearly",
+      "productMonthly": "{{product}} · Monthly",
+      "canceled": "Subscription canceled",
+      "ended": "Subscription ended"
+    },
+    "statusDetail": {
+      "ends": "Ends {{date}}",
+      "renews": "Renews {{date}}",
+      "renewsSwitching": "Renews {{date}} · switching to {{interval}}",
+      "active": "Your {{product}} access is active.",
+      "choose": "Choose Monthly or Annual {{product}} plan, then continue to Checkout."
+    },
+    "toast": {
+      "planChangeScheduled": "Plan change scheduled. It starts at your next billing cycle.",
+      "scheduleCanceled": "Scheduled plan change canceled. You stay on your current plan.",
+      "cancellationStopped": "Cancellation stopped. Your subscription will renew as usual.",
+      "checkoutBusy": "Checkout already starting",
+      "checkoutFailed": "Failed to start Checkout",
+      "scheduleBusy": "Plan change already scheduling",
+      "scheduleFailed": "Failed to schedule plan change",
+      "restoreBusy": "Restore already in progress",
+      "portalBusy": "Portal already opening"
+    },
+    "promo": {
+      "applied": "Applied",
+      "appliedOnSubscription": "Discount Code applied on your subscription",
+      "removeDiscount": "Remove discount",
+      "removing": "Removing…",
+      "savedForCheckout": "Saved for Checkout",
+      "checking": "Checking current discount…",
+      "redeemUnavailable": "Promotion Code redeem is unavailable until discount details load. You can still apply an Access Code below.",
+      "enterCode": "Enter code",
+      "entryLabel": "Promotion or Access Code",
+      "apply": "Apply",
+      "applyCode": "Apply Code",
+      "applying": "Applying…",
+      "enterNewCode": "You can enter a new code below when ready.",
+      "replaceTitle": "Replace current discount?",
+      "replaceBody": "Applying {{code}} will replace {{current}}.",
+      "replaceBodyNoCurrent": "Applying {{code}} will replace your current discount.",
+      "replaceDiscount": "Replace discount",
+      "removeTitle": "Remove Promotion Code?",
+      "removeBodyWithCode": "This removes Promotion Code {{code}} from your subscription.",
+      "removeBody": "This removes the Promotion Code discount from your subscription.",
+      "removeNextInvoice": "Your next invoice will be at catalog list price. {{timing}}",
+      "removeSuccess": "Promotion Code removed",
+      "removeSuccessBody": "Catalog list prices apply on your next invoice. {{timing}}",
+      "dismiss": "Dismiss",
+      "appliedReplaced": "Promotion Code {{code}} applied (replaced previous discount). {{timing}}",
+      "appliedPlain": "Promotion Code {{code}} applied. {{timing}}",
+      "holdApplied": "Promotion Code {{code}} applied.",
+      "holdSaved": "Promotion Code {{code}} saved for Checkout.",
+      "applyFailed": "Could not apply that Promotion Code.",
+      "removeFailed": "Could not remove that Promotion Code.",
+      "cancelFailed": "Could not cancel that Promotion Code."
+    },
+    "accessCode": {
+      "applied": "Access Code applied.",
+      "applyFailed": "Could not apply that Access Code.",
+      "free_grant_created": "You now have permanent access to explore the platform. This doesn't include VR programs.",
+      "trial_grant_created": "Your trial access has started.",
+      "already_entitled": "You're already on a qualifying plan."
+    }
+  }
+}

@@ -14,7 +14,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { BILLING_DISCOUNT_TIMING_COPY } from '@/lib/profile-billing'
+import { useClientT } from '@/i18n/use-client-t'
+import { translateRich } from '@/i18n/translate-rich'
 
 type RedeemReplaceConfirmDialogProps = {
   open: boolean
@@ -33,39 +34,42 @@ export function RedeemReplaceConfirmDialog({
   onConfirm,
   confirming = false,
 }: RedeemReplaceConfirmDialogProps) {
+  const { t } = useClientT(['user', 'common'])
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent showCloseButton={!confirming}>
         <DialogHeader>
-          <DialogTitle>Replace current discount?</DialogTitle>
+          <DialogTitle>{t('billing.promo.replaceTitle')}</DialogTitle>
           <DialogDescription asChild>
             <div className='space-y-3 pt-1 text-sm text-zinc-500'>
               <p>
-                Applying{' '}
-                <span className='font-mono font-medium text-zinc-800 dark:text-zinc-200'>
-                  {code}
-                </span>{' '}
-                will replace
-                {currentLabel ? (
-                  <>
-                    {' '}
-                    <span className='font-medium text-zinc-800 dark:text-zinc-200'>
-                      {currentLabel}
-                    </span>
-                  </>
-                ) : (
-                  ' your current discount'
+                {translateRich(
+                  t,
+                  currentLabel
+                    ? 'billing.promo.replaceBody'
+                    : 'billing.promo.replaceBodyNoCurrent',
+                  {
+                    code: (
+                      <span className='font-mono font-medium text-zinc-800 dark:text-zinc-200'>
+                        {code}
+                      </span>
+                    ),
+                    current: (
+                      <span className='font-medium text-zinc-800 dark:text-zinc-200'>
+                        {currentLabel}
+                      </span>
+                    ),
+                  },
                 )}
-                .
               </p>
-              <p>{BILLING_DISCOUNT_TIMING_COPY}</p>
+              <p>{t('billing.discountTiming')}</p>
             </div>
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <DialogClose asChild>
             <Button type='button' variant='outline' disabled={confirming}>
-              Cancel
+              {t('common:btn.cancel')}
             </Button>
           </DialogClose>
           <Button
@@ -74,7 +78,9 @@ export function RedeemReplaceConfirmDialog({
             disabled={confirming}
             onClick={onConfirm}
           >
-            {confirming ? 'Applying…' : 'Replace discount'}
+            {confirming
+              ? t('billing.promo.applying')
+              : t('billing.promo.replaceDiscount')}
           </Button>
         </DialogFooter>
       </DialogContent>

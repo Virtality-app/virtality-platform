@@ -15,5 +15,10 @@
   "sex_required": "Sex is required.",
   "language_required": "Language is required.",
   "model_required": "Select a model.",
-  "platform_required": "Please select a platform."
+  "platform_required": "Please select a platform.",
+  "current_password_required": "Current password is required.",
+  "password_length": "• Password must be between {{min}} and {{max}} characters long.",
+  "password_uppercase": "• Password must contain at least one uppercase letter.",
+  "password_lowercase": "• Password must contain at least one lowercase letter.",
+  "password_digit": "• Password must contain at least one digit."
 }

@@ -5,6 +5,7 @@ import {
   DEFAULT_BILLING_CATALOG_SANDBOX,
   DEFAULT_SUBSCRIPTION_PLAN,
 } from '@virtality/shared/utils'
+import { createCatalogTranslate } from '@/i18n/catalog-translate'
 import {
   buildPendingCouponRewrite,
   buildBillingCompareAtCardDisplay,
@@ -18,14 +19,13 @@ import {
   profileBillingStatusHeadline,
   resolveProfileBillingCardAction,
   splitCatalogPriceLabel,
+  type BillingCopy,
   type BillingStandingView,
-  PAID_ACTIVE_LABEL,
-  PAID_CANCELLATION_UNDO_LABEL,
-  PAID_INTERVAL_CANCEL_UPGRADE_LABEL,
-  PAID_INTERVAL_UPGRADE_LABEL,
   profileBillingPendingCancellationBanner,
   profileBillingPendingPlanChangeBanner,
 } from './profile-billing.js'
+
+const copy: BillingCopy = { t: createCatalogTranslate('user'), locale: 'en' }
 
 const base: BillingStandingView = {
   entitled: false,
@@ -42,7 +42,7 @@ const base: BillingStandingView = {
 describe('profileBillingPrimaryCtaLabel', () => {
   it('shows Manage billing only for entitled paid Default seats', () => {
     expect(
-      profileBillingPrimaryCtaLabel({
+      profileBillingPrimaryCtaLabel(copy, {
         ...base,
         entitled: true,
         status: 'active',
@@ -53,7 +53,7 @@ describe('profileBillingPrimaryCtaLabel', () => {
 
   it('hides the centralized CTA for Free and trialing clinicians', () => {
     expect(
-      profileBillingPrimaryCtaLabel({
+      profileBillingPrimaryCtaLabel(copy, {
         ...base,
         entitled: true,
         status: 'trialing',
@@ -61,7 +61,7 @@ describe('profileBillingPrimaryCtaLabel', () => {
         billingPathEstablished: true,
       }),
     ).toBeNull()
-    expect(profileBillingPrimaryCtaLabel(base)).toBeNull()
+    expect(profileBillingPrimaryCtaLabel(copy, base)).toBeNull()
   })
 })
 
@@ -136,7 +136,7 @@ describe('profileBillingShowsPlanCardCheckout', () => {
 
 describe('resolveProfileBillingCardAction', () => {
   it('uses Subscribe checkout when a Customer exists without Billing Path', () => {
-    expect(resolveProfileBillingCardAction(base, true, 'month')).toEqual({
+    expect(resolveProfileBillingCardAction(copy, base, true, 'month')).toEqual({
       kind: 'checkout',
       label: 'Subscribe',
       pendingLabel: 'Starting Checkout…',
@@ -146,6 +146,7 @@ describe('resolveProfileBillingCardAction', () => {
   it('uses Subscribe checkout after Billing Path without paid history', () => {
     expect(
       resolveProfileBillingCardAction(
+        copy,
         { ...base, billingPathEstablished: true },
         true,
         'year',
@@ -160,6 +161,7 @@ describe('resolveProfileBillingCardAction', () => {
   it('uses Renew checkout after paid history', () => {
     expect(
       resolveProfileBillingCardAction(
+        copy,
         {
           ...base,
           billingPathEstablished: true,
@@ -176,11 +178,13 @@ describe('resolveProfileBillingCardAction', () => {
   })
 
   it('uses Subscribe checkout when no Stripe Customer is linked', () => {
-    expect(resolveProfileBillingCardAction(base, false, 'month')).toEqual({
-      kind: 'checkout',
-      label: 'Subscribe',
-      pendingLabel: 'Starting Checkout…',
-    })
+    expect(resolveProfileBillingCardAction(copy, base, false, 'month')).toEqual(
+      {
+        kind: 'checkout',
+        label: 'Subscribe',
+        pendingLabel: 'Starting Checkout…',
+      },
+    )
   })
 
   it('schedules Upgrade on the other paid Default interval with confirm copy', () => {
@@ -192,19 +196,21 @@ describe('resolveProfileBillingCardAction', () => {
       billingInterval: 'month',
       clockEnd: '2026-09-10T12:00:00.000Z',
     }
-    expect(resolveProfileBillingCardAction(standing, true, 'month')).toEqual({
+    expect(
+      resolveProfileBillingCardAction(copy, standing, true, 'month'),
+    ).toEqual({
       kind: 'active',
-      label: PAID_ACTIVE_LABEL,
-      pendingLabel: PAID_ACTIVE_LABEL,
+      label: 'Active',
+      pendingLabel: 'Active',
     })
-    const year = resolveProfileBillingCardAction(standing, true, 'year')
+    const year = resolveProfileBillingCardAction(copy, standing, true, 'year')
     expect(year.kind).toBe('schedule')
-    expect(year.label).toBe(PAID_INTERVAL_UPGRADE_LABEL)
+    expect(year.label).toBe('Upgrade')
     expect(year.pendingLabel).toBe('Upgrading…')
     expect(year).toMatchObject({
       confirm: {
         title: 'Switch to Yearly?',
-        confirmLabel: PAID_INTERVAL_UPGRADE_LABEL,
+        confirmLabel: 'Upgrade',
       },
     })
     expect(year.kind === 'schedule' && year.confirm.body).toMatch(
@@ -222,19 +228,23 @@ describe('resolveProfileBillingCardAction', () => {
       hasPendingPlanChange: true,
       clockEnd: '2026-09-10T12:00:00.000Z',
     }
-    expect(resolveProfileBillingCardAction(standing, true, 'month')).toEqual({
+    expect(
+      resolveProfileBillingCardAction(copy, standing, true, 'month'),
+    ).toEqual({
       kind: 'active',
-      label: PAID_ACTIVE_LABEL,
-      pendingLabel: PAID_ACTIVE_LABEL,
+      label: 'Active',
+      pendingLabel: 'Active',
     })
-    expect(resolveProfileBillingCardAction(standing, true, 'year')).toEqual({
+    expect(
+      resolveProfileBillingCardAction(copy, standing, true, 'year'),
+    ).toEqual({
       kind: 'cancel_schedule',
-      label: PAID_INTERVAL_CANCEL_UPGRADE_LABEL,
+      label: 'Cancel Upgrade',
       pendingLabel: 'Canceling…',
       confirm: {
         title: 'Cancel switch to Yearly?',
         body: "You'll stay on your current plan and renew as usual.",
-        confirmLabel: PAID_INTERVAL_CANCEL_UPGRADE_LABEL,
+        confirmLabel: 'Cancel Upgrade',
       },
     })
   })
@@ -248,7 +258,7 @@ describe('resolveProfileBillingCardAction', () => {
       billingInterval: 'year',
       clockEnd: '2026-09-10T12:00:00.000Z',
     }
-    const month = resolveProfileBillingCardAction(standing, true, 'month')
+    const month = resolveProfileBillingCardAction(copy, standing, true, 'month')
     expect(month.kind).toBe('schedule')
     expect(month.label).toBe('Downgrade')
     expect(month.pendingLabel).toBe('Downgrading…')
@@ -264,7 +274,9 @@ describe('resolveProfileBillingCardAction', () => {
       hasPendingPlanChange: true,
       clockEnd: '2026-09-10T12:00:00.000Z',
     }
-    expect(resolveProfileBillingCardAction(standing, true, 'month')).toEqual({
+    expect(
+      resolveProfileBillingCardAction(copy, standing, true, 'month'),
+    ).toEqual({
       kind: 'cancel_schedule',
       label: 'Cancel Downgrade',
       pendingLabel: 'Canceling…',
@@ -286,14 +298,18 @@ describe('resolveProfileBillingCardAction', () => {
       cancelAtPeriodEnd: true,
       clockEnd: '2026-09-10T12:00:00.000Z',
     }
-    expect(resolveProfileBillingCardAction(standing, true, 'month')).toEqual({
+    expect(
+      resolveProfileBillingCardAction(copy, standing, true, 'month'),
+    ).toEqual({
       kind: 'restore_cancellation',
-      label: PAID_CANCELLATION_UNDO_LABEL,
+      label: "Don't cancel",
       pendingLabel: 'Restoring…',
     })
-    expect(resolveProfileBillingCardAction(standing, true, 'year')).toEqual({
+    expect(
+      resolveProfileBillingCardAction(copy, standing, true, 'year'),
+    ).toEqual({
       kind: 'checkout',
-      label: PAID_INTERVAL_UPGRADE_LABEL,
+      label: 'Upgrade',
       pendingLabel: 'Upgrading…',
     })
   })
@@ -301,7 +317,7 @@ describe('resolveProfileBillingCardAction', () => {
 
 describe('profileBillingPendingPlanChangeBanner', () => {
   it('names the target plan and renewal when a switch is scheduled', () => {
-    const banner = profileBillingPendingPlanChangeBanner({
+    const banner = profileBillingPendingPlanChangeBanner(copy, {
       ...base,
       entitled: true,
       status: 'active',
@@ -317,7 +333,7 @@ describe('profileBillingPendingPlanChangeBanner', () => {
 
 describe('profileBillingPendingCancellationBanner', () => {
   it('warns that access ends at the next cycle', () => {
-    const banner = profileBillingPendingCancellationBanner({
+    const banner = profileBillingPendingCancellationBanner(copy, {
       ...base,
       entitled: true,
       status: 'active',
@@ -332,7 +348,7 @@ describe('profileBillingPendingCancellationBanner', () => {
 
   it('is absent when cancel-at-period-end is not scheduled', () => {
     expect(
-      profileBillingPendingCancellationBanner({
+      profileBillingPendingCancellationBanner(copy, {
         ...base,
         entitled: true,
         status: 'active',
@@ -408,7 +424,7 @@ describe('profileBillingIsLapsedAccessGateTrial', () => {
 describe('profileBillingStatusHeadline', () => {
   it('describes active, trial, and empty seats', () => {
     expect(
-      profileBillingStatusHeadline({
+      profileBillingStatusHeadline(copy, {
         ...base,
         entitled: true,
         status: 'active',
@@ -417,7 +433,7 @@ describe('profileBillingStatusHeadline', () => {
       }),
     ).toBe('Default · Yearly')
     expect(
-      profileBillingStatusHeadline({
+      profileBillingStatusHeadline(copy, {
         ...base,
         entitled: true,
         status: 'trialing',
@@ -425,19 +441,19 @@ describe('profileBillingStatusHeadline', () => {
       }),
     ).toBe('Trial in progress')
     expect(
-      profileBillingStatusHeadline({
+      profileBillingStatusHeadline(copy, {
         ...base,
         entitled: false,
         status: 'trialing',
         plan: null,
       }),
     ).toBe('Expired')
-    expect(profileBillingStatusHeadline(base)).toBe('No plan')
+    expect(profileBillingStatusHeadline(copy, base)).toBe('No plan')
   })
 
   it('groups granted and revoked Access Gates with no gate as No plan', () => {
     expect(
-      profileBillingStatusHeadline({
+      profileBillingStatusHeadline(copy, {
         ...base,
         entitled: false,
         status: 'granted',
@@ -445,7 +461,7 @@ describe('profileBillingStatusHeadline', () => {
       }),
     ).toBe('No plan')
     expect(
-      profileBillingStatusHeadline({
+      profileBillingStatusHeadline(copy, {
         ...base,
         entitled: false,
         status: 'revoked',
@@ -457,11 +473,11 @@ describe('profileBillingStatusHeadline', () => {
 
 describe('profileBillingStatusDetail', () => {
   it('prompts interval choice when there is no live clock', () => {
-    expect(profileBillingStatusDetail(base)).toMatch(/Monthly or Annual/)
+    expect(profileBillingStatusDetail(copy, base)).toMatch(/Monthly or Annual/)
   })
 
   it('uses the generic checkout prompt for lapsed Access Gate trials', () => {
-    const detail = profileBillingStatusDetail({
+    const detail = profileBillingStatusDetail(copy, {
       ...base,
       entitled: false,
       status: 'trialing',
@@ -474,7 +490,7 @@ describe('profileBillingStatusDetail', () => {
 
   it('mentions the scheduled target plan beside the renewal date', () => {
     expect(
-      profileBillingStatusDetail({
+      profileBillingStatusDetail(copy, {
         ...base,
         entitled: true,
         status: 'active',
@@ -488,7 +504,7 @@ describe('profileBillingStatusDetail', () => {
 
   it('says Ends when cancel-at-period-end is scheduled', () => {
     expect(
-      profileBillingStatusDetail({
+      profileBillingStatusDetail(copy, {
         ...base,
         entitled: true,
         status: 'active',
@@ -736,5 +752,45 @@ describe('buildBillingCompareAtCardDisplay', () => {
         current: splitCatalogPriceLabel(assigned.monthlyLabel).amount,
       },
     })
+  })
+})
+
+describe('billing copy with Greek selected', () => {
+  const el: BillingCopy = {
+    t: createCatalogTranslate('user', 'el'),
+    locale: 'el',
+  }
+  const paidYearly: BillingStandingView = {
+    ...base,
+    entitled: true,
+    status: 'active',
+    plan: DEFAULT_SUBSCRIPTION_PLAN,
+    billingInterval: 'year',
+    clockEnd: '2026-11-05T09:30:00Z',
+  }
+
+  it('words the status headline and detail in Greek', () => {
+    expect(profileBillingStatusHeadline(el, paidYearly, 'Pro')).toBe(
+      'Pro · Ετήσιο',
+    )
+    expect(profileBillingStatusDetail(el, paidYearly)).toMatch(
+      /^Ανανεώνεται 5 Νοε 2026/,
+    )
+  })
+
+  it('words plan-card actions in Greek', () => {
+    expect(
+      resolveProfileBillingCardAction(el, paidYearly, true, 'month'),
+    ).toMatchObject({ kind: 'schedule', label: 'Υποβάθμιση' })
+  })
+
+  it('words the pending cancellation banner in Greek', () => {
+    expect(
+      profileBillingPendingCancellationBanner(
+        el,
+        { ...paidYearly, cancelAtPeriodEnd: true },
+        'Pro',
+      ),
+    ).toMatch(/^Η συνδρομή σας λήγει στις 5 Νοε 2026/)
   })
 })

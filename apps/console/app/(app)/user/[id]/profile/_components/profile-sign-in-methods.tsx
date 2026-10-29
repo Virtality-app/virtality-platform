@@ -15,8 +15,10 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@virtality/ui/components/tooltip'
+import { useClientT } from '@/i18n/use-client-t'
 
 export const SignInMethods = () => {
+  const { t } = useClientT(['user', 'common'])
   const orpc = useORPC()
   const queryClient = useQueryClient()
   const { data: accounts } = useListAccounts()
@@ -26,7 +28,7 @@ export const SignInMethods = () => {
       providerId: account.providerId,
       fetchOptions: {
         onSuccess: () => {
-          notify.success('Account unlinked successfully')
+          notify.success({ key: 'profile.toast.accountUnlinked', ns: 'user' })
 
           queryClient.invalidateQueries({
             queryKey: orpc.account.list.key(),
@@ -34,7 +36,7 @@ export const SignInMethods = () => {
         },
         onError: (error) => {
           console.error(error)
-          notify.error('Failed to unlink account')
+          notify.error({ key: 'profile.toast.accountUnlinkFailed', ns: 'user' })
         },
       },
     })
@@ -43,7 +45,7 @@ export const SignInMethods = () => {
   return (
     <Field>
       <FieldSet>
-        <div className='text-xl font-bold'>Sign-in methods</div>
+        <div className='text-xl font-bold'>{t('profile.signInMethods')}</div>
         {accounts?.map((account) => {
           const provider = SOCIAL_PROVIDERS.find(
             (provider) => provider.name === account.providerId,
@@ -70,7 +72,7 @@ export const SignInMethods = () => {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent side='bottom'>
-                    Unlink
+                    {t('profile.unlink')}
                     <TooltipArrow className='dark:fill-white' />
                   </TooltipContent>
                 </Tooltip>

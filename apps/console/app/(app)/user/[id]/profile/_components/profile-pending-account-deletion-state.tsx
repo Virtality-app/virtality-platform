@@ -9,6 +9,8 @@ import {
   useResendPendingAccountDeletion,
 } from '@virtality/react-query'
 import { useQueryClient } from '@tanstack/react-query'
+import { useClientT } from '@/i18n/use-client-t'
+import { translateRich } from '@/i18n/translate-rich'
 import { invalidateActivePendingAccountDeletion } from './profile-info-form'
 
 export const PendingAccountDeletionState = ({
@@ -16,6 +18,7 @@ export const PendingAccountDeletionState = ({
 }: {
   pending: ActivePendingAccountDeletion
 }) => {
+  const { t, i18n } = useClientT(['user', 'common'])
   const orpc = useORPC()
   const queryClient = useQueryClient()
   const { destinationEmail, expiresAt } = pending
@@ -25,11 +28,11 @@ export const PendingAccountDeletionState = ({
     useResendPendingAccountDeletion({
       onSuccess: async () => {
         await invalidateActivePendingAccountDeletion(queryClient, orpc)
-        notify.success('Approval email resent.')
+        notify.success({ key: 'profile.toast.approvalResent', ns: 'user' })
       },
       onError: (error) => {
         console.error(error)
-        notify.error('Failed to resend approval email')
+        notify.error({ key: 'profile.toast.approvalResendFailed', ns: 'user' })
       },
     })
 
@@ -37,11 +40,14 @@ export const PendingAccountDeletionState = ({
     useCancelPendingAccountDeletion({
       onSuccess: async () => {
         await invalidateActivePendingAccountDeletion(queryClient, orpc)
-        notify.success('Account deletion request cancelled.')
+        notify.success({ key: 'profile.toast.deletionCancelled', ns: 'user' })
       },
       onError: (error) => {
         console.error(error)
-        notify.error('Failed to cancel pending deletion request')
+        notify.error({
+          key: 'profile.toast.deletionCancelFailed',
+          ns: 'user',
+        })
       },
     })
 
@@ -51,12 +57,14 @@ export const PendingAccountDeletionState = ({
     <>
       <CardContent className='space-y-2'>
         <p className='text-sm'>
-          Account deletion is pending approval. Check{' '}
-          <span className='font-medium'>{destinationEmail}</span> for the
-          approval email.
+          {translateRich(t, 'profile.pending.accountDeletionApproval', {
+            email: <span className='font-medium'>{destinationEmail}</span>,
+          })}
         </p>
         <p className='text-muted-foreground text-sm'>
-          The approval link expires at {expiry.toLocaleString()}.
+          {t('profile.pending.expires', {
+            date: expiry.toLocaleString(i18n.language),
+          })}
         </p>
       </CardContent>
       <CardFooter className='flex gap-2 border-t'>
@@ -66,7 +74,9 @@ export const PendingAccountDeletionState = ({
           disabled={isActionPending}
           onClick={() => cancel(undefined)}
         >
-          {isCancelling ? 'Cancelling...' : 'Cancel request'}
+          {isCancelling
+            ? t('profile.pending.cancelling')
+            : t('profile.pending.cancelRequest')}
         </Button>
         <Button
           type='button'
@@ -75,7 +85,9 @@ export const PendingAccountDeletionState = ({
           disabled={isActionPending}
           onClick={() => resend(undefined)}
         >
-          {isResending ? 'Resending...' : 'Resend email'}
+          {isResending
+            ? t('profile.pending.resending')
+            : t('profile.pending.resendEmail')}
         </Button>
       </CardFooter>
     </>

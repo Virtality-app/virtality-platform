@@ -9,16 +9,18 @@ import {
   useResendPendingPasswordChange,
 } from '@virtality/react-query'
 import { useQueryClient } from '@tanstack/react-query'
+import { useClientT } from '@/i18n/use-client-t'
+import { translateRich } from '@/i18n/translate-rich'
 import { invalidateActivePendingPasswordChange } from './profile-info-form'
 
 const PENDING_PASSWORD_KIND_LABEL = {
-  SETUP: 'Password setup',
-  CHANGE: 'Password change',
+  SETUP: 'profile.password.setup',
+  CHANGE: 'profile.password.change',
 } as const satisfies Record<ActivePendingPasswordChange['kind'], string>
 
 const PENDING_PASSWORD_CANCEL_SUCCESS = {
-  SETUP: 'Password setup request cancelled.',
-  CHANGE: 'Password change request cancelled.',
+  SETUP: 'profile.toast.passwordSetupCancelled',
+  CHANGE: 'profile.toast.passwordChangeCancelled',
 } as const satisfies Record<ActivePendingPasswordChange['kind'], string>
 
 export const PendingPasswordState = ({
@@ -26,6 +28,7 @@ export const PendingPasswordState = ({
 }: {
   pending: ActivePendingPasswordChange
 }) => {
+  const { t, i18n } = useClientT(['user', 'common'])
   const orpc = useORPC()
   const queryClient = useQueryClient()
   const { kind, destinationEmail, expiresAt } = pending
@@ -35,11 +38,11 @@ export const PendingPasswordState = ({
     useResendPendingPasswordChange({
       onSuccess: async () => {
         await invalidateActivePendingPasswordChange(queryClient, orpc)
-        notify.success('Approval email resent.')
+        notify.success({ key: 'profile.toast.approvalResent', ns: 'user' })
       },
       onError: (error) => {
         console.error(error)
-        notify.error('Failed to resend approval email')
+        notify.error({ key: 'profile.toast.approvalResendFailed', ns: 'user' })
       },
     })
 
@@ -47,11 +50,17 @@ export const PendingPasswordState = ({
     useCancelPendingPasswordChange({
       onSuccess: async () => {
         await invalidateActivePendingPasswordChange(queryClient, orpc)
-        notify.success(PENDING_PASSWORD_CANCEL_SUCCESS[kind])
+        notify.success({
+          key: PENDING_PASSWORD_CANCEL_SUCCESS[kind],
+          ns: 'user',
+        })
       },
       onError: (error) => {
         console.error(error)
-        notify.error('Failed to cancel pending password request')
+        notify.error({
+          key: 'profile.toast.passwordCancelFailed',
+          ns: 'user',
+        })
       },
     })
 
@@ -61,12 +70,19 @@ export const PendingPasswordState = ({
     <>
       <CardContent className='space-y-2'>
         <p className='text-sm'>
-          {PENDING_PASSWORD_KIND_LABEL[kind]} is pending approval. Check{' '}
-          <span className='font-medium'>{destinationEmail}</span> for the
-          approval email.
+          {translateRich(
+            t,
+            'profile.pending.approval',
+            {
+              email: <span className='font-medium'>{destinationEmail}</span>,
+            },
+            { what: t(PENDING_PASSWORD_KIND_LABEL[kind]) },
+          )}
         </p>
         <p className='text-muted-foreground text-sm'>
-          The approval link expires at {expiry.toLocaleString()}.
+          {t('profile.pending.expires', {
+            date: expiry.toLocaleString(i18n.language),
+          })}
         </p>
       </CardContent>
       <CardFooter className='flex gap-2 border-t'>
@@ -76,7 +92,9 @@ export const PendingPasswordState = ({
           disabled={isActionPending}
           onClick={() => cancel(undefined)}
         >
-          {isCancelling ? 'Cancelling...' : 'Cancel request'}
+          {isCancelling
+            ? t('profile.pending.cancelling')
+            : t('profile.pending.cancelRequest')}
         </Button>
         <Button
           type='button'
@@ -84,7 +102,9 @@ export const PendingPasswordState = ({
           disabled={isActionPending}
           onClick={() => resend(undefined)}
         >
-          {isResending ? 'Resending...' : 'Resend email'}
+          {isResending
+            ? t('profile.pending.resending')
+            : t('profile.pending.resendEmail')}
         </Button>
       </CardFooter>
     </>

@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { useClientT } from '@/i18n/use-client-t'
 
 type IntervalUpgradeConfirmDialogProps = {
   open: boolean
@@ -34,6 +35,7 @@ export function IntervalUpgradeConfirmDialog({
   confirming = false,
   onConfirm,
 }: IntervalUpgradeConfirmDialogProps) {
+  const { t } = useClientT(['user', 'common'])
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent showCloseButton={!confirming}>
@@ -44,7 +46,7 @@ export function IntervalUpgradeConfirmDialog({
         <DialogFooter>
           <DialogClose asChild>
             <Button type='button' variant='outline' disabled={confirming}>
-              Keep current plan
+              {t('billing.confirm.keepCurrent')}
             </Button>
           </DialogClose>
           <Button
@@ -53,7 +55,7 @@ export function IntervalUpgradeConfirmDialog({
             disabled={confirming}
             onClick={onConfirm}
           >
-            {confirming ? 'Upgrading…' : confirmLabel}
+            {confirming ? t('billing.action.upgrading') : confirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

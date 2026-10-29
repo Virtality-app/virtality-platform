@@ -8,6 +8,7 @@ import { shouldBypassVercelImageOptimization } from '@virtality/shared/utils'
 import { ControllerRenderProps } from 'react-hook-form'
 import { Trash2, UserIcon } from 'lucide-react'
 import { FieldLabel } from '@/components/ui/field'
+import { useClientT } from '@/i18n/use-client-t'
 import { type SessionUser, type UserForm } from './profile-info-form'
 
 type AvatarState = {
@@ -23,6 +24,7 @@ interface ImageFieldProps {
 }
 
 export const ImageField = ({ field, user }: ImageFieldProps) => {
+  const { t } = useClientT(['user', 'common'])
   const [avatarState, setAvatarState] = useState<AvatarState>({
     previewUrl: null,
     hasImage: user?.image ? true : false,
@@ -86,7 +88,7 @@ export const ImageField = ({ field, user }: ImageFieldProps) => {
         <Image
           height={200}
           width={200}
-          alt='Patient'
+          alt={t('profile.imageAlt')}
           src={
             avatarState.previewUrl
               ? avatarState.previewUrl

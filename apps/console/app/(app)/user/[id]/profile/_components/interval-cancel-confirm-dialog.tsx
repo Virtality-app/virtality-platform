@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { useClientT } from '@/i18n/use-client-t'
 
 type IntervalCancelConfirmDialogProps = {
   open: boolean
@@ -34,6 +35,7 @@ export function IntervalCancelConfirmDialog({
   confirming = false,
   onConfirm,
 }: IntervalCancelConfirmDialogProps) {
+  const { t } = useClientT(['user', 'common'])
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent showCloseButton={!confirming}>
@@ -44,7 +46,7 @@ export function IntervalCancelConfirmDialog({
         <DialogFooter>
           <DialogClose asChild>
             <Button type='button' variant='outline' disabled={confirming}>
-              Keep scheduled change
+              {t('billing.confirm.keepScheduled')}
             </Button>
           </DialogClose>
           <Button
@@ -53,7 +55,7 @@ export function IntervalCancelConfirmDialog({
             disabled={confirming}
             onClick={onConfirm}
           >
-            {confirming ? 'Canceling…' : confirmLabel}
+            {confirming ? t('billing.action.canceling') : confirmLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

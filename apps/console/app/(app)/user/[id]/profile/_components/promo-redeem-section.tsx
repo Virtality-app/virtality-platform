@@ -7,9 +7,9 @@
 import { useState, type ReactNode } from 'react'
 import { isProfileBillingAccessCode } from '@virtality/shared/utils'
 import type { SubscriptionDiscountRead } from '@virtality/shared/utils'
+import { useClientT } from '@/i18n/use-client-t'
+import type { Translate } from '@/i18n/translate'
 import {
-  PROFILE_BILLING_CODE_FIELD_LABEL,
-  STAFF_REDEEM_BLOCK_COPY,
   replaceConfirmDiscountLabel,
   requiresReplaceConfirm,
 } from '@/lib/profile-billing'
@@ -24,11 +24,13 @@ import { PromoCodeEntryForm } from './promo-code-entry-form'
 import { RedeemReplaceConfirmDialog } from './redeem-replace-confirm-dialog'
 
 function promoOutcomeChrome({
+  t,
   chrome,
   onRemoveLive,
   onCancelPending,
   cancelPendingPending,
 }: {
+  t: Translate
   chrome: PromoRedeemChrome
   onRemoveLive: () => void
   onCancelPending: () => void
@@ -44,16 +46,19 @@ function promoOutcomeChrome({
         />
       )
     case 'checking_discount':
-      return <p className='text-sm text-zinc-500'>Checking current discount…</p>
+      return (
+        <p className='text-sm text-zinc-500'>{t('billing.promo.checking')}</p>
+      )
     case 'redeem_unavailable':
       return (
         <p className='text-sm text-zinc-500'>
-          Promotion Code redeem is unavailable until discount details load. You
-          can still apply an Access Code below.
+          {t('billing.promo.redeemUnavailable')}
         </p>
       )
     case 'staff_blocked':
-      return <p className='text-sm text-zinc-500'>{STAFF_REDEEM_BLOCK_COPY}</p>
+      return (
+        <p className='text-sm text-zinc-500'>{t('billing.staffRedeemBlock')}</p>
+      )
     case 'applied_live':
       return (
         <AppliedPromoRow appliedCode={chrome.code} onRemove={onRemoveLive} />
@@ -93,6 +98,7 @@ export function PromoRedeemSection({
   code: string
   onCodeChange: (value: string) => void
 }) {
+  const { t } = useClientT(['user', 'common'])
   const [replaceOpen, setReplaceOpen] = useState(false)
   const [pendingCode, setPendingCode] = useState<string | null>(null)
   const chrome = resolvePromoRedeemChrome({
@@ -139,8 +145,9 @@ export function PromoRedeemSection({
 
   return (
     <div className='space-y-2 border-t border-zinc-200 pt-4 dark:border-zinc-800'>
-      <p className='text-sm font-medium'>{PROFILE_BILLING_CODE_FIELD_LABEL}</p>
+      <p className='text-sm font-medium'>{t('billing.codeFieldLabel')}</p>
       {promoOutcomeChrome({
+        t,
         chrome,
         onRemoveLive: onRemove,
         onCancelPending,
@@ -156,8 +163,8 @@ export function PromoRedeemSection({
           onApply={() => {
             void handleApplyClick()
           }}
-          applyLabel='Apply Code'
-          fieldLabel={PROFILE_BILLING_CODE_FIELD_LABEL}
+          applyLabel={t('billing.promo.applyCode')}
+          fieldLabel={t('billing.codeFieldLabel')}
         />
       ) : null}
 

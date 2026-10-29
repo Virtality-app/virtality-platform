@@ -3,6 +3,8 @@
 import { useMemo, useState } from 'react'
 import { notify } from '@/lib/notify'
 import { authClient } from '@/auth-client'
+import i18next from '@/i18n/i18next'
+import type { NotifyMessage } from '@/lib/notify-message'
 import {
   CYCLE_PLAN_CHANGE_SCHEDULED_TOAST,
   createConsoleBetterAuthBilling,
@@ -19,12 +21,14 @@ import {
   type CheckoutSuccessIntentStanding,
 } from '@/lib/resolve-checkout-success-intent'
 
+const billingText = (key: string) => i18next.t(key, { ns: 'user' })
+
 function currentConsoleReturnUrl(): string {
   return `${window.location.origin}${window.location.pathname}${window.location.search}`
 }
 
 type ToastNotifyOptions = {
-  successToast?: string
+  successToast?: NotifyMessage
 }
 
 type SubscribeCheckoutStanding = CheckoutSuccessIntentStanding
@@ -87,7 +91,7 @@ export function useConsoleBillingAuth(standing?: SubscribeCheckoutStanding) {
     runBillingAction(
       isStartingCheckout,
       setIsStartingCheckout,
-      'Checkout already starting',
+      billingText('billing.toast.checkoutBusy'),
       async () => {
         if (
           standing &&
@@ -106,7 +110,7 @@ export function useConsoleBillingAuth(standing?: SubscribeCheckoutStanding) {
               message:
                 error instanceof Error
                   ? error.message
-                  : 'Failed to start Checkout',
+                  : billingText('billing.toast.checkoutFailed'),
             }
           }
         }
@@ -123,7 +127,7 @@ export function useConsoleBillingAuth(standing?: SubscribeCheckoutStanding) {
     runBillingAction(
       isScheduling,
       setIsScheduling,
-      'Plan change already scheduling',
+      billingText('billing.toast.scheduleBusy'),
       async () => {
         try {
           await scheduleCycleMutation.mutateAsync({ annual: options.annual })
@@ -134,7 +138,7 @@ export function useConsoleBillingAuth(standing?: SubscribeCheckoutStanding) {
             message:
               error instanceof Error
                 ? error.message
-                : 'Failed to schedule plan change',
+                : billingText('billing.toast.scheduleFailed'),
           }
         }
       },
@@ -142,12 +146,12 @@ export function useConsoleBillingAuth(standing?: SubscribeCheckoutStanding) {
     )
 
   const restore = async (options?: {
-    successToast?: string
+    successToast?: NotifyMessage
   }): Promise<ConsoleBetterAuthBillingResult> =>
     runBillingAction(
       isRestoring,
       setIsRestoring,
-      'Restore already in progress',
+      billingText('billing.toast.restoreBusy'),
       () => billing.restore(),
       { successToast: options?.successToast },
     )
@@ -156,7 +160,7 @@ export function useConsoleBillingAuth(standing?: SubscribeCheckoutStanding) {
     runBillingAction(
       isOpeningPortal,
       setIsOpeningPortal,
-      'Portal already opening',
+      billingText('billing.toast.portalBusy'),
       () =>
         billing.openPortal({
           returnUrl: currentConsoleReturnUrl(),

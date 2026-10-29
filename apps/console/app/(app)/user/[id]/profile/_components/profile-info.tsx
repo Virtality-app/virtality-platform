@@ -1,5 +1,6 @@
 'use client'
 import { Input } from '@virtality/ui/components/input'
+import { useClientT } from '@/i18n/use-client-t'
 import { Fragment } from 'react'
 import { Button } from '@virtality/ui/components/button'
 import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
@@ -20,12 +21,12 @@ import {
 import { ControllerField } from './controller-field'
 import { ImageField } from './profile-image-field'
 import { PasswordCardBody } from './profile-password-card-body'
-import { PendingAccountDeletionState } from './profile-pending-account-deletion-state'
+import { DeleteAccountCard } from './profile-delete-account-card'
 import { SignInMethods } from './profile-sign-in-methods'
 import { useProfileInfo } from './use-profile-info'
 import {
-  basicInfoFormFields,
-  emailFormField,
+  getBasicInfoFormFields,
+  getEmailFormField,
   toFormValues,
   type SessionUser,
 } from './profile-info-form'
@@ -35,6 +36,9 @@ interface ProfileInfoProps {
 }
 
 const ProfileInfo = ({ user }: ProfileInfoProps) => {
+  const { t } = useClientT(['user', 'common'])
+  const basicInfoFormFields = getBasicInfoFormFields(t)
+  const emailFormField = getEmailFormField(t)
   const { data: hasPassword, isLoading: isLoadingHasPassword } =
     useHasPassword()
   const {
@@ -110,14 +114,14 @@ const ProfileInfo = ({ user }: ProfileInfoProps) => {
               }}
               disabled={!basicInfoForm.formState.isDirty || isUpdatingUser}
             >
-              Clear Changes
+              {t('profile.clearChanges')}
             </Button>
             <Button
               type='submit'
               className='ml-auto'
               disabled={!basicInfoForm.formState.isDirty || isUpdatingUser}
             >
-              {isUpdatingUser ? 'Saving...' : 'Save'}
+              {isUpdatingUser ? t('profile.saving') : t('common:btn.save')}
             </Button>
           </CardFooter>
         </form>
@@ -152,7 +156,7 @@ const ProfileInfo = ({ user }: ProfileInfoProps) => {
               className='ml-auto'
               disabled={!emailForm.formState.isDirty || isUpdatingEmail}
             >
-              {isUpdatingEmail ? 'Saving...' : 'Change'}
+              {isUpdatingEmail ? t('profile.saving') : t('profile.change')}
             </Button>
           </CardFooter>
         </form>
@@ -160,7 +164,9 @@ const ProfileInfo = ({ user }: ProfileInfoProps) => {
 
       <Card>
         <CardHeader>
-          <CardTitle className='text-xl font-bold'>Password</CardTitle>
+          <CardTitle className='text-xl font-bold'>
+            {t('profile.password.title')}
+          </CardTitle>
         </CardHeader>
 
         <PasswordCardBody
@@ -170,33 +176,12 @@ const ProfileInfo = ({ user }: ProfileInfoProps) => {
         />
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Delete Account</CardTitle>
-        </CardHeader>
-        {isLoadingPendingAccountDeletion ? null : activePendingAccountDeletion ? (
-          <PendingAccountDeletionState pending={activePendingAccountDeletion} />
-        ) : (
-          <>
-            <CardContent>
-              Permanently remove your Personal Account and all of its contents
-              from Virtality. This action is not reversible, so please continue
-              with caution.
-            </CardContent>
-            <CardFooter className='border-t'>
-              <Button
-                type='submit'
-                variant='destructive'
-                onClick={handleDeleteUser}
-                disabled={isStartingDeletion}
-                className='ml-auto'
-              >
-                {isStartingDeletion ? 'Starting...' : 'Delete account'}
-              </Button>
-            </CardFooter>
-          </>
-        )}
-      </Card>
+      <DeleteAccountCard
+        isLoading={isLoadingPendingAccountDeletion}
+        pending={activePendingAccountDeletion}
+        isStarting={isStartingDeletion}
+        onDelete={handleDeleteUser}
+      />
     </div>
   )
 }

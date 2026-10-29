@@ -22,6 +22,8 @@ i18next
     fallbackLng,
     fallbackNS: defaultNS,
     defaultNS,
+    // React and the toast renderer already escape text.
+    interpolation: { escapeValue: false },
     detection: {
       order: ['localStorage', 'cookie', 'navigator'],
       caches: ['localStorage', 'cookie'],

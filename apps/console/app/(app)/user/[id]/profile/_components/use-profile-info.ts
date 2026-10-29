@@ -54,12 +54,12 @@ export const useProfileInfo = (user: SessionUser) => {
   const { mutate: updateUserInfo, isPending: isUpdatingUser } =
     useUpdateUserInfo({
       onSuccess: async () => {
-        notify.success('Profile updated successfully')
+        notify.success({ key: 'profile.toast.updated', ns: 'user' })
         await syncFormFromSession()
       },
       onError: (error) => {
         console.error(error)
-        notify.error('Failed to update profile')
+        notify.error({ key: 'profile.toast.updateFailed', ns: 'user' })
       },
     })
 
@@ -81,12 +81,13 @@ export const useProfileInfo = (user: SessionUser) => {
       callbackURL: `${baseURL}/user/${user.id}/profile`,
       fetchOptions: {
         onSuccess: () =>
-          void notify.success(
-            'Please check your new email for a verification link.',
-          ),
+          void notify.success({
+            key: 'profile.toast.emailVerification',
+            ns: 'user',
+          }),
         onError: (error) => {
           console.error(error)
-          notify.error('Failed to update email')
+          notify.error({ key: 'profile.toast.emailUpdateFailed', ns: 'user' })
         },
       },
     })
@@ -100,11 +101,11 @@ export const useProfileInfo = (user: SessionUser) => {
     useStartAccountDeletion({
       onSuccess: async () => {
         await invalidateActivePendingAccountDeletion(queryClient, orpc)
-        notify.success('Check your email to approve account deletion.')
+        notify.success({ key: 'profile.toast.deletionStarted', ns: 'user' })
       },
       onError: (error) => {
         console.error(error)
-        notify.error('Failed to start account deletion')
+        notify.error({ key: 'profile.toast.deletionStartFailed', ns: 'user' })
       },
     })
 

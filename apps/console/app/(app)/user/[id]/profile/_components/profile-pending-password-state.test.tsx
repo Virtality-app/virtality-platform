@@ -12,6 +12,15 @@ vi.mock('@tanstack/react-query', () => ({
   useQueryClient: () => ({ invalidateQueries: vi.fn() }),
 }))
 
+const i18nMock = vi.hoisted(() => ({ language: 'en' as 'en' | 'el' }))
+
+vi.mock('@/i18n/use-client-t', async () => {
+  const { catalogUseClientT } = await import('@/i18n/catalog-use-client-t')
+  return {
+    useClientT: () => catalogUseClientT(i18nMock.language).useClientT(),
+  }
+})
+
 vi.mock('./profile-info-form', () => ({
   invalidateActivePendingPasswordChange: vi.fn(),
 }))
@@ -30,6 +39,7 @@ vi.mock('@virtality/react-query', () => ({
 
 afterEach(() => {
   cleanup()
+  i18nMock.language = 'en'
   vi.clearAllMocks()
 })
 
@@ -59,6 +69,18 @@ describe('PendingPasswordState', () => {
       screen.getByText(
         `The approval link expires at ${new Date('2026-10-28T12:00:00Z').toLocaleString()}.`,
       ),
+    ).toBeInTheDocument()
+  })
+
+  it('names the pending request in Greek when el is selected', () => {
+    i18nMock.language = 'el'
+    render(<PendingPasswordState pending={pending('CHANGE')} />)
+
+    expect(
+      screen.getByText('Η αλλαγή κωδικού αναμένει έγκριση.', { exact: false }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Επανάληψη αποστολής email' }),
     ).toBeInTheDocument()
   })
 

@@ -6,6 +6,7 @@
 
 import { Button } from '@virtality/ui/components/button'
 import { Input } from '@virtality/ui/components/input'
+import { useClientT } from '@/i18n/use-client-t'
 
 export function PromoCodeEntryForm({
   code,
@@ -26,20 +27,21 @@ export function PromoCodeEntryForm({
   applyLabel?: string
   fieldLabel?: string
 }) {
+  const { t } = useClientT(['user', 'common'])
   return (
     <>
       {successFlash ? (
         <p className='text-sm text-emerald-700 dark:text-emerald-300'>
-          You can enter a new code below when ready.
+          {t('billing.promo.enterNewCode')}
         </p>
       ) : null}
       <div className='flex gap-2'>
         <Input
           value={code}
           onChange={(event) => onCodeChange(event.target.value.toUpperCase())}
-          placeholder='Enter code'
+          placeholder={t('billing.promo.enterCode')}
           className='font-mono'
-          aria-label={fieldLabel ?? 'Promotion or Access Code'}
+          aria-label={fieldLabel ?? t('billing.promo.entryLabel')}
           disabled={redeeming}
         />
         <Button
@@ -48,7 +50,9 @@ export function PromoCodeEntryForm({
           disabled={!code.trim() || redeeming}
           onClick={onApply}
         >
-          {redeeming ? 'Applying…' : (applyLabel ?? 'Apply')}
+          {redeeming
+            ? t('billing.promo.applying')
+            : (applyLabel ?? t('billing.promo.apply'))}
         </Button>
       </div>
       {redeemError ? (

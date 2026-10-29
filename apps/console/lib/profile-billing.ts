@@ -3,17 +3,11 @@
  * Catalog list prices load from Stripe at runtime via consoleBilling.readCatalog.
  */
 
+import type { Translate } from '@/i18n/translate'
 import {
-  BILLING_DISCOUNT_TIMING_COPY,
-  BILLING_SOFT_UNAVAILABLE_COPY,
   DEFAULT_PLAN_PRODUCT_NAME_FALLBACK,
-  PROMO_REMOVE_NO_RESTORE_COPY,
-  PROMO_REMOVE_SUCCESS_COPY,
-  STAFF_REDEEM_BLOCK_COPY,
   buildDiscountedBillingPriceLabels,
   canRemovePromoDiscount,
-  formatCheckoutCtaLabel,
-  formatEntitlementClockEndLabel,
   isPaidDefaultPortalEligible,
   isStaffRedeemBlocked,
   promoCodeLabel,
@@ -31,52 +25,65 @@ import {
   type SubscriptionDiscountRead,
 } from '@virtality/shared/utils'
 
-/** Section heading and input label for the unified billing code field. */
-export const PROFILE_BILLING_CODE_FIELD_LABEL = 'Discount Code' as const
-
 export type BillingInterval = EntitlementBillingInterval
 
 export type BillingPlanPrices = BillingPlanPriceLabels
 
-/** Plan-card CTA when a live paid Default seat switches to the Yearly interval. */
-export const PAID_INTERVAL_UPGRADE_LABEL = 'Upgrade' as const
+/** Text helpers for billing copy: `t` resolves in `user`, `locale` formats dates. */
+export type BillingCopy = {
+  t: Translate
+  /** Active i18next language, e.g. `en` or `el`. */
+  locale: string
+}
 
-/** Plan-card CTA when a live paid Default seat switches to the Monthly interval. */
-export const PAID_INTERVAL_DOWNGRADE_LABEL = 'Downgrade' as const
+const INTL_LOCALES: Record<string, string> = { el: 'el-GR' }
 
-/** Plan-card CTA when a scheduled switch to Yearly is released. */
-export const PAID_INTERVAL_CANCEL_UPGRADE_LABEL = 'Cancel Upgrade' as const
-
-/** Plan-card CTA when a scheduled switch to Monthly is released. */
-export const PAID_INTERVAL_CANCEL_DOWNGRADE_LABEL = 'Cancel Downgrade' as const
-
-/** Plan-card CTA to undo cancel-at-period-end on the current Default interval. */
-export const PAID_CANCELLATION_UNDO_LABEL = "Don't cancel" as const
-
-/** Inert plan-card CTA on the live Default interval. */
-export const PAID_ACTIVE_LABEL = 'Active' as const
+/** Entitlement Clock end in the selected language; UTC to match Stripe periods. */
+export function formatClockEnd({ locale }: BillingCopy, clockEnd: Date) {
+  return new Intl.DateTimeFormat(INTL_LOCALES[locale] ?? 'en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+    timeZone: 'UTC',
+    timeZoneName: 'short',
+  }).format(clockEnd)
+}
 
 /** Upgrade/Downgrade label for switching to the given interval. */
-function profileBillingIntervalSwitchLabel(target: BillingInterval): string {
-  return target === 'year'
-    ? PAID_INTERVAL_UPGRADE_LABEL
-    : PAID_INTERVAL_DOWNGRADE_LABEL
+function profileBillingIntervalSwitchLabel(
+  { t }: BillingCopy,
+  target: BillingInterval,
+): string {
+  return t(
+    target === 'year' ? 'billing.action.upgrade' : 'billing.action.downgrade',
+  )
 }
 
 /** Pending-label copy for switching to the given interval. */
 function profileBillingIntervalSwitchPendingLabel(
+  { t }: BillingCopy,
   target: BillingInterval,
 ): string {
-  return target === 'year' ? 'Upgrading…' : 'Downgrading…'
+  return t(
+    target === 'year'
+      ? 'billing.action.upgrading'
+      : 'billing.action.downgrading',
+  )
 }
 
 /** Cancel Upgrade/Cancel Downgrade label for releasing a scheduled switch. */
 function profileBillingIntervalCancelSwitchLabel(
+  { t }: BillingCopy,
   target: BillingInterval,
 ): string {
-  return target === 'year'
-    ? PAID_INTERVAL_CANCEL_UPGRADE_LABEL
-    : PAID_INTERVAL_CANCEL_DOWNGRADE_LABEL
+  return t(
+    target === 'year'
+      ? 'billing.action.cancelUpgrade'
+      : 'billing.action.cancelDowngrade',
+  )
 }
 
 export type ProfileBillingCardActionConfirm = {
@@ -151,12 +158,7 @@ export function profileBillingCardActionConfirm(
 }
 
 export {
-  BILLING_DISCOUNT_TIMING_COPY,
-  BILLING_SOFT_UNAVAILABLE_COPY,
   DEFAULT_PLAN_PRODUCT_NAME_FALLBACK,
-  PROMO_REMOVE_NO_RESTORE_COPY,
-  PROMO_REMOVE_SUCCESS_COPY,
-  STAFF_REDEEM_BLOCK_COPY,
   buildDiscountedBillingPriceLabels,
   canRemovePromoDiscount,
   isStaffRedeemBlocked,
@@ -182,9 +184,10 @@ export type BillingStandingView = {
 }
 
 export function profileBillingIntervalTitle(
+  { t }: BillingCopy,
   interval: BillingInterval,
-): 'Monthly' | 'Yearly' {
-  return interval === 'year' ? 'Yearly' : 'Monthly'
+): string {
+  return t(interval === 'year' ? 'billing.yearly' : 'billing.monthly')
 }
 
 /** Opposite Default interval when a period-end switch is scheduled. */
@@ -218,9 +221,10 @@ function resolveProfileBillingPlanCardCheckoutCta(
  * Customer Portal; Free and trialing clinicians use per-card Checkout instead.
  */
 export function profileBillingPrimaryCtaLabel(
+  { t }: BillingCopy,
   standing: BillingStandingView,
 ): string | null {
-  if (profileBillingOpensPortal(standing)) return 'Manage billing'
+  if (profileBillingOpensPortal(standing)) return t('billing.manageBilling')
   return null
 }
 
@@ -250,6 +254,7 @@ export function profileBillingShowsPlanCardCheckout(
  * and the other interval checkouts "Upgrade" (pay now, not period-end schedule).
  */
 export function resolveProfileBillingCardAction(
+  copy: BillingCopy,
   standing: BillingStandingView,
   hasStripeCustomer: boolean,
   interval: BillingInterval,
@@ -259,40 +264,44 @@ export function resolveProfileBillingCardAction(
       if (standing.billingInterval === interval) {
         return {
           kind: 'restore_cancellation',
-          label: PAID_CANCELLATION_UNDO_LABEL,
-          pendingLabel: 'Restoring…',
+          label: copy.t('billing.action.dontCancel'),
+          pendingLabel: copy.t('billing.action.restoring'),
         }
       }
       return {
         kind: 'checkout',
-        label: profileBillingIntervalSwitchLabel(interval),
-        pendingLabel: profileBillingIntervalSwitchPendingLabel(interval),
+        label: profileBillingIntervalSwitchLabel(copy, interval),
+        pendingLabel: profileBillingIntervalSwitchPendingLabel(copy, interval),
       }
     }
     if (standing.billingInterval === interval) {
       return {
         kind: 'active',
-        label: PAID_ACTIVE_LABEL,
-        pendingLabel: PAID_ACTIVE_LABEL,
+        label: copy.t('billing.action.active'),
+        pendingLabel: copy.t('billing.action.active'),
       }
     }
     const pendingTarget = profileBillingPendingTargetInterval(standing)
     if (pendingTarget != null) {
       if (pendingTarget !== interval) return NONE_ACTION
-      const confirm = profileBillingIntervalCancelConfirmCopy(standing)
+      const confirm = profileBillingIntervalCancelConfirmCopy(copy, standing)
       if (confirm == null) return NONE_ACTION
       return {
         kind: 'cancel_schedule',
-        label: profileBillingIntervalCancelSwitchLabel(interval),
-        pendingLabel: 'Canceling…',
+        label: profileBillingIntervalCancelSwitchLabel(copy, interval),
+        pendingLabel: copy.t('billing.action.canceling'),
         confirm,
       }
     }
     return {
       kind: 'schedule',
-      label: profileBillingIntervalSwitchLabel(interval),
-      pendingLabel: profileBillingIntervalSwitchPendingLabel(interval),
-      confirm: profileBillingIntervalUpgradeConfirmCopy(standing, interval),
+      label: profileBillingIntervalSwitchLabel(copy, interval),
+      pendingLabel: profileBillingIntervalSwitchPendingLabel(copy, interval),
+      confirm: profileBillingIntervalUpgradeConfirmCopy(
+        copy,
+        standing,
+        interval,
+      ),
     }
   }
 
@@ -302,13 +311,10 @@ export function resolveProfileBillingCardAction(
   )
   if (cta == null) return NONE_ACTION
 
-  const label = formatCheckoutCtaLabel(cta)
-  if (label == null) return NONE_ACTION
-
   return {
     kind: 'checkout',
-    label,
-    pendingLabel: 'Starting Checkout…',
+    label: copy.t(`billing.action.${cta}`),
+    pendingLabel: copy.t('billing.action.startingCheckout'),
   }
 }
 
@@ -328,66 +334,78 @@ export function profileBillingSchedulesAtPeriodEnd(
 
 /** Banner copy while a period-end interval switch is scheduled. */
 export function profileBillingPendingPlanChangeBanner(
+  copy: BillingCopy,
   standing: BillingStandingView,
 ): string | null {
   const target = profileBillingPendingTargetInterval(standing)
   if (target == null) return null
 
-  const targetTitle = profileBillingIntervalTitle(target)
+  const interval = profileBillingIntervalTitle(copy, target)
   if (standing.clockEnd) {
-    const when = formatEntitlementClockEndLabel(new Date(standing.clockEnd))
-    return `Switching to ${targetTitle} on ${when}. Keep your current plan until then. Payment starts at that renewal.`
+    const date = formatClockEnd(copy, new Date(standing.clockEnd))
+    return copy.t('billing.pendingPlanChange.withDate', { interval, date })
   }
-  return `Switching to ${targetTitle} at your next billing cycle. Keep your current plan until then.`
+  return copy.t('billing.pendingPlanChange.withoutDate', { interval })
 }
 
 /** Warning banner while cancel-at-period-end is scheduled. */
 export function profileBillingPendingCancellationBanner(
+  copy: BillingCopy,
   standing: BillingStandingView,
   productName: string = DEFAULT_PLAN_PRODUCT_NAME_FALLBACK,
 ): string | null {
   if (!standing.cancelAtPeriodEnd || !standing.entitled) return null
   if (standing.clockEnd) {
-    const when = formatEntitlementClockEndLabel(new Date(standing.clockEnd))
-    return `Your subscription ends on ${when}. You'll keep ${productName} access until then.`
+    const date = formatClockEnd(copy, new Date(standing.clockEnd))
+    return copy.t('billing.pendingCancellation.withDate', {
+      date,
+      product: productName,
+    })
   }
-  return `Your subscription ends at the next billing cycle. You'll keep ${productName} access until then.`
+  return copy.t('billing.pendingCancellation.withoutDate', {
+    product: productName,
+  })
 }
 
 /** Confirm-dialog body for scheduling an interval switch. */
 function profileBillingIntervalUpgradeConfirmCopy(
+  copy: BillingCopy,
   standing: BillingStandingView,
   targetInterval: BillingInterval,
 ): ProfileBillingCardActionConfirm {
-  const targetTitle = profileBillingIntervalTitle(targetInterval)
-  const currentTitle =
+  const { t } = copy
+  const current =
     standing.billingInterval != null
-      ? profileBillingIntervalTitle(standing.billingInterval)
-      : 'current plan'
-  const when = standing.clockEnd
-    ? formatEntitlementClockEndLabel(new Date(standing.clockEnd))
+      ? profileBillingIntervalTitle(copy, standing.billingInterval)
+      : t('billing.currentPlan')
+  const date = standing.clockEnd
+    ? formatClockEnd(copy, new Date(standing.clockEnd))
     : null
 
   return {
-    title: `Switch to ${targetTitle}?`,
-    body: when
-      ? `Payment starts at your next billing cycle on ${when}. Keep using ${currentTitle} until then.`
-      : `Payment starts at your next billing cycle. Keep using ${currentTitle} until then.`,
-    confirmLabel: profileBillingIntervalSwitchLabel(targetInterval),
+    title: t('billing.confirm.switchTitle', {
+      interval: profileBillingIntervalTitle(copy, targetInterval),
+    }),
+    body: date
+      ? t('billing.confirm.switchBodyWithDate', { date, current })
+      : t('billing.confirm.switchBody', { current }),
+    confirmLabel: profileBillingIntervalSwitchLabel(copy, targetInterval),
   }
 }
 
 /** Confirm-dialog body for releasing a scheduled interval switch. */
 function profileBillingIntervalCancelConfirmCopy(
+  copy: BillingCopy,
   standing: BillingStandingView,
 ): ProfileBillingCardActionConfirm | null {
   const target = profileBillingPendingTargetInterval(standing)
   if (target == null) return null
-  const targetTitle = profileBillingIntervalTitle(target)
   return {
-    title: `Cancel switch to ${targetTitle}?`,
-    body: `You'll stay on your current plan and renew as usual.`,
-    confirmLabel: profileBillingIntervalCancelSwitchLabel(target),
+    title: copy.t('billing.confirm.cancelSwitchTitle', {
+      interval: profileBillingIntervalTitle(copy, target),
+    }),
+    body: copy.t('billing.confirm.cancelSwitchBody'),
+    confirmLabel: profileBillingIntervalCancelSwitchLabel(copy, target),
   }
 }
 
@@ -399,13 +417,16 @@ export function profileBillingIsLapsedAccessGateTrial(
 }
 
 export function profileBillingStatusHeadline(
+  { t }: BillingCopy,
   standing: BillingStandingView,
   productName: string = DEFAULT_PLAN_PRODUCT_NAME_FALLBACK,
 ): string {
   if (standing.status === 'trialing') {
-    return profileBillingIsLapsedAccessGateTrial(standing)
-      ? 'Expired'
-      : 'Trial in progress'
+    return t(
+      profileBillingIsLapsedAccessGateTrial(standing)
+        ? 'billing.status.expired'
+        : 'billing.status.trialInProgress',
+    )
   }
 
   if (
@@ -413,43 +434,58 @@ export function profileBillingStatusHeadline(
     standing.status === 'revoked' ||
     standing.status === null
   ) {
-    return 'No plan'
+    return t('billing.status.noPlan')
   }
 
   if (standing.entitled) {
-    if (standing.billingInterval === 'year') return `${productName} · Yearly`
-    if (standing.billingInterval === 'month') return `${productName} · Monthly`
+    if (standing.billingInterval === 'year') {
+      return t('billing.status.productYearly', { product: productName })
+    }
+    if (standing.billingInterval === 'month') {
+      return t('billing.status.productMonthly', { product: productName })
+    }
     return productName
   }
 
   switch (standing.status) {
     case 'canceled':
-      return 'Subscription canceled'
+      return t('billing.status.canceled')
     default:
-      return 'Subscription ended'
+      return t('billing.status.ended')
   }
 }
 
 export function profileBillingStatusDetail(
+  copy: BillingCopy,
   standing: BillingStandingView,
   productName: string = DEFAULT_PLAN_PRODUCT_NAME_FALLBACK,
 ): string {
+  const { t } = copy
   if (standing.clockEnd) {
-    const label = formatEntitlementClockEndLabel(new Date(standing.clockEnd))
-    if (standing.status === 'trialing') return `Ends ${label}`
-    if (standing.cancelAtPeriodEnd) return `Ends ${label}`
+    const date = formatClockEnd(copy, new Date(standing.clockEnd))
+    if (standing.status === 'trialing') {
+      return t('billing.statusDetail.ends', { date })
+    }
+    if (standing.cancelAtPeriodEnd) {
+      return t('billing.statusDetail.ends', { date })
+    }
     if (standing.hasPendingPlanChange) {
       const target = profileBillingPendingTargetInterval(standing)
       if (target != null) {
-        return `Renews ${label} · switching to ${profileBillingIntervalTitle(target)}`
+        return t('billing.statusDetail.renewsSwitching', {
+          date,
+          interval: profileBillingIntervalTitle(copy, target),
+        })
       }
     }
-    return `Renews ${label}`
+    return t('billing.statusDetail.renews', { date })
   }
 
-  if (standing.entitled) return `Your ${productName} access is active.`
+  if (standing.entitled) {
+    return t('billing.statusDetail.active', { product: productName })
+  }
 
-  return `Choose Monthly or Annual ${productName} plan, then continue to Checkout.`
+  return t('billing.statusDetail.choose', { product: productName })
 }
 
 export function profileBillingDiscountDisplay(
