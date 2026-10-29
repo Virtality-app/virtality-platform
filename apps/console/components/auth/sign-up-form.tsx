@@ -17,6 +17,9 @@ interface SignupFormProps {
   onSubmit: (values: SignUpForm | (SignUpForm & { role: User['role'] })) => void
 }
 
+const CHECK_MARK = '✓'
+const CROSS_MARK = '✗'
+
 const PasswordRequirement = ({
   satisfied,
   label,
@@ -37,9 +40,6 @@ const PasswordRequirement = ({
     {label}
   </FieldDescription>
 )
-
-const CHECK_MARK = '✓'
-const CROSS_MARK = '✗'
 
 const SignupForm = ({ id, form, onSubmit }: SignupFormProps) => {
   const { t } = useClientT('auth')
