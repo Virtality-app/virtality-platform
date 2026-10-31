@@ -1,71 +1,50 @@
 'use client'
-import { Fragment } from 'react'
+import { Fragment, useState } from 'react'
 import { cn, getDisplayName } from '@/lib/utils'
 import { usePatientDashboard } from '@/context/patient-dashboard-context'
-import ExerciseDescriptionCard from '@/components/exercise-library/exercise-description-card'
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from '@virtality/ui/components/card'
-import {
-  Item,
-  ItemActions,
-  ItemGroup,
-  ItemMedia,
-  ItemSeparator,
-} from '@/components/ui/item'
-import { ChevronDown, ChevronUp, Settings } from 'lucide-react'
-import { Button } from '@virtality/ui/components/button'
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-  PopoverArrow,
-} from '@virtality/ui/components/popover'
-import ExerciseSettings from '@/components/exercise-library/exercise-settings'
-import { motion } from 'motion/react'
+import { ItemGroup, ItemSeparator } from '@/components/ui/item'
 import { useExercise } from '@virtality/react-query'
 import { useClientT } from '@/i18n/use-client-t'
-import { notify } from '@/lib/notify'
 import {
   isDirectExerciseSelectionDisabled,
   resolveCurrentExerciseIndex,
   resolveExerciseListHighlightState,
 } from '@/lib/session-exercise-skip'
-import {
-  exerciseListHighlightLabel,
-  resolveDirectSelectionBlockedTooltip,
-  resolveExerciseListHighlightBadgeClass,
-  resolveExerciseListHighlightClass,
-  shouldShowExerciseListHighlightBadge,
-} from '@/lib/session-exercise-change-ui'
+import { resolveDirectSelectionBlockedTooltip } from '@/lib/session-exercise-change-ui'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@virtality/ui/components/tooltip'
+import { ConfirmDialog } from '@/components/dialogs/confirm-dialog'
+import ExerciseListRow from './exercise-list-row'
+import { useExerciseListActions } from './use-exercise-list-actions'
+
+type PendingJump = { index: number; exerciseId: string; name: string }
 
 const ExerciseList = ({ className }: { className?: string }) => {
-  const { state, handler, currExercise, requestDirectExerciseSelection } =
-    usePatientDashboard()
+  const { state, currExercise } = usePatientDashboard()
   const {
     programState,
     selectedMode,
     exercises,
-    selectedDevice,
     activeExerciseData,
     pendingExerciseChange,
   } = state
-  const { setExercises, updatePatientDashboardState } = handler
   const { data: defaultExercises } = useExercise()
   const { t } = useClientT('patient-dashboard')
+  const actions = useExerciseListActions()
+  const [pendingJump, setPendingJump] = useState<PendingJump | null>(null)
 
   const isProgramActive = programState === 'started'
   const isProgramPaused = programState === 'paused'
-
   const isMain = selectedMode === 'main'
   const isActiveMainSession = (isProgramActive || isProgramPaused) && isMain
   const headsetConfirmedExerciseIndex = resolveCurrentExerciseIndex({
@@ -73,10 +52,6 @@ const ExerciseList = ({ className }: { className?: string }) => {
     activeExerciseId: activeExerciseData.id,
     fallbackIndex: currExercise.current,
   })
-  const exerciseListHighlightContext = {
-    headsetConfirmedExerciseIndex,
-    pendingExerciseChange,
-  }
   const isDirectSelectionBlocked =
     isProgramActive &&
     isMain &&
@@ -85,117 +60,22 @@ const ExerciseList = ({ className }: { className?: string }) => {
     isDirectSelectionBlocked ? pendingExerciseChange : null,
   )
 
-  const handleExerciseSelection = (index: number, exerciseId: string) => {
+  // Mid-session, moving the headset to another exercise is a treatment
+  // decision: ask first instead of acting on a stray tap.
+  const handleSelect = (index: number, exerciseId: string, name: string) => {
     if (isProgramActive && isMain) {
-      void requestDirectExerciseSelection(index)
+      if (index === headsetConfirmedExerciseIndex) return
+      setPendingJump({ index, exerciseId, name })
       return
     }
-
-    selectedDevice?.events.program.ChangeExercise(exerciseId)
-    currExercise.current = index
-  }
-
-  const applySettings = (index: number) => {
-    if (!exercises) return
-
-    const { exerciseId, sets, reps, restTime, holdTime, speed, romMode } =
-      exercises[index]
-
-    const payload = {
-      id: exerciseId,
-      sets,
-      reps,
-      restTime,
-      holdTime,
-      speed,
-      romMode,
-    }
-
-    if (currExercise.current === index) {
-      try {
-        updatePatientDashboardState({
-          activeExerciseData: {
-            ...activeExerciseData,
-            totalReps: reps,
-            totalSets: sets,
-          },
-        })
-      } catch (error) {
-        console.error(error)
-      } finally {
-        notify.success({
-          key: 'toast.settingsAppliedCurrent',
-          ns: 'patient-dashboard',
-        })
-      }
-    }
-
-    if (isProgramActive) selectedDevice?.events.program.SettingsChange(payload)
-  }
-
-  const applySettingsToAllExercises = (index: number) => {
-    if (!exercises.length) return
-
-    const sourceExercise = exercises[index]
-    if (!sourceExercise) return
-
-    const { sets, reps, restTime, holdTime, speed, romMode } = sourceExercise
-    const syncedExercises = exercises.map((exercise) => ({
-      ...exercise,
-      sets,
-      reps,
-      restTime,
-      holdTime,
-      speed,
-      romMode,
-    }))
-
-    try {
-      setExercises(syncedExercises)
-    } catch (error) {
-      console.error(error)
-    } finally {
-      notify.success({
-        key: 'toast.settingsAppliedAll',
-        ns: 'patient-dashboard',
-      })
-    }
-  }
-
-  const moveExerciseUp = (index: number) => {
-    if (index === 0 || !exercises) return
-
-    const newExercises = [...exercises]
-    ;[newExercises[index - 1], newExercises[index]] = [
-      newExercises[index],
-      newExercises[index - 1],
-    ]
-
-    setExercises(newExercises)
-  }
-
-  const moveExerciseDown = (index: number) => {
-    if (index === exercises.length - 1 || !exercises) return
-
-    const newExercises = [...exercises]
-    ;[newExercises[index], newExercises[index + 1]] = [
-      newExercises[index + 1],
-      newExercises[index],
-    ]
-
-    setExercises(newExercises)
+    actions.selectExercise(index, exerciseId)
   }
 
   return (
     <TooltipProvider delayDuration={200}>
-      <Card className={cn('', className)}>
+      <Card className={cn('gap-3', className)}>
         <CardHeader>
           <CardTitle>{t('exerciseList.title')}</CardTitle>
-          {isActiveMainSession && (
-            <p className='text-muted-foreground text-xs'>
-              {t('exerciseList.legend')}
-            </p>
-          )}
           {isDirectSelectionBlocked && directSelectionBlockedTooltip && (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -207,143 +87,40 @@ const ExerciseList = ({ className }: { className?: string }) => {
             </Tooltip>
           )}
         </CardHeader>
-        <CardContent className='overflow-auto p-2'>
+        <CardContent className='min-h-0 flex-1 overflow-auto p-2'>
           {exercises.length !== 0 ? (
             <ItemGroup>
               {exercises.map((ex, index) => {
-                const highlightState = isActiveMainSession
-                  ? resolveExerciseListHighlightState({
-                      exerciseIndex: index,
-                      ...exerciseListHighlightContext,
-                    })
-                  : null
-
                 const defaultExercise = defaultExercises?.find(
                   (de) => de.id === ex.exerciseId,
                 )
+                const name = getDisplayName(defaultExercise) ?? ''
 
                 return (
                   <Fragment key={ex.id}>
-                    <motion.div
-                      layout
-                      initial={{ opacity: 0, y: -20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 20 }}
-                      transition={{
-                        layout: { duration: 0.3, ease: 'easeInOut' },
-                        opacity: { duration: 0.2 },
-                        y: { duration: 0.2 },
-                      }}
-                    >
-                      <Item
-                        id={ex.id}
-                        size='sm'
-                        className={cn(
-                          'hover:bg-vital-blue-700/20 px-2',
-                          resolveExerciseListHighlightClass(highlightState),
-                        )}
-                      >
-                        <ItemMedia className='flex-col'>
-                          <Button
-                            size='icon-sm'
-                            variant='ghost'
-                            onClick={() => moveExerciseUp(index)}
-                            disabled={
-                              index === 0 || isProgramActive || isProgramPaused
-                            }
-                          >
-                            <ChevronUp />
-                          </Button>
-                          <Button
-                            size='icon-sm'
-                            variant='ghost'
-                            onClick={() => moveExerciseDown(index)}
-                            disabled={
-                              index === exercises.length - 1 ||
-                              isProgramActive ||
-                              isProgramPaused
-                            }
-                          >
-                            <ChevronDown />
-                          </Button>
-                        </ItemMedia>
-                        {defaultExercise && (
-                          <ExerciseDescriptionCard exercise={defaultExercise} />
-                        )}
-
-                        <div className='flex min-w-0 flex-1 items-center gap-2'>
-                          <p
-                            className={cn(
-                              'truncate overflow-x-hidden hover:cursor-pointer',
-                              isDirectSelectionBlocked &&
-                                'pointer-events-none opacity-60',
-                            )}
-                            onClick={() =>
-                              handleExerciseSelection(index, ex.exerciseId)
-                            }
-                          >
-                            {getDisplayName(defaultExercise)}
-                          </p>
-                          {shouldShowExerciseListHighlightBadge(
-                            highlightState,
-                          ) && (
-                            <span
-                              className={cn(
-                                'shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium tracking-wide uppercase',
-                                resolveExerciseListHighlightBadgeClass(
-                                  highlightState,
-                                ),
-                              )}
-                            >
-                              {exerciseListHighlightLabel(highlightState)}
-                            </span>
-                          )}
-                        </div>
-
-                        <ItemActions>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button variant='outline' size='icon'>
-                                <Settings />
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent
-                              side='right'
-                              className='flex flex-col gap-4'
-                            >
-                              <ExerciseSettings
-                                ex={ex}
-                                exercises={exercises}
-                                setExercises={setExercises}
-                                index={index}
-                                orientation='vertical'
-                              />
-
-                              <div className='flex flex-wrap gap-2'>
-                                {exercises.length > 1 && (
-                                  <Button
-                                    variant='outline'
-                                    className='flex-1'
-                                    onClick={() =>
-                                      applySettingsToAllExercises(index)
-                                    }
-                                  >
-                                    {t('exerciseList.applyToAll')}
-                                  </Button>
-                                )}
-                                <Button
-                                  className='flex-1'
-                                  onClick={() => applySettings(index)}
-                                >
-                                  {t('exerciseList.applyChanges')}
-                                </Button>
-                              </div>
-                              <PopoverArrow className='fill-zinc-200 dark:fill-zinc-800' />
-                            </PopoverContent>
-                          </Popover>
-                        </ItemActions>
-                      </Item>
-                    </motion.div>
+                    <ExerciseListRow
+                      rowId={ex.id}
+                      index={index}
+                      exerciseName={name}
+                      defaultExercise={defaultExercise}
+                      highlightState={
+                        isActiveMainSession
+                          ? resolveExerciseListHighlightState({
+                              exerciseIndex: index,
+                              headsetConfirmedExerciseIndex,
+                              pendingExerciseChange,
+                            })
+                          : null
+                      }
+                      isFirst={index === 0}
+                      isLast={index === exercises.length - 1}
+                      reorderLocked={isProgramActive || isProgramPaused}
+                      selectionBlocked={isDirectSelectionBlocked}
+                      onSelect={() => handleSelect(index, ex.exerciseId, name)}
+                      onMove={actions.moveExercise}
+                      onApply={actions.applySettings}
+                      onApplyToAll={actions.applySettingsToAllExercises}
+                    />
                     {index !== exercises.length - 1 && <ItemSeparator />}
                   </Fragment>
                 )
@@ -354,6 +131,22 @@ const ExerciseList = ({ className }: { className?: string }) => {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={pendingJump !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingJump(null)
+        }}
+        title={t('jumpConfirm.title', { exercise: pendingJump?.name ?? '' })}
+        description={t('jumpConfirm.description')}
+        confirmLabel={t('jumpConfirm.confirm')}
+        cancelLabel={t('jumpConfirm.cancel')}
+        onConfirm={() => {
+          if (pendingJump) {
+            actions.selectExercise(pendingJump.index, pendingJump.exerciseId)
+          }
+        }}
+      />
     </TooltipProvider>
   )
 }

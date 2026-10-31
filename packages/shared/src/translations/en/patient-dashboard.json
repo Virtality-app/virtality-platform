@@ -24,10 +24,17 @@
   "controls": {
     "cast": "Cast",
     "device": "Device",
-    "sets": "Sets: {{current}} / {{total}}",
-    "reps": "Reps: {{current}} / {{total}}",
     "skipNext": "Skip to next exercise",
-    "skipPrevious": "Skip to previous exercise"
+    "skipPrevious": "Skip to previous exercise",
+    "start": "Start session",
+    "starting": "Starting…",
+    "pause": "Pause",
+    "resume": "Resume",
+    "end": "End session",
+    "previous": "Previous",
+    "next": "Next",
+    "startWarmup": "Start warm-up",
+    "endWarmup": "End warm-up"
   },
   "mode": {
     "placeholder": "Choose Mode...",
@@ -58,7 +65,6 @@
   },
   "exerciseList": {
     "title": "Exercises",
-    "legend": "Green ring: headset-confirmed exercise. Amber ring: pending change target.",
     "selectionLocked": "Exercise list selection is locked while a change is in flight.",
     "empty": "No exercises...",
     "applyToAll": "Apply to all",
@@ -66,7 +72,11 @@
     "highlight": {
       "confirmed": "Current (headset)",
       "pending": "Pending change"
-    }
+    },
+    "goTo": "Go to {{exercise}}",
+    "moveUp": "Move {{exercise}} up",
+    "moveDown": "Move {{exercise}} down",
+    "settings": "Settings for {{exercise}}"
   },
   "exerciseChange": {
     "currentFallback": "Current exercise",
@@ -143,7 +153,7 @@
   },
   "sessionDialog": {
     "title": "Session Completed",
-    "description": "Choose how to save this session and any supplemental therapies used outside VR.",
+    "description": "Here is how the session went. Finish now, or add details first.",
     "programLibrary": "Program Library",
     "finishOnly": "Finish session only",
     "updateProgram": "Update this program",
@@ -155,12 +165,42 @@
     "otherPlaceholder": "Other therapy used...",
     "notes": "Session notes",
     "notesPlaceholder": "Add notes about this session...",
-    "dontSave": "Don't Save"
-  },
-  "sessionNotes": {
-    "title": "Session Notes",
-    "label": "Notes",
-    "saving": "Saving..."
+    "finish": "Finish session",
+    "addDetails": "Add details",
+    "hideDetails": "Hide details",
+    "detailsHint": "Program changes, therapies and notes",
+    "discard": "Discard session record",
+    "summary": {
+      "label": "Session summary",
+      "duration": "Duration",
+      "minutes_one": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "durationUnknown": "Under 1 min",
+      "exercises": "Exercises",
+      "exercisesValue": "{{done}} of {{total}}",
+      "reps": "Reps recorded"
+    },
+    "discardConfirm": {
+      "title": "Discard this session record?",
+      "description": "The session and its recorded progress are removed from the patient's history. This can't be undone.",
+      "confirm": "Discard record",
+      "cancel": "Keep record"
+    },
+    "therapies": {
+      "manual_therapy": "Manual therapy",
+      "electrotherapy": "Electrotherapy",
+      "shockwave_therapy": "Shockwave therapy",
+      "pnf": "PNF",
+      "trigger_point": "Trigger point",
+      "balance_therapy": "Balance therapy",
+      "elastic_band_therapy": "Elastic band therapy",
+      "dry_needling": "Dry needling",
+      "strength_training": "Strength training",
+      "massage": "Massage",
+      "dual_task_training": "Dual-task training",
+      "kinesiotherapy": "Kinesiotherapy",
+      "gait_training": "Gait training"
+    }
   },
   "casting": {
     "title": "Casting",
@@ -237,5 +277,27 @@
     "settingsAppliedAll": "Settings applied to all exercises",
     "selectProgram": "Select a program or use Quick Start.",
     "selectAvatarAndMap": "You need to select both an avatar and map. Find them in Scene Settings."
+  },
+  "running": {
+    "label": "Current exercise",
+    "live": "In session",
+    "paused": "Paused",
+    "launching": "Starting on the headset…",
+    "exerciseOf": "Exercise {{current}} of {{total}}",
+    "set": "Set",
+    "rep": "Rep",
+    "outOf": "of {{total}}"
+  },
+  "endConfirm": {
+    "title": "End this session?",
+    "description": "The headset stops the program. Next, you finish the session and can add details.",
+    "confirm": "End session",
+    "cancel": "Keep going"
+  },
+  "jumpConfirm": {
+    "title": "Go to {{exercise}}?",
+    "description": "The headset leaves the current exercise and starts this one.",
+    "confirm": "Go to exercise",
+    "cancel": "Stay here"
   }
 }

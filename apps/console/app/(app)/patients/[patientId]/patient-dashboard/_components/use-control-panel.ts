@@ -329,6 +329,8 @@ const useControlPanel = () => {
     backSkipControl,
     isSkipBlockedByProgramState,
     isMain,
+    currentExerciseIndex,
+    exerciseCount,
     activeExerciseData,
     pendingExerciseChange,
     exercises,

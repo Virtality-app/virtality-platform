@@ -1,4 +1,13 @@
+import { useEffect, useState } from 'react'
+import { ChevronDown } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
+import { Spinner } from '@virtality/ui/components/spinner'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@virtality/ui/components/collapsible'
+import { SessionCompletionSaveChoice } from '@virtality/shared/utils'
 import {
   Dialog,
   DialogContent,
@@ -7,384 +16,139 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { usePatientDashboard } from '@/context/patient-dashboard-context'
-import { FormCheckbox, FormInput } from '@/components/ui/form'
-import {
-  PatientSessionSchema,
-  PatientSessionForm,
-} from '@virtality/shared/types'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
-import { Textarea } from '@virtality/ui/components/textarea'
-import { Input } from '@virtality/ui/components/input'
-import {
-  getQueryClient,
-  useCreateSupplementalTherapyRelMutation,
-  useSupplementalTherapyQuery,
-  usePatientSession,
-  useDeletePatientSession,
-  useORPC,
-  useCompleteSession,
-  useReusableProgram,
-} from '@virtality/react-query'
-import { trackAnalyticsEvent } from '@/lib/analytics-contract'
-import { useEffect, useState } from 'react'
+import { ConfirmDialog } from '@/components/dialogs/confirm-dialog'
 import { useClientT } from '@/i18n/use-client-t'
-import { SessionCompletionSaveChoice } from '@virtality/shared/utils'
-import { generateUUID } from '@virtality/shared/utils'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Label } from '@virtality/ui/components/label'
-import {
-  buildInitialSessionCompletionDialogState,
-  buildSessionCompletionPayload,
-  canShowUpdateSourceProgramOption,
-} from '@/lib/session-completion-dialog'
+import { cn } from '@/lib/utils'
+import SessionCompletionSummary from './session-completion-summary'
+import SessionSaveChoice from './session-save-choice'
+import SessionTherapiesAndNotes from './session-therapies-and-notes'
+import { useSessionCompletion } from './use-session-completion'
 
+/**
+ * Session Completed: a summary and one Finish action. Program changes,
+ * therapies and notes wait behind "Add details"; discarding the record is
+ * set apart and confirmed.
+ */
 const SessionDialog = () => {
   const { t } = useClientT(['patient-dashboard', 'common'])
-  const queryClient = getQueryClient()
-  const orpc = useORPC()
-  const { state, handler, patientId } = usePatientDashboard()
-  const { isDialogOpen, completionSessionId, exercises } = state
-  const { setDialogOpen, updatePatientDashboardState } = handler
-  const { data: supplementalTherapies } = useSupplementalTherapyQuery()
-  const { data: patientSessionData } = usePatientSession({
-    sessionId: completionSessionId ?? undefined,
-  })
-  const { data: sourceProgram } = useReusableProgram({
-    id: patientSessionData?.sourceReusableProgramId ?? undefined,
-  })
+  const {
+    isDialogOpen,
+    session,
+    summary,
+    form,
+    completionState,
+    setCompletionState,
+    showUpdateSourceProgram,
+    isCompleting,
+    finish,
+    discard,
+  } = useSessionCompletion()
+  const [detailsOpen, setDetailsOpen] = useState(false)
+  const [confirmDiscard, setConfirmDiscard] = useState(false)
 
-  const [completionState, setCompletionState] = useState(
-    buildInitialSessionCompletionDialogState(null),
-  )
-
+  // Each completed session starts with details folded away.
   useEffect(() => {
-    if (!isDialogOpen) return
+    if (!isDialogOpen) setDetailsOpen(false)
+  }, [isDialogOpen])
 
-    setCompletionState(
-      buildInitialSessionCompletionDialogState(
-        patientSessionData?.sourceProgramName,
-      ),
-    )
-  }, [isDialogOpen, patientSessionData?.sourceProgramName])
-
-  const showUpdateSourceProgram = canShowUpdateSourceProgramOption(
-    {
-      sourceReusableProgramId:
-        patientSessionData?.sourceReusableProgramId ?? null,
-      sourceProgramName: patientSessionData?.sourceProgramName ?? null,
-    },
-    sourceProgram,
-  )
-
-  const { mutateAsync: completeSession } = useCompleteSession({
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: orpc.patientSession.list.queryKey({
-          input: { where: { patientId } },
-        }),
-      })
-      queryClient.invalidateQueries({
-        queryKey: orpc.reusableProgram.list.key(),
-      })
-    },
-  })
-
-  const { mutateAsync: createSupplementalTherapyRel } =
-    useCreateSupplementalTherapyRelMutation({
-      onSuccess: (_, variables) => {
-        trackAnalyticsEvent('supplemental_therapy_selected', {
-          session_id: completionSessionId ?? '',
-          therapy_count: variables.methods?.length ?? 0,
-          includes_other: !!variables.otherEnabled,
-        })
-      },
-    })
-
-  const { mutate: deletePatientSession } = useDeletePatientSession({
-    onSuccess: () => {
-      trackAnalyticsEvent('session_deleted_without_save', {
-        session_id: completionSessionId ?? '',
-      })
-    },
-  })
-
-  const form = useForm({
-    resolver: zodResolver(
-      PatientSessionSchema.extend({ notes: z.string().optional().nullable() }),
-    ),
-    defaultValues: {
-      methods: [],
-      otherEnabled: false,
-      otherText: '',
-      notes: '',
-    },
-    values: {
-      notes: patientSessionData?.notes ?? '',
-    },
-  })
-
-  const closeDialog = () => {
-    updatePatientDashboardState({
-      isDialogOpen: false,
-      completionSessionId: null,
-    })
-    form.reset()
-  }
-
-  const onSubmit = async (
-    values: PatientSessionForm & { notes?: string | null },
-  ) => {
-    if (!completionSessionId) return
-
-    if (
-      completionState.saveChoice ===
-        SessionCompletionSaveChoice.UPDATE_SOURCE_PROGRAM &&
-      !completionState.showUpdateConfirmation
-    ) {
-      setCompletionState((current) => ({
-        ...current,
-        showUpdateConfirmation: true,
-      }))
-      return
-    }
-
-    const payload = buildSessionCompletionPayload({
-      sessionId: completionSessionId,
-      saveChoice: completionState.saveChoice,
-      newProgramName: completionState.newProgramName,
-      notes: values.notes,
-      workingCopy: exercises,
-      persistedRows:
-        patientSessionData?.sessionExercise?.map((exercise) => ({
-          id: exercise.id,
-          exerciseId: exercise.exerciseId,
-        })) ?? [],
-      createId: generateUUID,
-    })
-
-    await completeSession(payload)
-    await createSupplementalTherapyRel({
-      ...values,
-      patientSessionId: completionSessionId,
-    })
-
-    trackAnalyticsEvent('session_notes_saved', {
-      session_id: completionSessionId,
-      notes_length: values.notes?.length ?? 0,
-    })
-
-    closeDialog()
-  }
-
-  const handleDeletePatientSession = () => {
-    if (!completionSessionId) return
-
-    closeDialog()
-    deletePatientSession({ id: completionSessionId })
-  }
-
-  const handleClicksOutsideDialog = (
-    e: CustomEvent<{
-      originalEvent: PointerEvent
-    }>,
-  ) => {
-    e.preventDefault()
-  }
-
-  const saveChoice = completionState.saveChoice
+  const needsUpdateConfirmation =
+    completionState.saveChoice ===
+      SessionCompletionSaveChoice.UPDATE_SOURCE_PROGRAM &&
+    !completionState.showUpdateConfirmation
 
   return (
     <Dialog
       open={isDialogOpen}
       onOpenChange={(open) => {
-        if (!open) closeDialog()
-        else setDialogOpen(open)
+        // Closing (Esc or ×) finishes the session rather than leaving it open.
+        if (!open && !isCompleting) void finish()
       }}
     >
-      <form id='session-completion-form' onSubmit={form.handleSubmit(onSubmit)}>
-        <DialogContent
-          className='flex max-h-[90vh] flex-col overflow-hidden'
-          onPointerDownOutside={handleClicksOutsideDialog}
-        >
-          <DialogHeader>
-            <DialogTitle>{t('sessionDialog.title')}</DialogTitle>
-          </DialogHeader>
+      <DialogContent
+        className='flex max-h-[90vh] flex-col overflow-hidden sm:max-w-xl'
+        onPointerDownOutside={(event) => event.preventDefault()}
+      >
+        <DialogHeader>
+          <DialogTitle>{t('sessionDialog.title')}</DialogTitle>
           <DialogDescription>
             {t('sessionDialog.description')}
           </DialogDescription>
+        </DialogHeader>
 
-          <div className='scrollbar-gutter-stable min-h-0 flex-1 overflow-y-auto'>
-            <div className='space-y-4 p-1 pr-3'>
-              <div className='space-y-3'>
-                <p className='text-sm font-medium'>
-                  {t('sessionDialog.programLibrary')}
-                </p>
-                <RadioGroup
-                  value={saveChoice}
-                  onValueChange={(value) =>
-                    setCompletionState((current) => ({
-                      ...current,
-                      saveChoice: value as SessionCompletionSaveChoice,
-                      showUpdateConfirmation: false,
-                    }))
-                  }
-                >
-                  <div className='flex items-start gap-3'>
-                    <RadioGroupItem
-                      value={SessionCompletionSaveChoice.FINISH_ONLY}
-                      id='finish-only'
-                    />
-                    <Label htmlFor='finish-only' className='font-normal'>
-                      {t('sessionDialog.finishOnly')}
-                    </Label>
-                  </div>
+        <div className='scrollbar-gutter-stable min-h-0 flex-1 space-y-4 overflow-y-auto p-1 pr-3'>
+          <SessionCompletionSummary summary={summary} />
 
-                  {showUpdateSourceProgram && (
-                    <div className='flex items-start gap-3'>
-                      <RadioGroupItem
-                        value={
-                          SessionCompletionSaveChoice.UPDATE_SOURCE_PROGRAM
-                        }
-                        id='update-source-program'
-                      />
-                      <Label
-                        htmlFor='update-source-program'
-                        className='font-normal'
-                      >
-                        {t('sessionDialog.updateProgram')}
-                        {patientSessionData?.sourceProgramName
-                          ? ` (${patientSessionData.sourceProgramName})`
-                          : ''}
-                      </Label>
-                    </div>
+          <Collapsible open={detailsOpen} onOpenChange={setDetailsOpen}>
+            <CollapsibleTrigger asChild>
+              <Button
+                variant='ghost'
+                className='h-auto w-full justify-between px-3 py-2.5 text-left'
+              >
+                <span>
+                  <span className='block font-medium'>
+                    {detailsOpen
+                      ? t('sessionDialog.hideDetails')
+                      : t('sessionDialog.addDetails')}
+                  </span>
+                  <span className='text-muted-foreground block text-sm font-normal'>
+                    {t('sessionDialog.detailsHint')}
+                  </span>
+                </span>
+                <ChevronDown
+                  className={cn(
+                    'size-4 transition-transform',
+                    detailsOpen && 'rotate-180',
                   )}
-
-                  <div className='flex items-start gap-3'>
-                    <RadioGroupItem
-                      value={SessionCompletionSaveChoice.SAVE_AS_NEW_PROGRAM}
-                      id='save-as-new-program'
-                    />
-                    <Label
-                      htmlFor='save-as-new-program'
-                      className='font-normal'
-                    >
-                      {t('sessionDialog.saveAsNew')}
-                    </Label>
-                  </div>
-                </RadioGroup>
-
-                {saveChoice ===
-                  SessionCompletionSaveChoice.SAVE_AS_NEW_PROGRAM && (
-                  <div className='space-y-2'>
-                    <Label htmlFor='new-program-name'>
-                      {t('sessionDialog.programName')}
-                    </Label>
-                    <Input
-                      id='new-program-name'
-                      value={completionState.newProgramName}
-                      onChange={(event) =>
-                        setCompletionState((current) => ({
-                          ...current,
-                          newProgramName: event.target.value,
-                        }))
-                      }
-                    />
-                  </div>
-                )}
-
-                {saveChoice ===
-                  SessionCompletionSaveChoice.UPDATE_SOURCE_PROGRAM &&
-                  completionState.showUpdateConfirmation && (
-                    <p className='text-muted-foreground text-sm'>
-                      {t('sessionDialog.overwriteWarning')}
-                    </p>
-                  )}
-              </div>
-
-              <div className='space-y-2'>
-                <p className='text-sm font-medium'>
-                  {t('sessionDialog.supplementalTherapies')}
-                </p>
-                {supplementalTherapies?.map((method) => (
-                  <FormCheckbox
-                    key={method.id}
-                    control={form.control}
-                    label={
-                      <span className='capitalize'>
-                        {method.name.replaceAll('_', ' ')}
-                      </span>
-                    }
-                    // eslint-disable-next-line react-hooks/incompatible-library
-                    checked={form.watch('methods')?.includes(method.id)}
-                    onCheckedChange={(value) => {
-                      const current = form.getValues('methods') ?? []
-
-                      form.setValue(
-                        'methods',
-                        value
-                          ? [...current, method.id]
-                          : current?.filter((id) => id !== method.id),
-                      )
-                    }}
-                    name={method.name as keyof PatientSessionForm}
-                  />
-                ))}
-                <FormCheckbox
-                  label={t('sessionDialog.other')}
-                  name={'otherEnabled'}
-                  control={form.control}
                 />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className='space-y-5 px-1 pt-3'>
+              <SessionSaveChoice
+                completionState={completionState}
+                setCompletionState={setCompletionState}
+                showUpdateSourceProgram={showUpdateSourceProgram}
+                sourceProgramName={session?.sourceProgramName}
+              />
+              <SessionTherapiesAndNotes form={form} />
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
 
-                {form.watch('otherEnabled') && (
-                  <FormInput
-                    key={'other'}
-                    control={form.control}
-                    label={
-                      <span className='hidden'>
-                        {t('sessionDialog.otherPlaceholder')}
-                      </span>
-                    }
-                    name={'otherText'}
-                    placeholder={t('sessionDialog.otherPlaceholder')}
-                  />
-                )}
-              </div>
+        <DialogFooter className='gap-2 sm:justify-between'>
+          <Button
+            type='button'
+            variant='ghost'
+            className='text-destructive hover:text-destructive hover:bg-destructive/10'
+            disabled={isCompleting}
+            onClick={() => setConfirmDiscard(true)}
+          >
+            {t('sessionDialog.discard')}
+          </Button>
+          <Button
+            type='button'
+            variant='primary'
+            size='lg'
+            disabled={isCompleting}
+            onClick={() => void finish()}
+          >
+            {isCompleting ? <Spinner className='size-4' /> : null}
+            {needsUpdateConfirmation
+              ? t('common:btn.continue')
+              : t('sessionDialog.finish')}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
 
-              <div className='space-y-2 pb-1'>
-                <Label htmlFor='session-notes'>
-                  {t('sessionDialog.notes')}
-                </Label>
-                <Textarea
-                  id='session-notes'
-                  value={form.watch('notes') ?? ''}
-                  onChange={(e) => form.setValue('notes', e.target.value)}
-                  placeholder={t('sessionDialog.notesPlaceholder')}
-                />
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              type='button'
-              variant='destructive'
-              onClick={handleDeletePatientSession}
-            >
-              {t('sessionDialog.dontSave')}
-            </Button>
-            <Button form='session-completion-form' variant='default'>
-              {saveChoice ===
-                SessionCompletionSaveChoice.UPDATE_SOURCE_PROGRAM &&
-              !completionState.showUpdateConfirmation
-                ? t('common:btn.continue')
-                : t('common:btn.save')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </form>
+      <ConfirmDialog
+        open={confirmDiscard}
+        onOpenChange={setConfirmDiscard}
+        title={t('sessionDialog.discardConfirm.title')}
+        description={t('sessionDialog.discardConfirm.description')}
+        confirmLabel={t('sessionDialog.discardConfirm.confirm')}
+        cancelLabel={t('sessionDialog.discardConfirm.cancel')}
+        onConfirm={discard}
+        destructive
+      />
     </Dialog>
   )
 }

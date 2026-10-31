@@ -6,7 +6,6 @@ import ChartCard from './chart-card'
 import SessionDialog from './session-dialog'
 import QuickStartDialog from './quickstart-dialog'
 import { ExerciseLibraryProvider } from '@/context/exercise-library-context'
-import SessionNotesCard from './session-notes-card'
 import useIsAuthed from '@/hooks/use-is-authed'
 import { useCastingHandshake } from '@/hooks/use-casting-handshake'
 import { usePatientDashboard } from '@/context/patient-dashboard-context'
@@ -23,7 +22,6 @@ import {
   dashboardGridClassName,
   dashboardMainClassName,
   dashboardPanelClassName,
-  dashboardSessionNotesClassName,
 } from './patient-dashboard-grid'
 
 const PatientDashboard = () => {
@@ -57,10 +55,6 @@ const PatientDashboard = () => {
           <CastingContent className={dashboardMainClassName} />
         ) : (
           <ChartCard className={dashboardChartClassName} />
-        )}
-
-        {isImmersive ? null : (
-          <SessionNotesCard className={dashboardSessionNotesClassName} />
         )}
 
         <SessionDialog />
