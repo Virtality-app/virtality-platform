@@ -1,19 +1,18 @@
 import { cn } from '@/lib/utils'
 
 type DashboardGridFlags = {
-  /** Immersive Video mode: no exercise list and no session notes. */
+  /** Immersive Video mode: no exercise list. */
   hideExerciseList?: boolean
 }
 
 /**
- * Four areas. `panel` holds the expiry banner and the toolbar, so it grows
- * when the toolbar wraps; `list` is the exercise list; `main` is the chart,
- * the casting view or the immersive video stack; `notes` is the session
- * notes card.
+ * Three areas. `panel` holds the expiry banner, the toolbar and, during a
+ * session, the session panel; `list` is the exercise list; `main` is the
+ * chart, the casting view or the immersive video stack.
  *
  * Below 1526px everything stacks in reading order, with the exercise list
  * above the chart so the current exercise stays in view on a tablet. From
- * 1526px the list takes the left column beside the other areas.
+ * 1526px the list takes the left column beside the panel and main areas.
  */
 export function dashboardGridClassName({
   hideExerciseList,
@@ -22,7 +21,7 @@ export function dashboardGridClassName({
     'container grid grid-cols-1 content-start items-start gap-4 p-4 sm:p-8',
     hideExerciseList
       ? "[grid-template-areas:'panel'_'main']"
-      : "[grid-template-areas:'panel'_'list'_'main'_'notes'] min-[1526px]:grid-cols-[minmax(18rem,3fr)_minmax(0,9fr)] min-[1526px]:[grid-template-areas:'list_panel'_'list_main'_'list_notes']",
+      : "[grid-template-areas:'panel'_'list'_'main'] min-[1526px]:grid-cols-[minmax(18rem,3fr)_minmax(0,9fr)] min-[1526px]:[grid-template-areas:'list_panel'_'list_main']",
   )
 }
 
@@ -40,5 +39,3 @@ export const dashboardChartClassName = cn(
   dashboardMainClassName,
   'h-[30rem] min-[1526px]:h-[40rem]',
 )
-
-export const dashboardSessionNotesClassName = 'h-96 min-w-0 [grid-area:notes]'
