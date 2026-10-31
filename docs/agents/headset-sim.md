@@ -6,14 +6,16 @@ The **Simulated Headset** (`services/socket/src/sim/`) joins a device's room as 
 
 1. Start the socket server, the API server and the console as three background processes: `pnpm --filter @virtality/socket dev`, `pnpm --filter @virtality/server dev` and `pnpm --filter @virtality/console dev`. Send each one's output to a log file. Use these instead of `pnpm dev:apps` or `pnpm dev:console`: turbo refuses to run long-running tasks without its terminal UI, so those commands exit at once when an agent runs them. The console is ready when `localhost:3001` and the socket server's port `8081` are both listening.
 2. Open `localhost:3001`. The console needs a signed-in user, so ask the user to sign in in that tab.
-3. On a patient dashboard, open **Device**, pick a device (the dev database has one named `sim`) and click **Connect**. The room code is in the socket server's log as `"roomCode"` in the `socket.room.role_slot_joined` entry.
-4. Run `ROOM_CODE=<roomCode> pnpm --filter @virtality/socket dev_sim` in the background. `services/socket/README.md` has the options, such as `SOCKET_URL`.
+3. Run `pnpm --filter @virtality/socket dev_sim` in the background. With no `ROOM_CODE` it waits for a pairing.
+4. On the **Devices** page, add a device and press **Pair**. The simulator claims the code about 2 s later as a new `sim-xxxxxxxx` headset and the card shows the device as paired. Then, on a patient dashboard, open **Device**, pick that device and click **Connect**.
 
-The simulator is running when it logs `[sim] connected … room <roomCode>` and the device shows Online in the console. The simulator logs every event it receives (`←`) and sends (`→`). Read those lines to confirm what the console sent.
+To reuse a device that is already paired instead, run `ROOM_CODE=<deviceId> pnpm --filter @virtality/socket dev_sim`. `services/socket/README.md` has the options, such as `SOCKET_URL` and `SERVER_URL`.
+
+The simulator is running when it logs `[sim <deviceId>] connected … room <deviceId>` and the device shows Online in the console. The simulator logs every event it receives (`←`) and sends (`→`). Read those lines to confirm what the console sent.
 
 Leaving the patient dashboard disconnects the console from the device, and the console asks you to confirm first. When you come back, open **Device** and click **Connect** again. The simulator keeps its library while it runs.
 
-To play an immersive video, first download it: open **VR Experiences**, pick the simulator's headset and click **Download** on a video. When you're done, stop the four processes you started.
+To play an immersive video, first download it: open **VR Experiences**, pick the simulator's headset and click **Download** on a video. When you're done, stop the four processes you started. Each simulator restart needs a new pairing, because the old `sim-…` devices stay paired but have no headset behind them.
 
 ## What it answers
 

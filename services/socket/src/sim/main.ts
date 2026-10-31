@@ -1,63 +1,75 @@
-import { io } from 'socket.io-client'
-import { CONNECTION_EVENT, ROOM_PEER_ROLE } from '@virtality/shared/types'
-import { createSimulatedHeadset, type Emit } from './simulated-headset'
+import { prisma } from '@virtality/db'
+import { connectSimulatedHeadset } from './headset-connection'
+import {
+  createHttpClaim,
+  createPairingWatcher,
+  PAIRING_POLL_MS,
+} from './pairing-watcher'
 
 /**
- * Simulated Headset: a standalone `vr` peer for a normally-running socket
- * server. Run with `ROOM_CODE=<deviceId> pnpm --filter @virtality/socket dev_sim`.
+ * Simulated Headset: standalone `vr` peers for a normally-running socket
+ * server.
+ *
+ * - `ROOM_CODE=<deviceId>`: join that already-paired device's room.
+ * - No `ROOM_CODE`: pairing mode. Every pairing started from the console's
+ *   Devices page is claimed by a new simulated headset, which then joins.
  */
-
-const TICK_MS = 100
 
 const {
   ROOM_CODE,
   SOCKET_URL = 'http://localhost:8081',
+  SERVER_URL = 'http://localhost:8080',
   SIM_IGNORE_VIDEO_STOP,
 } = process.env
 
-if (!ROOM_CODE) {
-  console.error('Missing ROOM_CODE (the device id shown in the console).')
-  process.exit(1)
-}
+const ignoreVideoStop = SIM_IGNORE_VIDEO_STOP === '1'
+const headsets: { close(): void }[] = []
+let pairingPoller: NodeJS.Timeout | undefined
 
-const socket = io(SOCKET_URL, {
-  query: { roomCode: ROOM_CODE, role: ROOM_PEER_ROLE.Vr },
-})
-const headset = createSimulatedHeadset({
-  ignoreVideoStop: SIM_IGNORE_VIDEO_STOP === '1',
-})
-
-function send(emits: Emit[]) {
-  for (const { event, payload } of emits) {
-    console.log(`[sim] → ${event}`, payload ?? '')
-    if (payload === undefined) socket.emit(event)
-    else socket.emit(event, payload)
-  }
-}
-
-socket.on('connect', () => {
-  console.log(
-    `[sim] connected as ${socket.id} to ${SOCKET_URL}, room ${ROOM_CODE}`,
+function connect(roomCode: string) {
+  headsets.push(
+    connectSimulatedHeadset({
+      socketUrl: SOCKET_URL,
+      roomCode,
+      ignoreVideoStop,
+    }),
   )
-})
-socket.on(CONNECTION_EVENT.DISCONNECTION, (reason) => {
-  console.log(`[sim] disconnected: ${reason}`)
-})
-socket.on(CONNECTION_EVENT.ERROR, (error) => {
-  console.error('[sim] server rejected the connection:', error)
-})
+}
 
-socket.onAny((event: string, payload?: unknown) => {
-  console.log(`[sim] ← ${event}`, payload ?? '')
-  send(headset.handle(event, payload))
-})
+if (ROOM_CODE) {
+  connect(ROOM_CODE)
+} else {
+  const watcher = createPairingWatcher({
+    findPendingPairings: () =>
+      prisma.devicePairingAttempt.findMany({
+        where: { status: 'PENDING', expiresAt: { gt: new Date() } },
+        select: { id: true, code: true },
+      }),
+    claim: createHttpClaim(SERVER_URL),
+    onPaired: connect,
+  })
 
-const ticker = setInterval(() => send(headset.tick(Date.now())), TICK_MS)
+  let polling = false
+  pairingPoller = setInterval(() => {
+    if (polling) return
+    polling = true
+    watcher
+      .poll()
+      .catch((error) => console.error('[sim] pairing poll failed:', error))
+      .finally(() => {
+        polling = false
+      })
+  }, PAIRING_POLL_MS)
+
+  console.log(
+    '[sim] waiting for pairing: add a device on the Devices page and press Pair',
+  )
+}
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.once(signal, () => {
-    clearInterval(ticker)
-    socket.close()
-    process.exit(0)
+    clearInterval(pairingPoller)
+    for (const headset of headsets) headset.close()
+    void prisma.$disconnect().finally(() => process.exit(0))
   })
 }
