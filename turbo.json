@@ -165,6 +165,37 @@
         "OTEL_LOGS_ENABLED"
       ]
     },
+    "dev:apps:sim": {
+      "with": [
+        "@virtality/console#dev",
+        "@virtality/adminboard#dev",
+        "@virtality/website#dev",
+        "@virtality/server#dev",
+        "@virtality/socket#dev",
+        "@virtality/socket#dev_sim",
+        "@virtality/nodemailer#dev:ethereal"
+      ],
+      "cache": false,
+      "persistent": true,
+      "interactive": true,
+      "env": [
+        "OTEL_DEPLOYMENT_ENVIRONMENT",
+        "OTEL_EXPORTER_OTLP_ENDPOINT",
+        "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT",
+        "OTEL_LOG_LEVEL",
+        "OTEL_LOGS_ENABLED"
+      ]
+    },
+    "@virtality/socket#dev_sim": {
+      "cache": false,
+      "persistent": true,
+      "passThroughEnv": [
+        "ROOM_CODE",
+        "SOCKET_URL",
+        "SERVER_URL",
+        "SIM_IGNORE_VIDEO_STOP"
+      ]
+    },
     "dev:console": {
       "with": [
         "@virtality/console#dev",

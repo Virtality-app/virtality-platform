@@ -13,6 +13,7 @@
   "scripts": {
     "dev": "turbo dev",
     "dev:apps": "turbo run dev:apps",
+    "dev:apps:sim": "turbo run dev:apps:sim",
     "dev:console": "turbo run dev:console",
     "dev:website": "turbo run dev:website",
     "dev:adminboard": "turbo run dev:adminboard",

@@ -34,3 +34,5 @@ generated*
 
 # DB dumps
 *.dump
+# Impeccable plugin output (local design critiques and live state)
+.impeccable/

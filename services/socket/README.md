@@ -15,6 +15,9 @@ pnpm --filter @virtality/socket dev
 
 # Included in the full suite
 pnpm dev:apps
+
+# Full suite plus the Simulated Headset in pairing mode (see below)
+pnpm dev:apps:sim
 ```
 
 Copy [`.env.example`](./.env.example) to `.env`. The `dev` script requires that file (`--env-file=.env`).

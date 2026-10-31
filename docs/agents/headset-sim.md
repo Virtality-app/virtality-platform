@@ -11,6 +11,8 @@ The **Simulated Headset** (`services/socket/src/sim/`) joins a device's room as 
 
 To reuse a device that is already paired instead, run `ROOM_CODE=<deviceId> pnpm --filter @virtality/socket dev_sim`. `services/socket/README.md` has the options, such as `SOCKET_URL` and `SERVER_URL`.
 
+A human can run `pnpm dev:apps:sim` instead of steps 1 and 3: it starts the full suite with the simulator in pairing mode.
+
 The simulator is running when it logs `[sim <deviceId>] connected … room <deviceId>` and the device shows Online in the console. The simulator logs every event it receives (`←`) and sends (`→`). Read those lines to confirm what the console sent.
 
 Leaving the patient dashboard disconnects the console from the device, and the console asks you to confirm first. When you come back, open **Device** and click **Connect** again. The simulator keeps its library while it runs.
