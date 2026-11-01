@@ -31,6 +31,7 @@ const ExerciseFilterSection = ({
         {options?.map((option) => {
           const isSelected = selected.includes(option)
           const iconSrc = iconSrcFor(option)
+          const label = labelFor(option)
           return (
             <Button
               key={option}
@@ -47,7 +48,7 @@ const ExerciseFilterSection = ({
               {iconSrc ? (
                 <Image
                   src={iconSrc}
-                  alt={option}
+                  alt=''
                   width={iconSize}
                   height={iconSize}
                   preload
@@ -55,7 +56,7 @@ const ExerciseFilterSection = ({
                   className='size-18 shrink-0'
                 />
               ) : null}
-              <span>{labelFor(option)}</span>
+              <span>{label}</span>
             </Button>
           )
         })}

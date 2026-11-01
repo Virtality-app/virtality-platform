@@ -1,10 +1,13 @@
 import { useClientT } from '@/i18n/use-client-t'
 import { bodyGroupIconSrcForCategory } from '@/lib/body-group-icon'
 import { equipmentIconSrcForItem } from '@/lib/equipment-icon'
+import {
+  bodyPartChipLabel,
+  equipmentChipLabel,
+} from '@/lib/exercise-filter-labels'
 import ExerciseFilterSection from './exercise-filter-section'
 import ExerciseGridSearch from './exercise-grid-search'
 import ExerciseGridCards from './exercise-grid-cards'
-import { equipmentChipLabel } from './exercise-grid-format'
 import { useExerciseGrid } from './use-exercise-grid'
 
 const ExerciseGrid = () => {
@@ -21,6 +24,7 @@ const ExerciseGrid = () => {
         onToggle={grid.toggleBodyPart}
         iconSrcFor={bodyGroupIconSrcForCategory}
         iconSize={24}
+        labelFor={(category) => bodyPartChipLabel(t, category)}
       />
 
       <ExerciseFilterSection
@@ -30,7 +34,7 @@ const ExerciseGrid = () => {
         onToggle={grid.toggleEquipment}
         iconSrcFor={equipmentIconSrcForItem}
         iconSize={400}
-        labelFor={equipmentChipLabel}
+        labelFor={(key) => equipmentChipLabel(t, key)}
       />
 
       <ExerciseGridSearch

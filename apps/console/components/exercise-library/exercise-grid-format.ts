@@ -5,13 +5,6 @@ import {
   type ExerciseLibraryFilterRow,
 } from '@virtality/shared/utils'
 
-export function equipmentChipLabel(key: string): string {
-  return key
-    .split('_')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-    .join(' ')
-}
-
 export function directionBadgesWithSelection<
   T extends ExerciseLibraryFilterRow,
 >(
