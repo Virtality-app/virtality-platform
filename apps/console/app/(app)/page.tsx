@@ -1,5 +1,4 @@
 import Dashboard from './_components/dashboard'
-import { DeviceContextProvider } from '@/context/device-context'
 import { cookies } from 'next/headers'
 
 const env = process.env.ENV ?? process.env.NEXT_PUBLIC_ENV ?? 'development'
@@ -15,11 +14,7 @@ const HomePage = async () => {
       : adminSessionCookieName,
   )
 
-  return (
-    <DeviceContextProvider>
-      <Dashboard isImpersonating={!!cookie} />
-    </DeviceContextProvider>
-  )
+  return <Dashboard isImpersonating={!!cookie} />
 }
 
 export default HomePage

@@ -56,6 +56,9 @@ const useSocketConnection = ({ device }: useSocketConnectionProps) => {
     const existing = inflightConnections.get(socket)
     if (existing) return existing
 
+    // An explicit connect takes the room back from a newer tab, so clear
+    // the replaced marker set by the ReplacementNotice handler below.
+    socket.io.opts.reconnection = true
     setMeta({ state: 'connecting', attempt: 0, error: null })
 
     const connectPromise = (async () => {

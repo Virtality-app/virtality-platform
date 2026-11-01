@@ -16,7 +16,7 @@ import DeviceCardActions from './device-card-actions'
 import { useReturnHomeOnPair } from './use-return-home-on-pair'
 import { H3, P } from '@/components/typography'
 import { cn } from '@/lib/utils'
-import useDevice from '@/hooks/use-device'
+import { useDeviceContext } from '@/context/device-context'
 import { useClientT } from '@/i18n/use-client-t'
 
 interface DeviceProps {
@@ -26,7 +26,7 @@ interface DeviceProps {
 const DeviceCard = ({ device }: DeviceProps) => {
   const { t } = useClientT('devices')
   const { connected } = useSocketConnection({ device })
-  const { removeDevice } = useDevice()
+  const { removeDevice } = useDeviceContext()
 
   const { state, isStarting, isCancelling, handler } = useDeviceCardState({
     device,

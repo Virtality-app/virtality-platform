@@ -15,7 +15,7 @@ A human can run `pnpm dev:apps:sim` instead of steps 1 and 3: it starts the full
 
 The simulator is running when it logs `[sim <deviceId>] connected … room <deviceId>` and the device shows Online in the console. The simulator logs every event it receives (`←`) and sends (`→`). Read those lines to confirm what the console sent.
 
-Leaving the patient dashboard disconnects the console from the device, and the console asks you to confirm first. When you come back, open **Device** and click **Connect** again. The simulator keeps its library while it runs.
+The connection belongs to the app, not the page: it stays up while you move between pages, and opening a patient dashboard connects that patient's remembered headset on its own. Leaving the dashboard mid-session asks first, then ends the session and disconnects; the next dashboard visit connects again. The simulator keeps its library while it runs.
 
 To play an immersive video, first download it: open **VR Experiences**, pick the simulator's headset and click **Download** on a video. When you're done, stop the four processes you started. Each simulator restart needs a new pairing, because the old `sim-…` devices stay paired but have no headset behind them.
 
