@@ -56,6 +56,9 @@ const Avatar = () => {
   const { setTheme, resolvedTheme, theme, themes } = useTheme()
   const { state, setState } = useTour()
   const { t, i18n } = useClientT(['avatar', 'glossary', 'layout'])
+  // Read here, not in the JSX: the React Compiler memoizes on `i18n`, whose
+  // identity never changes, so a read inside the menu went stale.
+  const currentLanguage = i18n.resolvedLanguage
   const isMobile = useIsMobile()
 
   const handleSignOut = async () => {
@@ -194,7 +197,7 @@ const Avatar = () => {
                         return (
                           <DropdownMenuItem
                             key={lang}
-                            disabled={i18n.resolvedLanguage === lang}
+                            disabled={currentLanguage === lang}
                             onClick={() => {
                               i18n.changeLanguage(lang)
                             }}
