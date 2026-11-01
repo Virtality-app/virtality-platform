@@ -101,7 +101,7 @@ const ProgramSelector = ({ className }: { className?: string }) => {
           variant='outline'
           role='combobox'
           className={cn(
-            'hover:bg-card justify-start text-zinc-900 md:max-lg:w-51! dark:border-zinc-600 dark:text-zinc-200',
+            'hover:bg-card justify-start text-zinc-900 dark:border-zinc-600 dark:text-zinc-200',
             className,
           )}
         >
@@ -110,18 +110,18 @@ const ProgramSelector = ({ className }: { className?: string }) => {
           ) : (
             <>
               <Dumbbell />
-              <span className='min-w-5 overflow-hidden text-ellipsis max-md:hidden'>
+              <span className='min-w-0 flex-1 truncate text-left'>
                 {selectedProgram ? (
                   selectedProgram.name
                 ) : (
                   <SelectionOptions quickStartHandler={quickStartHandler} />
                 )}
               </span>
-              <div className='flex flex-1 items-center justify-end gap-2'>
+              <div className='flex shrink-0 items-center gap-2'>
                 {selectedProgram && (
                   <div
                     role='button'
-                    className='hover:bg-accent rounded p-0.5 max-md:hidden'
+                    className='hover:bg-accent rounded p-0.5'
                     onClick={programSelectionClear}
                   >
                     <X />

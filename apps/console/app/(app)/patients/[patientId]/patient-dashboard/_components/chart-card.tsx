@@ -29,8 +29,9 @@ const ChartCard = ({ className }: { className?: string }) => {
             : t('chart.exerciseNotFound')}
         </CardTitle>
       </CardHeader>
-      <CardContent className='flex-1 [&_div]:min-[1280px]:max-[1526px]:max-h-125'>
-        <Chart data={plotData} />
+      <CardContent className='min-h-0 flex-1'>
+        {/* Fill the card's set height instead of the chart's default 16:9. */}
+        <Chart data={plotData} className='aspect-auto h-full w-full' />
       </CardContent>
     </Card>
   )

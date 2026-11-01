@@ -1,5 +1,4 @@
 import { useClientT } from '@/i18n/use-client-t'
-import { Separator } from '@virtality/ui/components/separator'
 import { cn } from '@/lib/utils'
 import ProgramSelector from './program-selector'
 import { Item } from '@/components/ui/item'
@@ -64,9 +63,17 @@ const ControlPanel = ({
   const isImmersive = selectedMode === 'immersive'
 
   return (
-    <div className={cn('flex items-center gap-4', className)}>
-      {/* Controls */}
-      <div className='bg-card flex w-fit items-center gap-2 rounded-xl'>
+    <div
+      className={cn(
+        'bg-card flex flex-wrap items-center gap-2 rounded-xl border p-4 shadow',
+        className,
+      )}
+    >
+      {/* Two groups that wrap as units, so longer (Greek) labels move to a
+          new line instead of running off screen: what to run, which grows
+          to fill its line, and the headset actions with the session
+          controls last. */}
+      <div className='flex min-w-0 flex-[1_1_20rem] flex-wrap items-center gap-2'>
         <ModeSelector
           selectedMode={selectedMode}
           setSelectedMode={setSelectedMode}
@@ -74,42 +81,23 @@ const ControlPanel = ({
           playbackStatus={playback.state.status}
           frozen={frozen}
         />
-        <Separator orientation='vertical' className='h-8!' />
-        {isImmersive ? (
-          <ImmersiveVideoTransport />
-        ) : (
-          <Controls
-            selectedMode={selectedMode}
-            isProgramPaused={isProgramPaused}
-            isProgramInactive={isProgramInactive}
-            isProgramActive={isProgramActive}
-            isProgramLaunching={isProgramLaunching}
-            treatmentLaunchReady={treatmentLaunchReady && !frozen}
-            programStart={programStart}
-            programEnd={programEnd}
-            handleWarmupStart={handleWarmupStart}
-            skipExercise={skipExercise}
-            isForwardSkipDisabled={forwardSkipControl.isDisabled}
-            isBackSkipDisabled={backSkipControl.isDisabled}
-            forwardSkipTooltip={forwardSkipControl.tooltip}
-            backSkipTooltip={backSkipControl.tooltip}
-            isSkipBlockedByProgramState={isSkipBlockedByProgramState}
-          />
-        )}
-        <Separator orientation='vertical' className='h-8!' />
-      </div>
-
-      <div className='flex flex-1 gap-2'>
-        {autoLaunchArmed && <AutoLaunchStatus connected={connected} />}
         {(isProgramActive || isProgramPaused) && isMain && (
           <>
-            <Item variant='outline' size='sm' className='max-h-9 p-1'>
+            <Item
+              variant='outline'
+              size='sm'
+              className='max-h-9 p-1 whitespace-nowrap'
+            >
               {t('controls.sets', {
                 current: activeExerciseData.currentSet,
                 total: activeExerciseData.totalSets,
               })}
             </Item>
-            <Item variant='outline' size='sm' className='max-h-9 p-1'>
+            <Item
+              variant='outline'
+              size='sm'
+              className='max-h-9 p-1 whitespace-nowrap'
+            >
               {t('controls.reps', {
                 current: activeExerciseData.currentRep,
                 total: activeExerciseData.totalReps,
@@ -124,26 +112,53 @@ const ControlPanel = ({
             )}
           </>
         )}
+        {isProgramInactive && isMain && (
+          <ProgramSelector className='min-w-0 flex-[1_1_12rem]' />
+        )}
+        {isImmersive && (
+          <ImmersiveVideoPicker className='min-w-0 flex-[1_1_12rem]' />
+        )}
+        {isImmersive && <ImmersiveVideoStopAfterPicker />}
+      </div>
 
+      <div className='ml-auto flex flex-wrap items-center justify-end gap-2'>
+        {autoLaunchArmed && <AutoLaunchStatus connected={connected} />}
         <DeviceSelector devices={devices} connected={connected} />
-
         <CastingButton
           showCasting={showCasting}
           setShowCasting={setShowCasting}
         />
-
-        {isProgramInactive && isMain && <ProgramSelector className='flex-1' />}
-        {isImmersive && <ImmersiveVideoPicker className='flex-1' />}
-        {isImmersive && <ImmersiveVideoStopAfterPicker />}
-
-        {isImmersive ? null : (
-          <SceneSettings
-            coachEnabled={coachEnabled}
-            onCoachEnabledChange={changeCoachEnabled}
-            coachToggleDisabled={coachToggleDisabled}
-            selectedDevice={selectedDevice}
-            missingSettings={missingSettings}
-          />
+        {isImmersive ? (
+          <ImmersiveVideoTransport />
+        ) : (
+          <>
+            <SceneSettings
+              coachEnabled={coachEnabled}
+              onCoachEnabledChange={changeCoachEnabled}
+              coachToggleDisabled={coachToggleDisabled}
+              selectedDevice={selectedDevice}
+              missingSettings={missingSettings}
+            />
+            <div className='flex items-center gap-2'>
+              <Controls
+                selectedMode={selectedMode}
+                isProgramPaused={isProgramPaused}
+                isProgramInactive={isProgramInactive}
+                isProgramActive={isProgramActive}
+                isProgramLaunching={isProgramLaunching}
+                treatmentLaunchReady={treatmentLaunchReady && !frozen}
+                programStart={programStart}
+                programEnd={programEnd}
+                handleWarmupStart={handleWarmupStart}
+                skipExercise={skipExercise}
+                isForwardSkipDisabled={forwardSkipControl.isDisabled}
+                isBackSkipDisabled={backSkipControl.isDisabled}
+                forwardSkipTooltip={forwardSkipControl.tooltip}
+                backSkipTooltip={backSkipControl.tooltip}
+                isSkipBlockedByProgramState={isSkipBlockedByProgramState}
+              />
+            </div>
+          </>
         )}
       </div>
 

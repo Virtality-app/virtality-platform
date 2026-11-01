@@ -319,10 +319,11 @@ const ExerciseList = ({ className }: { className?: string }) => {
                                 orientation='vertical'
                               />
 
-                              <div className='col-start-3 flex gap-2 place-self-end'>
+                              <div className='flex flex-wrap gap-2'>
                                 {exercises.length > 1 && (
                                   <Button
                                     variant='outline'
+                                    className='flex-1'
                                     onClick={() =>
                                       applySettingsToAllExercises(index)
                                     }
@@ -330,7 +331,10 @@ const ExerciseList = ({ className }: { className?: string }) => {
                                     {t('exerciseList.applyToAll')}
                                   </Button>
                                 )}
-                                <Button onClick={() => applySettings(index)}>
+                                <Button
+                                  className='flex-1'
+                                  onClick={() => applySettings(index)}
+                                >
                                   {t('exerciseList.applyChanges')}
                                 </Button>
                               </div>

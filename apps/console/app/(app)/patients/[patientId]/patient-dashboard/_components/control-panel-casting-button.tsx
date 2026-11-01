@@ -25,7 +25,7 @@ const CastingButton = ({ showCasting, setShowCasting }: CastingButtonProps) => {
             : 'border-red-800/60 bg-red-600/60',
         )}
       />
-      <span className='max-lg:hidden'>{t('controls.cast')}</span>
+      <span>{t('controls.cast')}</span>
     </Button>
   )
 }

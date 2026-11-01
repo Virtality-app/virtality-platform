@@ -76,8 +76,8 @@ const SceneSettings = ({
           {missingSettings && (
             <CircleAlert className='bg-card absolute -top-1.5 -right-1.5 rounded-full text-amber-600' />
           )}
-          <span className='max-lg:hidden'>{t('sceneSettings.title')}</span>
-          <Settings className='hidden max-lg:block' />
+          <Settings />
+          <span>{t('sceneSettings.title')}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent align='center' side='bottom'>
@@ -92,7 +92,7 @@ const SceneSettings = ({
           </Button>
         </div>
         <div className='flex flex-col gap-2'>
-          <div className='flex gap-2 py-2'>
+          <div className='flex flex-wrap gap-2 py-2'>
             <Button onClick={handleCalibrateHeight} className='flex-1'>
               {t('sceneSettings.resetHeight')}
             </Button>

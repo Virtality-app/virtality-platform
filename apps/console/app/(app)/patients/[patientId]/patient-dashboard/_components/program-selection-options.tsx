@@ -13,12 +13,8 @@ export function SelectionOptions({
   const { t } = useClientT('patient-dashboard')
   return (
     <div className={cn('flex items-center gap-2', className)}>
-      {!onlyQuickStart && (
-        <span className='md:max-lg:hidden'>{t('programSelector.select')}</span>
-      )}
-      {!onlyQuickStart && (
-        <span className='md:max-lg:hidden'>{t('programSelector.or')}</span>
-      )}
+      {!onlyQuickStart && <span>{t('programSelector.select')}</span>}
+      {!onlyQuickStart && <span>{t('programSelector.or')}</span>}
       <div
         role='button'
         onClick={quickStartHandler}

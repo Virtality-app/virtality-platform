@@ -15,76 +15,52 @@ import { useState } from 'react'
 import { trackAnalyticsEvent } from '@/lib/analytics-contract'
 import useNow from '@/hooks/use-now'
 import { CastingPanel } from '@/components/casting/casting-panel'
-import { useLiveEntitlementStanding } from '@/hooks/use-live-entitlement-standing'
 import { ImmersiveVideoPanel } from './immersive-video-panel'
 import { PatientDashboardVideoDialogs } from './patient-dashboard-video-dialogs'
 import {
-  dashboardCastingClassName,
   dashboardChartClassName,
   dashboardExerciseListClassName,
   dashboardGridClassName,
-  dashboardImmersiveStackClassName,
-  dashboardInfoPanelClassName,
+  dashboardMainClassName,
+  dashboardPanelClassName,
   dashboardSessionNotesClassName,
 } from './patient-dashboard-grid'
 
 const PatientDashboard = () => {
   useIsAuthed()
   const [showCasting, setShowCasting] = useState(false)
-  const { canLaunchVr, isPending: entitlementPending } =
-    useLiveEntitlementStanding()
-  // Hold the banner until standing has loaded so server and client agree.
-  const showExpiredBanner = !entitlementPending && !canLaunchVr
   const { state } = usePatientDashboard()
   const isImmersive = state.selectedMode === 'immersive'
-  const gridFlags = {
-    showExpiredBanner,
-    showCasting,
-    hideExerciseList: isImmersive,
-  }
-  const exerciseListClassName = dashboardExerciseListClassName(gridFlags)
-  const chartClassName = dashboardChartClassName(showExpiredBanner)
-  const castingClassName = dashboardCastingClassName(showExpiredBanner)
 
   return (
     <div className='min-h-screen-with-nav flex justify-center'>
-      <div className={dashboardGridClassName(gridFlags)}>
-        {/* INFO PANEL */}
-        <div
-          className={dashboardInfoPanelClassName(
-            showExpiredBanner,
-            isImmersive,
-          )}
-        >
+      <div
+        className={dashboardGridClassName({ hideExerciseList: isImmersive })}
+      >
+        <div className={dashboardPanelClassName}>
           <VrAccessExpiredBanner />
-          <div className='bg-card rounded-xl border p-4 shadow'>
-            <ControlPanel
-              showCasting={showCasting}
-              setShowCasting={setShowCasting}
-            />
-          </div>
+          <ControlPanel
+            showCasting={showCasting}
+            setShowCasting={setShowCasting}
+          />
         </div>
 
         {isImmersive ? null : (
-          <ExerciseList className={exerciseListClassName} />
+          <ExerciseList className={dashboardExerciseListClassName} />
         )}
 
         {isImmersive ? (
-          <ImmersiveVideoPanel
-            className={dashboardImmersiveStackClassName(gridFlags)}
-          >
+          <ImmersiveVideoPanel className={dashboardMainClassName}>
             {showCasting ? <CastingContent className='min-h-0 flex-1' /> : null}
           </ImmersiveVideoPanel>
         ) : showCasting ? (
-          <CastingContent className={castingClassName} />
+          <CastingContent className={dashboardMainClassName} />
         ) : (
-          <ChartCard className={chartClassName} />
+          <ChartCard className={dashboardChartClassName} />
         )}
 
         {isImmersive ? null : (
-          <SessionNotesCard
-            className={dashboardSessionNotesClassName(gridFlags)}
-          />
+          <SessionNotesCard className={dashboardSessionNotesClassName} />
         )}
 
         <SessionDialog />
