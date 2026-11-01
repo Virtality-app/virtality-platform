@@ -50,13 +50,17 @@ const ExerciseListSettingsPopover = ({
           orientation='vertical'
         />
 
-        <div className='col-start-3 flex gap-2 place-self-end'>
+        <div className='flex flex-wrap gap-2'>
           {exercises.length > 1 && (
-            <Button variant='outline' onClick={() => onApplyToAll(index)}>
+            <Button
+              variant='outline'
+              className='flex-1'
+              onClick={() => onApplyToAll(index)}
+            >
               {t('exerciseList.applyToAll')}
             </Button>
           )}
-          <Button onClick={() => onApply(index)}>
+          <Button className='flex-1' onClick={() => onApply(index)}>
             {t('exerciseList.applyChanges')}
           </Button>
         </div>
