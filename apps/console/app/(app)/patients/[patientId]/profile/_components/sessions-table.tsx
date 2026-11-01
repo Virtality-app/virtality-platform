@@ -18,6 +18,7 @@ import { filterSessionsBySearch } from '@/lib/session-history'
 import { buildSessionListRows } from '@/lib/session-list-row'
 import { sessionsColumns } from './sessions-columns'
 import type { ExtendedPatientSession } from '@/types/models'
+import { useDataTableFooterLabels } from '@/hooks/use-data-table-footer-labels'
 
 const DEFAULT_SORTING: SortingState = [{ id: 'date', desc: true }]
 
@@ -75,6 +76,7 @@ const SessionsTable = ({
     globalFilter,
   ])
 
+  const footerLabels = useDataTableFooterLabels()
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: rows,
@@ -112,7 +114,7 @@ const SessionsTable = ({
         className='flex-1'
         isLoading={isLoadingProp ?? (!usesProvidedSessions && isPending)}
       />
-      <DataTableFooter table={table} />
+      <DataTableFooter table={table} labels={footerLabels} />
     </div>
   )
 }

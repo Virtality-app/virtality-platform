@@ -11,6 +11,7 @@ import {
 import { format } from 'date-fns'
 import { Calendar as CalendarIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useDateFnsLocale } from '@/hooks/use-date-fns-locale'
 
 // Teal dot under the day number; white when the day is the selected one.
 const SESSION_DAY_CLASS = cn(
@@ -39,6 +40,8 @@ export function SessionDatePicker({
   isDateDisabled,
   sessionDays = [],
 }: SessionDatePickerProps) {
+  const locale = useDateFnsLocale()
+
   return (
     <div className='flex flex-col gap-2'>
       <Label className='text-sm font-medium text-zinc-700 dark:text-zinc-300'>
@@ -47,13 +50,14 @@ export function SessionDatePicker({
       <Popover>
         <PopoverTrigger asChild>
           <Button variant='outline' className={DATE_PICKER_BUTTON_CLASS}>
-            {format(selected, 'PPP')}
+            {format(selected, 'PPP', { locale })}
             <CalendarIcon className='ml-auto size-4 opacity-50' />
           </Button>
         </PopoverTrigger>
         <PopoverContent className='w-auto p-0' align='start'>
           <Calendar
             mode='single'
+            locale={locale}
             selected={selected}
             onSelect={(value) => value && onSelect(value)}
             disabled={isDateDisabled}

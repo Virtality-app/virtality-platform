@@ -27,6 +27,7 @@ import { Activity, Calendar as CalendarIcon, TrendingUp } from 'lucide-react'
 import { motion } from 'motion/react'
 import { TooltipProvider } from '@virtality/ui/components/tooltip'
 import { SessionDatePicker } from './session-date-picker'
+import { useDateFnsLocale } from '@/hooks/use-date-fns-locale'
 import MetricInfo from './session-metric-info'
 import { useClientT } from '@/i18n/use-client-t'
 
@@ -48,6 +49,7 @@ export function SessionsOverview({
   onPresetSelect,
 }: SessionsOverviewProps) {
   const { t } = useClientT('patients')
+  const locale = useDateFnsLocale()
   const completedSessions = filterCompletedClinicalSessions(sessions)
   const filtered = filterSessionsByDateRange(completedSessions, {
     startDate,
@@ -168,8 +170,10 @@ export function SessionsOverview({
                       {gaps.slice(0, 3).map((g, i) => (
                         <li key={i}>
                           {t('overview.visitConsistency.gapRange', {
-                            from: format(g.prevCompletedAt, 'd MMM'),
-                            to: format(g.nextCompletedAt, 'd MMM'),
+                            from: format(g.prevCompletedAt, 'd MMM', {
+                              locale,
+                            }),
+                            to: format(g.nextCompletedAt, 'd MMM', { locale }),
                             days: g.daysBetween.toFixed(0),
                           })}
                         </li>

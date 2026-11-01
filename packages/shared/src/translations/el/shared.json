@@ -22,7 +22,14 @@
   "table": {
     "asc": "Αύξουσα",
     "desc": "Φθίνουσα",
-    "hide": "Απόκρυψη"
+    "hide": "Απόκρυψη",
+    "selected_one": "{{selected}} από {{count}} γραμμή επιλεγμένη.",
+    "selected_other": "{{selected}} από {{count}} γραμμές επιλεγμένες.",
+    "rows_one": "{{count}} γραμμή",
+    "rows_other": "{{count}} γραμμές",
+    "rowsPerPage": "Γραμμές ανά σελίδα",
+    "previous": "Προηγούμενη",
+    "next": "Επόμενη"
   },
   "errorDisplay": {
     "dismissError": "Παράβλεψη σφάλματος",

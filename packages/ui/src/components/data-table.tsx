@@ -267,11 +267,32 @@ export function DataTableBody<TData, TValue>({
   )
 }
 
-interface DataTableFooterProps<TData> {
-  table: TableType<TData>
+export interface DataTableFooterLabels {
+  selected: (selected: number, total: number) => string
+  rows: (count: number) => string
+  rowsPerPage: string
+  previous: string
+  next: string
 }
 
-export function DataTableFooter<TData>({ table }: DataTableFooterProps<TData>) {
+const defaultFooterLabels: DataTableFooterLabels = {
+  selected: (selected, total) => `${selected} of ${total} row(s) selected.`,
+  rows: (count) => `${count} row(s)`,
+  rowsPerPage: 'Rows per page',
+  previous: 'Previous',
+  next: 'Next',
+}
+
+interface DataTableFooterProps<TData> {
+  table: TableType<TData>
+  /** Footer text; English when omitted. */
+  labels?: DataTableFooterLabels
+}
+
+export function DataTableFooter<TData>({
+  table,
+  labels = defaultFooterLabels,
+}: DataTableFooterProps<TData>) {
   'use no memo'
   // Tables without a checkbox column have nothing to select; show the count.
   const hasSelectColumn = table
@@ -280,17 +301,15 @@ export function DataTableFooter<TData>({ table }: DataTableFooterProps<TData>) {
   return (
     <div className='flex items-center gap-2'>
       <div className='text-muted-foreground text-sm'>
-        {hasSelectColumn ? (
-          <>
-            {table.getFilteredSelectedRowModel().rows.length} of{' '}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
-          </>
-        ) : (
-          <>{table.getFilteredRowModel().rows.length} row(s)</>
-        )}
+        {hasSelectColumn
+          ? labels.selected(
+              table.getFilteredSelectedRowModel().rows.length,
+              table.getFilteredRowModel().rows.length,
+            )
+          : labels.rows(table.getFilteredRowModel().rows.length)}
       </div>
       <div className='flex items-center space-x-2'>
-        <p className='text-sm font-medium'>Rows per page</p>
+        <p className='text-sm font-medium'>{labels.rowsPerPage}</p>
         <Select
           value={`${table.getState().pagination.pageSize}`}
           onValueChange={(value) => {
@@ -316,7 +335,7 @@ export function DataTableFooter<TData>({ table }: DataTableFooterProps<TData>) {
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
-          Previous
+          {labels.previous}
         </Button>
         <Button
           variant='outline'
@@ -324,7 +343,7 @@ export function DataTableFooter<TData>({ table }: DataTableFooterProps<TData>) {
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >
-          Next
+          {labels.next}
         </Button>
       </div>
     </div>

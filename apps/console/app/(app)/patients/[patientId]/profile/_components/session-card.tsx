@@ -18,6 +18,7 @@ import { useState } from 'react'
 import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
 import { getSessionSourceProgramDisplayName } from '@/lib/session-history'
 import { useClientT } from '@/i18n/use-client-t'
+import { useDateFnsLocale } from '@/hooks/use-date-fns-locale'
 import SessionStatusBadge from './session-status-badge'
 import MetricSection from './session-metric-section'
 import SessionExerciseMetricsTable from './session-exercise-metrics-table'
@@ -35,6 +36,7 @@ const SessionCard = ({ session, patientId, onBack }: SessionCardProps) => {
     props: { route_group: 'patient', tab_view: 'patient-session' },
   })
   const { t } = useClientT(['patients', 'common'])
+  const locale = useDateFnsLocale()
   const [view, setView] = useState(true)
 
   const { data: userName } = useUserName()
@@ -94,7 +96,7 @@ const SessionCard = ({ session, patientId, onBack }: SessionCardProps) => {
               </CardTitle>
               <CardDescription>
                 {t('session.dateAtTime', {
-                  date: format(historyDate, 'PPPP'),
+                  date: format(historyDate, 'PPPP', { locale }),
                   time: completedAtTime(),
                 })}
               </CardDescription>

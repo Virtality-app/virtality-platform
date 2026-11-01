@@ -30,6 +30,7 @@ import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
 import { trackAnalyticsEvent } from '@/lib/analytics-contract'
 import { filterPatientsBySearch } from '@/lib/patient-list'
 import { useClientT } from '@/i18n/use-client-t'
+import { useDataTableFooterLabels } from '@/hooks/use-data-table-footer-labels'
 
 const PatientsTable = () => {
   'use no memo'
@@ -52,6 +53,7 @@ const PatientsTable = () => {
     [tableData, globalFilter],
   )
 
+  const footerLabels = useDataTableFooterLabels()
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: filteredPatients,
@@ -130,7 +132,7 @@ const PatientsTable = () => {
         className='flex-1'
         isLoading={isPending}
       />
-      <DataTableFooter table={table} />
+      <DataTableFooter table={table} labels={footerLabels} />
     </div>
   )
 }

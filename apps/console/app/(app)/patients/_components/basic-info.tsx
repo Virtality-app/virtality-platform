@@ -27,6 +27,7 @@ import { CalendarIcon, User } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { format, formatISO } from 'date-fns'
 import { useClientT } from '@/i18n/use-client-t'
+import { useDateFnsLocale } from '@/hooks/use-date-fns-locale'
 import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
 import PatientPhotoField from './patient-photo-field'
 
@@ -40,6 +41,7 @@ const BasicInfo = ({ form, patient }: BasicInfoProps) => {
     props: { route_group: 'patient', tab_view: 'patient-profile' },
   })
   const { t } = useClientT(['patients', 'common'])
+  const locale = useDateFnsLocale()
 
   return (
     <div className='flex gap-6 max-xl:flex-col'>
@@ -107,7 +109,7 @@ const BasicInfo = ({ form, patient }: BasicInfoProps) => {
                         )}
                       >
                         {field.value ? (
-                          format(field.value, 'PPP')
+                          format(field.value, 'PPP', { locale })
                         ) : (
                           <span>{t('form.pickDate')}</span>
                         )}
@@ -117,6 +119,7 @@ const BasicInfo = ({ form, patient }: BasicInfoProps) => {
                     <PopoverContent className='w-auto p-0' align='start'>
                       <Calendar
                         mode='single'
+                        locale={locale}
                         fixedWeeks
                         captionLayout='dropdown'
                         selected={

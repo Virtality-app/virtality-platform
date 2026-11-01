@@ -22,7 +22,14 @@
   "table": {
     "asc": "Asc",
     "desc": "Desc",
-    "hide": "Hide"
+    "hide": "Hide",
+    "selected_one": "{{selected}} of {{count}} row selected.",
+    "selected_other": "{{selected}} of {{count}} rows selected.",
+    "rows_one": "{{count}} row",
+    "rows_other": "{{count}} rows",
+    "rowsPerPage": "Rows per page",
+    "previous": "Previous",
+    "next": "Next"
   },
   "errorDisplay": {
     "dismissError": "Dismiss error",

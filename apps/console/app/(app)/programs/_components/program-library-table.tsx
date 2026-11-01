@@ -22,6 +22,7 @@ import Link from 'next/link'
 import { PlusSquare } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useClientT } from '@/i18n/use-client-t'
+import { useDataTableFooterLabels } from '@/hooks/use-data-table-footer-labels'
 
 export default function ProgramLibraryTable() {
   usePageViewTracking({
@@ -41,6 +42,7 @@ export default function ProgramLibraryTable() {
     [programs, globalFilter],
   )
 
+  const footerLabels = useDataTableFooterLabels()
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: filteredPrograms,
@@ -88,7 +90,7 @@ export default function ProgramLibraryTable() {
         className='flex-1'
         isLoading={isPending}
       />
-      <DataTableFooter table={table} />
+      <DataTableFooter table={table} labels={footerLabels} />
     </div>
   )
 }
