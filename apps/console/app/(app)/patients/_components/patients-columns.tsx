@@ -1,7 +1,7 @@
 'use client'
 
 import { Button } from '@virtality/ui/components/button'
-import { Checkbox } from '@/components/ui/checkbox'
+import SelectCheckbox from './select-checkbox'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,28 +24,27 @@ import {
 } from '@virtality/react-query'
 import { trackAnalyticsEvent } from '@/lib/analytics-contract'
 import { Trans } from 'react-i18next'
-import i18next from '@/i18n/i18next'
 import { useClientT } from '@/i18n/use-client-t'
 
 export const columns: ColumnDef<PatientListItem>[] = [
   {
     id: 'select',
     header: ({ table }) => (
-      <Checkbox
+      <SelectCheckbox
+        labelKey='columns.selectAll'
         checked={
           table.getIsAllPageRowsSelected() ||
           (table.getIsSomePageRowsSelected() && 'indeterminate')
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label={i18next.t('columns.selectAll', { ns: 'patients' })}
       />
     ),
     cell: ({ row }) => (
-      <Checkbox
+      <SelectCheckbox
+        labelKey='columns.selectRow'
         id='select'
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label={i18next.t('columns.selectRow', { ns: 'patients' })}
       />
     ),
     enableSorting: false,
@@ -189,7 +188,6 @@ export const columns: ColumnDef<PatientListItem>[] = [
             title={t('delete.title')}
             description={
               <Trans
-                i18n={i18next}
                 t={t}
                 ns='patients'
                 i18nKey='delete.description'

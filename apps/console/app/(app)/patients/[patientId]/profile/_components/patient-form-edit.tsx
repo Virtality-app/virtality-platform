@@ -13,7 +13,6 @@ import useNavigationGuard from '@/hooks/use-navigation-guard'
 import { NavigationGuardDialog } from '@/components/dialogs/navigation-guard-dialog'
 import { notify } from '@/lib/notify'
 import { Trans } from 'react-i18next'
-import i18next from '@/i18n/i18next'
 import { useClientT } from '@/i18n/use-client-t'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import BasicInfo from '@/app/(app)/patients/_components/basic-info'
@@ -303,7 +302,6 @@ const PatientFormEdit = ({ patientId }: PatientFormEditProps) => {
             title={t('delete.title')}
             description={
               <Trans
-                i18n={i18next}
                 t={t}
                 ns='patients'
                 i18nKey='delete.description'

@@ -38,6 +38,14 @@ const buttonVariants = cva(
   },
 )
 
+/**
+ * Firefox restores a button's last `disabled` state on reload, before
+ * hydration, so a button disabled while loading no longer matches the server
+ * HTML. `autocomplete="off"` turns that off; React's types only allow it on
+ * form fields, so it is spread in.
+ */
+const noFormStateRestore = { autoComplete: 'off' }
+
 const rootButton = ({
   className,
   variant,
@@ -55,6 +63,7 @@ const rootButton = ({
       ref={props.ref}
       data-slot='button'
       className={cn(buttonVariants({ variant, size, className }))}
+      {...(asChild ? {} : noFormStateRestore)}
       {...props}
     />
   )

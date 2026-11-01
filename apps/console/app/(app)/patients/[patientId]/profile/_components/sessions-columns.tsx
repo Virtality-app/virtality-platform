@@ -8,16 +8,18 @@ import {
   DropdownMenuTrigger,
 } from '@virtality/ui/components/dropdown-menu'
 import { ColumnDef } from '@tanstack/react-table'
-import { Copy, Ellipsis, NotebookPen } from 'lucide-react'
+import { Copy, Ellipsis } from 'lucide-react'
 import { format } from 'date-fns'
 import TranslatedColumnHeader from '@/app/(app)/patients/_components/translated-column-header'
 import TranslatedText from '@/app/(app)/patients/_components/translated-text'
 import i18next from '@/i18n/i18next'
+import { dateFnsLocale } from '@/lib/date-fns-locale'
 import { useClientT } from '@/i18n/use-client-t'
 import type { SessionListRowModel } from '@/lib/session-list-row'
 import SessionStatusBadge from './session-status-badge'
 import { cn } from '@/lib/utils'
 import SessionProgressDelta from './session-progress-delta'
+import SessionNotesIcon from './session-notes-icon'
 
 const NUMERIC_CELL_CLASS = 'text-right tabular-nums'
 
@@ -34,9 +36,10 @@ export const sessionsColumns: ColumnDef<SessionListRowModel>[] = [
     cell: ({ row }) => {
       const { date } = row.original
       if (!date) return '—'
+      const locale = dateFnsLocale(i18next.resolvedLanguage)
       return (
         <div className='whitespace-nowrap'>
-          {format(date, 'PP')}
+          {format(date, 'PP', { locale })}
           <span className='text-muted-foreground ml-2 text-xs'>
             {format(date, 'H:mm')}
           </span>
@@ -172,13 +175,7 @@ export const sessionsColumns: ColumnDef<SessionListRowModel>[] = [
         <TranslatedText labelKey='sessionsTable.notes' />
       </span>
     ),
-    cell: ({ row }) =>
-      row.original.hasNotes ? (
-        <NotebookPen
-          className='text-muted-foreground size-4'
-          aria-label={i18next.t('sessionsTable.hasNotes', { ns: 'patients' })}
-        />
-      ) : null,
+    cell: ({ row }) => (row.original.hasNotes ? <SessionNotesIcon /> : null),
     enableSorting: false,
     enableHiding: false,
   },

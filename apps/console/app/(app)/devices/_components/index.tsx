@@ -32,7 +32,7 @@ const defaultValues: DeviceForm = {
 
 const Devices = () => {
   const { t } = useClientT(['devices', 'common'])
-  const { isPending } = useIsAuthed()
+  useIsAuthed()
   usePageViewTracking({
     props: { route_group: 'device' },
   })
@@ -61,7 +61,9 @@ const Devices = () => {
 
   const handleDialogOpen = () => setDialogOpen(!isDialogOpen)
 
-  if (isLoading && isPending)
+  // Only the device list decides: the session is often loaded by the time
+  // this page hydrates, which the server render cannot know.
+  if (isLoading)
     return (
       <div className='min-h-screen-with-nav'>
         <div className='flex flex-wrap gap-6 p-4'>
