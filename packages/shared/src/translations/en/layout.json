@@ -43,7 +43,15 @@
   },
   "sidebar": {
     "brand": "Virtality",
-    "reportProblem": "Report Problem"
+    "reportProblem": "Report Problem",
+    "links": {
+      "patients": "Patients",
+      "programs": "Programs",
+      "vrExperiences": "VR Experiences",
+      "devices": "Devices",
+      "guides": "Guides",
+      "forms": "Forms"
+    }
   },
   "dialog": {
     "close": "Close"

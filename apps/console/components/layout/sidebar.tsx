@@ -28,10 +28,6 @@ const RootSidebar = () => {
   const { isMobile, setOpenMobile } = useSidebar()
   const sidebarLinks = getVisibleSidebarLinks()
 
-  const capitalizeTooltip = (title: string) => {
-    return title.charAt(0).toUpperCase() + title.slice(1)
-  }
-
   return (
     <Sidebar collapsible='icon'>
       <SidebarHeader className='flex h-15 justify-center gap-2 rounded-none border-b border-zinc-200'>
@@ -60,7 +56,7 @@ const RootSidebar = () => {
                 <SidebarMenuButton
                   asChild
                   className='text-base'
-                  tooltip={capitalizeTooltip(item.title)}
+                  tooltip={t(item.labelKey)}
                   onClick={() => {
                     trackAnalyticsEvent('nav_item_clicked', {
                       item: item.title as AnalyticsEventProps<'nav_item_clicked'>['item'],
@@ -70,7 +66,7 @@ const RootSidebar = () => {
                 >
                   <Link href={item.url}>
                     <item.icon />
-                    <span className='capitalize'>{item.title}</span>
+                    <span>{t(item.labelKey)}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

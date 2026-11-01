@@ -43,7 +43,15 @@
   },
   "sidebar": {
     "brand": "Virtality",
-    "reportProblem": "Αναφορά προβλήματος"
+    "reportProblem": "Αναφορά προβλήματος",
+    "links": {
+      "patients": "Ασθενείς",
+      "programs": "Προγράμματα",
+      "vrExperiences": "Εμπειρίες VR",
+      "devices": "Συσκευές",
+      "guides": "Οδηγοί",
+      "forms": "Φόρμες"
+    }
   },
   "dialog": {
     "close": "Κλείσιμο"
