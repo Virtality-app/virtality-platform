@@ -127,7 +127,7 @@ export const BugReportForm = ({ children }: BugReportFormProps) => {
             </DialogHeader>
             <DialogFooter>
               <DialogClose asChild>
-                <Button>{t('btn.close')}</Button>
+                <Button>{t('btn.close', { ns: 'common' })}</Button>
               </DialogClose>
             </DialogFooter>
           </>
@@ -145,7 +145,7 @@ export const BugReportForm = ({ children }: BugReportFormProps) => {
               <FormInput
                 control={form.control}
                 name='title'
-                label={capitalize(t('form.title'))}
+                label={capitalize(t('form.title', { ns: 'common' }))}
                 placeholder={t('bugReport.titlePlaceholder', { ns: 'shared' })}
               />
 
@@ -169,7 +169,7 @@ export const BugReportForm = ({ children }: BugReportFormProps) => {
               <FormTextarea
                 control={form.control}
                 name='description'
-                label={capitalize(t('form.description'))}
+                label={capitalize(t('form.description', { ns: 'common' }))}
                 placeholder={t('bugReport.descriptionPlaceholder', {
                   ns: 'shared',
                 })}
@@ -234,13 +234,13 @@ export const BugReportForm = ({ children }: BugReportFormProps) => {
                   variant='outline'
                   onClick={handleClearForm}
                 >
-                  {t('btn.clear')}
+                  {t('btn.clear', { ns: 'common' })}
                 </Button>
                 <Button variant='primary'>
                   {isPending ? (
                     <Loader2 className='animate-spin' />
                   ) : (
-                    t('btn.submit')
+                    t('btn.submit', { ns: 'common' })
                   )}
                 </Button>
               </DialogFooter>
