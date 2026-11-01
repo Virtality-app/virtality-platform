@@ -1,6 +1,5 @@
 import 'dotenv/config'
 import type { PrismaConfig } from 'prisma'
-import { env } from 'prisma/config'
 
 export default {
   schema: './prisma',
@@ -10,5 +9,8 @@ export default {
     // `prisma db seed` after those commands.
     seed: 'tsx ./prisma/seed.ts',
   },
-  datasource: { url: env('DATABASE_URL') },
+  // Not env('DATABASE_URL'): that throws when unset, which breaks
+  // `prisma generate` in builds without a database (e.g. Heroku). Commands
+  // that connect still fail on their own if the URL is missing.
+  datasource: { url: process.env.DATABASE_URL },
 } satisfies PrismaConfig
