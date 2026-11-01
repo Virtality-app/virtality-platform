@@ -19,6 +19,7 @@ import {
 } from '@/lib/patient-dashboard-program-selection'
 import type { PendingExerciseChange } from '@/lib/session-exercise-skip'
 import { useRememberedDashboardMode } from '@/hooks/use-remembered-dashboard-mode'
+import { useRecentSessionProgram } from '@/hooks/use-recent-session-program'
 import type { DashboardMode } from '@/types/models'
 
 type State = {
@@ -156,6 +157,20 @@ const usePatientDashboardState = ({
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [avatars, maps, patient?.sex, patientLocalData, dispatch, programs])
+
+  useRecentSessionProgram({
+    patientId,
+    programs,
+    lastProgramId: patientLocalData.lastProgram,
+    canRestore:
+      !state.selectedProgram &&
+      !state.inQuickStart &&
+      state.programState === 'ready',
+    onRestore: (program) =>
+      updatePatientDashboardState(
+        buildProgramSelectionState(program, state.activeExerciseData),
+      ),
+  })
 
   const setSelectedMode = (value: State['selectedMode']) => {
     dispatch({ type: 'setSelectedMode', payload: value })

@@ -30,8 +30,8 @@ const Dashboard = ({ isImpersonating }: { isImpersonating?: boolean }) => {
         now={now}
         isPending={isPending || !mounted}
       />
-      <SessionsOverviewCard summary={home.summary} isLoading={home.isLoading} />
       <StartSessionCard data={home} />
+      <SessionsOverviewCard summary={home.summary} isLoading={home.isLoading} />
       <div className='grid items-start gap-6 xl:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]'>
         <PinnedPatientsCard
           patients={home.patients}

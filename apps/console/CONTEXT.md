@@ -77,7 +77,7 @@ An exercise and settings entry that belongs to a **Reusable Program**. It repres
 _Avoid_: Preset exercise, session exercise, exercise settings row
 
 **Last Used Program**:
-The most recently selected **Reusable Program** for a patient, used only as a convenience default when returning to that patient's dashboard.
+The most recently selected **Reusable Program** for a patient, used only as a convenience default when returning to that patient's dashboard. Remembered per browser; when the browser has none, the dashboard falls back to the source **Reusable Program** of the patient's latest completed or **Interrupted Session** (none if that session was a **Quick Start**).
 _Avoid_: Current program, assigned program, patient program
 
 **Program Library**:

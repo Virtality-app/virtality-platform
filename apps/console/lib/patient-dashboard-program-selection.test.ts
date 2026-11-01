@@ -4,6 +4,7 @@ import {
   isSessionCopyIsolatedFromLibrary,
   orderProgramsForDashboardSelection,
   resolveLastUsedProgram,
+  resolveRecentSessionProgramId,
   reusableProgramExercisesToSessionCopy,
   type DashboardReusableProgram,
 } from './patient-dashboard-program-selection.js'
@@ -133,5 +134,46 @@ describe('patient dashboard session copy isolation', () => {
     expect(
       isSessionCopyIsolatedFromLibrary(sampleExercises, sessionExercises),
     ).toBe(false)
+  })
+})
+
+describe('resolveRecentSessionProgramId', () => {
+  const session = (
+    createdAt: string,
+    sourceReusableProgramId: string | null,
+    status: 'ACTIVE' | 'COMPLETED' | 'INTERRUPTED' = 'COMPLETED',
+  ) => ({ createdAt: new Date(createdAt), sourceReusableProgramId, status })
+
+  it("returns the latest finished session's source program", () => {
+    expect(
+      resolveRecentSessionProgramId([
+        session('2026-10-01', 'program-old'),
+        session('2026-10-20', 'program-new', 'INTERRUPTED'),
+        session('2026-10-10', 'program-mid'),
+      ]),
+    ).toBe('program-new')
+  })
+
+  it('returns null when the latest session was a Quick Start', () => {
+    expect(
+      resolveRecentSessionProgramId([
+        session('2026-10-01', 'program-old'),
+        session('2026-10-20', null),
+      ]),
+    ).toBeNull()
+  })
+
+  it('ignores sessions that never finished', () => {
+    expect(
+      resolveRecentSessionProgramId([
+        session('2026-10-01', 'program-old'),
+        session('2026-10-20', 'program-launching', 'ACTIVE'),
+      ]),
+    ).toBe('program-old')
+  })
+
+  it('returns null with no sessions', () => {
+    expect(resolveRecentSessionProgramId([])).toBeNull()
+    expect(resolveRecentSessionProgramId(undefined)).toBeNull()
   })
 })

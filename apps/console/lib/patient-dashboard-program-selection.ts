@@ -1,4 +1,4 @@
-import type { ReusableProgramExercise } from '@virtality/db'
+import type { PatientSession, ReusableProgramExercise } from '@virtality/db'
 import type { CompleteExercise, CompleteReusableProgram } from '@/types/models'
 
 export type DashboardReusableProgram = CompleteReusableProgram
@@ -24,6 +24,30 @@ export function resolveLastUsedProgram(
 ): DashboardReusableProgram | null {
   if (!programs || !lastProgramId) return null
   return programs.find((program) => program.id === lastProgramId) ?? null
+}
+
+/**
+ * The source program of the patient's latest finished session, or null when
+ * that session was a Quick Start. Stands in for the Last Used Program when
+ * this browser has none remembered (another computer, cleared storage).
+ */
+export function resolveRecentSessionProgramId<
+  T extends Pick<
+    PatientSession,
+    'status' | 'createdAt' | 'sourceReusableProgramId'
+  >,
+>(sessions: T[] | undefined): string | null {
+  let latest: T | null = null
+  for (const session of sessions ?? []) {
+    if (session.status === 'ACTIVE') continue
+    if (
+      !latest ||
+      new Date(session.createdAt).getTime() >
+        new Date(latest.createdAt).getTime()
+    )
+      latest = session
+  }
+  return latest?.sourceReusableProgramId ?? null
 }
 
 export function orderProgramsForDashboardSelection<
