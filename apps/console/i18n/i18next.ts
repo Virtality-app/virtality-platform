@@ -25,7 +25,9 @@ i18next
     // React and the toast renderer already escape text.
     interpolation: { escapeValue: false },
     detection: {
-      order: ['localStorage', 'cookie', 'navigator'],
+      // Cookie first: the server renders in the cookie's language
+      // (resolveRequestLanguage), and hydration needs the same one here.
+      order: ['cookie', 'localStorage', 'navigator'],
       caches: ['localStorage', 'cookie'],
     },
     preload: runsOnServerSide ? languages : [],
