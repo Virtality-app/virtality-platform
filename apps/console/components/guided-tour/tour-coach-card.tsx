@@ -5,7 +5,12 @@ import { MousePointerClick } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
 import { useClientT } from '@/i18n/use-client-t'
 import { cn } from '@/lib/utils'
-import { coachCardPosition, type Rect, type TourStep } from '@/lib/guided-tour'
+import {
+  coachCardPosition,
+  type Rect,
+  type TourId,
+  type TourStep,
+} from '@/lib/guided-tour'
 
 // Stops a dialog under the tour from treating clicks on this card as clicks outside it.
 const SHIELDED_EVENTS = ['pointerdown', 'mousedown', 'touchstart', 'focusin']
@@ -18,14 +23,14 @@ const HINT_DELAY_MS = 10_000
  * element has not appeared yet it waits in the bottom-right corner.
  */
 const TourCoachCard = ({
-  tourTitle,
+  tourId,
   step,
   isLast,
   rect,
   onNext,
   onEnd,
 }: {
-  tourTitle: string
+  tourId: TourId
   step: TourStep
   isLast: boolean
   rect: Rect | null
@@ -87,10 +92,14 @@ const TourCoachCard = ({
       )}
     >
       <p className='text-vital-blue-700 dark:text-vital-blue-400 text-xs font-medium'>
-        {tourTitle}
+        {t(`tour.${tourId}.title`)}
       </p>
-      <p className='mt-1 font-semibold'>{step.title}</p>
-      <p className='text-muted-foreground mt-1 text-sm'>{step.body}</p>
+      <p className='mt-1 font-semibold'>
+        {t(`tour.${tourId}.steps.${step.target}.title`)}
+      </p>
+      <p className='text-muted-foreground mt-1 text-sm'>
+        {t(`tour.${tourId}.steps.${step.target}.body`)}
+      </p>
       <div className='mt-3 flex items-center justify-between gap-2'>
         <Button variant='ghost' size='sm' onClick={onEnd}>
           {t('tour.end')}

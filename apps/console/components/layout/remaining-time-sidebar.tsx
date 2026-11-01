@@ -13,6 +13,7 @@ import { authClient } from '@/auth-client'
 import { useBillingFeatureEnabled } from '@/hooks/use-billing-feature'
 import { useLiveEntitlementStanding } from '@/hooks/use-live-entitlement-standing'
 import { profileBillingHref } from '@/lib/renew-prompt-dismiss'
+import { remainingTimeLabel } from '@/lib/remaining-time-label'
 import { cn } from '@/lib/utils'
 
 /**
@@ -27,8 +28,8 @@ export function RemainingTimeSidebar() {
   const { data: session } = authClient.useSession()
   const billingEnabled = useBillingFeatureEnabled()
   const {
-    label,
-    checkoutCtaLabel,
+    remainingMs,
+    checkoutCta,
     isPending,
     showRemainingTime,
     entitled,
@@ -36,7 +37,8 @@ export function RemainingTimeSidebar() {
     cancelAtPeriodEnd,
   } = useLiveEntitlementStanding()
   const collapsed = state === 'collapsed' && !isMobile
-  const display = isPending ? '…' : label
+  const display = isPending ? '…' : remainingTimeLabel(t, remainingMs)
+  const checkoutCtaLabel = checkoutCta ? t(`checkoutCta.${checkoutCta}`) : null
   const userId = session?.user?.id
   const showCheckoutCta = !isPending && checkoutCtaLabel != null && userId
   const isExpired = !isPending && !entitled

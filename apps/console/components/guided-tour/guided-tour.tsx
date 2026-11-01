@@ -10,7 +10,7 @@ import TourCoachCard from './tour-coach-card'
 
 /** The Getting started walkthrough: highlights where to write or press next. */
 const GuidedTour = () => {
-  const { tour, index, goTo, end } = useGuidedTour()
+  const { tourId, tour, index, goTo, end } = useGuidedTour()
   const target = useTourTarget(tour?.steps ?? null, index)
   const active = target?.active ?? null
   const step = tour && active ? tour.steps[active.index]! : null
@@ -24,13 +24,13 @@ const GuidedTour = () => {
     if (tour && target && !target.active) end()
   }, [tour, target, end])
 
-  if (!tour || !active || !step) return null
+  if (!tourId || !tour || !active || !step) return null
 
   return createPortal(
     <>
       {target?.rect ? <TourSpotlight rect={target.rect} /> : null}
       <TourCoachCard
-        tourTitle={tour.title}
+        tourId={tourId}
         step={step}
         isLast={active.index === tour.steps.length - 1}
         rect={target?.rect ?? null}

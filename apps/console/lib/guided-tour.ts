@@ -11,10 +11,11 @@ export const TOUR_STEP_PARAM = 'tourStep'
 export type TourId = 'device' | 'patient' | 'program' | 'session'
 
 export type TourStep = {
-  /** Value of the `data-tour` attribute on the highlighted element. */
+  /**
+   * Value of the `data-tour` attribute on the highlighted element. Also keys
+   * the step's copy: `tour.<tourId>.steps.<target>` in the `layout` namespace.
+   */
   target: string
-  title: string
-  body: string
   /**
    * `click`: the step is done when the clinician clicks inside the target, or
    * only on elements inside it that match `selector`.
@@ -37,9 +38,8 @@ export type TourStep = {
 
 export type CardPlacement = 'below' | 'beside'
 
+/** Each tour's title is `tour.<tourId>.title` in the `layout` namespace. */
 export type Tour = {
-  /** Shown above each step's title. */
-  title: string
   /** The page the tour runs on; leaving it ends the tour. */
   path: string
   steps: TourStep[]
@@ -47,166 +47,118 @@ export type Tour = {
 
 export const TOURS: Record<TourId, Tour> = {
   device: {
-    title: 'Pair a headset',
     path: '/devices',
     steps: [
       {
         target: 'device-add',
-        title: 'Add your headset',
-        body: 'Click Add device to register the headset you will use with patients.',
         advance: { on: 'click' },
       },
       {
         target: 'device-name',
-        title: 'Name it',
-        body: 'Give the headset a name you will recognise, like "Device One".',
         advance: { on: 'next' },
       },
       {
         target: 'device-submit',
-        title: 'Add it',
-        body: 'Press Add Device. The headset shows up in your list.',
         advance: { on: 'click' },
       },
       {
         target: 'device-pair',
         match: 'last',
-        title: 'Start pairing',
-        body: 'Press Pair to get a 6-digit code for the headset.',
         advance: { on: 'click' },
       },
       {
         target: 'device-code',
-        title: 'Enter the code in the headset',
-        body: 'Put the headset on and enter this code. The card shows Paired once it matches.',
         advance: { on: 'next' },
       },
     ],
   },
   patient: {
-    title: 'Add a patient',
     path: '/patients/new',
     steps: [
       {
         target: 'patient-name',
-        title: 'Write the full name',
-        body: 'Type the patient’s full name here. It is how you will find them later.',
         advance: { on: 'next' },
       },
       {
         target: 'patient-sex',
-        title: 'Pick their sex',
-        body: 'Choose an option from this list.',
         advance: { on: 'next' },
         placement: 'beside',
       },
       {
         target: 'patient-language',
-        title: 'Pick their language',
-        body: 'The headset speaks to the patient in this language.',
         advance: { on: 'next' },
         placement: 'beside',
       },
       {
         target: 'patient-submit',
-        title: 'Save the patient',
-        body: 'Everything else is optional. Press Create to add the patient.',
         advance: { on: 'click' },
       },
     ],
   },
   program: {
-    title: 'Create an exercise program',
     path: '/programs/new',
     steps: [
       {
         target: 'program-choice',
-        title: 'Choose how to start',
-        body: 'A starter template is quickest. You can also pick exercises yourself.',
         advance: { on: 'click', selector: 'button' },
       },
       {
         target: 'program-template-list',
-        title: 'Pick a template',
-        body: 'Click a template to preview its exercises on the right.',
         advance: { on: 'click', selector: '[cmdk-item]' },
         optional: true,
       },
       {
         target: 'program-template-continue',
-        title: 'Open it in the editor',
-        body: 'Press Continue to editor. Nothing is saved yet.',
         advance: { on: 'click' },
         optional: true,
       },
       {
         target: 'exercise-filters',
-        title: 'Filter the catalog',
-        body: 'Pick a body part to see only its exercises. Equipment and search below narrow it down further.',
         advance: { on: 'click', selector: 'button' },
         optional: true,
       },
       {
         target: 'exercise-card',
-        title: 'Add an exercise',
-        body: 'Click a card to add it to the program, and click it again to take it out.',
         advance: { on: 'click' },
         optional: true,
       },
       {
         target: 'program-catalog-continue',
-        title: 'Review your picks',
-        body: 'Add as many exercises as you need, then press this button.',
         advance: { on: 'click' },
         optional: true,
       },
       {
         target: 'program-name',
-        title: 'Name the program',
-        body: 'Write a name you will recognise when starting a session, like "Knee rehab week 1".',
         advance: { on: 'next' },
       },
       {
         target: 'exercise-row',
-        title: 'Tune each exercise',
-        body: 'Change sets, reps and the other settings here. The arrows move an exercise up or down the list.',
         advance: { on: 'next' },
         optional: true,
       },
       {
         target: 'program-submit',
-        title: 'Save it to your library',
-        body: 'Press Submit. The program is ready to use in any session.',
         advance: { on: 'click' },
       },
     ],
   },
   session: {
-    title: 'Start a session',
     path: '/',
     steps: [
       {
         target: 'session-patient',
-        title: 'Pick a patient',
-        body: 'Click the patient you are treating.',
         advance: { on: 'click', selector: '[role="option"]' },
       },
       {
         target: 'session-program',
-        title: 'Pick a program',
-        body: 'Choose one of your programs, or Quick Start to pick exercises on the fly.',
         advance: { on: 'click', selector: '[role="option"]' },
       },
       {
         target: 'session-headset',
-        title: 'Pick the headset',
-        body: 'Put the headset on the patient and choose it here.',
         advance: { on: 'click', selector: '[role="option"]' },
       },
       {
         target: 'session-launch',
-        title: 'Launch',
-        body: 'Press Launch on headset. The session opens on the patient dashboard.',
         advance: { on: 'click' },
       },
     ],

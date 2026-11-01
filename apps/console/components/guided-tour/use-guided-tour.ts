@@ -51,6 +51,7 @@ export function useGuidedTour() {
   }
 
   return {
+    tourId: run?.id ?? null,
     tour,
     index: run?.index ?? 0,
     goTo,

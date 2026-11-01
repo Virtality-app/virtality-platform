@@ -494,27 +494,56 @@ const MS_PER_MINUTE = 60 * 1000
 const MS_PER_HOUR = 60 * MS_PER_MINUTE
 const MS_PER_DAY = 24 * MS_PER_HOUR
 
+export type RemainingTimeUnit = 'days' | 'hours' | 'minutes'
+export type RemainingTimePart = { unit: RemainingTimeUnit; value: number }
+
 /**
- * Clinician-facing Remaining Time label. Expired / zero stays non-negative.
- * Surrounding chrome may stay [COPY].
+ * Remaining Time as at most two units, largest first, for callers that word
+ * the units themselves. Empty once expired.
  */
-export function formatRemainingTimeLabel(remainingMs: number): string {
+export function remainingTimeParts(remainingMs: number): RemainingTimePart[] {
   const ms = Math.max(0, Math.floor(remainingMs))
-  if (ms <= 0) return 'Expired'
+  if (ms <= 0) return []
 
   const days = Math.floor(ms / MS_PER_DAY)
   const hours = Math.floor((ms % MS_PER_DAY) / MS_PER_HOUR)
   const minutes = Math.floor((ms % MS_PER_HOUR) / MS_PER_MINUTE)
 
   if (days > 0) {
-    if (hours > 0) return `${days}d ${hours}h`
-    return `${days}d`
+    return hours > 0
+      ? [
+          { unit: 'days', value: days },
+          { unit: 'hours', value: hours },
+        ]
+      : [{ unit: 'days', value: days }]
   }
   if (hours > 0) {
-    if (minutes > 0) return `${hours}h ${minutes}m`
-    return `${hours}h`
+    return minutes > 0
+      ? [
+          { unit: 'hours', value: hours },
+          { unit: 'minutes', value: minutes },
+        ]
+      : [{ unit: 'hours', value: hours }]
   }
-  return `${Math.max(1, minutes)}m`
+  return [{ unit: 'minutes', value: Math.max(1, minutes) }]
+}
+
+const REMAINING_TIME_SUFFIX: Record<RemainingTimeUnit, string> = {
+  days: 'd',
+  hours: 'h',
+  minutes: 'm',
+}
+
+/**
+ * Clinician-facing Remaining Time label. Expired / zero stays non-negative.
+ * Surrounding chrome may stay [COPY].
+ */
+export function formatRemainingTimeLabel(remainingMs: number): string {
+  const parts = remainingTimeParts(remainingMs)
+  if (parts.length === 0) return 'Expired'
+  return parts
+    .map(({ unit, value }) => `${value}${REMAINING_TIME_SUFFIX[unit]}`)
+    .join(' ')
 }
 
 /**

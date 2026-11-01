@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { greekDrafts, translationCatalog } from '@virtality/shared/translations'
 import {
   coachCardPosition,
   isTourId,
@@ -11,8 +12,6 @@ import {
 
 const step = (target: string, optional = false): TourStep => ({
   target,
-  title: target,
-  body: '',
   advance: { on: 'click' },
   optional,
 })
@@ -167,6 +166,22 @@ describe('tour links', () => {
   it('ends every tour on a required step', () => {
     for (const tour of Object.values(TOURS)) {
       expect(tour.steps.at(-1)?.optional).toBeFalsy()
+    }
+  })
+
+  it('has English and Greek copy for every tour and step', () => {
+    for (const [id, tour] of Object.entries(TOURS)) {
+      const keys = [
+        `tour.${id}.title`,
+        ...tour.steps.flatMap(({ target }) => [
+          `tour.${id}.steps.${target}.title`,
+          `tour.${id}.steps.${target}.body`,
+        ]),
+      ]
+      for (const key of keys) {
+        expect(translationCatalog.layout[key], key).toBeTruthy()
+        expect(greekDrafts.layout[key], key).toBeTruthy()
+      }
     }
   })
 })

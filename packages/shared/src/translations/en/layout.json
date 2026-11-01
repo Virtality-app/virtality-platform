@@ -5,7 +5,115 @@
     "done": "Done",
     "next": "Next",
     "waiting": "Waiting…",
-    "clickHighlight": "Click the highlight"
+    "clickHighlight": "Click the highlight",
+    "device": {
+      "title": "Pair a headset",
+      "steps": {
+        "device-add": {
+          "title": "Add your headset",
+          "body": "Click Add device to register the headset you will use with patients."
+        },
+        "device-name": {
+          "title": "Name it",
+          "body": "Give the headset a name you will recognise, like \"Device One\"."
+        },
+        "device-submit": {
+          "title": "Add it",
+          "body": "Press Add Device. The headset shows up in your list."
+        },
+        "device-pair": {
+          "title": "Start pairing",
+          "body": "Press Pair to get a 6-digit code for the headset."
+        },
+        "device-code": {
+          "title": "Enter the code in the headset",
+          "body": "Put the headset on and enter this code. The card shows Paired once it matches."
+        }
+      }
+    },
+    "patient": {
+      "title": "Add a patient",
+      "steps": {
+        "patient-name": {
+          "title": "Write the full name",
+          "body": "Type the patient’s full name here. It is how you will find them later."
+        },
+        "patient-sex": {
+          "title": "Pick their sex",
+          "body": "Choose an option from this list."
+        },
+        "patient-language": {
+          "title": "Pick their language",
+          "body": "The headset speaks to the patient in this language."
+        },
+        "patient-submit": {
+          "title": "Save the patient",
+          "body": "Everything else is optional. Press Create to add the patient."
+        }
+      }
+    },
+    "program": {
+      "title": "Create an exercise program",
+      "steps": {
+        "program-choice": {
+          "title": "Choose how to start",
+          "body": "A starter template is quickest. You can also pick exercises yourself."
+        },
+        "program-template-list": {
+          "title": "Pick a template",
+          "body": "Click a template to preview its exercises on the right."
+        },
+        "program-template-continue": {
+          "title": "Open it in the editor",
+          "body": "Press Continue to editor. Nothing is saved yet."
+        },
+        "exercise-filters": {
+          "title": "Filter the catalog",
+          "body": "Pick a body part to see only its exercises. Equipment and search below narrow it down further."
+        },
+        "exercise-card": {
+          "title": "Add an exercise",
+          "body": "Click a card to add it to the program, and click it again to take it out."
+        },
+        "program-catalog-continue": {
+          "title": "Review your picks",
+          "body": "Add as many exercises as you need, then press this button."
+        },
+        "program-name": {
+          "title": "Name the program",
+          "body": "Write a name you will recognise when starting a session, like \"Knee rehab week 1\"."
+        },
+        "exercise-row": {
+          "title": "Tune each exercise",
+          "body": "Change sets, reps and the other settings here. The arrows move an exercise up or down the list."
+        },
+        "program-submit": {
+          "title": "Save it to your library",
+          "body": "Press Submit. The program is ready to use in any session."
+        }
+      }
+    },
+    "session": {
+      "title": "Start a session",
+      "steps": {
+        "session-patient": {
+          "title": "Pick a patient",
+          "body": "Click the patient you are treating."
+        },
+        "session-program": {
+          "title": "Pick a program",
+          "body": "Choose one of your programs, or Quick Start to pick exercises on the fly."
+        },
+        "session-headset": {
+          "title": "Pick the headset",
+          "body": "Put the headset on the patient and choose it here."
+        },
+        "session-launch": {
+          "title": "Launch",
+          "body": "Press Launch on headset. The session opens on the patient dashboard."
+        }
+      }
+    }
   },
   "avatar": {
     "alt": "User avatar.",
@@ -32,7 +140,13 @@
     "canceled": "Canceled",
     "active": "Active",
     "subscription": "Subscription",
-    "remaining": "Remaining Time"
+    "remaining": "Remaining Time",
+    "expired": "Expired",
+    "units": {
+      "days": "{{count}}d",
+      "hours": "{{count}}h",
+      "minutes": "{{count}}m"
+    }
   },
   "renew": {
     "tomorrow": "Your access renews tomorrow",
@@ -40,6 +154,14 @@
     "description": "Review your plan and billing before Remaining Time runs out.",
     "manageBilling": "Manage billing",
     "dismiss": "Dismiss renewal reminder"
+  },
+  "checkoutCta": {
+    "subscribe": "Subscribe",
+    "renew": "Renew"
+  },
+  "subscribeBanner": {
+    "subscribe": "Subscribe to unlock VR programs.",
+    "renew": "Your subscription has expired. Renew to keep using VR programs."
   },
   "sidebar": {
     "brand": "Virtality",

@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { CreditCard } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
+import { useClientT } from '@/i18n/use-client-t'
 import { authClient } from '@/auth-client'
 import { useBillingFeatureEnabled } from '@/hooks/use-billing-feature'
 import { useLiveEntitlementStanding } from '@/hooks/use-live-entitlement-standing'
@@ -15,10 +16,10 @@ import { profileBillingHref } from '@/lib/renew-prompt-dismiss'
  * upcoming-renewal reminder. Gated by `useBillingFeatureEnabled` (preview/local only).
  */
 export function SubscribeRenewBanner() {
+  const { t } = useClientT('layout')
   const { data: session } = authClient.useSession()
   const billingEnabled = useBillingFeatureEnabled()
-  const { isPending, entitled, checkoutCta, checkoutCtaLabel } =
-    useLiveEntitlementStanding()
+  const { isPending, entitled, checkoutCta } = useLiveEntitlementStanding()
   const userId = session?.user?.id
 
   const visible =
@@ -26,14 +27,9 @@ export function SubscribeRenewBanner() {
     !isPending &&
     !entitled &&
     userId != null &&
-    checkoutCtaLabel != null
+    checkoutCta != null
 
-  if (!visible || !userId) return null
-
-  const message =
-    checkoutCta === 'renew'
-      ? 'Your subscription has expired. Renew to keep using VR programs.'
-      : 'Subscribe to unlock VR programs.'
+  if (!visible || !userId || !checkoutCta) return null
 
   return (
     <div
@@ -41,12 +37,12 @@ export function SubscribeRenewBanner() {
       className='flex min-w-0 flex-1 items-center justify-center gap-3 rounded-full bg-amber-100/80 px-3 py-1.5 ring-1 ring-amber-200/80 dark:bg-amber-950/40 dark:ring-amber-900/50'
     >
       <p className='truncate text-sm font-medium text-amber-900 dark:text-amber-100'>
-        {message}
+        {t(`subscribeBanner.${checkoutCta}`)}
       </p>
       <Button asChild variant='primary' size='sm' className='shrink-0'>
         <Link href={profileBillingHref(userId)}>
           <CreditCard />
-          {checkoutCtaLabel}
+          {t(`checkoutCta.${checkoutCta}`)}
         </Link>
       </Button>
     </div>
