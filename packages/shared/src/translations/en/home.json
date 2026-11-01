@@ -23,24 +23,32 @@
       "paired_one": "{{count}} headset paired",
       "paired_other": "{{count}} headsets paired",
       "unpaired": "A headset is added but not paired yet.",
-      "empty": "Add a headset and pair it with the 6-digit code."
+      "empty": "Add a headset and pair it with the 6-digit code.",
+      "action": "Pair",
+      "actionAgain": "Pair another headset"
     },
     "patient": {
       "title": "Add your first patient",
       "onFile_one": "{{count}} patient on file",
       "onFile_other": "{{count}} patients on file",
-      "empty": "Name and basic info is enough to start."
+      "empty": "Name and basic info is enough to start.",
+      "action": "Add patient",
+      "actionAgain": "Add another patient"
     },
     "program": {
       "title": "Create an exercise program",
       "inLibrary_one": "{{count}} program in your library",
       "inLibrary_other": "{{count}} programs in your library",
-      "empty": "Start from a Starter Template or pick exercises yourself. Takes about 3 minutes."
+      "empty": "Start from a Starter Template or pick exercises yourself. Takes about 3 minutes.",
+      "action": "Create program",
+      "actionAgain": "Create another program"
     },
     "session": {
       "title": "Start a session",
       "done": "First session done",
-      "empty": "Put the headset on the patient, pick the program, press Launch."
+      "empty": "Put the headset on the patient, pick the program, press Launch.",
+      "action": "Start",
+      "actionAgain": "Start another session"
     },
     "headline": {
       "allSet": "You are all set.",

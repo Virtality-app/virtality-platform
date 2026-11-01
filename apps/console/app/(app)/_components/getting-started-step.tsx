@@ -2,14 +2,8 @@ import Link from 'next/link'
 import { Check } from 'lucide-react'
 import { Button } from '@virtality/ui/components/button'
 import { cn } from '@/lib/utils'
+import { useClientT } from '@/i18n/use-client-t'
 import type { GettingStartedStep as Step } from '@/lib/home-getting-started'
-
-const actionLabel: Record<Step['id'], { open: string; done: string }> = {
-  device: { open: 'Pair', done: 'Pair another headset' },
-  patient: { open: 'Add patient', done: 'Add another patient' },
-  program: { open: 'Create program', done: 'Create another program' },
-  session: { open: 'Start', done: 'Start another session' },
-}
 
 const GettingStartedStep = ({
   step,
@@ -17,46 +11,52 @@ const GettingStartedStep = ({
 }: {
   step: Step
   number: number
-}) => (
-  <li
-    className={cn(
-      'grid grid-cols-[28px_minmax(0,1fr)_auto] items-center gap-3.5 border-t px-6 py-3.5 first:border-t-0',
-      step.current && 'bg-vital-blue-50 dark:bg-vital-blue-500/10',
-    )}
-  >
-    <span
+}) => {
+  const { t } = useClientT('home')
+
+  return (
+    <li
       className={cn(
-        'grid size-7 place-items-center rounded-full border text-xs font-semibold',
-        step.done &&
-          'border-green-700 bg-green-700 text-white dark:border-green-500 dark:bg-green-500 dark:text-zinc-950',
-        step.current &&
-          'border-vital-blue-700 text-vital-blue-700 dark:border-vital-blue-400 dark:text-vital-blue-400',
+        'grid grid-cols-[28px_minmax(0,1fr)_auto] items-center gap-3.5 border-t px-6 py-3.5 first:border-t-0',
+        step.current && 'bg-vital-blue-50 dark:bg-vital-blue-500/10',
       )}
-      aria-hidden
     >
-      {step.done ? <Check className='size-4' strokeWidth={2.5} /> : number}
-    </span>
-    <div className='min-w-0'>
-      <div
+      <span
         className={cn(
-          'font-medium',
-          step.done && 'text-muted-foreground line-through',
+          'grid size-7 place-items-center rounded-full border text-xs font-semibold',
+          step.done &&
+            'border-green-700 bg-green-700 text-white dark:border-green-500 dark:bg-green-500 dark:text-zinc-950',
+          step.current &&
+            'border-vital-blue-700 text-vital-blue-700 dark:border-vital-blue-400 dark:text-vital-blue-400',
         )}
+        aria-hidden
       >
-        {step.title}
+        {step.done ? <Check className='size-4' strokeWidth={2.5} /> : number}
+      </span>
+      <div className='min-w-0'>
+        <div
+          className={cn(
+            'font-medium',
+            step.done && 'text-muted-foreground line-through',
+          )}
+        >
+          {step.title}
+        </div>
+        <div className='text-muted-foreground text-[13px]'>{step.detail}</div>
       </div>
-      <div className='text-muted-foreground text-[13px]'>{step.detail}</div>
-    </div>
-    <Button
-      asChild
-      size='sm'
-      variant={step.current ? 'primary' : step.done ? 'ghost' : 'outline'}
-    >
-      <Link href={step.href}>
-        {step.done ? actionLabel[step.id].done : actionLabel[step.id].open}
-      </Link>
-    </Button>
-  </li>
-)
+      <Button
+        asChild
+        size='sm'
+        variant={step.current ? 'primary' : step.done ? 'ghost' : 'outline'}
+      >
+        <Link href={step.href}>
+          {t(
+            `gettingStarted.${step.id}.${step.done ? 'actionAgain' : 'action'}`,
+          )}
+        </Link>
+      </Button>
+    </li>
+  )
+}
 
 export default GettingStartedStep
