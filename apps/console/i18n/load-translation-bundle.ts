@@ -7,20 +7,46 @@ import {
 } from '@virtality/shared/translations'
 
 /**
- * The browser's client comes from ORPCProvider. A server render has none
- * until a provider renders, which is after i18next loads its first bundles,
- * so the server points the client at the API itself (`translation.bundle`
- * is public). Without this every server render fell back to English.
+ * The oRPC client is set up when ORPCProvider renders, but i18next loads its
+ * first bundles (common, validation, auth) as soon as it initializes, before
+ * that on the server and in the browser. Those loads fell back to English
+ * and stayed cached, so set the client up here the way the provider does.
  */
 function bundleClient() {
-  if (typeof window === 'undefined') {
+  try {
+    return getORPC()
+  } catch {
+    configureORPC({
+      url: getServerUrl() + ORPC_PREFIX,
+      fetch: (request, init) =>
+        fetch(request, { ...init, credentials: 'include' }),
+    })
+    return getORPC()
+  }
+}
+
+/** About 30s in all: long enough for the API to finish (re)starting. */
+const RETRY_DELAYS_MS = [500, 1000, 2000, 4000, 8000, 16000]
+
+/**
+ * i18next keeps whatever a load returns for good, so a load made while the
+ * API is unreachable (`fetch` throws a TypeError) waits and tries again
+ * rather than storing the English fallback as this language. API errors,
+ * such as an unknown namespace, are not retried.
+ */
+async function fetchBundle(language: string, namespace: string) {
+  for (let attempt = 0; ; attempt++) {
     try {
-      return getORPC()
-    } catch {
-      configureORPC({ url: getServerUrl() + ORPC_PREFIX })
+      return await bundleClient().translation.bundle.call({
+        locale: language,
+        namespace,
+      })
+    } catch (error) {
+      const delay = RETRY_DELAYS_MS[attempt]
+      if (!(error instanceof TypeError) || delay === undefined) throw error
+      await new Promise((resolve) => setTimeout(resolve, delay))
     }
   }
-  return getORPC()
 }
 
 /** Loads a namespace from `translation.bundle`; falls back to the catalog's English. */
@@ -29,11 +55,7 @@ export async function loadTranslationBundle(
   namespace: string,
 ) {
   try {
-    const bundle = await bundleClient().translation.bundle.call({
-      locale: language,
-      namespace,
-    })
-    return unflattenMessages(bundle)
+    return unflattenMessages(await fetchBundle(language, namespace))
   } catch {
     const english = translationCatalog[namespace as TranslationNamespace]
     return english ? unflattenMessages(english) : {}

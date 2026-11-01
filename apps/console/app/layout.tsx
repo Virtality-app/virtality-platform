@@ -5,6 +5,7 @@ import '@/app/globals.css'
 import RootProvider from '@/context/root-provider'
 import { LanguageProvider } from '@/i18n/language-provider'
 import { resolveRequestLanguage } from '@/i18n/request-language'
+import { loadServerTranslations } from '@/i18n/server-translations'
 import { settings } from '@/i18n/settings'
 import { cn } from '@/lib/utils'
 
@@ -32,6 +33,7 @@ export default async function RootLayout({
     (await cookies()).get(settings.cookieName)?.value,
     (await headers()).get('accept-language'),
   )
+  const resources = await loadServerTranslations(language)
 
   return (
     <html lang={language} suppressHydrationWarning>
@@ -42,7 +44,7 @@ export default async function RootLayout({
           'min-h-svh antialiased dark:bg-zinc-950',
         )}
       >
-        <LanguageProvider language={language}>
+        <LanguageProvider language={language} resources={resources}>
           <RootProvider>{children}</RootProvider>
         </LanguageProvider>
       </body>

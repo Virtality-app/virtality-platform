@@ -23,9 +23,9 @@ describe('loadTranslationBundle on the server', () => {
     expect(await loadTranslationBundle('el', 'auth')).toEqual({
       signIn: { title: 'Σύνδεση στο Virtality' },
     })
-    expect(configureORPC).toHaveBeenCalledExactlyOnceWith({
-      url: 'http://localhost:8080/api/v1/rpc',
-    })
+    expect(configureORPC).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ url: 'http://localhost:8080/api/v1/rpc' }),
+    )
   })
 
   it('reuses the client it configured', async () => {

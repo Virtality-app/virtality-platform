@@ -1,7 +1,9 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 let orpc: () => unknown = () => ({})
 vi.mock('@virtality/react-query', () => ({
+  // Setting up a client changes nothing here: getORPC keeps its mocked result.
+  configureORPC: () => {},
   getORPC: () => orpc(),
 }))
 
@@ -28,6 +30,36 @@ describe('loadTranslationBundle', () => {
     ).toMatchObject({
       'start-btn': 'Start',
       'pause-btn': 'Pause',
+    })
+  })
+
+  describe('while the API is unreachable', () => {
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it('retries instead of keeping English as the language', async () => {
+      vi.useFakeTimers()
+      const call = vi
+        .fn()
+        .mockRejectedValueOnce(new TypeError('fetch failed'))
+        .mockRejectedValueOnce(new TypeError('fetch failed'))
+        .mockResolvedValue({ 'btn.save': 'Αποθήκευση' })
+      orpc = () => ({ translation: { bundle: { call } } })
+
+      const loading = loadTranslationBundle('el', 'common')
+      await vi.runAllTimersAsync()
+
+      expect(await loading).toEqual({ btn: { save: 'Αποθήκευση' } })
+      expect(call).toHaveBeenCalledTimes(3)
+    })
+
+    it('does not retry an API error', async () => {
+      const call = vi.fn().mockRejectedValue(new Error('Unknown namespace'))
+      orpc = () => ({ translation: { bundle: { call } } })
+
+      await loadTranslationBundle('el', 'patient-dashboard')
+      expect(call).toHaveBeenCalledOnce()
     })
   })
 })
