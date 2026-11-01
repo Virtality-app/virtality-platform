@@ -1,5 +1,4 @@
 import { useClientT } from '@/i18n/use-client-t'
-import { Separator } from '@virtality/ui/components/separator'
 import { cn, getDisplayName } from '@/lib/utils'
 import ProgramSelector from './program-selector'
 import SessionExerciseChangeStatus from './session-exercise-change-status'
@@ -76,54 +75,60 @@ const ControlPanel = ({
 
   return (
     <>
+      {/* Two groups that wrap as units: what to run (grows to fill its
+          line) and the headset actions, with Start always last. */}
       <div
         className={cn(
           'bg-card flex flex-wrap items-center gap-2 rounded-xl border p-4 shadow',
           className,
         )}
       >
-        <ModeSelector
-          selectedMode={selectedMode}
-          setSelectedMode={setSelectedMode}
-          programState={programState}
-          playbackStatus={playback.state.status}
-          frozen={frozen}
-        />
-        <Separator orientation='vertical' className='h-8!' />
-        {isImmersive ? (
-          <ImmersiveVideoTransport />
-        ) : (
-          <Controls
+        <div className='flex min-w-0 flex-[1_1_20rem] flex-wrap items-center gap-2'>
+          <ModeSelector
             selectedMode={selectedMode}
-            isProgramInactive={isProgramInactive}
-            treatmentLaunchReady={treatmentLaunchReady && !frozen}
-            programStart={programStart}
-            handleWarmupStart={handleWarmupStart}
+            setSelectedMode={setSelectedMode}
+            programState={programState}
+            playbackStatus={playback.state.status}
+            frozen={frozen}
           />
-        )}
-        {autoLaunchArmed && <AutoLaunchStatus connected={connected} />}
+          {isProgramInactive && isMain && (
+            <ProgramSelector className='min-w-0 flex-[1_1_12rem]' />
+          )}
+          {isImmersive && (
+            <ImmersiveVideoPicker className='min-w-0 flex-[1_1_12rem]' />
+          )}
+          {isImmersive && <ImmersiveVideoStopAfterPicker />}
+        </div>
 
-        <DeviceSelector devices={devices} connected={connected} />
-        <CastingButton
-          showCasting={showCasting}
-          setShowCasting={setShowCasting}
-        />
-
-        {isProgramInactive && isMain && (
-          <ProgramSelector className='min-w-60 flex-1' />
-        )}
-        {isImmersive && <ImmersiveVideoPicker className='min-w-60 flex-1' />}
-        {isImmersive && <ImmersiveVideoStopAfterPicker />}
-
-        {isImmersive ? null : (
-          <SceneSettings
-            coachEnabled={coachEnabled}
-            onCoachEnabledChange={changeCoachEnabled}
-            coachToggleDisabled={coachToggleDisabled}
-            selectedDevice={selectedDevice}
-            missingSettings={missingSettings}
+        <div className='ml-auto flex flex-wrap items-center justify-end gap-2 max-sm:w-full'>
+          {autoLaunchArmed && <AutoLaunchStatus connected={connected} />}
+          <DeviceSelector devices={devices} connected={connected} />
+          <CastingButton
+            showCasting={showCasting}
+            setShowCasting={setShowCasting}
           />
-        )}
+          {isImmersive ? (
+            <ImmersiveVideoTransport />
+          ) : (
+            <>
+              <SceneSettings
+                coachEnabled={coachEnabled}
+                onCoachEnabledChange={changeCoachEnabled}
+                coachToggleDisabled={coachToggleDisabled}
+                selectedDevice={selectedDevice}
+                missingSettings={missingSettings}
+              />
+              <Controls
+                className='max-sm:w-full'
+                selectedMode={selectedMode}
+                isProgramInactive={isProgramInactive}
+                treatmentLaunchReady={treatmentLaunchReady && !frozen}
+                programStart={programStart}
+                handleWarmupStart={handleWarmupStart}
+              />
+            </>
+          )}
+        </div>
       </div>
 
       {sessionPhase && (
