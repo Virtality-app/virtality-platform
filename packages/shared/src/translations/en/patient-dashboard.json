@@ -44,8 +44,8 @@
     "leaveImmersiveHint": "Stop the video to change mode."
   },
   "navigationGuard": {
-    "title": "Active connection",
-    "description": "You have an active connection navigating to an other page will disconnect the device. Are you sure you want to leave this page?"
+    "title": "Session in progress",
+    "description": "Leaving this page ends the session and disconnects the headset. Leave anyway?"
   },
   "sceneSettings": {
     "title": "Scene Settings",

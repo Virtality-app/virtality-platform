@@ -1,12 +1,7 @@
 import Devices from './_components'
-import { DeviceContextProvider } from '@/context/device-context'
 
 const DevicesPage = async () => {
-  return (
-    <DeviceContextProvider>
-      <Devices />
-    </DeviceContextProvider>
-  )
+  return <Devices />
 }
 
 export default DevicesPage

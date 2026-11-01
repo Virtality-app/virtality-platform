@@ -69,6 +69,12 @@ vi.mock('next/navigation', () => ({
 vi.mock('@/hooks/use-socket-connection', () => ({
   default: () => ({ connected: mocks.connected }),
 }))
+vi.mock('./use-auto-connect-headset', () => ({
+  useAutoConnectHeadset: () => {},
+}))
+vi.mock('@/context/immersive-video-session-context', () => ({
+  useImmersiveVideoSession: () => ({ playback: { state: { status: 'Idle' } } }),
+}))
 vi.mock('@/hooks/use-vr-headset-presence', () => ({
   useVrHeadsetPresence: () => mocks.headsetPresent,
 }))

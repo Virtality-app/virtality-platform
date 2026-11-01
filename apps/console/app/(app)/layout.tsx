@@ -11,6 +11,7 @@ import { ExpiredFreeUpgradeDialog } from '@/components/layout/expired-free-upgra
 import { CheckoutReturnHandler } from '@/components/checkout-return/checkout-return-handler'
 import { TrialWelcomeRedirect } from '@/components/layout/trial-welcome-redirect'
 import GuidedTour from '@/components/guided-tour/guided-tour'
+import { DeviceContextProvider } from '@/context/device-context'
 
 export default async function AppLayout({
   children,
@@ -22,18 +23,21 @@ export default async function AppLayout({
 
   return (
     <SidebarProvider defaultOpen={defaultOpen} suppressHydrationWarning>
-      <RootSidebar />
-      <main className='w-full'>
-        <Navbar />
-        <CheckoutReturnHandler />
-        <TrialWelcomeRedirect />
-        <RenewPromptBanner />
-        <ExpiredFreeUpgradeDialog />
-        {children}
-        <Suspense fallback={null}>
-          <GuidedTour />
-        </Suspense>
-      </main>
+      {/* App-wide so a headset connection survives page changes. */}
+      <DeviceContextProvider>
+        <RootSidebar />
+        <main className='w-full'>
+          <Navbar />
+          <CheckoutReturnHandler />
+          <TrialWelcomeRedirect />
+          <RenewPromptBanner />
+          <ExpiredFreeUpgradeDialog />
+          {children}
+          <Suspense fallback={null}>
+            <GuidedTour />
+          </Suspense>
+        </main>
+      </DeviceContextProvider>
     </SidebarProvider>
   )
 }

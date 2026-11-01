@@ -34,8 +34,11 @@ import {
   type SkipDirection,
 } from '@/lib/session-exercise-skip'
 import { resolveSkipControlUiState } from '@/lib/session-exercise-change-ui'
+import { useImmersiveVideoSession } from '@/context/immersive-video-session-context'
+import { isLeavingImmersiveLocked } from '@/lib/control-panel-mode'
 import useCoachSettings from './use-coach-settings'
 import { useLaunchIntentFromUrl } from './use-launch-intent-from-url'
+import { useAutoConnectHeadset } from './use-auto-connect-headset'
 
 const LAUNCH_BLOCK_REASON: Record<TreatmentLaunchBlock, LaunchBlockedReason> = {
   entitlementPending: 'entitlement_pending',
@@ -78,7 +81,9 @@ const useControlPanel = () => {
   const { connected, connect } = useSocketConnection({
     device: selectedDevice,
   })
+  useAutoConnectHeadset({ selectedDevice, connect })
   const headsetPresent = useVrHeadsetPresence(selectedDevice)
+  const { playback } = useImmersiveVideoSession()
   const { coachEnabled, changeCoachEnabled, coachToggleDisabled } =
     useCoachSettings({
       patientId,
@@ -292,7 +297,11 @@ const useControlPanel = () => {
   const isSkipBlockedByProgramState =
     isProgramInactive || isProgramPaused || isProgramLaunching
 
-  const { guard } = useNavigationGuard(connected, () => {
+  // The connection outlives the page; only a running session or video
+  // ties the clinician here, and leaving ends it on the headset.
+  const sessionRunning =
+    !isProgramInactive || isLeavingImmersiveLocked(playback.state.status)
+  const { guard } = useNavigationGuard(connected && sessionRunning, () => {
     selectedDevice?.socket.disconnect()
   })
 

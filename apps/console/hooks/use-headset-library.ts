@@ -139,8 +139,10 @@ export function useHeadsetLibrary(
     device.mutations.setDeviceRoomCode(device.data.deviceId)
     void connect()
 
+    // Switching headsets leaves the previous room. Leaving the page does
+    // not: the connection belongs to the app, not to this page.
     return () => {
-      disconnect()
+      if (deviceRef.current?.data.id !== device.data.id) disconnect()
     }
     // Connect/disconnect are not stable; join follows the selected headset.
     // eslint-disable-next-line react-hooks/exhaustive-deps
