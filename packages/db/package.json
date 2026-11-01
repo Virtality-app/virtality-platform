@@ -15,8 +15,8 @@
   "scripts": {
     "generate": "prisma generate --config ./prisma.config.ts",
     "build": "pnpm generate && rimraf ./dist && tsc",
-    "reset": "doppler run -- prisma migrate reset --config ./prisma.config.ts && doppler run -- prisma db seed --config ./prisma.config.ts",
-    "migrate:dev": "doppler run -- prisma migrate dev --config ./prisma.config.ts && doppler run -- prisma db seed --config ./prisma.config.ts",
+    "reset": "doppler run -- prisma migrate reset --config ./prisma.config.ts",
+    "migrate:dev": "doppler run -- prisma migrate dev --config ./prisma.config.ts",
     "migrate:deploy": "prisma migrate deploy --config ./prisma.config.ts",
     "seed": "doppler run -- prisma db seed --config ./prisma.config.ts",
     "studio": "doppler run -- prisma studio --config ./prisma.config.ts",

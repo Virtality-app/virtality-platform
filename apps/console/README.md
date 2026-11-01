@@ -36,7 +36,7 @@ Auth and API traffic go to `services/server` (`http://localhost:8080`).
 | `NEXT_PUBLIC_POSTHOG_KEY`                | no                 | Analytics                                                                       |
 | `NEXT_PUBLIC_CDN_URL` / AWS\_\*          | no                 | Uploads / media                                                                 |
 
-After `pnpm db:migrate:dev`, sign in as the seeded admin:
+After `pnpm db:migrate:dev` and `pnpm db:seed`, sign in as the seeded admin:
 
 - Email: `dev@virtality.local`
 - Password: `password`

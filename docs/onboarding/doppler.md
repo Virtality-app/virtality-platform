@@ -119,7 +119,7 @@ You already have a Doppler user. Goal: CLI + login + scoped setup + local `.env`
    done
    ```
 
-7. Continue onboarding: `pnpm db:up`, `pnpm db:migrate:dev`, `pnpm dev:apps` ([Onboarding](./README.md)).
+7. Continue onboarding: `pnpm db:up`, `pnpm db:migrate:dev`, `pnpm db:seed`, `pnpm dev:apps` ([Onboarding](./README.md)).
 8. Optional: enable a personal config under `dev` for machine-specific overrides (`doppler configs create` / dashboard personal configs) so you do not edit shared `dev` for local-only tweaks.
 
 **Do not** copy `.env` from the old laptop over USB as the long-term source of truth. Prefer a fresh download from Doppler.

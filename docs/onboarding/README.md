@@ -75,11 +75,12 @@ Do not commit filled `.env` files. Team source of truth is **Doppler** ([setup +
 
 ## 3. Database
 
-First start local Postgres, then apply migrations + seed:
+First start local Postgres, apply migrations, then seed:
 
 ```sh
 pnpm db:up
 pnpm db:migrate:dev
+pnpm db:seed
 ```
 
 ### `pnpm db:up`
@@ -97,16 +98,16 @@ Stop the container with `pnpm db:down` (volume kept). Docker must be running; if
 
 ### Useful `db:*` scripts
 
-| Script                   | What it does                                                                 |
-| ------------------------ | ---------------------------------------------------------------------------- |
-| `pnpm db:up`             | Start local Postgres                                                         |
-| `pnpm db:down`           | Stop local Postgres                                                          |
-| `pnpm db:migrate:dev`    | Apply pending migrations, then seed (Prisma 7 no longer seeds automatically) |
-| `pnpm db:seed`           | Seed only (re-run seed without migrating)                                    |
-| `pnpm db:studio`         | Open Prisma Studio against the local DB                                      |
-| `pnpm db:generate`       | Regenerate the Prisma client                                                 |
-| `pnpm db:reset`          | Wipe DB, re-apply migrations, seed (destructive; local only)                 |
-| `pnpm db:migrate:deploy` | Apply migrations without seed (closer to staging/prod)                       |
+| Script                   | What it does                                                       |
+| ------------------------ | ------------------------------------------------------------------ |
+| `pnpm db:up`             | Start local Postgres                                               |
+| `pnpm db:down`           | Stop local Postgres                                                |
+| `pnpm db:migrate:dev`    | Apply pending migrations (does not seed)                           |
+| `pnpm db:seed`           | Seed the local DB; the only command that seeds; safe to re-run     |
+| `pnpm db:studio`         | Open Prisma Studio against the local DB                            |
+| `pnpm db:generate`       | Regenerate the Prisma client                                       |
+| `pnpm db:reset`          | Wipe DB and re-apply migrations, no seed (destructive; local only) |
+| `pnpm db:migrate:deploy` | Apply migrations (closer to staging/prod)                          |
 
 **Fresh DB is the default.** Cloning a remote DB is optional later when you have a connection string (`apps/console/docs/db-setup.md`).
 
@@ -118,7 +119,7 @@ Stop the container with `pnpm db:down` (volume kept). Docker must be running; if
 | Password | `password`            |
 | Role     | `admin`               |
 
-Also seeded: a few patients, programs, exercises, one completed session (+ small session data), and one device, all owned by that admin.
+Also seeded, all owned by that admin: four patients (Greek and English, one brand new with no sessions), two reusable programs built from the exercises already in the database, and completed sessions with per-rep session data. When the database has no enabled exercises, the seed first inserts six copies of real catalog exercises.
 
 ## 4. Start the suite
 

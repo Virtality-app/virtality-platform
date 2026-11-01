@@ -6,9 +6,13 @@ import { DEV_ADMIN } from './seeds/dev-admin-constants.ts'
 
 async function main() {
   const ownerUserId = await seedDevAdmin(prisma)
-  await seedClinicalBootstrap(prisma, ownerUserId)
+  const summary = await seedClinicalBootstrap(prisma, ownerUserId)
+
+  if (summary.insertedFallbackExercises) {
+    console.log('No enabled exercises found; inserted fallback exercises.')
+  }
   console.log(
-    `Seeded local admin ${DEV_ADMIN.email} / ${DEV_ADMIN.password} and clinical bootstrap data.`,
+    `Seeded local admin ${DEV_ADMIN.email} / ${DEV_ADMIN.password} with ${summary.patients} patients, ${summary.programs} reusable programs and ${summary.sessions} completed sessions.`,
   )
 }
 
