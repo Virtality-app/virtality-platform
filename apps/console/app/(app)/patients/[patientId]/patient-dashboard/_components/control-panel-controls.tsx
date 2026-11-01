@@ -5,6 +5,7 @@ import { useClientT } from '@/i18n/use-client-t'
 import { PatientDashboardValue } from '@/context/patient-dashboard-context'
 
 interface ControlsProps {
+  className?: string
   selectedMode: PatientDashboardValue['state']['selectedMode']
   isProgramInactive: boolean
   treatmentLaunchReady: boolean
@@ -17,6 +18,7 @@ interface ControlsProps {
  * move to the session panel, so here they only start a session or a warm-up.
  */
 const Controls = ({
+  className,
   selectedMode,
   isProgramInactive,
   treatmentLaunchReady,
@@ -31,6 +33,7 @@ const Controls = ({
       return (
         <Button
           variant='primary'
+          className={className}
           onClick={programStart}
           disabled={!treatmentLaunchReady}
         >
@@ -43,6 +46,7 @@ const Controls = ({
       return (
         <Button
           variant={isProgramInactive ? 'primary' : 'destructive'}
+          className={className}
           onClick={handleWarmupStart}
           disabled={isProgramInactive && !treatmentLaunchReady}
         >
