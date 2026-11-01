@@ -44,11 +44,7 @@ const GettingStartedStep = ({
         </div>
         <div className='text-muted-foreground text-[13px]'>{step.detail}</div>
       </div>
-      <Button
-        asChild
-        size='sm'
-        variant={step.current ? 'primary' : step.done ? 'ghost' : 'outline'}
-      >
+      <Button asChild size='sm' variant={step.current ? 'primary' : 'outline'}>
         <Link href={step.href}>
           {t(
             `gettingStarted.${step.id}.${step.done ? 'actionAgain' : 'action'}`,
