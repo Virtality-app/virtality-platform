@@ -157,7 +157,10 @@ export type PersonProperties = {
   last_treatment_session_at?: string
 }
 
-/** Staff and testers are filtered out of product dashboards by this flag. */
+/**
+ * Staff are filtered out of product dashboards by this flag. Testers count as
+ * real users: some clinics doing real work hold the tester role.
+ */
 export function isInternalRole(role: string | null | undefined): boolean {
-  return role === 'admin' || role === 'tester'
+  return role === 'admin'
 }

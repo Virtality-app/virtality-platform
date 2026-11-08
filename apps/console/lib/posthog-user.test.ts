@@ -32,14 +32,18 @@ describe('identifyPostHogUser', () => {
     expect(reloadFeatureFlags).toHaveBeenCalledOnce()
   })
 
-  it.each(['admin', 'tester'])('marks %s accounts as internal', (role) => {
+  it.each([
+    ['admin', true],
+    // Some clinics doing real work hold the tester role.
+    ['tester', false],
+  ])('marks %s accounts as internal: %s', (role, internal) => {
     const identify = vi.fn()
 
     identifyPostHogUser(
       { identify, reloadFeatureFlags: vi.fn() },
-      { id: 'user-1', email: 'staff@virtality.app', role },
+      { id: 'user-1', email: 'someone@example.com', role },
     )
 
-    expect(identify.mock.calls[0][1]).toMatchObject({ is_internal: true })
+    expect(identify.mock.calls[0][1]).toMatchObject({ is_internal: internal })
   })
 })

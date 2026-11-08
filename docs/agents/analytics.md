@@ -19,7 +19,7 @@ Keep the names of events that already ship. Renaming one splits its history in P
 
 ## Person properties
 
-The console identifies with `user.id`, and the server uses the same id as `distinctId`. `identifyPostHogUser` sets `role`, `is_internal` (admin and tester), `email_verified`, and `signup_at` (set once). Server events carry the activation milestones (`first_*_at` set once, `last_treatment_session_at` overwritten) through `set` / `setOnce`. Product dashboards filter on `is_internal = false`.
+The console identifies with `user.id`, and the server uses the same id as `distinctId`. `identifyPostHogUser` sets `role`, `is_internal` (admins only; some clinics doing real work hold the tester role), `email_verified`, and `signup_at` (set once). Server events carry the activation milestones (`first_*_at` set once, `last_treatment_session_at` overwritten) through `set` / `setOnce`. Product dashboards filter on `is_internal = false`.
 
 ## Configuration
 
