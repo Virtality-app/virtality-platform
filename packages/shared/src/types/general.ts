@@ -18,6 +18,15 @@ export const WEBSITE_URL_STAGING = 'https://preview-web.virtality.app'
 export const SERVER_URL_STAGING = 'https://preview-service.virtality.app'
 export const SOCKET_URL_STAGING = 'https://preview-socket.virtality.app'
 
+// PR preview URLs: `.github/workflows/alias-pr-preview.yml` points
+// `pr-<n>-console` and `pr-<n>-admin` at each PR's Vercel preview. They talk
+// to the staging server and socket, so staging must accept these origins.
+export const PR_PREVIEW_ORIGIN_PATTERN =
+  /^https:\/\/pr-\d+-(console|admin)\.virtality\.app$/
+
+export const isPrPreviewOrigin = (origin: string) =>
+  PR_PREVIEW_ORIGIN_PATTERN.test(origin)
+
 // Local URLs
 export const CONSOLE_URL_LOCAL = 'http://localhost:3001'
 export const ADMINBOARD_URL_LOCAL = 'http://localhost:3002'
