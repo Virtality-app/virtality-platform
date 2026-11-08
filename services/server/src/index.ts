@@ -13,7 +13,11 @@ import {
 import { authMiddleware } from './middleware/auth.ts'
 import { orpcMiddleware } from './middleware/orpc.ts'
 import { findDeviceByDeviceId } from './data/device.ts'
-import { API_PREFIX, ORPC_PREFIX } from '@virtality/shared/types'
+import {
+  API_PREFIX,
+  ORPC_PREFIX,
+  isPrPreviewOrigin,
+} from '@virtality/shared/types'
 import { devicePairingRoutes } from './routes/device-pairing.ts'
 import { scheduleStripeSubscriptionReconciliation } from './lib/schedule-stripe-subscription-reconciliation.ts'
 import { scheduleImmersiveVideoCleanup } from './lib/schedule-immersive-video-cleanup.ts'
@@ -119,20 +123,27 @@ app.use('*', async (c, next) => {
   }
 })
 
+const CORS_ORIGINS = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:3002',
+  'https://virtality.app',
+  'https://www.virtality.app',
+  'https://preview-web.virtality.app',
+  'https://admin.virtality.app',
+  'https://preview-admin.virtality.app',
+  'https://console.virtality.app',
+  'https://preview-console.virtality.app',
+]
+
 app.use(
   cors({
-    origin: [
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://localhost:3002',
-      'https://virtality.app',
-      'https://www.virtality.app',
-      'https://preview-web.virtality.app',
-      'https://admin.virtality.app',
-      'https://preview-admin.virtality.app',
-      'https://console.virtality.app',
-      'https://preview-console.virtality.app',
-    ], // replace with your origin
+    // PR previews only ever call staging, so production keeps the fixed list.
+    origin: (origin) =>
+      CORS_ORIGINS.includes(origin) ||
+      (ENV !== 'production' && isPrPreviewOrigin(origin))
+        ? origin
+        : null,
     allowHeaders: ['Content-Type', 'Authorization'],
     allowMethods: ['POST', 'GET', 'PUT', 'OPTIONS'],
     exposeHeaders: ['Content-Length'],

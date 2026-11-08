@@ -1,7 +1,10 @@
 import { Server, ServerOptions } from 'socket.io'
 import express from 'express'
 import { createServer } from 'http'
-import { CONNECTION_EVENT } from '@virtality/shared/types'
+import {
+  CONNECTION_EVENT,
+  PR_PREVIEW_ORIGIN_PATTERN,
+} from '@virtality/shared/types'
 import {
   createAppLogger,
   shutdownObservability,
@@ -35,6 +38,8 @@ const socketOptions = {
       'http://localhost:3001',
       'https://console.virtality.app',
       'https://preview-console.virtality.app',
+      // PR previews only ever connect to staging.
+      ...(process.env.ENV === 'production' ? [] : [PR_PREVIEW_ORIGIN_PATTERN]),
     ],
   },
 } satisfies Partial<ServerOptions>
