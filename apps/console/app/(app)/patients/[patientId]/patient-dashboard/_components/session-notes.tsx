@@ -1,3 +1,4 @@
+import { useWatch } from 'react-hook-form'
 import { Label } from '@virtality/ui/components/label'
 import { Textarea } from '@virtality/ui/components/textarea'
 import { useClientT } from '@/i18n/use-client-t'
@@ -10,13 +11,15 @@ interface SessionNotesProps {
 /** Free-text notes for the session that just ended. */
 const SessionNotes = ({ form }: SessionNotesProps) => {
   const { t } = useClientT('patient-dashboard')
+  // useWatch, not form.watch, so the React Compiler can't cache the value.
+  const notes = useWatch({ control: form.control, name: 'notes' })
 
   return (
     <div className='space-y-2'>
       <Label htmlFor='session-notes'>{t('sessionDialog.notes')}</Label>
       <Textarea
         id='session-notes'
-        value={form.watch('notes') ?? ''}
+        value={notes ?? ''}
         onChange={(e) => form.setValue('notes', e.target.value)}
         placeholder={t('sessionDialog.notesPlaceholder')}
       />
