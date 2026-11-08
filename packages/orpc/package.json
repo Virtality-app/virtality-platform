@@ -27,6 +27,7 @@
     "@aws-sdk/client-s3": "3.943.0",
     "@orpc/client": "1.13.5",
     "@orpc/server": "1.13.5",
+    "@virtality/analytics": "workspace:*",
     "@virtality/auth": "workspace:*",
     "@virtality/db": "workspace:*",
     "@virtality/shared": "workspace:*",

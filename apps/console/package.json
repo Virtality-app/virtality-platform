@@ -37,6 +37,7 @@
     "@tailwindcss/postcss": "4.1.18",
     "@tanstack/react-query": "5.90.20",
     "@tanstack/react-table": "8.21.3",
+    "@virtality/analytics": "workspace:*",
     "@virtality/db": "workspace:*",
     "@virtality/react-query": "workspace:*",
     "@virtality/shared": "workspace:*",

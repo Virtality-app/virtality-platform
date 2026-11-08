@@ -14,6 +14,7 @@
   "dependencies": {
     "@hono/node-server": "1.19.9",
     "@prisma/client": "7.2.0",
+    "@virtality/analytics": "workspace:*",
     "@virtality/auth": "workspace:*",
     "@virtality/db": "workspace:*",
     "@virtality/orpc": "workspace:*",

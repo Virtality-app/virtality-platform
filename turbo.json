@@ -115,6 +115,7 @@
     "build:packages": {
       "dependsOn": ["^build"],
       "with": [
+        "@virtality/analytics#build",
         "@virtality/shared#build",
         "@virtality/db#build",
         "@virtality/orpc#build",

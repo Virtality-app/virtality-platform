@@ -1,0 +1,33 @@
+{
+  "name": "@virtality/analytics",
+  "version": "0.0.0",
+  "description": "Product analytics event contract and server-side PostHog client",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./src/server.ts",
+      "default": "./dist/server.js"
+    }
+  },
+  "scripts": {
+    "build": "rimraf dist && tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "posthog-node": "5.56.4"
+  },
+  "devDependencies": {
+    "@types/node": "20.19.43",
+    "@virtality/typescript-config": "workspace:*",
+    "rimraf": "6.1.2",
+    "typescript": "7.0.2",
+    "vitest": "3.2.4"
+  }
+}
