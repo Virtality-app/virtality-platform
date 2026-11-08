@@ -1,0 +1,61 @@
+name: Alias PR Previews
+
+# Gives each PR's console and adminboard previews a pr-<n>-<app>.virtality.app
+# alias, since sign-in only works on *.virtality.app hosts.
+on:
+  pull_request:
+    branches:
+      - dev
+    types: [opened, synchronize, reopened, closed]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: alias-pr-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  VERCEL_TEAM_ID: team_J2qigUG7OMmzB05KOWibhDg1
+  PR_NUMBER: ${{ github.event.pull_request.number }}
+
+jobs:
+  assign:
+    # Fork PRs get no secrets.
+    if: >-
+      github.repository == 'Virtality-app/virtality-platform' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          sparse-checkout: .github/scripts
+
+      - name: Alias previews
+        run: .github/scripts/alias-pr-preview.sh assign
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          GH_TOKEN: ${{ github.token }}
+
+  remove:
+    if: >-
+      github.repository == 'Virtality-app/virtality-platform' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          sparse-checkout: .github/scripts
+
+      - name: Remove aliases
+        run: .github/scripts/alias-pr-preview.sh remove
