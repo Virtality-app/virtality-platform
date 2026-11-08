@@ -31,6 +31,9 @@ The repo's issues sync both ways with the Linear team **`Core`** (identifiers `C
 
 - **Attachments.** `gh` cannot upload files. Demo recordings go on the Linear twin (see `docs/agents/demo-recordings.md`).
 - **Linear-only fields** the user asks you to set, such as priority, project, cycle or a Linear workflow status.
+- **The workflow status of an issue you just filed** (see below).
+
+**Set the status of every issue you file.** New issues land in **`Ideas`** by default. `Ideas` is for exploration, research and work that isn't clearly defined yet. If the issue is ready to be worked on (the problem and the outcome are clear and someone could start now), move its Linear twin to **`Todo`** with `save_issue` (`state: "Todo"`). Leave it in `Ideas` only when it still needs that exploration.
 
 **Read Linear** when you need context that GitHub doesn't hold: a Linear workflow status (`Ideas`, …), priority, project or cycle, or attachments the team added there.
 
