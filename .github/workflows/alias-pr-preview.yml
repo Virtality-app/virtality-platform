@@ -31,10 +31,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
+      # Run the script from the base branch, not the PR head: PR branches
+      # older than this workflow don't have it, and the step that holds
+      # VERCEL_TOKEN should only run code that has already reached dev.
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.base.ref }}
           sparse-checkout: .github/scripts
 
       - name: Alias previews
@@ -54,7 +57,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.base.ref }}
           sparse-checkout: .github/scripts
 
       - name: Remove aliases
