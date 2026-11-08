@@ -20,7 +20,7 @@ import { loadTranslationBundle } from './load-translation-bundle'
 
 describe('loadTranslationBundle on the server', () => {
   it('points the client at the API instead of falling back to English', async () => {
-    expect(await loadTranslationBundle('el', 'auth')).toEqual({
+    expect(await loadTranslationBundle('el', 'auth')).toMatchObject({
       signIn: { title: 'Σύνδεση στο Virtality' },
     })
     expect(configureORPC).toHaveBeenCalledExactlyOnceWith(

@@ -1,10 +1,6 @@
 import { configureORPC, getORPC } from '@virtality/react-query'
 import { getServerUrl, ORPC_PREFIX } from '@virtality/shared/types'
-import {
-  translationCatalog,
-  unflattenMessages,
-  type TranslationNamespace,
-} from '@virtality/shared/translations'
+import { overCatalogEnglish } from './over-catalog-english'
 
 /**
  * The oRPC client is set up when ORPCProvider renders, but i18next loads its
@@ -55,9 +51,8 @@ export async function loadTranslationBundle(
   namespace: string,
 ) {
   try {
-    return unflattenMessages(await fetchBundle(language, namespace))
+    return overCatalogEnglish(namespace, await fetchBundle(language, namespace))
   } catch {
-    const english = translationCatalog[namespace as TranslationNamespace]
-    return english ? unflattenMessages(english) : {}
+    return overCatalogEnglish(namespace, {})
   }
 }
