@@ -2,9 +2,9 @@ import type { Resource, ResourceLanguage } from 'i18next'
 import { getServerUrl, ORPC_PREFIX } from '@virtality/shared/types'
 import {
   TRANSLATION_NAMESPACES,
-  unflattenMessages,
   type FlatMessages,
 } from '@virtality/shared/translations'
+import { overCatalogEnglish } from './over-catalog-english'
 
 /**
  * One namespace from `translation.bundle`, called over the API's RPC wire
@@ -23,7 +23,7 @@ async function fetchBundle(language: string, namespace: string) {
     )
     if (!response.ok) return null
     const { json } = (await response.json()) as { json: FlatMessages }
-    return unflattenMessages(json)
+    return overCatalogEnglish(namespace, json)
   } catch {
     return null
   }

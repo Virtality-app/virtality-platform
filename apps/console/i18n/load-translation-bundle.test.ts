@@ -14,10 +14,21 @@ describe('loadTranslationBundle', () => {
     const call = vi.fn().mockResolvedValue({ 'btn.save': 'Αποθήκευση' })
     orpc = () => ({ translation: { bundle: { call } } })
 
-    expect(await loadTranslationBundle('el', 'common')).toEqual({
+    expect(await loadTranslationBundle('el', 'common')).toMatchObject({
       btn: { save: 'Αποθήκευση' },
     })
     expect(call).toHaveBeenCalledWith({ locale: 'el', namespace: 'common' })
+  })
+
+  it('keeps the catalog English for keys the API does not know yet', async () => {
+    const call = vi.fn().mockResolvedValue({ 'controls.cast': 'Προβολή' })
+    orpc = () => ({ translation: { bundle: { call } } })
+
+    expect(
+      await loadTranslationBundle('el', 'patient-dashboard'),
+    ).toMatchObject({
+      controls: { cast: 'Προβολή', start: 'Start session' },
+    })
   })
 
   it('falls back to the catalog English when the client is unavailable', async () => {
@@ -50,7 +61,7 @@ describe('loadTranslationBundle', () => {
       const loading = loadTranslationBundle('el', 'common')
       await vi.runAllTimersAsync()
 
-      expect(await loading).toEqual({ btn: { save: 'Αποθήκευση' } })
+      expect(await loading).toMatchObject({ btn: { save: 'Αποθήκευση' } })
       expect(call).toHaveBeenCalledTimes(3)
     })
 
