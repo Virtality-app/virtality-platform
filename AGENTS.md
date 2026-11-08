@@ -28,6 +28,10 @@ Issues live on **`Virtality-app/virtality-platform`**, not on a personal fork. A
 
 Every PR that changes something a user can see or click carries a short recording of the change working, attached to the issue's Linear twin. Read `docs/agents/demo-recordings.md` before opening the PR.
 
+### Product analytics
+
+Any change that adds, renames or removes a PostHog event goes through the typed contract in `@virtality/analytics`. Read `docs/agents/analytics.md` before capturing an event, client or server.
+
 ### Triage labels
 
 Five canonical triage roles mapped to GitHub label strings. See `docs/agents/triage-labels.md`.
