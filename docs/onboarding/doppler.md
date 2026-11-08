@@ -22,7 +22,8 @@ This monorepo maps **one Doppler project per path** that already has a `.env.exa
 All 7 projects below already exist in the Virtality workplace, each with `dev`/`stg`/`prd` configs matching the workplace default environments (confirmed via the Doppler MCP), and the local `.env` migration into `dev` is done. What's still open:
 
 - Vercel: `virtality-platform-console` and `virtality-platform-adminboard` are synced through Doppler's Vercel integration. `virtality-platform-website`'s `stg`/preview config is not synced. The current Vercel plan has no preview environment sync target, so `apps/website` preview deploys still read env vars from Vercel's own dashboard, not Doppler. Revisit once the plan supports it.
-- VPS (`services/server`, `services/socket`): both still run on the legacy `.env` files deployed to the VPS, not `doppler run` or a Doppler-injected runtime. Doppler holds the source of truth for `dev` locally, but the deployed VPS process env hasn't moved over yet. Treat the VPS `.env` as the live value until that migration happens.
+- VPS `services/server`: runs on Doppler. Every preview or production deploy rewrites the stack's env file from `virtality-platform-server` (`stg` for preview, `prd` for production) through a read-only service token, then restarts the container on the new values. Change server secrets in Doppler; edits to the env files on the VPS are overwritten on the next deploy. Setup, the `server-*-env-check` command and rollback are in the infra repo's `server/README.md` ([Virtality-app/infra](https://github.com/Virtality-app/infra)).
+- VPS `services/socket`: still runs on its legacy `.env` file. Treat that file as the live value until it moves to Doppler the same way.
 - GitHub Actions: no Doppler-to-CI sync yet. CI secrets are plain `secrets.<NAME>` (see `[docs/research/ci-secrets-doppler-provisioning-e2e.md](../research/ci-secrets-doppler-provisioning-e2e.md)`).
 
 When wiring any of the above, use service tokens scoped to one project and one config. Don't use personal `doppler login` tokens in CI or on servers.
@@ -185,7 +186,7 @@ doppler open                             # dashboard for current scope
 
 - Add a small `pnpm secrets:pull` script that runs the download loop.
 - Sync `virtality-platform-website`'s `stg`/preview config to Vercel once the plan supports a preview sync target (console and adminboard are already synced, see the sync status above).
-- Migrate `services/server` and `services/socket` on the VPS off the legacy `.env` files onto Doppler (service token + `doppler run`, or a deploy-time secrets pull).
+- Migrate `services/socket` on the VPS off its legacy `.env` file onto Doppler, the same way `services/server` pulls on deploy.
 - Sync `stg`/`prd` to GitHub Actions via Doppler integrations + service tokens.
 - Update [Onboarding § Env files](./README.md) to prefer Doppler over “ask a teammate for values.”
 - Refresh each `.env.example` to list every key actually in use, since real local `.env` files carry more keys than their `.example` counterparts.
