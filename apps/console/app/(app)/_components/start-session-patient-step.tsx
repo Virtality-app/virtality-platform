@@ -92,7 +92,7 @@ const StartSessionPatientStep = ({
               className='size-7 text-[11px]'
             />
             <div className='min-w-0 flex-1'>
-              <div className='truncate'>{patient.name}</div>
+              <div className='ph-sensitive truncate'>{patient.name}</div>
               <small className='text-muted-foreground block truncate text-xs'>
                 {patient.lastSessionAt
                   ? formatRelative(new Date(patient.lastSessionAt), new Date())

@@ -32,7 +32,11 @@ const HomeHeader = ({
         ) : (
           <>
             {t(homeGreetingKey(now.getHours()))}
-            {firstName ? `, ${firstName}` : ''}
+            {firstName ? (
+              <>
+                , <span className='ph-sensitive'>{firstName}</span>
+              </>
+            ) : null}
           </>
         )}
       </h1>

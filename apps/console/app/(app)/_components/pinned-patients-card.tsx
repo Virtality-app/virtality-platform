@@ -60,7 +60,9 @@ const PinnedPatientsCard = ({
                   image={patient.image}
                 />
                 <div className='min-w-0 flex-1'>
-                  <div className='truncate font-medium'>{patient.name}</div>
+                  <div className='ph-sensitive truncate font-medium'>
+                    {patient.name}
+                  </div>
                   <small className='text-muted-foreground block truncate'>
                     {patient.lastSessionAt
                       ? formatRelative(
@@ -78,7 +80,8 @@ const PinnedPatientsCard = ({
                 variant='ghost'
                 size='icon-sm'
                 aria-label={t('pinned.unpin', { name: patient.name })}
-                className='opacity-0 group-focus-within:opacity-100 group-hover:opacity-100'
+                // The label holds the patient name, which replay text masking misses.
+                className='ph-no-capture opacity-0 group-focus-within:opacity-100 group-hover:opacity-100'
                 disabled={setPinned.isPending}
                 onClick={() =>
                   setPinned.mutate({ id: patient.id, pinned: false })

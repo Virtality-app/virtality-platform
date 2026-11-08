@@ -1,5 +1,6 @@
 import { ChangeEventHandler, MouseEventHandler, useEffect } from 'react'
 import { Input } from '@virtality/ui/components/input'
+import { unmaskedInputProps } from '@/lib/posthog-replay-privacy'
 
 interface ExerciseInputProps extends React.ComponentProps<'input'> {
   onSetValue: (target: { name: string; value: string; id: string }) => void
@@ -53,7 +54,14 @@ const ExerciseInput = ({ onSetValue, ...props }: ExerciseInputProps) => {
     onSetValue({ name, value: input, id })
   }
 
-  return <Input {...props} onClick={handleSelection} onChange={handleChange} />
+  return (
+    <Input
+      {...props}
+      {...unmaskedInputProps}
+      onClick={handleSelection}
+      onChange={handleChange}
+    />
+  )
 }
 
 export default ExerciseInput

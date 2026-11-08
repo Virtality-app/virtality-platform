@@ -47,7 +47,8 @@ const PinPatientPopover = ({
       <PopoverContent align='start' className='w-72 p-0'>
         <Command>
           <CommandInput placeholder={t('pinned.searchPlaceholder')} />
-          <CommandList>
+          {/* Items carry the patient name in data-value, which replay text masking misses. */}
+          <CommandList className='ph-no-capture'>
             <CommandEmpty>{t('pinned.noneFound')}</CommandEmpty>
             <CommandGroup>
               {candidates.map((patient) => (

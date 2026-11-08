@@ -23,7 +23,7 @@ const PatientInitialsAvatar = ({
   return (
     <span
       className={cn(
-        'bg-muted text-foreground relative grid size-9 shrink-0 place-items-center overflow-hidden rounded-full text-xs font-semibold',
+        'ph-sensitive bg-muted text-foreground relative grid size-9 shrink-0 place-items-center overflow-hidden rounded-full text-xs font-semibold',
         className,
       )}
       aria-hidden

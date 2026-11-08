@@ -61,7 +61,8 @@ const ProfileInfo = ({ user }: ProfileInfoProps) => {
   } = useProfileInfo(user)
 
   return (
-    <div className='flex flex-col gap-6 rounded-lg'>
+    // The clinician's name, phone, email and photo: replays mask the whole form.
+    <div className='ph-sensitive flex flex-col gap-6 rounded-lg'>
       <Card>
         <form onSubmit={basicInfoForm.handleSubmit(onSubmitBasicInfo)}>
           <CardContent>

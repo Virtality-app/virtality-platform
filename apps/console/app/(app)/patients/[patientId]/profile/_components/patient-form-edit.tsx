@@ -315,7 +315,7 @@ const PatientFormEdit = ({ patientId }: PatientFormEditProps) => {
                 ns='patients'
                 i18nKey='delete.description'
                 values={{ name: patient?.name }}
-                components={{ strong: <strong /> }}
+                components={{ strong: <strong className='ph-sensitive' /> }}
               />
             }
             onConfirm={handleDelete}

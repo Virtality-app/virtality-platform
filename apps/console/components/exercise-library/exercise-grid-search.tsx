@@ -1,6 +1,7 @@
 import { useClientT } from '@/i18n/use-client-t'
 import { Star, X } from 'lucide-react'
 import { Input } from '@virtality/ui/components/input'
+import { unmaskedInputProps } from '@/lib/posthog-replay-privacy'
 import { Button } from '@virtality/ui/components/button'
 import { cn } from '@/lib/utils'
 
@@ -23,6 +24,7 @@ const ExerciseGridSearch = ({
       <div className='relative min-w-48 flex-1'>
         <Input
           id='searchTerm'
+          {...unmaskedInputProps}
           name='searchTerm'
           type='text'
           placeholder={t('exerciseLibrary.searchPlaceholder')}

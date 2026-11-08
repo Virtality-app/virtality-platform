@@ -93,7 +93,7 @@ const SessionCardNotes = ({
       ) : (
         <div className='bg-muted/30 min-h-30 rounded-lg p-4'>
           {notes ? (
-            <p className='text-sm leading-relaxed whitespace-pre-wrap'>
+            <p className='ph-sensitive text-sm leading-relaxed whitespace-pre-wrap'>
               {notes}
             </p>
           ) : (

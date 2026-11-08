@@ -1,6 +1,7 @@
 import { ChangeEventHandler, MouseEventHandler } from 'react'
 import { Button } from '@virtality/ui/components/button'
 import { Input } from '@virtality/ui/components/input'
+import { unmaskedInputProps } from '@/lib/posthog-replay-privacy'
 import { Minus, Plus } from 'lucide-react'
 
 interface ExerciseInputPillProps extends React.ComponentProps<'input'> {
@@ -84,6 +85,7 @@ const ExerciseInputPill = ({
         onClick={handleSelection}
         className='focus-visible:border-ring focus-visible:ring-ring/50 min-w-8 rounded-none p-2 text-center focus-visible:ring-inset dark:border-t-zinc-700 dark:border-b-zinc-700'
         {...props}
+        {...unmaskedInputProps}
       />
       <Button
         type='button'

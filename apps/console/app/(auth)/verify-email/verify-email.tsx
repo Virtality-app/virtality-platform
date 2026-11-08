@@ -119,7 +119,7 @@ const VerifyEmail = ({ remainingTime }: { remainingTime?: number }) => {
         </CardHeader>
         <CardContent className='space-y-6'>
           <div className='text-center'>
-            <p className='text-foreground font-medium'>{email}</p>
+            <p className='ph-sensitive text-foreground font-medium'>{email}</p>
           </div>
 
           <div className='space-y-4'>

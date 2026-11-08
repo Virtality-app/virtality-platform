@@ -4,6 +4,7 @@ import { useClientT } from '@/i18n/use-client-t'
 import { useState, type FormEvent } from 'react'
 import { Button } from '@virtality/ui/components/button'
 import { Input } from '@virtality/ui/components/input'
+import { unmaskedInputProps } from '@/lib/posthog-replay-privacy'
 import {
   IMMERSIVE_STOP_AFTER_CUSTOM_MAX,
   IMMERSIVE_STOP_AFTER_CUSTOM_MIN,
@@ -44,6 +45,7 @@ export function ImmersiveVideoStopAfterCustomForm({
       <div className='flex gap-2'>
         <Input
           id='stop-after-custom'
+          {...unmaskedInputProps}
           type='number'
           inputMode='numeric'
           min={IMMERSIVE_STOP_AFTER_CUSTOM_MIN}

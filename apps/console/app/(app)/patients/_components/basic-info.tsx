@@ -40,7 +40,8 @@ const BasicInfo = ({ form, patient }: BasicInfoProps) => {
   const locale = useDateFnsLocale()
 
   return (
-    <div className='flex gap-6 max-xl:flex-col'>
+    // Every field here is personal data, so replays mask the whole form.
+    <div className='ph-sensitive flex gap-6 max-xl:flex-col'>
       <PatientPhotoField form={form} patient={patient} />
 
       <Card className='border p-0 backdrop-blur-sm'>

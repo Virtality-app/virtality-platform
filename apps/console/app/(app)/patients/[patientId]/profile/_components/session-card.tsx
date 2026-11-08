@@ -123,7 +123,7 @@ const SessionCard = ({ session, patientId, onBack }: SessionCardProps) => {
                             <span className='text-muted-foreground'>
                               {t('session.therapist')}
                             </span>
-                            <span>
+                            <span className='ph-sensitive'>
                               {userName ?? t('session.unknownTherapist')}
                             </span>
                           </div>

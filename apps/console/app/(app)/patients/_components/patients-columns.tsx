@@ -64,6 +64,9 @@ export const columns: ColumnDef<PatientListItem>[] = [
         className='capitalize'
       />
     ),
+    cell: ({ row }) => (
+      <div className='ph-sensitive'>{row.getValue<string>('name')}</div>
+    ),
   },
   {
     accessorKey: 'email',
@@ -73,6 +76,9 @@ export const columns: ColumnDef<PatientListItem>[] = [
         labelKey='columns.email'
         className='capitalize'
       />
+    ),
+    cell: ({ row }) => (
+      <div className='ph-sensitive'>{row.getValue<string | null>('email')}</div>
     ),
   },
   {
@@ -192,7 +198,7 @@ export const columns: ColumnDef<PatientListItem>[] = [
                 ns='patients'
                 i18nKey='delete.description'
                 values={{ name: patient.name }}
-                components={{ strong: <strong /> }}
+                components={{ strong: <strong className='ph-sensitive' /> }}
               />
             }
             open={open}

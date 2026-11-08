@@ -95,10 +95,10 @@ const Avatar = () => {
         >
           {!isMobile && (
             <div className='m-auto'>
-              <span className='underline-effect'>{`${user?.name}`}</span>
+              <span className='ph-sensitive underline-effect'>{`${user?.name}`}</span>
             </div>
           )}
-          <div className='size-12 items-center overflow-hidden rounded-full border-2 border-black hover:scale-105 dark:border-white'>
+          <div className='ph-sensitive size-12 items-center overflow-hidden rounded-full border-2 border-black hover:scale-105 dark:border-white'>
             <Image
               alt={t('avatar.alt', { ns: 'layout' })}
               src={user?.image ? user.image : placeholder}

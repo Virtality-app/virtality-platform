@@ -1,4 +1,5 @@
 import posthog from 'posthog-js'
+import { replayPrivacyOptions } from './lib/posthog-replay-privacy'
 import { installTranslateCrashGuard } from './lib/translate-crash-guard'
 
 installTranslateCrashGuard()
@@ -16,6 +17,7 @@ posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
   // hand-rolled page_viewed event.
   capture_pageview: 'history_change',
   autocapture: { url_ignorelist: ['http://localhost:3001'] },
+  session_recording: replayPrivacyOptions,
   // Person identification lives in usePostHogIdentifyOnSession, which reads
   // the shared session store once PostHog reports loaded.
   loaded: (posthogClient) => {

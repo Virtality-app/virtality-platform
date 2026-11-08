@@ -111,7 +111,9 @@ const MedicalHistory = ({
   const { guard } = useNavigationGuard(dirty)
 
   return (
-    <div className='flex flex-col gap-4 xl:grid xl:grid-cols-2'>
+    // The pain slider and body map show medical data through position and
+    // colour, which text masking misses, so replays hide the tab entirely.
+    <div className='ph-no-capture flex flex-col gap-4 xl:grid xl:grid-cols-2'>
       <NavigationGuardDialog
         {...guard}
         title={t('unsaved.title')}

@@ -56,7 +56,9 @@ const TabBar = ({ patientId, linkObject }: TabBarProps) => {
         })}
       <span className='flex-1 text-center'>
         {t('tabs.viewing')}{' '}
-        <span className='font-bold uppercase'>{patient?.name}</span>
+        <span className='ph-sensitive font-bold uppercase'>
+          {patient?.name}
+        </span>
       </span>
     </div>
   )

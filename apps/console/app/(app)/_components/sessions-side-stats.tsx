@@ -107,7 +107,9 @@ const SessionsSideStats = ({
               image={last.patientImage}
             />
             <div className='min-w-0 flex-1'>
-              <div className='truncate font-medium'>{last.patientName}</div>
+              <div className='ph-sensitive truncate font-medium'>
+                {last.patientName}
+              </div>
               <small className='text-muted-foreground block truncate'>
                 {formatRelative(last.at, new Date())}
                 {last.durationMin !== null
