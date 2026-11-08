@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useRow, useStore } from 'tinybase/ui-react'
 import type { PatientLocalData } from '@/types/models'
+import { trackAnalyticsEvent } from '@/lib/analytics-contract'
 import {
   emptyHomePickerSelection,
   homeLaunchHref,
@@ -160,6 +161,16 @@ export function useStartSessionPicker(data: HomeDashboardData) {
         selection.deviceId,
       )
     }
+    trackAnalyticsEvent('session_picker_launched', {
+      program_source:
+        selection.programId === QUICK_START_PROGRAM_ID
+          ? 'quick_start'
+          : 'reusable_program',
+      has_headset: Boolean(selection.deviceId),
+      reused_last_program:
+        selection.programId != null &&
+        selection.programId === patientLocalData.lastProgram,
+    })
     router.push(launchHref)
   }
 

@@ -10,6 +10,19 @@ import {
   TOURS,
   type TourId,
 } from '@/lib/guided-tour'
+import { trackAnalyticsEvent } from '@/lib/analytics-contract'
+
+function trackDismissed(
+  run: { id: TourId; index: number },
+  reason: 'closed' | 'left_page',
+) {
+  trackAnalyticsEvent('guided_tour_dismissed', {
+    tour_id: run.id,
+    step: run.index,
+    step_count: TOURS[run.id].steps.length,
+    reason,
+  })
+}
 
 /**
  * Which tour is running and how far along it is. Arriving with `?tour=<id>`
@@ -26,9 +39,11 @@ export function useGuidedTour() {
 
   useEffect(() => {
     if (!isTourId(requested)) return
-    setRun({
-      id: requested,
-      index: tourStartIndex(requested, searchParams.get(TOUR_STEP_PARAM)),
+    const index = tourStartIndex(requested, searchParams.get(TOUR_STEP_PARAM))
+    setRun({ id: requested, index })
+    trackAnalyticsEvent('guided_tour_started', {
+      tour_id: requested,
+      start_step: index,
     })
 
     // Drop the params so a reload or a shared link does not restart the tour.
@@ -40,13 +55,22 @@ export function useGuidedTour() {
   }, [requested, searchParams, pathname, router])
 
   useEffect(() => {
-    if (run && pathname !== TOURS[run.id].path) setRun(null)
+    if (run && pathname !== TOURS[run.id].path) {
+      trackDismissed(run, 'left_page')
+      setRun(null)
+    }
   }, [run, pathname])
 
   const tour = run ? TOURS[run.id] : null
 
   const goTo = (index: number) => {
     if (!run || !tour) return
+    if (index >= tour.steps.length) {
+      trackAnalyticsEvent('guided_tour_completed', {
+        tour_id: run.id,
+        step_count: tour.steps.length,
+      })
+    }
     setRun(index < tour.steps.length ? { ...run, index } : null)
   }
 
@@ -55,6 +79,9 @@ export function useGuidedTour() {
     tour,
     index: run?.index ?? 0,
     goTo,
-    end: () => setRun(null),
+    end: () => {
+      if (run) trackDismissed(run, 'closed')
+      setRun(null)
+    },
   }
 }

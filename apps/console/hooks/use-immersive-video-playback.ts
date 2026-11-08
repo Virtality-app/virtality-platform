@@ -15,6 +15,7 @@ import {
   STOP_ACK_TIMEOUT_MS,
 } from '@/lib/immersive-video-playback-reducer'
 import type { VRDevice } from '@/types/models'
+import { trackAnalyticsEvent } from '@/lib/analytics-contract'
 
 /**
  * Playback transport for one headset. `enabled: false` keeps it silent; the
@@ -137,6 +138,7 @@ export function useImmersiveVideoPlayback(
     if (!target || state.pendingPlay != null) return
     dispatch({ type: 'playSent', videoId })
     target.events.video.Play(videoId)
+    trackAnalyticsEvent('immersive_video_play_requested', { video_id: videoId })
     clearPlayTimeout()
     playTimeoutRef.current = setTimeout(() => {
       dispatch({ type: 'playTimeout' })

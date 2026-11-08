@@ -13,6 +13,7 @@ import { isReplacementNoticeError } from '@/lib/socket-replacement-notice'
 import type { HeadsetDidNotConfirmReason } from '@/lib/headset-did-not-confirm'
 import { useHeadsetLibraryMirror } from '@/hooks/use-headset-library-mirror'
 import { notify } from '@/lib/notify'
+import { trackAnalyticsEvent } from '@/lib/analytics-contract'
 import { videoFailureMessage } from '@/lib/video-failure-message'
 import {
   applyDownloadAck,
@@ -253,6 +254,9 @@ export function useHeadsetLibrary(
     (videoId: string) => {
       if (!readyDevice()) return
       startDownload(videoId, { resumed: false })
+      trackAnalyticsEvent('immersive_video_download_requested', {
+        video_id: videoId,
+      })
     },
     [readyDevice, startDownload],
   )

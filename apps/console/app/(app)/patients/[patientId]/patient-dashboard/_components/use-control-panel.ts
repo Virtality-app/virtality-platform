@@ -17,7 +17,16 @@ import { resolveSavedHeadsetSelection } from '@/lib/patient-dashboard-device-sel
 import {
   canLaunchTreatment,
   getTreatmentLaunchError,
+  resolveTreatmentLaunchBlock,
+  type TreatmentLaunchBlock,
 } from '@/lib/patient-dashboard-treatment-launch'
+import { trackAnalyticsEvent } from '@/lib/analytics-contract'
+import type {
+  LaunchBlockedReason,
+  LaunchEntry,
+  ProgramSource,
+} from '@virtality/analytics'
+import type { DashboardMode } from '@/types/models'
 import { useVrHeadsetPresence } from '@/hooks/use-vr-headset-presence'
 import { useLiveEntitlementStanding } from '@/hooks/use-live-entitlement-standing'
 import {
@@ -27,6 +36,13 @@ import {
 import { resolveSkipControlUiState } from '@/lib/session-exercise-change-ui'
 import useCoachSettings from './use-coach-settings'
 import { useLaunchIntentFromUrl } from './use-launch-intent-from-url'
+
+const LAUNCH_BLOCK_REASON: Record<TreatmentLaunchBlock, LaunchBlockedReason> = {
+  entitlementPending: 'entitlement_pending',
+  entitlementExpired: 'entitlement_expired',
+  consoleDisconnected: 'console_disconnected',
+  headsetAbsent: 'headset_absent',
+}
 
 const useControlPanel = () => {
   const { devices } = useDeviceContext()
@@ -106,26 +122,38 @@ const useControlPanel = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [devices, patientLocalData, lastPairedDeviceId, selectedDevice])
 
-  const programStart = () => {
-    if (!exercises?.length)
+  const programSource: ProgramSource = inQuickStart
+    ? 'quick_start'
+    : 'reusable_program'
+
+  const trackLaunchBlocked = (reason: LaunchBlockedReason) =>
+    trackAnalyticsEvent('session_launch_blocked', {
+      reason,
+      program_source: programSource,
+    })
+
+  const startProgram = (entry: LaunchEntry) => {
+    if (!exercises?.length) {
+      trackLaunchBlocked('no_exercises')
       return notify.error({
         key: 'toast.selectProgram',
         ns: 'patient-dashboard',
       })
+    }
 
-    const launchError = getTreatmentLaunchError({
-      consoleConnected: connected,
-      headsetPresent,
-      entitlementAllowsLaunch: canLaunchVr,
-      entitlementPending,
-    })
-    if (launchError) return notify.error(launchError)
+    const launchBlock = resolveTreatmentLaunchBlock(launchReadiness)
+    if (launchBlock) {
+      trackLaunchBlocked(LAUNCH_BLOCK_REASON[launchBlock])
+      return notify.error(getTreatmentLaunchError(launchReadiness)!)
+    }
 
-    if (!state.selectedAvatar || !state.selectedMap)
+    if (!state.selectedAvatar || !state.selectedMap) {
+      trackLaunchBlocked('missing_scene_settings')
       return notify.error({
         key: 'toast.selectAvatarAndMap',
         ns: 'patient-dashboard',
       })
+    }
 
     if (state.programState === 'ready') {
       const dispatchedData = exercises.map((ex) => {
@@ -162,10 +190,25 @@ const useControlPanel = () => {
 
       setProgramState('launching')
       selectedDevice?.events.program.Start(payload)
+      trackAnalyticsEvent('session_launch_attempted', {
+        mode: selectedMode,
+        program_source: programSource,
+        exercise_count: exercises.length,
+        entry,
+      })
     } else {
       selectedDevice?.events.program.Pause()
+      if (state.programState === 'started') {
+        trackAnalyticsEvent('session_paused', { program_source: programSource })
+      } else if (state.programState === 'paused') {
+        trackAnalyticsEvent('session_resumed', {
+          program_source: programSource,
+        })
+      }
     }
   }
+
+  const programStart = () => startProgram('manual')
 
   const programEnd = () => {
     selectedDevice?.events.program.End()
@@ -184,12 +227,13 @@ const useControlPanel = () => {
     consoleConnected: connected,
     launchError: getTreatmentLaunchError(launchReadiness),
     connect,
-    programStart,
+    programStart: () => startProgram('launch_intent'),
     setInQuickStart,
     setSelectedMode,
   })
 
   const skipExercise = (direction: SkipDirection) => {
+    trackAnalyticsEvent('exercise_skipped', { direction })
     void requestForwardBackSkip(direction)
   }
 
@@ -215,9 +259,10 @@ const useControlPanel = () => {
         mapId: selectedMap!.id,
       },
     }
-    if (programState !== 'started')
+    if (programState !== 'started') {
       selectedDevice?.events.program.WarmupStart(payload)
-    else selectedDevice?.events.program.WarmupEnd()
+      trackAnalyticsEvent('warmup_started', {})
+    } else selectedDevice?.events.program.WarmupEnd()
   }
 
   const isProgramActive = programState === 'started'
@@ -251,14 +296,24 @@ const useControlPanel = () => {
     selectedDevice?.socket.disconnect()
   })
 
+  const toggleCoach = (enabled: boolean) => {
+    changeCoachEnabled(enabled)
+    trackAnalyticsEvent('coach_toggled', { enabled })
+  }
+
+  const selectMode = (mode: DashboardMode) => {
+    setSelectedMode(mode)
+    trackAnalyticsEvent('dashboard_mode_selected', { mode })
+  }
+
   return {
     coachEnabled,
-    changeCoachEnabled,
+    changeCoachEnabled: toggleCoach,
     coachToggleDisabled,
     devices,
     connected,
     selectedMode,
-    setSelectedMode,
+    setSelectedMode: selectMode,
     programState,
     isProgramPaused,
     isProgramInactive,

@@ -31,29 +31,25 @@ export function canLaunchTreatment({
   )
 }
 
-export function getTreatmentLaunchError({
+export type TreatmentLaunchBlock = keyof typeof TREATMENT_LAUNCH_ERROR
+
+export function resolveTreatmentLaunchBlock({
   consoleConnected,
   headsetPresent,
   entitlementAllowsLaunch,
   entitlementPending = false,
-}: TreatmentLaunchReadiness): string | null {
-  const translate = (key: string) => i18next.t(key, { ns: 'patient-dashboard' })
-
-  if (entitlementPending) {
-    return translate(TREATMENT_LAUNCH_ERROR.entitlementPending)
-  }
-
-  if (!entitlementAllowsLaunch) {
-    return translate(TREATMENT_LAUNCH_ERROR.entitlementExpired)
-  }
-
-  if (!consoleConnected) {
-    return translate(TREATMENT_LAUNCH_ERROR.consoleDisconnected)
-  }
-
-  if (!headsetPresent) {
-    return translate(TREATMENT_LAUNCH_ERROR.headsetAbsent)
-  }
-
+}: TreatmentLaunchReadiness): TreatmentLaunchBlock | null {
+  if (entitlementPending) return 'entitlementPending'
+  if (!entitlementAllowsLaunch) return 'entitlementExpired'
+  if (!consoleConnected) return 'consoleDisconnected'
+  if (!headsetPresent) return 'headsetAbsent'
   return null
+}
+
+export function getTreatmentLaunchError(
+  readiness: TreatmentLaunchReadiness,
+): string | null {
+  const block = resolveTreatmentLaunchBlock(readiness)
+  if (!block) return null
+  return i18next.t(TREATMENT_LAUNCH_ERROR[block], { ns: 'patient-dashboard' })
 }
