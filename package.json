@@ -40,8 +40,8 @@
     "test": "turbo run test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "demo": "pnpm --filter @virtality/demos record",
-    "demo:login": "pnpm --filter @virtality/demos login",
+    "demo": "pnpm --filter @virtality/demos run record",
+    "demo:login": "pnpm --filter @virtality/demos run login",
     "sandcastle": "npx tsx --env-file=.sandcastle/.env .sandcastle/main.mts"
   },
   "devDependencies": {
