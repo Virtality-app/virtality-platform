@@ -1,3 +1,4 @@
+import { useWatch } from 'react-hook-form'
 import { useSupplementalTherapyQuery } from '@virtality/react-query'
 import type { PatientSessionForm } from '@virtality/shared/types'
 import { FormCheckbox, FormInput } from '@/components/ui/form'
@@ -18,7 +19,11 @@ const SessionSupplementalTherapies = ({
 }: SessionSupplementalTherapiesProps) => {
   const { t } = useClientT(['patient-dashboard', 'common'])
   const { data: supplementalTherapies } = useSupplementalTherapyQuery()
-  const selectedMethods = form.watch('methods') ?? []
+  // useWatch, not form.watch: the React Compiler caches form.watch's result
+  // in a component that only receives `form`, so ticks never showed.
+  const selectedMethods =
+    useWatch({ control: form.control, name: 'methods' }) ?? []
+  const otherEnabled = useWatch({ control: form.control, name: 'otherEnabled' })
 
   return (
     <fieldset className='space-y-2'>
@@ -53,7 +58,7 @@ const SessionSupplementalTherapies = ({
         />
       </div>
 
-      {form.watch('otherEnabled') && (
+      {otherEnabled && (
         <FormInput
           control={form.control}
           label={
