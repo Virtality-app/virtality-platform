@@ -254,14 +254,17 @@ export async function cancelDevicePairing(
 }
 
 type ClaimTransactionResult =
-  | { outcome: 'paired' }
+  | { outcome: 'paired'; claimed?: { userId: string; deviceRecordId: string } }
   | { outcome: 'unavailable' }
   | { outcome: 'conflict' }
 
 export async function claimDevicePairing(
   prisma: PrismaClient,
   input: { pairingCode: string; deviceId: string },
-  runtime: Pick<PairingRuntime, 'now'> = {},
+  runtime: Pick<PairingRuntime, 'now'> & {
+    /** Called once for a fresh claim (not a replayed one). */
+    onPaired?: (paired: { userId: string; deviceRecordId: string }) => void
+  } = {},
 ): Promise<{ status: 'paired' }> {
   const now = runtime.now?.() ?? new Date()
   const code = input.pairingCode.trim()
@@ -371,7 +374,10 @@ export async function claimDevicePairing(
               },
             })
 
-            return { outcome: 'paired' }
+            return {
+              outcome: 'paired',
+              claimed: { userId: attempt.userId, deviceRecordId: target.id },
+            }
           },
           { isolationLevel: 'Serializable' },
         ),
@@ -402,6 +408,8 @@ export async function claimDevicePairing(
       'This headset is already paired to another device record.',
     )
   }
+
+  if (result.claimed) runtime.onPaired?.(result.claimed)
 
   return { status: 'paired' }
 }

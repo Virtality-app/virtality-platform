@@ -43,6 +43,11 @@ const createDevice = authed
     const device = await prisma.device.create({
       data: { ...input, userId: user.id },
     })
+    context.analytics?.capture({
+      distinctId: user.id,
+      event: 'headset_added',
+      properties: { device_record_id: device.id },
+    })
     return device
   })
 
@@ -77,6 +82,11 @@ const deleteDevice = authed
       })
     })
 
+    context.analytics?.capture({
+      distinctId: user.id,
+      event: 'headset_removed',
+      properties: { device_record_id: device.id },
+    })
     return device
   })
 

@@ -9,6 +9,8 @@ import {
   buildStarterTemplateListWhere,
   generateUUID,
 } from '@virtality/shared/utils'
+import type { ProgramOrigin } from '@virtality/analytics'
+import type { InitialContext } from '../context.ts'
 import { authed } from '../middleware/auth.ts'
 
 const programInclude = {
@@ -83,6 +85,19 @@ const requireProgramName = (name: string) => {
   return trimmedName
 }
 
+function captureProgramCreated(
+  context: Pick<InitialContext, 'analytics'> & { user: { id: string } },
+  programId: string,
+  origin: ProgramOrigin,
+) {
+  context.analytics?.capture({
+    distinctId: context.user.id,
+    event: 'program_created',
+    properties: { program_id: programId, origin },
+    setOnce: { first_program_created_at: new Date().toISOString() },
+  })
+}
+
 const createReusableProgram = authed
   .route({ path: '/reusable-program/create', method: 'POST' })
   .input(ReusableProgramSchema.pick({ name: true }))
@@ -91,7 +106,7 @@ const createReusableProgram = authed
     const now = new Date()
     const trimmedName = requireProgramName(input.name)
 
-    return prisma.reusableProgram.create({
+    const program = await prisma.reusableProgram.create({
       data: {
         id: generateUUID(),
         name: trimmedName,
@@ -103,6 +118,9 @@ const createReusableProgram = authed
       },
       include: programInclude,
     })
+
+    captureProgramCreated(context, program.id, 'scratch')
+    return program
   })
 
 const updateReusableProgram = authed
@@ -123,7 +141,7 @@ const updateReusableProgram = authed
       })
     }
 
-    return prisma.reusableProgram.update({
+    const program = await prisma.reusableProgram.update({
       where: { id: input.id },
       data: {
         name: requireProgramName(input.name),
@@ -131,6 +149,13 @@ const updateReusableProgram = authed
       },
       include: programInclude,
     })
+
+    context.analytics?.capture({
+      distinctId: user.id,
+      event: 'program_renamed',
+      properties: { program_id: program.id },
+    })
+    return program
   })
 
 const retireReusableProgram = authed
@@ -151,11 +176,18 @@ const retireReusableProgram = authed
       })
     }
 
-    return prisma.reusableProgram.update({
+    const program = await prisma.reusableProgram.update({
       where: { id: input.id },
       data: buildRetireProgramData(),
       include: programInclude,
     })
+
+    context.analytics?.capture({
+      distinctId: user.id,
+      event: 'program_retired',
+      properties: { program_id: program.id },
+    })
+    return program
   })
 
 const copyReusableProgram = authed
@@ -185,7 +217,7 @@ const copyReusableProgram = authed
       generateUUID,
     )
 
-    return prisma.$transaction(async (tx) => {
+    const program = await prisma.$transaction(async (tx) => {
       await tx.reusableProgram.create({
         data: {
           id: newProgramId,
@@ -209,6 +241,9 @@ const copyReusableProgram = authed
         include: programInclude,
       })
     })
+
+    captureProgramCreated(context, program.id, 'copy')
+    return program
   })
 
 export const reusableProgram = {

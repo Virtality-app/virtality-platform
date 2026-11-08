@@ -21,15 +21,17 @@ Copy [`.env.example`](./.env.example) to `.env` before starting. The `dev` scrip
 
 ## Env
 
-| Variable                  | Required for local         | Notes                                        |
-| ------------------------- | -------------------------- | -------------------------------------------- |
-| `DATABASE_URL`            | yes                        | Shared Postgres                              |
-| `ENV` / `NEXT_PUBLIC_ENV` | yes                        | `development`                                |
-| `BETTER_AUTH_SECRET`      | yes                        | Any long random string locally               |
-| `BETTER_AUTH_URL`         | recommended                | `http://localhost:8080`                      |
-| `REVALIDATE_SECRET`       | yes for website revalidate | Match website                                |
-| `STRIPE_SECRET_KEY`       | no in development          | If omitted, Stripe plugin is not registered  |
-| `GOOGLE_CLIENT_*`         | no                         | If omitted, Google sign-in is disabled       |
-| SMTP\_\*                  | no for seeded admin        | Needed for new email sign-ups / verification |
+| Variable                  | Required for local         | Notes                                                  |
+| ------------------------- | -------------------------- | ------------------------------------------------------ |
+| `DATABASE_URL`            | yes                        | Shared Postgres                                        |
+| `ENV` / `NEXT_PUBLIC_ENV` | yes                        | `development`                                          |
+| `BETTER_AUTH_SECRET`      | yes                        | Any long random string locally                         |
+| `BETTER_AUTH_URL`         | recommended                | `http://localhost:8080`                                |
+| `REVALIDATE_SECRET`       | yes for website revalidate | Match website                                          |
+| `STRIPE_SECRET_KEY`       | no in development          | If omitted, Stripe plugin is not registered            |
+| `GOOGLE_CLIENT_*`         | no                         | If omitted, Google sign-in is disabled                 |
+| SMTP\_\*                  | no for seeded admin        | Needed for new email sign-ups / verification           |
+| `POSTHOG_PROJECT_TOKEN`   | no                         | Console's PostHog key; unset disables server analytics |
+| `POSTHOG_HOST`            | no                         | Defaults to `https://eu.i.posthog.com`                 |
 
 Do not use the Vercel CLI path for day-to-day monorepo work; prefer the turbo/`tsx` scripts above.

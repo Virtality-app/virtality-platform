@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { z } from 'zod/v4'
 import { prisma } from '@virtality/db'
 import { claimDevicePairing, DevicePairingError } from '@virtality/orpc/server'
+import { analytics } from '../lib/analytics.ts'
 
 const ClaimDevicePairingSchema = z.object({
   pairingCode: z
@@ -25,7 +26,17 @@ devicePairingRoutes.post('/claim', async (c) => {
   }
 
   try {
-    return c.json(await claimDevicePairing(prisma, parsed.data))
+    return c.json(
+      await claimDevicePairing(prisma, parsed.data, {
+        onPaired: ({ userId, deviceRecordId }) =>
+          analytics.capture({
+            distinctId: userId,
+            event: 'headset_paired',
+            properties: { device_record_id: deviceRecordId },
+            setOnce: { first_headset_paired_at: new Date().toISOString() },
+          }),
+      }),
+    )
   } catch (error) {
     if (error instanceof DevicePairingError) {
       if (error.code === 'PAIRING_CODE_UNAVAILABLE') {

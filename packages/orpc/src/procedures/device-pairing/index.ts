@@ -33,10 +33,16 @@ const start = authed
   .input(DeviceRecordInputSchema)
   .handler(async ({ context, input }) => {
     try {
-      return await startDevicePairing(context.prisma, {
+      const attempt = await startDevicePairing(context.prisma, {
         deviceRecordId: input.deviceRecordId,
         userId: context.user.id,
       })
+      context.analytics?.capture({
+        distinctId: context.user.id,
+        event: 'headset_pairing_started',
+        properties: { device_record_id: input.deviceRecordId },
+      })
+      return attempt
     } catch (error) {
       throwPairingOrpcError(error)
     }

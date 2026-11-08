@@ -1,4 +1,5 @@
 import { os } from '@orpc/server'
+import type { ServerAnalytics } from '@virtality/analytics/server'
 import type { AuthContext } from '@virtality/auth'
 import type { PrismaClient } from '@virtality/db'
 import type { MarketingCacheTag } from '@virtality/shared/types'
@@ -27,6 +28,11 @@ export type InitialContext = {
   revalidateWebsiteMarketingCache?: (
     body: RevalidateWebsiteMarketingBody,
   ) => Promise<void>
+  /**
+   * Product analytics for clinician actions. Wired by services/server;
+   * optional so unit tests can omit it. Capture never throws.
+   */
+  analytics?: ServerAnalytics
 }
 
 const base = os.$context<InitialContext>()

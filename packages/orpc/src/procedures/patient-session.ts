@@ -4,6 +4,7 @@ import {
   PatientSessionSchema,
   SessionExerciseSchema,
 } from '@virtality/db/definitions'
+import type { SaveChoice } from '@virtality/analytics'
 import { SessionCompletionSaveChoice } from '@virtality/shared/utils'
 import { authed } from '../middleware/auth.ts'
 import { z } from 'zod'
@@ -167,8 +168,34 @@ const startPatientSessionFromAck = authed
       sourceReusableProgramId: patientSession.sourceReusableProgramId,
     })
 
+    const startedAt = new Date().toISOString()
+    context.analytics?.capture({
+      distinctId: context.user.id,
+      event: 'treatment_session_started',
+      properties: {
+        patient_session_id: patientSession.id,
+        patient_id: patientSession.patientId,
+        program_source: patientSession.sourceReusableProgramId
+          ? 'reusable_program'
+          : 'quick_start',
+        reusable_program_id:
+          patientSession.sourceReusableProgramId ?? undefined,
+        exercise_count: input.exercises.length,
+      },
+      set: { last_treatment_session_at: startedAt },
+      setOnce: { first_treatment_session_at: startedAt },
+    })
+
     return patientSession
   })
+
+const SAVE_CHOICE_EVENT_VALUE: Record<SessionCompletionSaveChoice, SaveChoice> =
+  {
+    [SessionCompletionSaveChoice.FINISH_ONLY]: 'finish_only',
+    [SessionCompletionSaveChoice.UPDATE_SOURCE_PROGRAM]:
+      'update_source_program',
+    [SessionCompletionSaveChoice.SAVE_AS_NEW_PROGRAM]: 'save_as_new_program',
+  }
 
 const CompletePatientSessionSchema = z.object({
   id: z.string(),
@@ -196,7 +223,7 @@ const completePatientSession = authed
   .handler(async ({ context, input }) => {
     const { prisma, user } = context
 
-    return completePatientSessionWithSaveChoice(
+    const completedSession = await completePatientSessionWithSaveChoice(
       {
         patientSession: prisma.patientSession,
         sessionExercise: prisma.sessionExercise,
@@ -206,6 +233,35 @@ const completePatientSession = authed
       user.id,
       input,
     )
+
+    if (context.analytics) {
+      const started = await prisma.patientSession.findUnique({
+        where: { id: completedSession.id },
+        select: {
+          createdAt: true,
+          _count: { select: { sessionExercise: true } },
+        },
+      })
+      context.analytics.capture({
+        distinctId: user.id,
+        event: 'treatment_session_completed',
+        properties: {
+          patient_session_id: completedSession.id,
+          save_choice: SAVE_CHOICE_EVENT_VALUE[input.saveChoice],
+          exercise_count: started?._count.sessionExercise ?? 0,
+          duration_sec:
+            started && completedSession.completedAt
+              ? Math.round(
+                  (completedSession.completedAt.getTime() -
+                    started.createdAt.getTime()) /
+                    1000,
+                )
+              : undefined,
+        },
+      })
+    }
+
+    return completedSession
   })
 
 const InterruptPatientSessionSchema = z.object({
@@ -218,7 +274,22 @@ const interruptSession = authed
   .handler(async ({ context, input }) => {
     const { prisma } = context
 
-    return interruptPatientSession(prisma.patientSession, input.id)
+    const result = await interruptPatientSession(
+      prisma.patientSession,
+      input.id,
+    )
+
+    context.analytics?.capture({
+      distinctId: context.user.id,
+      event: 'treatment_session_interrupted',
+      properties: {
+        patient_session_id: result.session.id,
+        retained_exercise_count: result.retainedExerciseCount,
+        retained_progress_count: result.retainedProgressCount,
+      },
+    })
+
+    return result
   })
 
 const SyncSessionWorkingCopySchema = z.object({

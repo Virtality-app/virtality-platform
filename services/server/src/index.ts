@@ -18,6 +18,7 @@ import { devicePairingRoutes } from './routes/device-pairing.ts'
 import { scheduleStripeSubscriptionReconciliation } from './lib/schedule-stripe-subscription-reconciliation.ts'
 import { scheduleImmersiveVideoCleanup } from './lib/schedule-immersive-video-cleanup.ts'
 import { createHttpMetrics } from './lib/http-metrics.ts'
+import { analytics } from './lib/analytics.ts'
 
 const ENV =
   process.env.ENV === 'production'
@@ -237,6 +238,7 @@ for (const signal of ['SIGINT', 'SIGTERM'] as const) {
         server.close(() => resolve())
       })
     void closeServer()
+      .finally(() => analytics.shutdown())
       .finally(() => shutdownObservability())
       .finally(() => process.exit(0))
   })

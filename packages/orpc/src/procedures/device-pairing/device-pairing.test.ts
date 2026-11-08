@@ -148,14 +148,19 @@ describe('device pairing lifecycle', () => {
       },
     }
     const prisma = transactionalPrisma(tx)
+    const onPaired = vi.fn()
 
     await expect(
       claimDevicePairing(
         prisma,
         { pairingCode: '123456', deviceId: 'headset-1' },
-        { now: () => now },
+        { now: () => now, onPaired },
       ),
     ).resolves.toEqual({ status: 'paired' })
+    expect(onPaired).toHaveBeenCalledWith({
+      userId: 'user-1',
+      deviceRecordId: 'device-1',
+    })
   })
 
   it('accepts a recent repeated claim from the same headset', async () => {
@@ -168,13 +173,16 @@ describe('device pairing lifecycle', () => {
       },
     }
     const prisma = transactionalPrisma(tx)
+    const onPaired = vi.fn()
 
     await expect(
-      claimDevicePairing(prisma, {
-        pairingCode: '123456',
-        deviceId: 'headset-1',
-      }),
+      claimDevicePairing(
+        prisma,
+        { pairingCode: '123456', deviceId: 'headset-1' },
+        { onPaired },
+      ),
     ).resolves.toEqual({ status: 'paired' })
+    expect(onPaired).not.toHaveBeenCalled()
   })
 
   it('maps a concurrent unique-device assignment to a pairing conflict', async () => {
