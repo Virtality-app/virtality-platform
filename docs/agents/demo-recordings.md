@@ -18,7 +18,7 @@ Demos are short Playwright scripts recorded by `pnpm demo`, which works for any 
 
 1. **Sign in once** (apps with `signIn: true`). Run `pnpm demo:login <app>` in the background and ask the person to sign in in the browser window it opens. It saves the session to `tooling/demos/.auth/<app>.json` as soon as the sign-in lands and exits. Later demos reuse it until it expires; `pnpm demo` says when to sign in again.
 2. **Write the script** at `tooling/demos/scripts/<name>.demo.ts`. Copy `scripts/example.demo.ts`. Scripts are local and git-ignored. Durable coverage belongs in the e2e suite, not here.
-   - Import `test` and `expect` from `../demo.ts`. The page shows a dot where the mouse is, and the recording holds on the final state for 2 s.
+   - Import `test` and `expect` from `../demo.ts`. The page shows a ring where the mouse is, and the recording holds on the final state for 2 s.
    - `page.goto('/path')` is relative to the app's local URL.
    - Find elements by role and visible text (`getByRole('button', { name: 'Finish' })`), the way a user would.
    - Call `await beat()` after each visible change so a viewer can follow it.
