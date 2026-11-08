@@ -1,0 +1,6 @@
+# Saved sign-ins, Playwright runs and finished recordings stay local
+.auth/
+.output/
+out/
+scripts/*
+!scripts/example.demo.ts

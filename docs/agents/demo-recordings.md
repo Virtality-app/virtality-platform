@@ -10,19 +10,25 @@ One flow, under about 30 seconds, that starts where a user would start and ends 
 - **Bug fix:** the reproduction steps from the issue, now ending on the correct behaviour.
 - **Headset feature:** run the Simulated Headset (`docs/agents/headset-sim.md`) and record the console side of the flow.
 
-Record against your branch running locally (`localhost:3001` for the console). The console needs a signed-in user, so ask the user to sign in in that tab before you start recording.
+Record against your branch running locally. The app's dev server must be up (`pnpm --filter @virtality/<app> dev`); for the console that also means the API server, and the socket server for anything live.
 
 ## Record it
 
-Use the Claude in Chrome GIF recorder (load the `claude-in-chrome` skill first):
+Demos are short Playwright scripts recorded by `pnpm demo`, which works for any app listed in `tooling/demos/apps.ts` (console, adminboard, website). Playwright runs its own headless browser, so you don't need Claude in Chrome. Don't use it for demos: it costs a screenshot per step and depends on the person's live browser.
 
-1. Open the starting page in a new tab and resize it to a readable size, e.g. 1280×800.
-2. `gif_creator` `start_recording`, then take a screenshot so the first frame is the starting state.
-3. Run the flow. Pause on the result for a moment, and take a screenshot so the last frame shows it.
-4. `stop_recording`, then `export` with `download: true`, `filename: "<issue-number>-demo.gif"` and `options: { showWatermark: false }`.
-5. The GIF lands in the browser's download folder. Find it with `ls -t ~/Downloads | head`.
+1. **Sign in once** (apps with `signIn: true`). Run `pnpm demo:login <app>` in the background and ask the person to sign in in the browser window it opens. It saves the session to `tooling/demos/.auth/<app>.json` as soon as the sign-in lands and exits. Later demos reuse it until it expires; `pnpm demo` says when to sign in again.
+2. **Write the script** at `tooling/demos/scripts/<name>.demo.ts`. Copy `scripts/example.demo.ts`. Scripts are local and git-ignored. Durable coverage belongs in the e2e suite, not here.
+   - Import `test` and `expect` from `../demo.ts`. The page shows a dot where the mouse is, and the recording holds on the final state for 2 s.
+   - `page.goto('/path')` is relative to the app's local URL.
+   - Find elements by role and visible text (`getByRole('button', { name: 'Finish' })`), the way a user would.
+   - Call `await beat()` after each visible change so a viewer can follow it.
+   - End with an `expect` on the visible result, so a broken flow fails instead of producing a recording of the wrong thing.
+3. **Record:** `pnpm demo <app> <name>`, e.g. `pnpm demo console therapies-by-default`. Output: `tooling/demos/out/<name>.gif` and `<name>.png`, the last frame. Pass `--name <issue-number>-demo` to set the file name.
+4. **Check the result** by looking at `<name>.png` only. It should show the outcome. Don't open the GIF.
 
-Watch for flows that went wrong partway (a toast error, a spinner that never stopped). If the recording shows one, fix the cause and record again. The demo must show the change working.
+When a run fails, there's no GIF. Read the `error-context.md` path it prints first: a text snapshot of the page at the failure, cheaper than a screenshot. Then fix the script or the code and run the same command again.
+
+**Headset features:** start the Simulated Headset (`docs/agents/headset-sim.md`) and pair it before recording. The script drives the console side only.
 
 ## Attach it to the Linear twin
 
@@ -47,5 +53,5 @@ Attached to [CORE-123](<linear issue url>) as "Demo: filter customers by trial s
 When there's no demo, the section still exists and says why in one line:
 
 - **No visible change** (backend-only, refactor, tooling): say what you ran instead, e.g. the tests or the API call.
-- **No browser** (Sandcastle and other headless runs): `No demo: recorded in a headless run.`
+- **No app to record against** (Sandcastle and other runs without the dev servers or a person to sign in): `No demo: no running app in this run.`
 - **No Linear twin** (issue filed before sync): keep the GIF, give the user its path in your final message, and write `Demo recorded locally: <path>`.
