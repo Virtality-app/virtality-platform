@@ -21,6 +21,14 @@ Keep the names of events that already ship. Renaming one splits its history in P
 
 The console identifies with `user.id`, and the server uses the same id as `distinctId`. `identifyPostHogUser` sets `role`, `is_internal` (admins only; some clinics doing real work hold the tester role), `email_verified`, and `signup_at` (set once). Server events carry the activation milestones (`first_*_at` set once, `last_treatment_session_at` overwritten) through `set` / `setOnce`. Product dashboards filter on `is_internal = false`.
 
+## Session replay privacy
+
+The console records sessions, so anything on screen can reach PostHog. `apps/console/lib/posthog-replay-privacy.ts` holds the rules:
+
+- Inputs are masked unless they spread `unmaskedInputProps`. Add it only to inputs that never hold personal data, such as exercise settings or the exercise search.
+- Text is shown unless an element (or an ancestor) has the `ph-sensitive` class. Put it on every patient or clinician name, contact detail, photo, session note and other medical text. It also hides images inside it and keeps the text out of autocapture.
+- Use `ph-no-capture` where personal data sits in an attribute (an `aria-label` with a patient name, a cmdk item's `data-value`) or shows through position or colour (the pain slider, the body map). The element becomes a blank box in replays.
+
 ## Configuration
 
 `services/server` reads `POSTHOG_PROJECT_TOKEN` (and optionally `POSTHOG_HOST`). It must be the same project key as the console's `NEXT_PUBLIC_POSTHOG_KEY`, or server events land on persons the console never identified. When it is unset, server analytics is a no-op.
