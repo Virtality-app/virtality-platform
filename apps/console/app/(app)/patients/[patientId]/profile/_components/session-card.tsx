@@ -15,7 +15,6 @@ import { format } from 'date-fns'
 import { ChartArea, List, MoveLeft } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
-import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
 import { getSessionSourceProgramDisplayName } from '@/lib/session-history'
 import { useClientT } from '@/i18n/use-client-t'
 import { useDateFnsLocale } from '@/hooks/use-date-fns-locale'
@@ -32,9 +31,6 @@ interface SessionCardProps {
 }
 
 const SessionCard = ({ session, patientId, onBack }: SessionCardProps) => {
-  usePageViewTracking({
-    props: { route_group: 'patient', tab_view: 'patient-session' },
-  })
   const { t } = useClientT(['patients', 'common'])
   const locale = useDateFnsLocale()
   const [view, setView] = useState(true)

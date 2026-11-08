@@ -1,7 +1,6 @@
 'use client'
 import type { Session } from '@/auth-client'
 import { Card, CardContent } from '@virtality/ui/components/card'
-import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
 import { SessionsManagement } from './sessions-management'
 
 export interface SessionsTabProps {
@@ -10,9 +9,6 @@ export interface SessionsTabProps {
 }
 
 const SessionsTab = ({ sessions, currentSessionToken }: SessionsTabProps) => {
-  usePageViewTracking({
-    props: { route_group: 'user', tab_view: 'user-sessions' },
-  })
   return (
     <Card>
       <CardContent>

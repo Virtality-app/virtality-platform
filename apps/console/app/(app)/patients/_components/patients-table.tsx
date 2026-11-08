@@ -26,7 +26,6 @@ import {
   useORPC,
   getQueryClient,
 } from '@virtality/react-query'
-import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
 import { trackAnalyticsEvent } from '@/lib/analytics-contract'
 import { filterPatientsBySearch } from '@/lib/patient-list'
 import { useClientT } from '@/i18n/use-client-t'
@@ -36,7 +35,6 @@ const PatientsTable = () => {
   'use no memo'
   const { t } = useClientT('patients')
   useIsAuthed()
-  usePageViewTracking({ props: { route_group: 'patient' } })
   const queryClient = getQueryClient()
   const orpc = useORPC()
   const router = useRouter()

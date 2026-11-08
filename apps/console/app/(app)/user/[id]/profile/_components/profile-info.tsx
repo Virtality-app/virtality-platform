@@ -3,7 +3,6 @@ import { Input } from '@virtality/ui/components/input'
 import { useClientT } from '@/i18n/use-client-t'
 import { Fragment } from 'react'
 import { Button } from '@virtality/ui/components/button'
-import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
 import {
   Card,
   CardContent,
@@ -49,10 +48,6 @@ const ProfileInfo = ({ user }: ProfileInfoProps) => {
     data: activePendingAccountDeletion,
     isLoading: isLoadingPendingAccountDeletion,
   } = useActivePendingAccountDeletion()
-
-  usePageViewTracking({
-    props: { route_group: 'user', tab_view: 'user-profile' },
-  })
 
   const {
     isStartingDeletion,

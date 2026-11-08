@@ -12,7 +12,6 @@ import { HumanState } from '@/data/static/human-body'
 import useBeforeUnload from '@/hooks/use-before-unload'
 import useNavigationGuard from '@/hooks/use-navigation-guard'
 import { NavigationGuardDialog } from '@/components/dialogs/navigation-guard-dialog'
-import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
 import { useClientT } from '@/i18n/use-client-t'
 
 /** Compare by which parts are active; null and all-inactive are treated as equal. */
@@ -62,9 +61,6 @@ const MedicalHistory = ({
   onBodyAreasChange,
   medHistoryDeltas,
 }: MedicalHistoryProps) => {
-  usePageViewTracking({
-    props: { route_group: 'patient', tab_view: 'patient-medical-history' },
-  })
   const { t } = useClientT('patients')
 
   const {

@@ -14,7 +14,6 @@ import { tableDefaults } from '@virtality/ui/lib/table-defaults'
 import { usePersistedPageSize } from '@virtality/ui/lib/use-persisted-page-size'
 import { useMemo, useState } from 'react'
 import { useReusablePrograms } from '@virtality/react-query'
-import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
 import { filterProgramsBySearch } from '@/lib/program-library'
 import { programLibraryColumns } from './columns'
 import { Button } from '@virtality/ui/components/button'
@@ -25,9 +24,6 @@ import { useClientT } from '@/i18n/use-client-t'
 import { useDataTableFooterLabels } from '@/hooks/use-data-table-footer-labels'
 
 export default function ProgramLibraryTable() {
-  usePageViewTracking({
-    props: { route_group: 'program', tab_view: 'program-library' },
-  })
   const router = useRouter()
   const { t } = useClientT('programs')
   const [sorting, setSorting] = useState<SortingState>([])

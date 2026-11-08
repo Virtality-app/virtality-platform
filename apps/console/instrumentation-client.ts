@@ -12,10 +12,15 @@ posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
   ui_host: 'https://eu.posthog.com',
   persistence: 'localStorage+cookie',
   cookieless_mode: 'on_reject',
-  autocapture: { url_ignorelist: ['http:localhost:3001'] },
+  // App Router navigations are history changes; this replaces the old
+  // hand-rolled page_viewed event.
+  capture_pageview: 'history_change',
+  autocapture: { url_ignorelist: ['http://localhost:3001'] },
   // Person identification lives in usePostHogIdentifyOnSession, which reads
   // the shared session store once PostHog reports loaded.
   loaded: (posthogClient) => {
+    // Separates console events from the website's when both share a project.
+    posthogClient.register({ app: 'console' })
     try {
       // Console defaults to opted-in so feature flags (e.g. rom_mode_feature)
       // and identify run without waiting on the cookie banner. Explicit

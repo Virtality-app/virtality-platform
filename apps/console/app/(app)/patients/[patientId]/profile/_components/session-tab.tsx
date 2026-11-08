@@ -6,7 +6,6 @@ import { SessionsOverview } from './sessions-overview'
 import { usePatientSession, usePatientSessions } from '@virtality/react-query'
 import SessionCard from './session-card'
 import { filterSessionsByDateRange } from '@/lib/session-date-range'
-import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
 import { usePatientSessionDateRange } from '@/hooks/use-patient-session-date-range'
 import { useClientT } from '@/i18n/use-client-t'
 
@@ -15,9 +14,6 @@ interface SessionTabProps {
 }
 
 export default function SessionTab({ patientId }: SessionTabProps) {
-  usePageViewTracking({
-    props: { route_group: 'patient', tab_view: 'patient-sessions' },
-  })
   const { t } = useClientT('patients')
   const [sessionViewing, setSessionViewing] = useState<string>('')
   const { startDate, endDate, setStartDate, setEndDate, applyPreset } =

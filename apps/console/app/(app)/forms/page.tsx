@@ -17,7 +17,6 @@ import {
 import { H1 } from '@/components/typography'
 import { CircleQuestionMark } from 'lucide-react'
 import { useClientT } from '@/i18n/use-client-t'
-import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
 import { FormItemDialog } from './_components/form-item-dialog'
 import { HelpDialog } from './_components/help-dialog'
 
@@ -90,9 +89,6 @@ const controlGroupList: Questioner[] = [
 
 const FormsPage = () => {
   const { t } = useClientT(['home', 'common'])
-  usePageViewTracking({
-    props: { route_group: 'user' },
-  })
   return (
     <div className='h-screen-with-header'>
       <Accordion

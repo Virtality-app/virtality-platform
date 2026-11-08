@@ -28,7 +28,6 @@ import { useForm } from 'react-hook-form'
 import { format, formatISO } from 'date-fns'
 import { useClientT } from '@/i18n/use-client-t'
 import { useDateFnsLocale } from '@/hooks/use-date-fns-locale'
-import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
 import PatientPhotoField from './patient-photo-field'
 
 interface BasicInfoProps {
@@ -37,9 +36,6 @@ interface BasicInfoProps {
 }
 
 const BasicInfo = ({ form, patient }: BasicInfoProps) => {
-  usePageViewTracking({
-    props: { route_group: 'patient', tab_view: 'patient-profile' },
-  })
   const { t } = useClientT(['patients', 'common'])
   const locale = useDateFnsLocale()
 

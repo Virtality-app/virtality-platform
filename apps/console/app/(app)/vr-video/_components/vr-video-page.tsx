@@ -14,12 +14,8 @@ import { HeadsetLibrary } from './headset-library'
 import { HeadsetList } from './headset-list'
 import { VrVideoPageSkeleton } from './vr-video-page-skeleton'
 import { useClientT } from '@/i18n/use-client-t'
-import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
 
 export function VrVideoPage() {
-  usePageViewTracking({
-    props: { route_group: 'device' },
-  })
   const { t, i18n } = useClientT('vr-video')
   const page = useVrVideoPage()
   const subtitle = headsetStorageSubtitle(

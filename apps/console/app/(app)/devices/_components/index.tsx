@@ -21,7 +21,6 @@ import { v4 as uuid } from 'uuid'
 import { useDeviceContext } from '@/context/device-context'
 import useIsAuthed from '@/hooks/use-is-authed'
 import { useClientT } from '@/i18n/use-client-t'
-import usePageViewTracking from '@/hooks/analytics/use-page-view-tracking'
 
 const META_QUEST_3S = 'Meta Quest 3S'
 
@@ -33,9 +32,6 @@ const defaultValues: DeviceForm = {
 const Devices = () => {
   const { t } = useClientT(['devices', 'common'])
   useIsAuthed()
-  usePageViewTracking({
-    props: { route_group: 'device' },
-  })
   const [isDialogOpen, setDialogOpen] = useState(false)
   const { devices, isLoading, createDevice } = useDeviceContext()
 
