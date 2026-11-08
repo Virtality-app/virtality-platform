@@ -7,8 +7,8 @@ import { useSessionCompletion } from './use-session-completion'
 type SessionDialogView = 'completed' | 'discard'
 
 /**
- * Session Completed: a summary and one Finish action. Program changes,
- * therapies and notes wait behind "Add details". Discarding the record swaps
+ * Session Completed: a summary, the supplemental therapies and one Finish
+ * action. Program changes and notes wait behind "Add details". Discarding the record swaps
  * the dialog to a confirmation in place; "Keep record" swaps it back with
  * everything entered so far intact.
  */

@@ -168,7 +168,7 @@
     "finish": "Finish session",
     "addDetails": "Add details",
     "hideDetails": "Hide details",
-    "detailsHint": "Program changes, therapies and notes",
+    "detailsHint": "Program changes and notes",
     "discard": "Discard session record",
     "summary": {
       "label": "Session summary",
