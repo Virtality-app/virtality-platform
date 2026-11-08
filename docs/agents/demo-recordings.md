@@ -26,6 +26,8 @@ Demos are short Playwright scripts recorded by `pnpm demo`, which works for any 
 3. **Record:** `pnpm demo <app> <name>`, e.g. `pnpm demo console therapies-by-default`. Output: `tooling/demos/out/<name>.gif` and `<name>.png`, the last frame. Pass `--name <issue-number>-demo` to set the file name.
 4. **Check the result** by looking at `<name>.png` only. It should show the outcome. Don't open the GIF.
 
+**Find labels with text, not screenshots.** To learn what a page offers, write a throwaway script that logs `await page.locator('main').ariaSnapshot()` and run it without making a GIF: `pnpm --filter @virtality/demos exec playwright test scripts/<name>.demo.ts --project=<app> --reporter=line`. Use the same command for setup runs, such as pairing the Simulated Headset or finishing a session left open by an earlier run, so each demo starts from a clean state.
+
 When a run fails, there's no GIF. Read the `error-context.md` path it prints first: a text snapshot of the page at the failure, cheaper than a screenshot. Then fix the script or the code and run the same command again.
 
 **Headset features:** start the Simulated Headset (`docs/agents/headset-sim.md`) and pair it before recording. The script drives the console side only.

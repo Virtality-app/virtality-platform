@@ -1,5 +1,5 @@
 /**
- * Runs in the recorded page. Recordings don't show the mouse, so draw a dot
+ * Runs in the recorded page. Recordings don't show the mouse, so draw a ring
  * that follows it and pulses on each click.
  */
 export const drawCursor = () => {
