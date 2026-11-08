@@ -52,4 +52,20 @@ export default [
       ],
     },
   },
+  {
+    files: ['**/*.{ts,tsx}'],
+    ignores: ['lib/analytics-contract.ts'],
+    rules: {
+      // Every event goes through the typed contract in @virtality/analytics.
+      'no-restricted-properties': [
+        'error',
+        {
+          object: 'posthog',
+          property: 'capture',
+          message:
+            'Use trackAnalyticsEvent from @/lib/analytics-contract and add the event to @virtality/analytics.',
+        },
+      ],
+    },
+  },
 ]

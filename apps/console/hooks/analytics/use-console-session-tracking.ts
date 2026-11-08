@@ -27,12 +27,7 @@ export const finalizeConsoleSession = (end_reason: ConsoleSessionEndReason) => {
   const start = Number(startedAtRaw)
   const duration_sec = Math.max(0, Math.floor((now() - start) / 1000))
 
-  trackAnalyticsEvent('console_session_ended', {
-    duration_sec,
-    end_reason,
-    source: 'auto',
-    timestamp_client: new Date().toISOString(),
-  })
+  trackAnalyticsEvent('console_session_ended', { duration_sec, end_reason })
 
   sessionStorage.setItem(ENDED_KEY, '1')
   sessionStorage.removeItem(SESSION_ID_KEY)
@@ -58,10 +53,7 @@ function useConsoleSessionTracking() {
       sessionStorage.setItem(LAST_ACTIVITY_KEY, String(ts))
       sessionStorage.removeItem(ENDED_KEY)
 
-      trackAnalyticsEvent('console_session_started', {
-        source: 'auto',
-        timestamp_client: new Date(ts).toISOString(),
-      })
+      trackAnalyticsEvent('console_session_started', {})
     }
 
     let lastActivityWriteAt = 0

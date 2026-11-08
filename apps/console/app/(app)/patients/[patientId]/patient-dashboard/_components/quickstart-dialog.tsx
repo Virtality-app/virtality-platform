@@ -26,7 +26,7 @@ import { Exercise } from '@virtality/db'
 import { notify } from '@/lib/notify'
 import { useClientT } from '@/i18n/use-client-t'
 import { generateUUID } from '@virtality/shared/utils'
-import posthog from 'posthog-js'
+import { trackAnalyticsEvent } from '@/lib/analytics-contract'
 import {
   getQueryClient,
   useCreateReusableProgram,
@@ -160,7 +160,7 @@ const QuickStartDialog = () => {
     if (isSaving) return
     if (!open) {
       if (savePromptCloseReasonRef.current === null) {
-        posthog.capture('quickstart_continue_save_prompt_dismissed')
+        trackAnalyticsEvent('quickstart_continue_save_prompt_dismissed', {})
       }
       savePromptCloseReasonRef.current = null
     }
@@ -179,7 +179,7 @@ const QuickStartDialog = () => {
       return notifyNeedExercise()
     }
 
-    posthog.capture('quickstart_continue')
+    trackAnalyticsEvent('quickstart_continue', {})
 
     savePromptCloseReasonRef.current = 'continue'
     setSavePromptOpen(false)
@@ -202,7 +202,7 @@ const QuickStartDialog = () => {
     promptForm.reset({ name: form.getValues('name') })
     savePromptCloseReasonRef.current = null
     setSavePromptOpen(true)
-    posthog.capture('quickstart_continue_save_prompt_shown')
+    trackAnalyticsEvent('quickstart_continue_save_prompt_shown', {})
   }
 
   const persistProgram = async (values: ReusableProgramForm) => {
@@ -228,7 +228,7 @@ const QuickStartDialog = () => {
       return notifyNeedExercise()
     }
 
-    posthog.capture('quickstart_program_created')
+    trackAnalyticsEvent('quickstart_program_created', {})
 
     await persistProgram(values)
   }
@@ -238,8 +238,8 @@ const QuickStartDialog = () => {
       return notifyNeedExercise()
     }
 
-    posthog.capture('quickstart_continue_save_prompt_saved')
-    posthog.capture('quickstart_program_created')
+    trackAnalyticsEvent('quickstart_continue_save_prompt_saved', {})
+    trackAnalyticsEvent('quickstart_program_created', {})
 
     try {
       await persistProgram(values)
