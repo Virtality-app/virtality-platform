@@ -6,6 +6,8 @@ import SessionDialog from './session-dialog'
 const finish = vi.fn()
 const discard = vi.fn()
 
+vi.mock('./session-supplemental-therapies', () => ({ default: () => null }))
+
 vi.mock('./use-session-completion', () => ({
   useSessionCompletion: () => ({
     isDialogOpen: true,

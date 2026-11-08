@@ -16,8 +16,9 @@ import {
 import { useClientT } from '@/i18n/use-client-t'
 import { cn } from '@/lib/utils'
 import SessionCompletionSummary from './session-completion-summary'
+import SessionNotes from './session-notes'
 import SessionSaveChoice from './session-save-choice'
-import SessionTherapiesAndNotes from './session-therapies-and-notes'
+import SessionSupplementalTherapies from './session-supplemental-therapies'
 import { type useSessionCompletion } from './use-session-completion'
 
 type SessionCompletion = ReturnType<typeof useSessionCompletion>
@@ -29,7 +30,7 @@ interface SessionCompletedViewProps {
   onRequestDiscard: () => void
 }
 
-/** Summary, optional details and the Finish action. */
+/** Summary, supplemental therapies, optional details and the Finish action. */
 const SessionCompletedView = ({
   completion,
   detailsOpen,
@@ -62,6 +63,7 @@ const SessionCompletedView = ({
 
       <div className='scrollbar-gutter-stable min-h-0 flex-1 space-y-4 overflow-y-auto p-1 pr-3'>
         <SessionCompletionSummary summary={summary} />
+        <SessionSupplementalTherapies form={form} />
 
         <Collapsible open={detailsOpen} onOpenChange={onDetailsOpenChange}>
           <CollapsibleTrigger asChild>
@@ -94,7 +96,7 @@ const SessionCompletedView = ({
               showUpdateSourceProgram={showUpdateSourceProgram}
               sourceProgramName={session?.sourceProgramName}
             />
-            <SessionTherapiesAndNotes form={form} />
+            <SessionNotes form={form} />
           </CollapsibleContent>
         </Collapsible>
       </div>
