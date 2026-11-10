@@ -22,3 +22,19 @@ export type { ImmersiveVideoAdminRow } from './procedures/immersive-video-consta
 export type { AddressablesCatalogRelease } from './procedures/addressables-catalog-service.ts'
 export type { ImmersiveVideoConsoleListItem } from './procedures/immersive-video-service.ts'
 export type { DeviceVideoListForUserResult } from './procedures/device-video.ts'
+export type {
+  SessionActivityReport,
+  SessionActivityTrendPoint,
+  ClinicianActivity,
+  PatientActivity,
+  SessionLengthBucket,
+} from './procedures/adminboard/session-activity-report.ts'
+export type {
+  SessionLog,
+  SessionLogRow,
+  SessionSavedFilter,
+} from './procedures/adminboard/session-log.ts'
+export type {
+  SessionType,
+  SessionTypeCounts,
+} from './procedures/adminboard/session-type.ts'

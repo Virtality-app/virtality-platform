@@ -154,11 +154,8 @@ export {
 } from './email/use-email-audiences.js'
 
 // Adminboard dashboard queries
-export { useTotalUniquePatients } from './adminboard/dashboard/use-total-unique-patients.js'
-export { useUniquePatientsPerPhysio } from './adminboard/dashboard/use-unique-patients-per-physio.js'
-export { useSessionsPerPatient } from './adminboard/dashboard/use-sessions-per-patient.js'
-export { useTotalPatientSessions } from './adminboard/dashboard/use-total-patient-sessions.js'
-export { usePatientSessionsPerDatePerUser } from './adminboard/dashboard/use-sessions-per-date-per-user.js'
+export { useSessionActivity } from './adminboard/dashboard/use-session-activity.js'
+export { useSessionLog } from './adminboard/dashboard/use-session-log.js'
 export { useEffectivenessReport } from './adminboard/dashboard/use-effectiveness-report.js'
 
 // Translation queries

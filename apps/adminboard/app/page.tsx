@@ -1,82 +1,16 @@
-'use client'
+import { Suspense } from 'react'
+import { DashboardWorkspace } from '@/components/dashboard/dashboard-workspace'
 
-import { StatCard } from '@/components/dashboard/stat-card'
-import { PatientsPerDocChart } from '@/components/dashboard/patients-per-doc-chart'
-import { SessionsPerPatientChart } from '@/components/dashboard/sessions-per-patient-chart'
-import { SessionsPerWeekChart } from '@/components/dashboard/sessions-per-week-chart'
-import { Button } from '@/components/ui/button'
-import {
-  useTotalPatientSessions,
-  useUniquePatientsPerPhysio,
-  useSessionsPerPatient,
-  useTotalUniquePatients,
-} from '@virtality/react-query'
-import { LineChart } from 'lucide-react'
-import { EFFECTIVENESS_REPORT_COPY } from '@/lib/effectiveness-report-copy'
-import Link from 'next/link'
-
-const StartPage = () => {
-  const { data: totalPatients, isLoading: isLoadingTotalPatients } =
-    useTotalUniquePatients()
-  const {
-    data: totalPatientSessions,
-    isLoading: isLoadingTotalPatientSessions,
-  } = useTotalPatientSessions()
-  const { data: patientsPerDoc, isLoading: isLoadingPatientsPerDoc } =
-    useUniquePatientsPerPhysio()
-  const { data: sessionsPerPatient, isLoading: isLoadingSessionsPerPatient } =
-    useSessionsPerPatient()
-
-  if (
-    isLoadingTotalPatients ||
-    isLoadingTotalPatientSessions ||
-    isLoadingPatientsPerDoc ||
-    isLoadingSessionsPerPatient
-  ) {
-    return <div>Loading...</div>
-  }
-
-  return (
-    <div className='min-h-screen-with-header mx-auto flex max-w-7xl flex-col gap-8 px-4 py-6 md:px-6 md:py-8'>
-      <div className='flex justify-end gap-6'>
-        <div className='flex flex-wrap items-center gap-3'>
-          <Button asChild variant='outline'>
-            <Link href='/effectiveness' className='flex items-center gap-2'>
-              <LineChart className='size-4' />
-              {EFFECTIVENESS_REPORT_COPY.dashboardLinkLabel}
-            </Link>
-          </Button>
-        </div>
+const StartPage = () => (
+  <Suspense
+    fallback={
+      <div className='p-8'>
+        <p className='text-muted-foreground'>Loading dashboard…</p>
       </div>
-
-      {/* Stats Overview */}
-      <div className='grid gap-4 md:grid-cols-2'>
-        <StatCard
-          title='Total Unique Patients'
-          value={totalPatients ?? 0}
-          description='Total number of unique patients in the system'
-          tone='blue'
-        />
-        <StatCard
-          title='Total Patient Sessions'
-          value={totalPatientSessions ?? 0}
-          description='Total number of patient sessions recorded'
-          tone='teal'
-        />
-      </div>
-
-      <div className='grid gap-6'>
-        {/* Patients per Doctor Chart */}
-        <PatientsPerDocChart data={patientsPerDoc ?? []} />
-
-        {/* Sessions Distribution Chart */}
-        <SessionsPerPatientChart data={sessionsPerPatient ?? []} />
-
-        {/* Sessions per Week Chart */}
-        <SessionsPerWeekChart />
-      </div>
-    </div>
-  )
-}
+    }
+  >
+    <DashboardWorkspace />
+  </Suspense>
+)
 
 export default StartPage
