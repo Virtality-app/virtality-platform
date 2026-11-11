@@ -33,7 +33,14 @@ export function ORPCProvider({
   const link = useMemo<ORPCClientLink>(
     () => ({
       url,
-      fetch: (request, init) => fetch(request, { ...init, credentials }),
+      fetch: (request, init, _options, path) =>
+        fetch(request, {
+          ...init,
+          credentials,
+          // Product events are often sent as the tab closes; keepalive lets
+          // the request outlive the page.
+          keepalive: path[0] === 'productEvent',
+        }),
     }),
     [url, credentials],
   )

@@ -48,6 +48,7 @@ model User {
   adminCustomerAuditsAsTarget  AdminCustomerAudit[]     @relation("AdminCustomerAuditTarget")
   adminCustomerAuditsAsActor   AdminCustomerAudit[]     @relation("AdminCustomerAuditActor")
   accessGrants                 AccessGrant[]
+  productEvents                ProductEvent[]
 }
 
 model Account {

@@ -43,6 +43,7 @@ import { devicePairing } from './procedures/device-pairing/index.ts'
 import { immersiveVideo } from './procedures/immersive-video.ts'
 import { deviceVideo } from './procedures/device-video.ts'
 import { translation } from './procedures/translation.ts'
+import { productEvent } from './procedures/product-event.ts'
 
 export const router = {
   translation,
@@ -90,6 +91,7 @@ export const router = {
   account,
   immersiveVideo,
   deviceVideo,
+  productEvent,
 }
 
 export type Router = typeof router

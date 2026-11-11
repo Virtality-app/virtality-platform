@@ -1,0 +1,24 @@
+// Product Analytics Domain
+
+/// Our copy of every `@virtality/analytics` contract event. The same event is
+/// sent to PostHog with this `id` as its uuid, so the two copies match.
+model ProductEvent {
+  id         String             @id
+  event      String
+  userId     String
+  properties Json
+  source     ProductEventSource
+  /// PostHog `$session_id`, for client events. Links an event to its replay.
+  sessionId  String?
+  occurredAt DateTime           @default(now()) @db.Timestamp(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, occurredAt])
+  @@index([event, occurredAt])
+}
+
+enum ProductEventSource {
+  client
+  server
+}

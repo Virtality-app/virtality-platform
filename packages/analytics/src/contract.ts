@@ -139,6 +139,57 @@ export type ServerEventPayloadMap = {
 export type ClientEventName = keyof ClientEventPayloadMap
 export type ServerEventName = keyof ServerEventPayloadMap
 
+// A Record, so adding a client event without listing it here fails to compile.
+const clientEventNames: Record<ClientEventName, true> = {
+  console_session_started: true,
+  console_session_ended: true,
+  nav_item_clicked: true,
+  guided_tour_started: true,
+  guided_tour_completed: true,
+  guided_tour_dismissed: true,
+  session_picker_launched: true,
+  patient_created: true,
+  patient_profile_updated: true,
+  patient_deleted: true,
+  patient_tab_viewed: true,
+  session_launch_attempted: true,
+  session_launch_blocked: true,
+  session_paused: true,
+  session_resumed: true,
+  dashboard_mode_selected: true,
+  exercise_skipped: true,
+  warmup_started: true,
+  coach_toggled: true,
+  casting_started: true,
+  casting_stopped: true,
+  session_notes_saved: true,
+  supplemental_therapy_selected: true,
+  session_deleted_without_save: true,
+  quickstart_continue: true,
+  quickstart_continue_save_prompt_shown: true,
+  quickstart_continue_save_prompt_dismissed: true,
+  quickstart_continue_save_prompt_saved: true,
+  quickstart_program_created: true,
+  immersive_video_play_requested: true,
+  immersive_video_download_requested: true,
+}
+
+/** Runtime list of client event names, for validating events the API receives. */
+export const CLIENT_EVENT_NAMES = Object.keys(
+  clientEventNames,
+) as ClientEventName[]
+
+/** A contract event as we store it in our own database. */
+export type StoredProductEvent = {
+  /** Shared with the PostHog copy of the event. */
+  id: string
+  event: ClientEventName | ServerEventName
+  userId: string
+  properties: Record<string, unknown>
+  source: 'client' | 'server'
+  sessionId?: string
+}
+
 /**
  * Person properties. Identity and profile fields are set by the console on
  * identify; the `first_*` / `last_*` milestones are set by server events.

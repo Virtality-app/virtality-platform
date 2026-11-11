@@ -2,6 +2,8 @@
 
 Console usage goes to PostHog (EU). The contract in `packages/analytics/src/contract.ts` is the single source of truth: every event name and its properties live there, in one of two maps.
 
+Every contract event is also saved to our own database, in the `ProductEvent` table, under the same uuid PostHog gets. PostHog is for exploring and dashboards; `ProductEvent` is our record, which we can join with users, patients and sessions in SQL. Autocapture, page views, web vitals and session replays stay in PostHog only.
+
 ## Client or server
 
 - **Server event** (`ServerEventPayloadMap`): the action persists something through an oRPC procedure. Capture it in the procedure after the write succeeds, with `context.analytics?.capture({ distinctId: context.user.id, ... })`. Ad blockers and closed tabs cannot drop it.
@@ -11,8 +13,8 @@ Each event lives in one map only. Page views are PostHog's built-in `$pageview` 
 
 ## Adding an event
 
-1. Add it to the right map in the contract: snake_case `object_action`, past tense (`program_retired`). Properties hold ids, counts, durations and enum values. Patient names, notes, medical history and any free text stay out of analytics.
-2. Capture it at the point the action succeeds.
+1. Add it to the right map in the contract: snake_case `object_action`, past tense (`program_retired`). Properties hold ids, counts, durations and enum values. Patient names, notes, medical history and any free text stay out of analytics. A client event also goes in `clientEventNames` in the same file; the build fails until it does. The API rejects client events it doesn't list.
+2. Capture it at the point the action succeeds. Both captures save the event to `ProductEvent` too, so there's nothing else to call.
 3. Run `pnpm build:packages` so apps pick up the new contract from `dist/`.
 
 Keep the names of events that already ship. Renaming one splits its history in PostHog.
@@ -31,4 +33,11 @@ The console records sessions, so anything on screen can reach PostHog. `apps/con
 
 ## Configuration
 
-`services/server` reads `POSTHOG_PROJECT_TOKEN` (and optionally `POSTHOG_HOST`). It must be the same project key as the console's `NEXT_PUBLIC_POSTHOG_KEY`, or server events land on persons the console never identified. When it is unset, server analytics is a no-op.
+`services/server` reads `POSTHOG_PROJECT_TOKEN` (and optionally `POSTHOG_HOST`). It must be the same project key as the console's `NEXT_PUBLIC_POSTHOG_KEY`, or server events land on persons the console never identified. When it is unset, server events are still saved to `ProductEvent` but not sent to PostHog.
+
+## Our copy: `ProductEvent`
+
+- **Server events:** `createServerAnalytics` takes a `store`. `services/server/src/lib/analytics.ts` passes one that writes to `ProductEvent`. A failed write is logged and never fails the request.
+- **Client events:** `trackAnalyticsEvent` sends the event to PostHog, then to the `productEvent.track` procedure with PostHog's uuid and `$session_id`. The procedure takes the user from the session, accepts only names in `CLIENT_EVENT_NAMES`, and only flat, short properties. The request uses `keepalive`, so events sent as the tab closes still arrive.
+- **Consent:** when a user declines analytics, PostHog drops their client events and we don't save them either. Server events are saved and sent regardless, as before.
+- **Deletion:** account deletion soft-deletes the user (`deletedAt`, anonymised email), so their events stay, like the rest of their data. Removing the `User` row deletes their events too (`userId` cascades).
