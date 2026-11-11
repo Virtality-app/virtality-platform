@@ -39,5 +39,5 @@ The console records sessions, so anything on screen can reach PostHog. `apps/con
 
 - **Server events:** `createServerAnalytics` takes a `store`. `services/server/src/lib/analytics.ts` passes one that writes to `ProductEvent`. A failed write is logged and never fails the request.
 - **Client events:** `trackAnalyticsEvent` sends the event to PostHog, then to the `productEvent.track` procedure with PostHog's uuid and `$session_id`. The procedure takes the user from the session, accepts only names in `CLIENT_EVENT_NAMES`, and only flat, short properties. The request uses `keepalive`, so events sent as the tab closes still arrive.
-- **Consent:** when a user declines analytics, PostHog drops their client events and we don't save them either. Server events are saved and sent regardless, as before.
+- **Consent:** contract events are necessary to run the service, so the console offers no way to decline them and `ProductEvent` always saves them. If PostHog capturing is ever opted out, PostHog drops its copy and `trackAnalyticsEvent` saves ours under a uuid of its own.
 - **Deletion:** account deletion soft-deletes the user (`deletedAt`, anonymised email), so their events stay, like the rest of their data. Removing the `User` row deletes their events too (`userId` cascades).

@@ -15,26 +15,26 @@ export type AnalyticsEventProps<TEvent extends ClientEventName> =
  * from `@virtality/analytics`; events the API persists are captured
  * server-side instead.
  *
- * Each event also goes to our own database under PostHog's uuid. When PostHog
- * drops the event (the user declined analytics), it isn't saved either.
+ * Each event also goes to our own database under PostHog's uuid. These events
+ * are necessary to run the service, so they are saved even when PostHog drops
+ * its copy (capturing opted out); the event then gets its own uuid.
  */
 export const trackAnalyticsEvent = <TEvent extends ClientEventName>(
   name: TEvent,
   properties: ClientEventPayloadMap[TEvent],
 ) => {
   const captured = posthog.capture(name, properties as Record<string, unknown>)
-  if (!captured) return
 
-  const sessionId = captured.properties.$session_id
+  const sessionId = captured?.properties.$session_id
   try {
     getORPC()
       .productEvent.track.call({
-        id: captured.uuid,
+        id: captured?.uuid ?? crypto.randomUUID(),
         event: name,
         properties: properties as Record<string, string | number | boolean>,
         sessionId: typeof sessionId === 'string' ? sessionId : undefined,
       })
-      // Analytics never breaks the UI; PostHog still has the event.
+      // Analytics never breaks the UI.
       .catch(() => {})
   } catch {
     // The oRPC client isn't set up yet (before ORPCProvider renders).

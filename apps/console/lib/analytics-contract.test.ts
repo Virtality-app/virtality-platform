@@ -33,12 +33,17 @@ describe('trackAnalyticsEvent', () => {
     })
   })
 
-  it('saves nothing when PostHog drops the event', () => {
+  it('still saves the event under its own uuid when PostHog drops it', () => {
     capture.mockReturnValue(undefined)
 
     trackAnalyticsEvent('warmup_started', {})
 
-    expect(track).not.toHaveBeenCalled()
+    expect(track).toHaveBeenCalledWith({
+      id: expect.stringMatching(/^[0-9a-f-]{36}$/),
+      event: 'warmup_started',
+      properties: {},
+      sessionId: undefined,
+    })
   })
 
   it('does not throw when the oRPC client is not set up yet', () => {
