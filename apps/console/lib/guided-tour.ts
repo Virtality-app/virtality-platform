@@ -40,8 +40,13 @@ export type CardPlacement = 'below' | 'beside'
 
 /** Each tour's title is `tour.<tourId>.title` in the `layout` namespace. */
 export type Tour = {
-  /** The page the tour runs on; leaving it ends the tour. */
+  /** The page the tour starts on. */
   path: string
+  /**
+   * Pages the tour carries on to, such as the form a list page's button
+   * opens. Leaving the tour's pages ends it.
+   */
+  nextPaths?: string[]
   steps: TourStep[]
 }
 
@@ -73,8 +78,13 @@ export const TOURS: Record<TourId, Tour> = {
     ],
   },
   patient: {
-    path: '/patients/new',
+    path: '/patients',
+    nextPaths: ['/patients/new'],
     steps: [
+      {
+        target: 'patient-add',
+        advance: { on: 'click' },
+      },
       {
         target: 'patient-name',
         advance: { on: 'next' },
@@ -96,8 +106,13 @@ export const TOURS: Record<TourId, Tour> = {
     ],
   },
   program: {
-    path: '/programs/new',
+    path: '/programs',
+    nextPaths: ['/programs/new'],
     steps: [
+      {
+        target: 'program-add',
+        advance: { on: 'click' },
+      },
       {
         target: 'program-choice',
         advance: { on: 'click', selector: 'button' },
@@ -167,6 +182,11 @@ export const TOURS: Record<TourId, Tour> = {
 
 export function isTourId(value: string | null): value is TourId {
   return value !== null && Object.hasOwn(TOURS, value)
+}
+
+/** Whether `pathname` is one of the pages the tour runs on. */
+export function isOnTourPage(tour: Tour, pathname: string): boolean {
+  return pathname === tour.path || (tour.nextPaths ?? []).includes(pathname)
 }
 
 /**

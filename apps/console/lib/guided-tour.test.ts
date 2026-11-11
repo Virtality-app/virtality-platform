@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { greekDrafts, translationCatalog } from '@virtality/shared/translations'
 import {
   coachCardPosition,
+  isOnTourPage,
   isTourId,
   resolveActiveStep,
   tourHref,
@@ -139,8 +140,14 @@ describe('coachCardPosition beside', () => {
 
 describe('tour links', () => {
   it('opens each tour on its own page', () => {
-    expect(tourHref('patient')).toBe('/patients/new?tour=patient')
+    expect(tourHref('patient')).toBe('/patients?tour=patient')
+    expect(tourHref('program')).toBe('/programs?tour=program')
     expect(tourHref('session')).toBe('/?tour=session')
+  })
+
+  it('starts the patient and program tours on the button that opens the form', () => {
+    expect(TOURS.patient.steps[0]?.target).toBe('patient-add')
+    expect(TOURS.program.steps[0]?.target).toBe('program-add')
   })
 
   it('can start a tour at a later step', () => {
@@ -155,6 +162,14 @@ describe('tour links', () => {
   it('starts at the first step without a known start step', () => {
     expect(tourStartIndex('device', null)).toBe(0)
     expect(tourStartIndex('device', 'nope')).toBe(0)
+  })
+
+  it('runs on the list page and the form it opens, and nowhere else', () => {
+    expect(isOnTourPage(TOURS.patient, '/patients')).toBe(true)
+    expect(isOnTourPage(TOURS.patient, '/patients/new')).toBe(true)
+    expect(isOnTourPage(TOURS.patient, '/patients/abc')).toBe(false)
+    expect(isOnTourPage(TOURS.device, '/devices')).toBe(true)
+    expect(isOnTourPage(TOURS.device, '/devices/new')).toBe(false)
   })
 
   it('only accepts known tours', () => {

@@ -28,6 +28,7 @@ import {
 } from '@virtality/react-query'
 import { trackAnalyticsEvent } from '@/lib/analytics-contract'
 import { filterPatientsBySearch } from '@/lib/patient-list'
+import { useForwardReturnTo } from '@/hooks/use-forward-return-to'
 import { useClientT } from '@/i18n/use-client-t'
 import { useDataTableFooterLabels } from '@/hooks/use-data-table-footer-labels'
 
@@ -38,6 +39,7 @@ const PatientsTable = () => {
   const queryClient = getQueryClient()
   const orpc = useORPC()
   const router = useRouter()
+  const newPatientHref = useForwardReturnTo('/patients/new')
 
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState('')
@@ -117,8 +119,14 @@ const PatientsTable = () => {
             </Button>
           </DeleteConfirmDialog>
         )}
-        <Button id='new-program' asChild variant='primary' className='ml-auto'>
-          <Link href={`/patients/new`}>
+        <Button
+          id='new-program'
+          asChild
+          variant='primary'
+          className='ml-auto'
+          data-tour='patient-add'
+        >
+          <Link href={newPatientHref}>
             <PlusSquare /> {t('list.newPatient')}
           </Link>
         </Button>

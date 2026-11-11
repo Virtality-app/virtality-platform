@@ -34,6 +34,10 @@
     "patient": {
       "title": "Add a patient",
       "steps": {
+        "patient-add": {
+          "title": "Start a new patient",
+          "body": "Click New Patient to open the patient form. You will find it here whenever you add a patient."
+        },
         "patient-name": {
           "title": "Write the full name",
           "body": "Type the patient’s full name here. It is how you will find them later."
@@ -55,6 +59,10 @@
     "program": {
       "title": "Create an exercise program",
       "steps": {
+        "program-add": {
+          "title": "Start a new program",
+          "body": "Click New program to build an exercise program. You will find it here whenever you add a program."
+        },
         "program-choice": {
           "title": "Choose how to start",
           "body": "A starter template is quickest. You can also pick exercises yourself."

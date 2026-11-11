@@ -127,8 +127,8 @@ describe('buildGettingStarted', () => {
     expect(gettingStartedHeadline(result, t)).toBe('You are all set.')
     expect(result.steps.map((s) => s.href)).toEqual([
       '/devices?tour=device&returnTo=%2F',
-      '/patients/new?tour=patient&returnTo=%2F',
-      '/programs/new?tour=program&returnTo=%2F',
+      '/patients?tour=patient&returnTo=%2F',
+      '/programs?tour=program&returnTo=%2F',
       '/?tour=session',
     ])
     expect(gettingStartedSubline(result, t)).toBe(
