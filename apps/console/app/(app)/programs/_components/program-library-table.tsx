@@ -22,9 +22,11 @@ import { PlusSquare } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useClientT } from '@/i18n/use-client-t'
 import { useDataTableFooterLabels } from '@/hooks/use-data-table-footer-labels'
+import { useForwardReturnTo } from '@/hooks/use-forward-return-to'
 
 export default function ProgramLibraryTable() {
   const router = useRouter()
+  const newProgramHref = useForwardReturnTo('/programs/new')
   const { t } = useClientT('programs')
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState('')
@@ -73,8 +75,14 @@ export default function ProgramLibraryTable() {
         globalFilter={globalFilter}
         setGlobalFilter={setGlobalFilter}
       >
-        <Button id='new-program' asChild variant='primary' className='ml-auto'>
-          <Link href='/programs/new'>
+        <Button
+          id='new-program'
+          asChild
+          variant='primary'
+          className='ml-auto'
+          data-tour='program-add'
+        >
+          <Link href={newProgramHref}>
             <PlusSquare /> {t('library.newProgram')}
           </Link>
         </Button>

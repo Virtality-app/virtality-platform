@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import {
+  isOnTourPage,
   isTourId,
   TOUR_PARAM,
   TOUR_STEP_PARAM,
@@ -26,7 +27,7 @@ function trackDismissed(
 
 /**
  * Which tour is running and how far along it is. Arriving with `?tour=<id>`
- * starts that tour (at `&tourStep=<target>` when given); leaving its page
+ * starts that tour (at `&tourStep=<target>` when given); leaving its pages
  * ends it.
  */
 export function useGuidedTour() {
@@ -55,7 +56,7 @@ export function useGuidedTour() {
   }, [requested, searchParams, pathname, router])
 
   useEffect(() => {
-    if (run && pathname !== TOURS[run.id].path) {
+    if (run && !isOnTourPage(TOURS[run.id], pathname)) {
       trackDismissed(run, 'left_page')
       setRun(null)
     }
