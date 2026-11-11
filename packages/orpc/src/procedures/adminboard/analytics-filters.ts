@@ -27,3 +27,14 @@ export const patientScopeFilter = {
     notIn: INTERNAL_USERS,
   },
 }
+
+/**
+ * Patients the adminboard Dashboard counts: no internal accounts or test
+ * patients, but deleted patients stay in, since their sessions happened.
+ */
+export const dashboardPatientScope = {
+  NOT: [FAKE_PATIENT],
+  userId: {
+    notIn: INTERNAL_USERS,
+  },
+}
