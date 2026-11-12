@@ -21,6 +21,23 @@ enum PatientSessionStatus {
   INTERRUPTED
 }
 
+enum PatientSessionKind {
+  EXERCISE
+  IMMERSIVE_VIDEO
+}
+
+/// Why an immersive video session ended.
+enum ImmersiveSessionEndReason {
+  /// `videoEnded`: the video played to the end.
+  ENDED
+  /// `videoStopAck` after the physio pressed Stop.
+  STOPPED
+  /// `videoStopAck` after the Session Time Limit fired.
+  TIME_LIMIT
+  /// The headset left the room and did not come back.
+  INTERRUPTED
+}
+
 enum PendingPasswordChangeKind {
   SETUP
   CHANGE

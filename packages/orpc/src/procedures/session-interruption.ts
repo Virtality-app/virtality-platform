@@ -3,7 +3,7 @@ import { ORPCError } from '@orpc/server'
 
 type PatientSessionDelegate = {
   findFirst: (args: {
-    where: { id: string; deletedAt: null }
+    where: { id: string; deletedAt: null; kind: 'EXERCISE' }
     include: {
       sessionExercise: { orderBy: { position: 'asc' } }
       sessionData: true
@@ -29,7 +29,8 @@ export async function interruptPatientSession(
   sessionId: string,
 ) {
   const session = await patientSession.findFirst({
-    where: { id: sessionId, deletedAt: null },
+    // Immersive sessions end through `endImmersive`.
+    where: { id: sessionId, deletedAt: null, kind: 'EXERCISE' },
     include: {
       sessionExercise: { orderBy: { position: 'asc' } },
       sessionData: true,

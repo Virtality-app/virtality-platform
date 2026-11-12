@@ -12,6 +12,11 @@ import { completePatientSessionWithSaveChoice } from './session-completion.ts'
 import { createPatientSessionFromAck } from './session-start-from-ack.ts'
 import { interruptPatientSession } from './session-interruption.ts'
 import { syncSessionWorkingCopy } from './session-working-copy.ts'
+import {
+  IMMERSIVE_SESSION_END_REASONS,
+  endImmersivePatientSession,
+  startImmersivePatientSession,
+} from './session-immersive.ts'
 import { createAppLogger } from '@virtality/shared/observability'
 
 const patientSessionLogger = createAppLogger({
@@ -49,7 +54,11 @@ const listPatientSessions = authed
       skip: input.skip,
       cursor: input.cursor,
       orderBy: input.orderBy,
-      include: { sessionData: true, sessionExercise: true },
+      include: {
+        sessionData: true,
+        sessionExercise: true,
+        sessionImmersiveVideo: true,
+      },
     })
     return patientSessions
   })
@@ -82,6 +91,15 @@ const listRecentPatientSessions = authed
         completedAt: true,
         sourceReusableProgramId: true,
         sourceProgramName: true,
+        kind: true,
+        sessionImmersiveVideo: {
+          select: {
+            videoTitle: true,
+            activity: true,
+            startedAt: true,
+            endedAt: true,
+          },
+        },
         patient: { select: { id: true, name: true, image: true } },
       },
     })
@@ -103,7 +121,11 @@ const findPatientSession = authed
       cursor: input.cursor,
       take: input.take,
       skip: input.skip,
-      include: { sessionData: true, sessionExercise: true },
+      include: {
+        sessionData: true,
+        sessionExercise: true,
+        sessionImmersiveVideo: true,
+      },
     })
     return patientSession
   })
@@ -292,6 +314,95 @@ const interruptSession = authed
     return result
   })
 
+const StartImmersiveSessionSchema = z.object({
+  id: z.string(),
+  patientId: z.string(),
+  immersiveVideoId: z.string(),
+  // The socket room the video plays in (the headset's deviceId). Logged, not
+  // stored, like `startFromAck`.
+  roomCode: z.string().optional(),
+})
+
+// Starts an Immersive Session once the headset confirms play.
+const startImmersiveSession = authed
+  .route({ path: '/patient-session/start-immersive', method: 'POST' })
+  .input(StartImmersiveSessionSchema)
+  .handler(async ({ context, input }) => {
+    const { prisma, user } = context
+
+    const { session: patientSession, activity } =
+      await startImmersivePatientSession(
+        {
+          patient: prisma.patient,
+          immersiveVideo: prisma.immersiveVideo,
+          patientSession: prisma.patientSession,
+        },
+        user.id,
+        input,
+      )
+
+    patientSessionLogger.info('patient_session.immersive_started', {
+      patientSessionId: patientSession.id,
+      patientId: patientSession.patientId,
+      userId: user.id,
+      roomCode: input.roomCode,
+      immersiveVideoId: input.immersiveVideoId,
+    })
+
+    context.analytics?.capture({
+      distinctId: user.id,
+      event: 'immersive_session_started',
+      properties: {
+        patient_session_id: patientSession.id,
+        patient_id: patientSession.patientId,
+        video_id: input.immersiveVideoId,
+        activity: activity === 'WALKING' ? 'walking' : 'cycling',
+      },
+    })
+
+    return patientSession
+  })
+
+const EndImmersiveSessionSchema = z.object({
+  sessionId: z.string(),
+  endReason: z.enum(IMMERSIVE_SESSION_END_REASONS),
+  lastPositionSec: z.number().int().nonnegative().optional(),
+})
+
+const IMMERSIVE_END_REASON_EVENT_VALUE = {
+  ENDED: 'ended',
+  STOPPED: 'stopped',
+  TIME_LIMIT: 'time_limit',
+  INTERRUPTED: 'interrupted',
+} as const
+
+const endImmersiveSession = authed
+  .route({ path: '/patient-session/end-immersive', method: 'POST' })
+  .input(EndImmersiveSessionSchema)
+  .handler(async ({ context, input }) => {
+    const { prisma, user } = context
+
+    const result = await endImmersivePatientSession(
+      { patientSession: prisma.patientSession },
+      user.id,
+      input,
+    )
+
+    context.analytics?.capture({
+      distinctId: user.id,
+      event: 'immersive_session_ended',
+      properties: {
+        patient_session_id: result.session.id,
+        video_id: result.videoId ?? undefined,
+        end_reason: IMMERSIVE_END_REASON_EVENT_VALUE[input.endReason],
+        duration_sec: result.durationSec,
+        watched_sec: input.lastPositionSec,
+      },
+    })
+
+    return result.session
+  })
+
 const SyncSessionWorkingCopySchema = z.object({
   id: z.string(),
   exercises: z.array(
@@ -326,5 +437,7 @@ export const patientSession = {
   delete: deletePatientSession,
   complete: completePatientSession,
   interrupt: interruptSession,
+  startImmersive: startImmersiveSession,
+  endImmersive: endImmersiveSession,
   syncWorkingCopy,
 }

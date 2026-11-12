@@ -37,6 +37,12 @@ export type SaveChoice =
   | 'update_source_program'
   | 'save_as_new_program'
 export type ProgramOrigin = 'scratch' | 'copy'
+export type ImmersiveVideoActivity = 'cycling' | 'walking'
+export type ImmersiveSessionEndReason =
+  | 'ended'
+  | 'stopped'
+  | 'time_limit'
+  | 'interrupted'
 
 export type ClientEventPayloadMap = {
   console_session_started: Record<string, never>
@@ -124,6 +130,19 @@ export type ServerEventPayloadMap = {
     patient_session_id: string
     retained_exercise_count: number
     retained_progress_count: number
+  }
+  immersive_session_started: {
+    patient_session_id: string
+    patient_id: string
+    video_id: string
+    activity: ImmersiveVideoActivity
+  }
+  immersive_session_ended: {
+    patient_session_id: string
+    video_id?: string
+    end_reason: ImmersiveSessionEndReason
+    duration_sec: number
+    watched_sec?: number
   }
 
   program_created: { program_id: string; origin: ProgramOrigin }
