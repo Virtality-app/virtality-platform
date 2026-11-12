@@ -59,6 +59,8 @@ model ImmersiveVideo {
   createdAt      DateTime  @default(now()) @db.Timestamp(6)
   updatedAt      DateTime  @updatedAt @db.Timestamp(6)
 
+  sessions SessionImmersiveVideo[]
+
   @@index([state])
   @@index([updatedAt])
 }

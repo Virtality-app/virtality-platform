@@ -46,7 +46,7 @@ type ReusableProgramExerciseDelegate = {
 
 type PatientSessionDelegate = {
   findFirst: (args: {
-    where: { id: string; deletedAt: null }
+    where: { id: string; deletedAt: null; kind: 'EXERCISE' }
     include: {
       sessionExercise: { orderBy: { position: 'asc' } }
     }
@@ -232,7 +232,8 @@ export async function completePatientSessionWithSaveChoice(
 
   try {
     const session = await deps.patientSession.findFirst({
-      where: { id: input.id, deletedAt: null },
+      // Immersive sessions end through `endImmersive`.
+      where: { id: input.id, deletedAt: null, kind: 'EXERCISE' },
       include: {
         sessionExercise: { orderBy: { position: 'asc' } },
       },

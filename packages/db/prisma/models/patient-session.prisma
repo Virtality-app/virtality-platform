@@ -5,6 +5,7 @@ model PatientSession {
   patientId               String
   programId               String?
   status                  PatientSessionStatus                   @default(ACTIVE)
+  kind                    PatientSessionKind                     @default(EXERCISE)
   sourceReusableProgramId String?
   sourceProgramName       String?
   nprs                    String?
@@ -18,6 +19,27 @@ model PatientSession {
   sessionExercise         SessionExercise[]
   sessionData             SessionData[]
   supplementalTherapy     PatientSessionSupplementalTherapyRel[]
+  sessionImmersiveVideo   SessionImmersiveVideo?
+}
+
+/// The video played in one immersive video session. Title, activity and
+/// length are copied at start so history survives catalog removal.
+model SessionImmersiveVideo {
+  id               String                     @id @default(cuid())
+  patientSessionId String                     @unique
+  immersiveVideoId String?
+  videoTitle       String
+  activity         ImmersiveVideoActivity
+  videoDurationSec Int?
+  startedAt        DateTime                   @default(now()) @db.Timestamp(6)
+  endedAt          DateTime?                  @db.Timestamp(6)
+  lastPositionSec  Int?
+  endReason        ImmersiveSessionEndReason?
+
+  patientSession PatientSession  @relation(fields: [patientSessionId], references: [id], onDelete: Cascade)
+  immersiveVideo ImmersiveVideo? @relation(fields: [immersiveVideoId], references: [id], onDelete: SetNull)
+
+  @@index([immersiveVideoId])
 }
 
 model SessionExercise {
