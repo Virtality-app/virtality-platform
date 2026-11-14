@@ -145,7 +145,6 @@ const BasicInfo = ({ form, patient }: BasicInfoProps) => {
                 toOptionValue={patientSexSelectValue}
                 data-tour='patient-sex'
                 triggerClassName='w-full shadow-none'
-                contentClassName='bg-white'
               >
                 <SelectItem value='male'>
                   {t('form.male', { ns: 'common' })}
@@ -178,7 +177,6 @@ const BasicInfo = ({ form, patient }: BasicInfoProps) => {
                 toOptionValue={patientLanguageSelectValue}
                 data-tour='patient-language'
                 triggerClassName='w-full shadow-none'
-                contentClassName='bg-white'
               >
                 <SelectItem value='Greek'>
                   {t('lng.el', { ns: 'glossary' })}
