@@ -1,5 +1,6 @@
 'use client'
 
+import { AccessCodeHeadsetsCell } from '@/components/provisioned-device/access-code-headsets-cell'
 import DateCell from '@/components/tables/date-cell'
 import { ColumnHeader } from '@/components/tables/header-cell'
 import { SendTrialRedeemCodeEmailDialog } from '@/components/trial-redeem-code/send-trial-redeem-code-email-dialog'
@@ -84,6 +85,12 @@ export const columns: ColumnDef<TrialRedeemCodeListItem>[] = [
       if (!Array.isArray(filterValue) || filterValue.length === 0) return true
       return filterValue.includes(row.original.displayStatus)
     },
+  },
+  {
+    id: 'headsets',
+    header: 'Headsets',
+    cell: ({ row }) => <AccessCodeHeadsetsCell accessCode={row.original} />,
+    enableSorting: false,
   },
   {
     accessorKey: 'trialDays',

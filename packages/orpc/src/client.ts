@@ -38,3 +38,5 @@ export type {
   SessionType,
   SessionTypeCounts,
 } from './procedures/adminboard/session-type.ts'
+export type { ProvisionedDeviceListItem } from './procedures/provisioned-device/provisioned-device.ts'
+export type { DevicePairingState } from './procedures/device-pairing/device-pairing.ts'

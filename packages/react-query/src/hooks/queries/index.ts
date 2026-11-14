@@ -88,6 +88,8 @@ export { useTesterCodes } from './tester-code/use-tester-codes.js'
 
 // Access Code queries
 export { useTrialRedeemCodes } from './trial-redeem-code/use-trial-redeem-codes.js'
+export { useProvisionedDevices } from './provisioned-device/use-provisioned-devices.js'
+export { useProvisionedDevicePairingStatus } from './provisioned-device/use-provisioned-device-pairing-status.js'
 
 // Coupon library queries
 export { useLibraryCoupons } from './coupon-library/use-library-coupons.js'

@@ -9,3 +9,8 @@ export type { QueryProviderProps } from './provider.js'
 
 export * from './hooks/queries/index.js'
 export * from './hooks/mutations/index.js'
+
+export type {
+  DevicePairingState,
+  ProvisionedDeviceListItem,
+} from '@virtality/orpc/client'

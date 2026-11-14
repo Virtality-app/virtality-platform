@@ -2,6 +2,7 @@ import { EFFECTIVENESS_REPORT_COPY } from '@/lib/effectiveness-report-copy'
 import type { LucideIcon } from 'lucide-react'
 import {
   Bell,
+  Boxes,
   Contact,
   CreditCard,
   Dumbbell,
@@ -80,6 +81,11 @@ export const sidebarNav: SidebarNavGroup[] = [
         title: 'Access Codes',
         href: '/trial-redeem-codes',
         icon: CreditCard,
+      },
+      {
+        title: 'Headset inventory',
+        href: '/headset-inventory',
+        icon: Boxes,
       },
       {
         title: 'Coupon library',
