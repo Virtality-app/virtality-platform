@@ -16,7 +16,7 @@ const PairingAttemptInputSchema = z.object({
   attemptId: z.string().trim().min(1),
 })
 
-function throwPairingOrpcError(error: unknown): never {
+export function throwPairingOrpcError(error: unknown): never {
   if (error instanceof DevicePairingError) {
     if (error.code === 'DEVICE_NOT_FOUND') {
       throw new ORPCError('NOT_FOUND', { message: error.message })

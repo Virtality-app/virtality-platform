@@ -69,14 +69,23 @@ async function runWithTransactionRetry<T>(
 
 export async function startDevicePairing(
   prisma: PrismaClient,
-  input: { deviceRecordId: string; userId: string },
+  input: {
+    deviceRecordId: string
+    /** Who starts the claim. They own the attempt. */
+    userId: string
+    /**
+     * Staff pairing a Provisioned Device (ADR 0011): the target must have no
+     * owner. Otherwise the target must belong to `userId`.
+     */
+    provisioned?: boolean
+  },
   runtime: PairingRuntime = {},
 ) {
   const now = runtime.now?.() ?? new Date()
   const target = await prisma.device.findFirst({
     where: {
       id: input.deviceRecordId,
-      userId: input.userId,
+      userId: input.provisioned ? null : input.userId,
       deletedAt: null,
     },
     select: { id: true, deviceId: true },
