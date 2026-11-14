@@ -3,6 +3,7 @@ import type { ProvisionedDeviceListItem } from '@virtality/react-query'
 import {
   devicesOnAccessCode,
   formatHeadsetSummary,
+  headsetStepHeading,
   inventoryDevices,
   provisionedDeviceStatusLabel,
   secondsUntil,
@@ -71,5 +72,23 @@ describe('provisioned device display', () => {
     const now = new Date('2026-11-14T10:00:00.000Z')
     expect(secondsUntil(new Date('2026-11-14T10:04:30.400Z'), now)).toBe(271)
     expect(secondsUntil(new Date('2026-11-14T09:59:00.000Z'), now)).toBe(0)
+  })
+
+  it('titles each step of the headsets dialog', () => {
+    expect(headsetStepHeading({ kind: 'list' }, 'GO-1').title).toBe(
+      'Headsets on GO-1',
+    )
+    expect(headsetStepHeading({ kind: 'attach' }, 'GO-1').title).toBe(
+      'Attach a headset to GO-1',
+    )
+    expect(headsetStepHeading({ kind: 'attach' }, null).title).toBe(
+      'Add a headset to inventory',
+    )
+    expect(
+      headsetStepHeading(
+        { kind: 'pair', device: { id: 'd', name: 'Headset-03' } },
+        'GO-1',
+      ).title,
+    ).toBe('Pair Headset-03')
   })
 })

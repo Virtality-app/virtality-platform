@@ -4,17 +4,32 @@ import { useProvisionedDevices } from '@virtality/react-query'
 import { PlusSquare } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { inventoryDevices } from '@/lib/provisioned-device-display'
-import { AttachHeadsetDialog } from './attach-headset-dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  headsetStepHeading,
+  inventoryDevices,
+  type HeadsetStep,
+} from '@/lib/provisioned-device-display'
+import { HeadsetStepBody } from './headset-step-body'
 import { ProvisionedDeviceList } from './provisioned-device-list'
+
+type InventoryStep = Exclude<HeadsetStep, { kind: 'list' }>
 
 /**
  * Provisioned Devices with no owner and no Access Code: spares, and
- * headsets detached from a code that expired.
+ * headsets detached from a code that expired. The list is the page; Add,
+ * Pair and Move each open one dialog.
  */
 export function HeadsetInventory() {
-  const [addOpen, setAddOpen] = useState(false)
+  const [step, setStep] = useState<InventoryStep | null>(null)
   const { data, isPending } = useProvisionedDevices()
+  const heading = step ? headsetStepHeading(step, null) : null
 
   return (
     <div className='flex flex-col gap-4 p-8'>
@@ -29,7 +44,7 @@ export function HeadsetInventory() {
         <Button
           variant='primary'
           className='flex items-center'
-          onClick={() => setAddOpen(true)}
+          onClick={() => setStep({ kind: 'attach' })}
         >
           <PlusSquare />
           Add headset
@@ -41,13 +56,29 @@ export function HeadsetInventory() {
         <ProvisionedDeviceList
           devices={inventoryDevices(data ?? [])}
           emptyMessage='No headsets in inventory.'
+          onPair={(device) => setStep({ kind: 'pair', device })}
+          onMove={(device) => setStep({ kind: 'move', device })}
         />
       )}
-      <AttachHeadsetDialog
-        open={addOpen}
-        onOpenChange={setAddOpen}
-        accessCode={null}
-      />
+      <Dialog
+        open={step != null}
+        onOpenChange={(open) => !open && setStep(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{heading?.title}</DialogTitle>
+            <DialogDescription>{heading?.description}</DialogDescription>
+          </DialogHeader>
+          {step ? (
+            <HeadsetStepBody
+              step={step}
+              accessCodeId={null}
+              onStep={(next) => next.kind !== 'list' && setStep(next)}
+              onFinished={() => setStep(null)}
+            />
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

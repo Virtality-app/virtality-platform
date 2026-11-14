@@ -9,10 +9,15 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { AttachHeadsetDialog } from './attach-headset-dialog'
+import {
+  headsetStepHeading,
+  type HeadsetStep,
+} from '@/lib/provisioned-device-display'
+import { HeadsetStepBody } from './headset-step-body'
 import { ProvisionedDeviceList } from './provisioned-device-list'
 
 type AccessCodeHeadsetsDialogProps = {
@@ -22,49 +27,68 @@ type AccessCodeHeadsetsDialogProps = {
   devices: ProvisionedDeviceListItem[]
 }
 
-/** The headsets an Access Code carries, and the way to attach another. */
+const LIST: HeadsetStep = { kind: 'list' }
+
+/**
+ * One dialog for a code's headsets. Attach, Pair and Move are steps inside
+ * it, each returning to the list, so no dialog opens on top of another.
+ */
 export function AccessCodeHeadsetsDialog({
   open,
   onOpenChange,
   accessCode,
   devices,
 }: AccessCodeHeadsetsDialogProps) {
-  const [attachOpen, setAttachOpen] = useState(false)
+  const [step, setStep] = useState<HeadsetStep>(LIST)
   const canAttach = accessCode.displayStatus === 'unused'
+  const heading = headsetStepHeading(step, accessCode.code)
+
+  const handleOpenChange = (next: boolean) => {
+    if (!next) setStep(LIST)
+    onOpenChange(next)
+  }
 
   return (
-    <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className='sm:max-w-2xl'>
-          <DialogHeader>
-            <DialogTitle>Headsets on {accessCode.code}</DialogTitle>
-            <DialogDescription>
-              {canAttach
-                ? 'Whoever redeems this code owns these headsets, already paired.'
-                : 'This code can no longer take headsets. Move any that are not delivered to a new code.'}
-            </DialogDescription>
-          </DialogHeader>
-          <ProvisionedDeviceList
-            devices={devices}
-            emptyMessage='No headsets on this code yet.'
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className='sm:max-w-2xl'>
+        <DialogHeader>
+          <DialogTitle>{heading.title}</DialogTitle>
+          <DialogDescription>
+            {step.kind === 'list' && !canAttach
+              ? 'This code can no longer take headsets. Move any not yet delivered to a new code.'
+              : heading.description}
+          </DialogDescription>
+        </DialogHeader>
+        {step.kind === 'list' ? (
+          <>
+            <ProvisionedDeviceList
+              devices={devices}
+              emptyMessage='No headsets on this code yet.'
+              onPair={(device) => setStep({ kind: 'pair', device })}
+              onMove={(device) => setStep({ kind: 'move', device })}
+            />
+            {canAttach ? (
+              <DialogFooter>
+                <Button
+                  variant='primary'
+                  className='flex items-center'
+                  onClick={() => setStep({ kind: 'attach' })}
+                >
+                  <PlusSquare />
+                  Attach headset
+                </Button>
+              </DialogFooter>
+            ) : null}
+          </>
+        ) : (
+          <HeadsetStepBody
+            step={step}
+            accessCodeId={accessCode.id}
+            onStep={setStep}
+            onFinished={() => setStep(LIST)}
           />
-          {canAttach ? (
-            <Button
-              variant='primary'
-              className='ml-auto flex items-center'
-              onClick={() => setAttachOpen(true)}
-            >
-              <PlusSquare />
-              Attach headset
-            </Button>
-          ) : null}
-        </DialogContent>
-      </Dialog>
-      <AttachHeadsetDialog
-        open={attachOpen}
-        onOpenChange={setAttachOpen}
-        accessCode={{ id: accessCode.id, code: accessCode.code }}
-      />
-    </>
+        )}
+      </DialogContent>
+    </Dialog>
   )
 }
