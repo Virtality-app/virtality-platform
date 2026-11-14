@@ -3,16 +3,15 @@ import { notify } from '@/lib/notify'
 
 /** Reorder, live-settings and exercise-change actions for the session exercise list. */
 export function useExerciseListActions() {
-  const { state, handler, currExercise, requestDirectExerciseSelection } =
-    usePatientDashboard()
   const {
-    programState,
-    selectedMode,
-    exercises,
-    selectedDevice,
-    activeExerciseData,
-  } = state
-  const { setExercises, updatePatientDashboardState } = handler
+    state,
+    handler,
+    currExercise,
+    requestDirectExerciseSelection,
+    applyCurrentExerciseSettings,
+  } = usePatientDashboard()
+  const { programState, selectedMode, exercises, selectedDevice } = state
+  const { setExercises } = handler
   const isProgramActive = programState === 'started'
   const isMain = selectedMode === 'main'
 
@@ -43,22 +42,11 @@ export function useExerciseListActions() {
     }
 
     if (currExercise.current === index) {
-      try {
-        updatePatientDashboardState({
-          activeExerciseData: {
-            ...activeExerciseData,
-            totalReps: reps,
-            totalSets: sets,
-          },
-        })
-      } catch (error) {
-        console.error(error)
-      } finally {
-        notify.success({
-          key: 'toast.settingsAppliedCurrent',
-          ns: 'patient-dashboard',
-        })
-      }
+      applyCurrentExerciseSettings({ reps, sets })
+      notify.success({
+        key: 'toast.settingsAppliedCurrent',
+        ns: 'patient-dashboard',
+      })
     }
 
     if (isProgramActive) selectedDevice?.events.program.SettingsChange(payload)
@@ -81,16 +69,14 @@ export function useExerciseListActions() {
       romMode,
     }))
 
-    try {
-      setExercises(syncedExercises)
-    } catch (error) {
-      console.error(error)
-    } finally {
-      notify.success({
-        key: 'toast.settingsAppliedAll',
-        ns: 'patient-dashboard',
-      })
+    setExercises(syncedExercises)
+    if (exercises[currExercise.current]) {
+      applyCurrentExerciseSettings({ reps, sets })
     }
+    notify.success({
+      key: 'toast.settingsAppliedAll',
+      ns: 'patient-dashboard',
+    })
   }
 
   const moveExercise = (index: number, offset: -1 | 1) => {

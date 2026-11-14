@@ -10,6 +10,7 @@ import {
   failPendingExerciseChangeInFlow,
   interruptSessionInFlow,
   requestExerciseSkipInFlow,
+  resizeCurrentExerciseProgressInFlow,
   type SkipSafeProgressFlowActionResult,
 } from './skip-safe-progress-flow.js'
 import {
@@ -382,6 +383,45 @@ describe('skip-safe active-session progress flow regression', () => {
     ])
     expect(directSkip.state.progressByExerciseId['ex-2']).toEqual([
       { rep: 1, set_1: 50 },
+    ])
+  })
+})
+
+describe('live settings change on the running exercise', () => {
+  it('shrinks the rep slots to the new prescribed reps', () => {
+    let state = createFlowState()
+    state = applyRepEndToFlow(state, repEndPayload(0, 0.5)).state
+
+    const resized = resizeCurrentExerciseProgressInFlow(state, 2)
+
+    expect(resized.currentExerciseProgress).toEqual([
+      { rep: 1, set_1: 50 },
+      { rep: 2 },
+    ])
+  })
+
+  it('adds empty rep slots when reps go up', () => {
+    const resized = resizeCurrentExerciseProgressInFlow(createFlowState(), 5)
+
+    expect(resized.currentExerciseProgress).toEqual([
+      { rep: 1 },
+      { rep: 2 },
+      { rep: 3 },
+      { rep: 4 },
+      { rep: 5 },
+    ])
+  })
+
+  it('keeps reps already recorded beyond the new count', () => {
+    let state = createFlowState()
+    state = applyRepEndToFlow(state, repEndPayload(0, 0.5)).state
+    state = applyRepEndToFlow(state, repEndPayload(1, 0.6)).state
+
+    const resized = resizeCurrentExerciseProgressInFlow(state, 1)
+
+    expect(resized.currentExerciseProgress).toEqual([
+      { rep: 1, set_1: 50 },
+      { rep: 2, set_1: 60 },
     ])
   })
 })

@@ -75,6 +75,31 @@ function createEmptyPlotData(reps: number): ProgressDataPoint[] {
   return Array.from({ length: reps }, (_, index) => ({ rep: index + 1 }))
 }
 
+function hasRecordedProgress(point: ProgressDataPoint | undefined): boolean {
+  return Object.keys(point ?? {}).some((key) => key.startsWith('set_'))
+}
+
+/**
+ * Fits the running exercise's rep slots to a new prescribed rep count after a
+ * live settings change. Reps already recorded are kept, even past the new count.
+ */
+export function resizeCurrentExerciseProgressInFlow(
+  state: SkipSafeProgressFlowState,
+  reps: number,
+): SkipSafeProgressFlowState {
+  const recordedLength =
+    state.currentExerciseProgress.findLastIndex(hasRecordedProgress) + 1
+  const length = Math.max(reps, recordedLength)
+
+  return {
+    ...state,
+    currentExerciseProgress: Array.from(
+      { length },
+      (_, index) => state.currentExerciseProgress[index] ?? { rep: index + 1 },
+    ),
+  }
+}
+
 function getCurrentSessionExercise(
   state: SkipSafeProgressFlowState,
 ): SessionExerciseRowInput | undefined {

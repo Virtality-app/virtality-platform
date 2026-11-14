@@ -146,6 +146,28 @@ const usePatientDashboardSocketSetup = ({
     })
   }
 
+  /** Shows live settings applied to the running exercise in the panel and chart. */
+  const applyCurrentExerciseSettings = ({
+    reps,
+    sets,
+  }: {
+    reps: number
+    sets: number
+  }) => {
+    setActiveExerciseData({
+      ...activeExerciseData,
+      totalReps: reps,
+      totalSets: sets,
+    })
+
+    if (
+      programState === ProgramStatus.START ||
+      programState === ProgramStatus.PAUSE
+    ) {
+      sessionPlot.resizeCurrentExercisePlot(reps)
+    }
+  }
+
   const memberLeft = async () => {
     await handleUnexpectedSessionEnd()
   }
@@ -189,6 +211,7 @@ const usePatientDashboardSocketSetup = ({
     patientSessionId: flow.patientSessionIdRef,
     requestForwardBackSkip,
     requestDirectExerciseSelection,
+    applyCurrentExerciseSettings,
   }
 }
 

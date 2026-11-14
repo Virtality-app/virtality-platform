@@ -125,6 +125,25 @@ describe('program progress', () => {
     expect(collect(headset, 0, 1000, 100)).toEqual([])
   })
 
+  it('applies new reps and sets to the exercise a settings change names', () => {
+    const headset = createSimulatedHeadset({ repIntervalMs })
+    headset.handle(PROGRAM_EVENT.Start, programStart)
+    headset.handle(PROGRAM_EVENT.SettingsChange, {
+      ...exercises[0],
+      reps: 1,
+      sets: 1,
+    })
+    expect(
+      collect(headset, 0, 200, 100)
+        .slice(0, 3)
+        .map((e) => [e.event, e.payload]),
+    ).toEqual([
+      [PROGRAM_EVENT.RepEnd, expect.stringContaining('"previousRep":0')],
+      [PROGRAM_EVENT.SetEnd, json({ previousSet: 1 })],
+      [PROGRAM_EVENT.ChangeExercise, 'ex-1'],
+    ])
+  })
+
   it('jumps to the requested exercise and restarts its count', () => {
     const headset = createSimulatedHeadset({ repIntervalMs })
     headset.handle(PROGRAM_EVENT.Start, programStart)

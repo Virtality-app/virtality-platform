@@ -144,6 +144,13 @@ export function createSimulatedHeadset(
       case PROGRAM_EVENT.End:
         program = idleProgram()
         return
+      case PROGRAM_EVENT.SettingsChange: {
+        const settings = payload as Partial<ExercisePayload> | null
+        program.exercises = program.exercises.map((ex) =>
+          ex.id === settings?.id ? { ...ex, ...settings } : ex,
+        )
+        return
+      }
       case PROGRAM_EVENT.ChangeExercise: {
         const index = program.exercises.findIndex((ex) => ex.id === payload)
         if (index === -1) return

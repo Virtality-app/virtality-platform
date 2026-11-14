@@ -15,6 +15,10 @@ export type PatientDashboardValue = {
   patientSessionId: { current: string }
   requestForwardBackSkip: (direction: SkipDirection) => void
   requestDirectExerciseSelection: (targetExerciseIndex: number) => void
+  applyCurrentExerciseSettings: (settings: {
+    reps: number
+    sets: number
+  }) => void
   store?: Store
   currExercise: RefObject<number>
   patientLocalData: PatientLocalData
@@ -47,6 +51,7 @@ export const PatientDashboardProvider = ({
     patientSessionId,
     requestForwardBackSkip,
     requestDirectExerciseSelection,
+    applyCurrentExerciseSettings,
   } = usePatientDashboardSocketSetup({
     state,
     handler,
@@ -68,6 +73,7 @@ export const PatientDashboardProvider = ({
         patientSessionId,
         requestForwardBackSkip,
         requestDirectExerciseSelection,
+        applyCurrentExerciseSettings,
         store,
         currExercise,
         patientLocalData,
