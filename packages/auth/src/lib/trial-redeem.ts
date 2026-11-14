@@ -15,6 +15,7 @@ import {
 } from '@virtality/shared/utils'
 import { createPrismaAccessGrantStore } from './access-grant-access.ts'
 import { createAccessCodeVariantGateway } from './access-code-variant-adapter.ts'
+import { consumeAccessCodeAndAssignDevices } from './provisioned-device-ownership.ts'
 
 type AccessGrantStore = ReturnType<typeof createPrismaAccessGrantStore>
 
@@ -43,19 +44,17 @@ export function createPrismaTrialRedeemConsumeStore(
   client: PrismaClient = prisma,
   stripeClient: Stripe | null = null,
 ): TrialRedeemConsumeStore {
+  // Every outcome that marks the code used also hands its Provisioned
+  // Devices to the redeemer (ADR 0011).
   const consumeUnusedAs =
     (status: 'redeemed' | 'already_entitled') =>
-    async (id: number, usedBy: string, usedAt: Date) => {
-      const { count } = await client.trialRedeemCode.updateMany({
-        where: { id, status: 'unused' },
-        data: {
-          status,
-          usedAt,
-          usedBy,
-        },
+    (id: number, usedBy: string, usedAt: Date) =>
+      consumeAccessCodeAndAssignDevices(client, {
+        id,
+        status,
+        usedBy,
+        usedAt,
       })
-      return count > 0
-    }
 
   const variantGateway = createAccessCodeVariantGateway(client, stripeClient)
   const accessGrantStore = createPrismaAccessGrantStore(client)

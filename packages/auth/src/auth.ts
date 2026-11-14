@@ -68,6 +68,8 @@ export {
 } from './lib/admin-customer-billing.ts'
 export type { AdminCustomerBillingRuntime } from './lib/admin-customer-billing.ts'
 export { convertAccessGrantAfterPaidCheckout } from './lib/access-grant-access.ts'
+export { onProvisionedDevicesOwned } from './lib/provisioned-device-ownership.ts'
+export type { ProvisionedDevicesOwned } from './lib/provisioned-device-ownership.ts'
 export { createStaffAccessGateRuntime } from './lib/staff-access-gate-access.ts'
 export type { StaffAccessGateRuntime } from './lib/staff-access-gate-access.ts'
 export {

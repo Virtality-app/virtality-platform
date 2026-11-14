@@ -151,6 +151,11 @@ export type ServerEventPayloadMap = {
 
   headset_added: { device_record_id: string }
   headset_pairing_started: { device_record_id: string }
+  /**
+   * The headset bound to a Device its owner has. For a Provisioned Device
+   * (ADR 0011) it fires when redemption gives the Device its owner, not when
+   * staff pair it.
+   */
   headset_paired: { device_record_id: string }
   headset_removed: { device_record_id: string }
 }

@@ -1,7 +1,7 @@
 import { Hono, type Context } from 'hono'
 import { cors } from 'hono/cors'
 import { serve } from '@hono/node-server'
-import { auth } from '@virtality/auth'
+import { auth, onProvisionedDevicesOwned } from '@virtality/auth'
 import type { AuthContext } from '@virtality/auth'
 import {
   createAppLogger,
@@ -40,6 +40,19 @@ if (!TOKEN_ID || !API_TOKEN) {
     'CLOUDFLARE_TURN_TOKEN_ID and CLOUDFLARE_TURN_API_TOKEN must be set',
   )
 }
+
+// `headset_paired` belongs to the Device's owner. A Provisioned Device has
+// none when staff pair it, so it reports here, once redemption gives it one.
+onProvisionedDevicesOwned(({ userId, deviceRecordIds }) => {
+  for (const deviceRecordId of deviceRecordIds) {
+    analytics.capture({
+      distinctId: userId,
+      event: 'headset_paired',
+      properties: { device_record_id: deviceRecordId },
+      setOnce: { first_headset_paired_at: new Date().toISOString() },
+    })
+  }
+})
 
 const app = new Hono<AppContext>()
 const logger = createAppLogger({
