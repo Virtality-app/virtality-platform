@@ -22,7 +22,7 @@ function contextFor(role: string) {
 
 const calls = [
   ['list', () => [provisionedDevice.list, undefined]],
-  ['create', () => [provisionedDevice.create, { name: 'Headset' }]],
+  ['create', () => [provisionedDevice.create, {}]],
   [
     'move',
     () => [provisionedDevice.move, { deviceRecordId: 'd', accessCodeId: 1 }],

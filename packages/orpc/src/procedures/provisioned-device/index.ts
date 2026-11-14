@@ -28,8 +28,7 @@ const PairingAttemptInputSchema = z.object({
 })
 
 const CreateInputSchema = z.object({
-  name: z.string().trim().min(1).max(100),
-  model: z.string().trim().max(100).nullable().optional(),
+  /** Null or left out: the headset goes to inventory. */
   accessCodeId: accessCodeIdSchema.nullable().optional(),
 })
 
@@ -70,8 +69,6 @@ const create = adminAuthed
   .handler(({ context, input }) =>
     withProvisionedDeviceErrors(() =>
       createProvisionedDevice(context.prisma, {
-        name: input.name,
-        model: input.model || null,
         accessCodeId: input.accessCodeId ?? null,
       }),
     ),

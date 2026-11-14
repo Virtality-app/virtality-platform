@@ -6,6 +6,7 @@ import {
   detachProvisionedDevice,
   listProvisionedDevices,
   moveProvisionedDevice,
+  nextHeadsetName,
   removeProvisionedDevice,
   unpairProvisionedDevice,
 } from './provisioned-device.ts'
@@ -50,18 +51,21 @@ const asPrisma = (fake: ReturnType<typeof fakePrisma>) =>
 describe('Provisioned Devices', () => {
   it('creates a Device with no owner on an open Access Code', async () => {
     const fake = fakePrisma({})
+    fake.device.findMany.mockResolvedValue([
+      { name: 'Headset-01' },
+      { name: 'Headset-03' },
+    ])
 
     await createProvisionedDevice(
       asPrisma(fake),
-      { name: 'Clinic headset 1', model: 'Quest 3', accessCodeId: 7 },
+      { accessCodeId: 7 },
       { now: () => NOW, createId: () => 'dev-1' },
     )
 
     expect(fake.device.create).toHaveBeenCalledWith({
       data: {
         id: 'dev-1',
-        name: 'Clinic headset 1',
-        model: 'Quest 3',
+        name: 'Headset-04',
         accessCodeId: 7,
         userId: null,
       },
@@ -74,7 +78,7 @@ describe('Provisioned Devices', () => {
 
     await createProvisionedDevice(
       asPrisma(fake),
-      { name: 'Clinic headset 1', model: null, accessCodeId: 7 },
+      { accessCodeId: 7 },
       { now: () => NOW, createId: () => 'dev-1' },
     )
 
@@ -96,7 +100,7 @@ describe('Provisioned Devices', () => {
 
     await createProvisionedDevice(
       asPrisma(fake),
-      { name: 'Spare', model: null, accessCodeId: null },
+      { accessCodeId: null },
       { now: () => NOW, createId: () => 'dev-1' },
     )
 
@@ -114,7 +118,7 @@ describe('Provisioned Devices', () => {
     await expect(
       createProvisionedDevice(
         asPrisma(fake),
-        { name: 'Clinic headset', model: null, accessCodeId: 7 },
+        { accessCodeId: 7 },
         { now: () => NOW, createId: () => 'dev-1' },
       ),
     ).rejects.toMatchObject({ code: 'ACCESS_CODE_UNAVAILABLE' })
@@ -297,6 +301,40 @@ describe('Provisioned Devices', () => {
     expect(
       (await listProvisionedDevices(asPrisma(fake)))[0],
     ).not.toHaveProperty('userId')
+  })
+})
+
+describe('Provisioned Device names', () => {
+  it('numbers headsets after the highest one so far', () => {
+    expect(nextHeadsetName([])).toBe('Headset-01')
+    expect(nextHeadsetName(['Headset-01', 'Headset-07', 'Headset-03'])).toBe(
+      'Headset-08',
+    )
+    expect(nextHeadsetName(['Headset-99'])).toBe('Headset-100')
+  })
+
+  it('ignores names that are not in the Headset-## scheme', () => {
+    expect(nextHeadsetName(['Clinic room 2', 'Headset-x', 'Headset-02'])).toBe(
+      'Headset-03',
+    )
+  })
+
+  it('reads every staff-made Device, removed ones too, so no name repeats', async () => {
+    const fake = fakePrisma({})
+
+    await createProvisionedDevice(
+      asPrisma(fake),
+      { accessCodeId: null },
+      { now: () => NOW, createId: () => 'dev-1' },
+    )
+
+    expect(fake.device.findMany).toHaveBeenCalledWith({
+      where: {
+        name: { startsWith: 'Headset-' },
+        OR: [{ userId: null }, { accessCodeId: { not: null } }],
+      },
+      select: { name: true },
+    })
   })
 })
 

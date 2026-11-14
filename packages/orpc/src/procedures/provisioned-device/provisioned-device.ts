@@ -155,28 +155,70 @@ function toListItem(row: ListRow): ProvisionedDeviceListItem {
   }
 }
 
+const HEADSET_NAME = /^Headset-(\d+)$/
+
+/** `Headset-01`, `Headset-02`, … after the highest number so far. */
+export function nextHeadsetName(existingNames: string[]): string {
+  const highest = existingNames.reduce((max, name) => {
+    const match = HEADSET_NAME.exec(name)
+    return match ? Math.max(max, Number(match[1])) : max
+  }, 0)
+  return `Headset-${String(highest + 1).padStart(2, '0')}`
+}
+
+function getPrismaErrorCode(error: unknown): unknown {
+  return error && typeof error === 'object' && 'code' in error
+    ? (error as { code?: unknown }).code
+    : undefined
+}
+
+/**
+ * Creates a Provisioned Device named `Headset-##`. Staff pick only where it
+ * goes: an Access Code, or inventory when `accessCodeId` is null.
+ */
 export async function createProvisionedDevice(
   prisma: PrismaClient,
-  input: { name: string; model: string | null; accessCodeId: number | null },
+  input: { accessCodeId: number | null },
   runtime: Clock & { createId?: () => string } = {},
 ): Promise<ProvisionedDeviceListItem> {
   const now = runtime.now?.() ?? new Date()
   const { accessCodeId } = input
 
-  const row = await prisma.$transaction(async (tx) => {
-    if (accessCodeId != null) await lockOpenAccessCode(tx, accessCodeId, now)
-    return tx.device.create({
-      data: {
-        id: runtime.createId?.() ?? randomUUID(),
-        name: input.name,
-        model: input.model,
-        accessCodeId,
-        userId: null,
+  const create = () =>
+    prisma.$transaction(
+      async (tx) => {
+        if (accessCodeId != null)
+          await lockOpenAccessCode(tx, accessCodeId, now)
+        // Every Device staff ever made, removed ones too, so a name never
+        // comes back. Clinicians' own Devices don't count.
+        const taken = await tx.device.findMany({
+          where: {
+            name: { startsWith: 'Headset-' },
+            OR: [{ userId: null }, { accessCodeId: { not: null } }],
+          },
+          select: { name: true },
+        })
+        return tx.device.create({
+          data: {
+            id: runtime.createId?.() ?? randomUUID(),
+            name: nextHeadsetName(taken.map((device) => device.name)),
+            accessCodeId,
+            userId: null,
+          },
+          select: listSelect,
+        })
       },
-      select: listSelect,
-    })
-  })
-  return toListItem(row)
+      // Two admins creating at once would read the same highest number.
+      { isolationLevel: 'Serializable' },
+    )
+
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return toListItem(await create())
+    } catch (error) {
+      if (getPrismaErrorCode(error) !== 'P2034' || attempt === 4) throw error
+    }
+  }
 }
 
 /** Devices with no owner, plus Devices a code has already delivered. */
