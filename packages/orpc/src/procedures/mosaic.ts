@@ -9,7 +9,7 @@ import {
   type MosaicStore,
   type MosaicTileRecord,
 } from '@virtality/shared/utils'
-import { authed } from '../middleware/auth.ts'
+import { adminAuthed } from '../middleware/admin.ts'
 import { base, bustWebsiteMarketingCache } from '../context.ts'
 
 const LANDING_MOSAIC_ID = 'landing'
@@ -93,7 +93,7 @@ const getMosaicProcedure = base
     getMosaicBoard(createPrismaMosaicStore(context.prisma)),
   )
 
-const saveMosaicProcedure = authed
+const saveMosaicProcedure = adminAuthed
   .route({ path: '/mosaic/save', method: 'POST' })
   .input(saveMosaicInputSchema)
   .handler(async ({ context, input }) => {

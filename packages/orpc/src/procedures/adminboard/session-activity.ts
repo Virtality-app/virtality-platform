@@ -1,5 +1,5 @@
 import type { PrismaClient } from '@virtality/db'
-import { authed } from '../../middleware/auth.ts'
+import { adminAuthed } from '../../middleware/admin.ts'
 import { z } from 'zod'
 import { dashboardPatientScope } from './analytics-filters.ts'
 import {
@@ -55,7 +55,7 @@ const loadUserNames = async (
   return Object.fromEntries(users.map((user) => [user.id, user.name]))
 }
 
-const getSessionActivity = authed
+const getSessionActivity = adminAuthed
   .route({ path: '/dashboard/analytics/session-activity', method: 'GET' })
   .input(
     windowSchema.and(
@@ -110,7 +110,7 @@ const getSessionActivity = authed
     })
   })
 
-const getSessionLog = authed
+const getSessionLog = adminAuthed
   .route({ path: '/dashboard/analytics/session-log', method: 'GET' })
   .input(
     windowSchema.and(

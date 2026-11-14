@@ -1,4 +1,4 @@
-import { authed } from '../middleware/auth.ts'
+import { adminAuthed } from '../middleware/admin.ts'
 import { base } from '../context.ts'
 import { z } from 'zod/v4'
 import { sendThankYouEmail, sendEmail } from '@virtality/nodemailer'
@@ -26,7 +26,7 @@ const sendThankYouEmailProcedure = base
     await sendThankYouEmail(email)
   })
 
-const listTemplatesProcedure = authed
+const listTemplatesProcedure = adminAuthed
   .route({ path: '/email/templates/list', method: 'GET' })
   .handler(async () => {
     return EMAIL_TEMPLATES.map((t) => {
@@ -39,7 +39,7 @@ const listTemplatesProcedure = authed
     })
   })
 
-const getTemplateProcedure = authed
+const getTemplateProcedure = adminAuthed
   .route({ path: '/email/templates/get', method: 'GET' })
   .input(z.object({ templateId: z.string() }))
   .handler(async ({ input }) => {
@@ -55,7 +55,7 @@ const getTemplateProcedure = authed
     }
   })
 
-const getTemplatePreviewProcedure = authed
+const getTemplatePreviewProcedure = adminAuthed
   .route({ path: '/email/templates/preview', method: 'GET' })
   .input(z.object({ templateId: z.string() }))
   .handler(async ({ input }) => {
@@ -68,7 +68,7 @@ const getTemplatePreviewProcedure = authed
 
 const MAX_TEMPLATE_RECIPIENTS = 20
 
-const sendTemplateProcedure = authed
+const sendTemplateProcedure = adminAuthed
   .route({ path: '/email/templates/send', method: 'POST' })
   .input(
     z.object({

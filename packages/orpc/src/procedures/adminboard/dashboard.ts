@@ -1,4 +1,4 @@
-import { authed } from '../../middleware/auth.ts'
+import { adminAuthed } from '../../middleware/admin.ts'
 import { z } from 'zod'
 import { patientScopeFilter, UNKNOWN_OWNER_ID } from './analytics-filters.ts'
 import { buildEffectivenessReport } from './effectiveness-report-aggregation.ts'
@@ -63,7 +63,7 @@ const getDefaultEffectivenessWindowUTC = (): { from: Date; to: Date } => {
   return { from, to }
 }
 
-const getEffectivenessReport = authed
+const getEffectivenessReport = adminAuthed
   .route({
     path: '/dashboard/analytics/effectiveness-report',
     method: 'GET',

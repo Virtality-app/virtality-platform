@@ -3,6 +3,7 @@ import { generateUUID } from '@virtality/shared/utils'
 import { sendWaitlistNotification } from '@virtality/nodemailer'
 import { createAppLogger } from '@virtality/shared/observability'
 import { base } from '../context.ts'
+import { adminAuthed } from '../middleware/admin.ts'
 import {
   createWaitlistEntry,
   getWaitlistNotifyRecipient,
@@ -15,7 +16,7 @@ const waitlistLogger = createAppLogger({
   },
 })
 
-const listWaitlist = base
+const listWaitlist = adminAuthed
   .route({ path: '/waitlist/list', method: 'GET' })
   .handler(async ({ context }) => {
     const { prisma } = context

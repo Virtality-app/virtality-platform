@@ -1,6 +1,6 @@
-import { authed } from '../../middleware/auth.ts'
+import { adminAuthed } from '../../middleware/admin.ts'
 
-export const listUsers = authed
+export const listUsers = adminAuthed
   .route({ path: '/user/list', method: 'GET' })
   .handler(async ({ context }) => {
     const { prisma } = context

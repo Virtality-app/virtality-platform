@@ -18,8 +18,7 @@ import {
   updateRenewTrigger,
   type RenewTriggerStore,
 } from '@virtality/shared/utils'
-import { authed } from '../middleware/auth.ts'
-import { base } from '../context.ts'
+import { adminAuthed } from '../middleware/admin.ts'
 
 function throwRenewTriggerOrpcError(error: unknown): never {
   if (error instanceof RenewTriggerValidationError) {
@@ -48,7 +47,7 @@ async function withRenewTriggerStore<T>(
   }
 }
 
-const listRenewTriggersProcedure = base
+const listRenewTriggersProcedure = adminAuthed
   .route({ path: '/renew-trigger/list', method: 'GET' })
   .input(listRenewTriggersInputSchema)
   .handler(async ({ context, input }) => {
@@ -58,7 +57,7 @@ const listRenewTriggersProcedure = base
     )
   })
 
-const createRenewTriggerProcedure = authed
+const createRenewTriggerProcedure = adminAuthed
   .route({ path: '/renew-trigger/create', method: 'POST' })
   .input(createRenewTriggerInputSchema)
   .handler(async ({ context, input }) => {
@@ -67,7 +66,7 @@ const createRenewTriggerProcedure = authed
     )
   })
 
-const updateRenewTriggerProcedure = authed
+const updateRenewTriggerProcedure = adminAuthed
   .route({ path: '/renew-trigger/update', method: 'POST' })
   .input(updateRenewTriggerInputSchema)
   .handler(async ({ context, input }) => {
@@ -76,7 +75,7 @@ const updateRenewTriggerProcedure = authed
     )
   })
 
-const removeRenewTriggerProcedure = authed
+const removeRenewTriggerProcedure = adminAuthed
   .route({ path: '/renew-trigger/remove', method: 'DELETE' })
   .input(removeRenewTriggerInputSchema)
   .handler(async ({ context, input }) => {

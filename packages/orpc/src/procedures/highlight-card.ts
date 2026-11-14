@@ -21,7 +21,7 @@ import {
   updateHighlightCard,
   type HighlightCardStore,
 } from '@virtality/shared/utils'
-import { authed } from '../middleware/auth.ts'
+import { adminAuthed } from '../middleware/admin.ts'
 import { base, bustWebsiteMarketingCache } from '../context.ts'
 
 function createPrismaHighlightCardStore(
@@ -89,7 +89,7 @@ const listHighlightCardsProcedure = base
     )
   })
 
-const createHighlightCardProcedure = authed
+const createHighlightCardProcedure = adminAuthed
   .route({ path: '/highlight-card/create', method: 'POST' })
   .input(createHighlightCardInputSchema)
   .handler(async ({ context, input }) => {
@@ -109,7 +109,7 @@ const createHighlightCardProcedure = authed
     return result
   })
 
-const updateHighlightCardProcedure = authed
+const updateHighlightCardProcedure = adminAuthed
   .route({ path: '/highlight-card/update', method: 'POST' })
   .input(updateHighlightCardInputSchema)
   .handler(async ({ context, input }) => {
@@ -122,7 +122,7 @@ const updateHighlightCardProcedure = authed
     return result
   })
 
-const reorderHighlightCardProcedure = authed
+const reorderHighlightCardProcedure = adminAuthed
   .route({ path: '/highlight-card/reorder', method: 'POST' })
   .input(reorderHighlightCardInputSchema)
   .handler(async ({ context, input }) => {
@@ -145,7 +145,7 @@ const reorderHighlightCardProcedure = authed
     return outcome.result
   })
 
-const removeHighlightCardProcedure = authed
+const removeHighlightCardProcedure = adminAuthed
   .route({ path: '/highlight-card/remove', method: 'DELETE' })
   .input(removeHighlightCardInputSchema)
   .handler(async ({ context, input }) => {

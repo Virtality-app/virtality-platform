@@ -17,7 +17,7 @@ import {
   type PromotionCodeDeliveryStore,
 } from '@virtality/shared/utils'
 import { z } from 'zod/v4'
-import { authed } from '../middleware/auth.ts'
+import { adminAuthed } from '../middleware/admin.ts'
 
 const couponIdInputSchema = z.object({
   couponId: z.string().trim().min(1),
@@ -109,7 +109,7 @@ async function runPromotionCodeHandler<T>(run: () => Promise<T>): Promise<T> {
   }
 }
 
-const list = authed
+const list = adminAuthed
   .route({ path: '/promotion-code/list', method: 'GET' })
   .input(couponIdInputSchema)
   .handler(async ({ input }) =>
@@ -118,14 +118,14 @@ const list = authed
     ),
   )
 
-const create = authed
+const create = adminAuthed
   .route({ path: '/promotion-code/create', method: 'POST' })
   .input(createInputSchema)
   .handler(async ({ input }) =>
     runPromotionCodeHandler(() => createPromotionCodeForAdminboard(input)),
   )
 
-const deactivate = authed
+const deactivate = adminAuthed
   .route({ path: '/promotion-code/deactivate', method: 'POST' })
   .input(idInputSchema)
   .handler(async ({ input }) =>
@@ -134,7 +134,7 @@ const deactivate = authed
     ),
   )
 
-const sendEmail = authed
+const sendEmail = adminAuthed
   .route({ path: '/promotion-code/send-email', method: 'POST' })
   .input(sendEmailInputSchema)
   .handler(async ({ input }) =>
@@ -148,7 +148,7 @@ const sendEmail = authed
     ),
   )
 
-const notifyInApp = authed
+const notifyInApp = adminAuthed
   .route({ path: '/promotion-code/notify-in-app', method: 'POST' })
   .input(notifyInputSchema)
   .handler(async ({ context, input }) =>

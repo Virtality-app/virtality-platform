@@ -9,7 +9,7 @@ import {
   PROMO_VIDEO_SINGLETON_ID,
   type PromoVideoStore,
 } from '@virtality/shared/utils'
-import { authed } from '../middleware/auth.ts'
+import { adminAuthed } from '../middleware/admin.ts'
 import { base, bustWebsiteMarketingCache } from '../context.ts'
 
 function createPrismaPromoVideoStore(prisma: PrismaClient): PromoVideoStore {
@@ -56,7 +56,7 @@ const getPromoVideoProcedure = base
     return getPromoVideo(createPrismaPromoVideoStore(prisma))
   })
 
-const assignPromoVideoProcedure = authed
+const assignPromoVideoProcedure = adminAuthed
   .route({ path: '/promo-video/assign', method: 'POST' })
   .input(assignPromoVideoInputSchema)
   .handler(async ({ context, input }) => {
@@ -67,7 +67,7 @@ const assignPromoVideoProcedure = authed
     return result
   })
 
-const clearPromoVideoProcedure = authed
+const clearPromoVideoProcedure = adminAuthed
   .route({ path: '/promo-video/clear', method: 'DELETE' })
   .handler(async ({ context }) => {
     const result = await withPromoVideoStore(context.prisma, (store) =>

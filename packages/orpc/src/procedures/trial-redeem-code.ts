@@ -20,7 +20,7 @@ import {
   stripeClient,
 } from '@virtality/auth'
 import { z } from 'zod/v4'
-import { authed } from '../middleware/auth.ts'
+import { adminAuthed } from '../middleware/admin.ts'
 
 const trialRedeemDisplayStatusSchema = z.enum(TRIAL_REDEEM_DISPLAY_STATUSES)
 
@@ -96,7 +96,7 @@ async function runTrialRedeemHandler<T>(
   }
 }
 
-const list = authed
+const list = adminAuthed
   .route({ path: '/trial-redeem-code/list', method: 'GET' })
   .input(listInputSchema)
   .handler(async ({ context, input }) =>
@@ -107,7 +107,7 @@ const list = authed
     ),
   )
 
-const create = authed
+const create = adminAuthed
   .route({ path: '/trial-redeem-code/create', method: 'POST' })
   .input(createInputSchema)
   .handler(async ({ context, input }) => {
@@ -128,7 +128,7 @@ const create = authed
     )
   })
 
-const deleteProcedure = authed
+const deleteProcedure = adminAuthed
   .route({ path: '/trial-redeem-code/delete', method: 'DELETE' })
   .input(deleteInputSchema)
   .handler(async ({ context, input }) => {
@@ -137,7 +137,7 @@ const deleteProcedure = authed
     )
   })
 
-const sendEmail = authed
+const sendEmail = adminAuthed
   .route({ path: '/trial-redeem-code/send-email', method: 'POST' })
   .input(sendEmailInputSchema)
   .handler(async ({ context, input }) =>
