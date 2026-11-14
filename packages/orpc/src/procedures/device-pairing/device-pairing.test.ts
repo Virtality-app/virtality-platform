@@ -142,7 +142,11 @@ describe('device pairing lifecycle', () => {
       device: {
         findFirst: vi
           .fn()
-          .mockResolvedValueOnce({ id: 'device-1', deviceId: null })
+          .mockResolvedValueOnce({
+            id: 'device-1',
+            deviceId: null,
+            userId: 'user-1',
+          })
           .mockResolvedValueOnce(null),
         update: vi.fn().mockResolvedValue({ id: 'device-1' }),
       },
@@ -161,6 +165,55 @@ describe('device pairing lifecycle', () => {
       userId: 'user-1',
       deviceRecordId: 'device-1',
     })
+  })
+
+  it('claims a code for a Provisioned Device without reporting an owner pairing', async () => {
+    const now = new Date('2026-08-08T10:01:00.000Z')
+    const tx = {
+      devicePairingAttempt: {
+        findFirst: vi.fn().mockResolvedValue({
+          id: 'attempt-1',
+          deviceRecordId: 'device-1',
+          userId: 'staff-1',
+          expiresAt: new Date('2026-08-08T10:05:00.000Z'),
+        }),
+        update: vi.fn().mockResolvedValue({ id: 'attempt-1' }),
+      },
+      device: {
+        findFirst: vi
+          .fn()
+          .mockResolvedValueOnce({
+            id: 'device-1',
+            deviceId: null,
+            userId: null,
+          })
+          .mockResolvedValueOnce(null),
+        update: vi.fn().mockResolvedValue({ id: 'device-1' }),
+      },
+    }
+    const prisma = transactionalPrisma(tx)
+    const onPaired = vi.fn()
+
+    await expect(
+      claimDevicePairing(
+        prisma,
+        { pairingCode: '123456', deviceId: 'headset-1' },
+        { now: () => now, onPaired },
+      ),
+    ).resolves.toEqual({ status: 'paired' })
+
+    expect(tx.device.findFirst.mock.calls[0]?.[0]).toMatchObject({
+      where: {
+        id: 'device-1',
+        deletedAt: null,
+        OR: [{ userId: 'staff-1' }, { userId: null }],
+      },
+    })
+    expect(tx.device.update).toHaveBeenCalledWith({
+      where: { id: 'device-1' },
+      data: { deviceId: 'headset-1' },
+    })
+    expect(onPaired).not.toHaveBeenCalled()
   })
 
   it('accepts a recent repeated claim from the same headset', async () => {

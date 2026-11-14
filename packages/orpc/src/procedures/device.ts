@@ -37,7 +37,7 @@ const findDeviceByDeviceId = base
 
 const createDevice = authed
   .route({ path: '/device/create', method: 'POST' })
-  .input(DeviceSchema.omit({ userId: true }))
+  .input(DeviceSchema.omit({ userId: true, accessCodeId: true }))
   .handler(async ({ context, input }) => {
     const { prisma, user } = context
     const device = await prisma.device.create({

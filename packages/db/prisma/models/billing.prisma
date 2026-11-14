@@ -45,7 +45,9 @@ model TrialRedeemCode {
   usedAt    DateTime?             @db.Timestamp(6)
   usedBy    String?
 
-  usedByUser User? @relation(fields: [usedBy], references: [id], onDelete: SetNull)
+  usedByUser User?    @relation(fields: [usedBy], references: [id], onDelete: SetNull)
+  /// Provisioned Devices waiting on this code (ADR 0011).
+  devices    Device[]
 }
 
 /// App-owned set of Stripe Coupon ids ever used as a campaign Coupon.

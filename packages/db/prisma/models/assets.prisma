@@ -12,15 +12,23 @@ model Map {
   image String? @unique
 }
 
+/// A Device with no owner (`userId` null) is a Provisioned Device: staff
+/// paired it before the customer signed up (ADR 0011). It is linked to an
+/// Access Code (`accessCodeId`) or held in staff inventory (both null).
+/// Redeeming the code makes the redeeming user its owner.
 model Device {
   id              String                 @id(map: "devices_pkey")
-  userId          String
+  userId          String?
+  accessCodeId    Int?
   deviceId        String?                @unique
   model           String?
   lastUsed        DateTime               @default(now()) @db.Timestamp(6)
   createdAt       DateTime               @default(now()) @db.Timestamp(6)
   deletedAt       DateTime?              @db.Timestamp(6)
   name            String
-  user            User                   @relation(fields: [userId], references: [id], onDelete: Cascade, map: "devices_userId_fkey")
+  user            User?                  @relation(fields: [userId], references: [id], onDelete: Cascade, map: "devices_userId_fkey")
+  accessCode      TrialRedeemCode?       @relation(fields: [accessCodeId], references: [id], onDelete: SetNull)
   pairingAttempts DevicePairingAttempt[]
+
+  @@index([accessCodeId])
 }

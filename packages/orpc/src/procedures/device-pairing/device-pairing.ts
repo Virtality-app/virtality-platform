@@ -262,7 +262,10 @@ export async function claimDevicePairing(
   prisma: PrismaClient,
   input: { pairingCode: string; deviceId: string },
   runtime: Pick<PairingRuntime, 'now'> & {
-    /** Called once for a fresh claim (not a replayed one). */
+    /**
+     * Called once for a fresh claim (not a replayed one) of a Device that has
+     * an owner. Not called for a Provisioned Device.
+     */
     onPaired?: (paired: { userId: string; deviceRecordId: string }) => void
   } = {},
 ): Promise<{ status: 'paired' }> {
@@ -309,13 +312,15 @@ export async function claimDevicePairing(
               return { outcome: 'unavailable' }
             }
 
+            // A Provisioned Device has no owner yet (ADR 0011). Staff started
+            // its claim, so the attempt's user is not the Device's owner.
             const target = await tx.device.findFirst({
               where: {
                 id: attempt.deviceRecordId,
-                userId: attempt.userId,
                 deletedAt: null,
+                OR: [{ userId: attempt.userId }, { userId: null }],
               },
-              select: { id: true, deviceId: true },
+              select: { id: true, deviceId: true, userId: true },
             })
 
             if (!target) {
@@ -374,9 +379,13 @@ export async function claimDevicePairing(
               },
             })
 
+            // `headset_paired` belongs to the owner. A Provisioned Device
+            // reports it when redemption assigns the owner instead.
             return {
               outcome: 'paired',
-              claimed: { userId: attempt.userId, deviceRecordId: target.id },
+              claimed: target.userId
+                ? { userId: target.userId, deviceRecordId: target.id }
+                : undefined,
             }
           },
           { isolationLevel: 'Serializable' },
