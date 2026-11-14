@@ -1,6 +1,35 @@
 import { usePatientDashboard } from '@/context/patient-dashboard-context'
 import { notify } from '@/lib/notify'
 
+type ExerciseSettingsRow = {
+  exerciseId: string
+  sets: number
+  reps: number
+  restTime: number
+  holdTime: number
+  speed: number
+  romMode: number
+}
+
+/** The `SettingsChange` payload the headset applies to one exercise. */
+const toSettingsPayload = ({
+  exerciseId,
+  sets,
+  reps,
+  restTime,
+  holdTime,
+  speed,
+  romMode,
+}: ExerciseSettingsRow) => ({
+  id: exerciseId,
+  sets,
+  reps,
+  restTime,
+  holdTime,
+  speed,
+  romMode,
+})
+
 /** Reorder, live-settings and exercise-change actions for the session exercise list. */
 export function useExerciseListActions() {
   const {
@@ -28,18 +57,8 @@ export function useExerciseListActions() {
   const applySettings = (index: number) => {
     if (!exercises) return
 
-    const { exerciseId, sets, reps, restTime, holdTime, speed, romMode } =
-      exercises[index]
-
-    const payload = {
-      id: exerciseId,
-      sets,
-      reps,
-      restTime,
-      holdTime,
-      speed,
-      romMode,
-    }
+    const exercise = exercises[index]
+    const { sets, reps } = exercise
 
     if (currExercise.current === index) {
       applyCurrentExerciseSettings({ reps, sets })
@@ -49,7 +68,8 @@ export function useExerciseListActions() {
       })
     }
 
-    if (isProgramActive) selectedDevice?.events.program.SettingsChange(payload)
+    if (isProgramActive)
+      selectedDevice?.events.program.SettingsChange(toSettingsPayload(exercise))
   }
 
   const applySettingsToAllExercises = (index: number) => {
@@ -70,6 +90,14 @@ export function useExerciseListActions() {
     }))
 
     setExercises(syncedExercises)
+    if (isProgramActive) {
+      // The headset applies one exercise per SettingsChange.
+      for (const exercise of syncedExercises) {
+        selectedDevice?.events.program.SettingsChange(
+          toSettingsPayload(exercise),
+        )
+      }
+    }
     if (exercises[currExercise.current]) {
       applyCurrentExerciseSettings({ reps, sets })
     }

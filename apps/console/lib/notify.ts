@@ -34,7 +34,17 @@ const OPTIONS: Record<NotifyVariant, ToastOptions> = {
   },
 }
 
-const show = (variant: NotifyVariant, message: NotifyMessage): NotifyId =>
+/**
+ * `toastId` collapses repeats: while a toast with that id is on screen,
+ * showing it again does nothing.
+ */
+export type NotifyOptions = { toastId?: NotifyId }
+
+const show = (
+  variant: NotifyVariant,
+  message: NotifyMessage,
+  options: NotifyOptions = {},
+): NotifyId =>
   toast(
     createElement(NotifyToast, {
       variant,
@@ -42,7 +52,7 @@ const show = (variant: NotifyVariant, message: NotifyMessage): NotifyId =>
         i18next.t(key, options),
       ),
     }),
-    OPTIONS[variant],
+    { ...OPTIONS[variant], ...options },
   )
 
 /**
@@ -50,9 +60,12 @@ const show = (variant: NotifyVariant, message: NotifyMessage): NotifyId =>
  * `react-toastify` directly, so every toast shares one look.
  */
 export const notify = {
-  success: (message: NotifyMessage) => show('success', message),
-  error: (message: NotifyMessage) => show('error', message),
-  info: (message: NotifyMessage) => show('info', message),
+  success: (message: NotifyMessage, options?: NotifyOptions) =>
+    show('success', message, options),
+  error: (message: NotifyMessage, options?: NotifyOptions) =>
+    show('error', message, options),
+  info: (message: NotifyMessage, options?: NotifyOptions) =>
+    show('info', message, options),
   /** Patient needs the clinician: stays longer and plays a sound. */
   attention: (message: NotifyMessage) => {
     playAttentionSound()

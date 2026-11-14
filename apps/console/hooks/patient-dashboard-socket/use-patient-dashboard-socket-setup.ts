@@ -135,8 +135,12 @@ const usePatientDashboardSocketSetup = ({
     notify.success({ key: 'toast.positionReset', ns: 'patient-dashboard' })
   }
 
+  // Apply to all sends one SettingsChange per exercise, so acks arrive in a burst.
   const handleSettingsChangeAck = () => {
-    notify.success({ key: 'toast.settingsChanged', ns: 'patient-dashboard' })
+    notify.success(
+      { key: 'toast.settingsChanged', ns: 'patient-dashboard' },
+      { toastId: 'settings-changed' },
+    )
   }
 
   const handleNotifyDoctor = () => {
