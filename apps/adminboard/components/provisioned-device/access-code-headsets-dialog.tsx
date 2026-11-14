@@ -66,6 +66,7 @@ export function AccessCodeHeadsetsDialog({
               emptyMessage='No headsets on this code yet.'
               onPair={(device) => setStep({ kind: 'pair', device })}
               onMove={(device) => setStep({ kind: 'move', device })}
+              inDialog
             />
             {canAttach ? (
               <DialogFooter>

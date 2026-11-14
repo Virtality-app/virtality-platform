@@ -18,6 +18,8 @@ type ProvisionedDeviceListProps = {
   emptyMessage: string
   onPair: (device: ProvisionedDeviceListItem) => void
   onMove: (device: ProvisionedDeviceListItem) => void
+  /** The list is inside the headsets dialog; see ProvisionedDeviceActions. */
+  inDialog?: boolean
 }
 
 export function ProvisionedDeviceList({
@@ -25,6 +27,7 @@ export function ProvisionedDeviceList({
   emptyMessage,
   onPair,
   onMove,
+  inDialog = false,
 }: ProvisionedDeviceListProps) {
   if (devices.length === 0) {
     return (
@@ -61,6 +64,7 @@ export function ProvisionedDeviceList({
                 device={device}
                 onPair={onPair}
                 onMove={onMove}
+                inDialog={inDialog}
               />
             </TableCell>
           </TableRow>

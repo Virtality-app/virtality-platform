@@ -23,18 +23,24 @@ export function AccessCodeHeadsetsCell({
   const devices = devicesOnAccessCode(data ?? [], accessCode.id)
   const canAttach = accessCode.displayStatus === 'unused'
 
-  if (devices.length === 0 && !canAttach) return <div>—</div>
+  // A closed code with nothing on it has nothing to open. The dialog stays
+  // mounted while open, so moving the last headset off doesn't drop it.
+  const nothingToOpen = devices.length === 0 && !canAttach
 
   return (
     <>
-      <Button
-        variant='ghost'
-        size='sm'
-        className='h-7 px-2'
-        onClick={() => setOpen(true)}
-      >
-        {devices.length === 0 ? 'Attach' : formatHeadsetSummary(devices)}
-      </Button>
+      {nothingToOpen ? (
+        <div>—</div>
+      ) : (
+        <Button
+          variant='ghost'
+          size='sm'
+          className='h-7 px-2'
+          onClick={() => setOpen(true)}
+        >
+          {devices.length === 0 ? 'Attach' : formatHeadsetSummary(devices)}
+        </Button>
+      )}
       <AccessCodeHeadsetsDialog
         open={open}
         onOpenChange={setOpen}
