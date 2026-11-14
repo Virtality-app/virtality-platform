@@ -39,7 +39,7 @@ export function useStaffPairing(deviceRecordId: string) {
   const [attempt, setAttempt] = useState<Attempt | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [now, setNow] = useState(() => new Date())
-  const { mutate: startAttempt } = useStartProvisionedDevicePairing()
+  const { mutateAsync: startAttempt } = useStartProvisionedDevicePairing()
   const { mutate: cancelAttempt } = useCancelProvisionedDevicePairing()
   const status = useProvisionedDevicePairingStatus(attempt?.attemptId ?? null)
   const state = status.data?.state
@@ -55,26 +55,31 @@ export function useStaffPairing(deviceRecordId: string) {
   const requestCode = useCallback(() => {
     setError(null)
     setAttempt(null)
-    startAttempt(
-      { deviceRecordId },
-      {
-        onSuccess: (started) => {
-          const skewMs = Date.now() - new Date(started.serverTime).getTime()
-          setAttempt({
-            attemptId: started.attemptId,
-            code: started.code,
-            expiresAt: new Date(new Date(started.expiresAt).getTime() + skewMs),
-          })
-        },
-        onError: (startError) =>
-          setError(getErrorMessage(startError, 'Could not start pairing.')),
-      },
-    )
+    // The promise, not mutate's per-call callbacks: TanStack drops those when
+    // the observer resubscribes (StrictMode's remount), stranding the code.
+    startAttempt({ deviceRecordId })
+      .then((started) => {
+        const skewMs = Date.now() - new Date(started.serverTime).getTime()
+        setAttempt({
+          attemptId: started.attemptId,
+          code: started.code,
+          expiresAt: new Date(new Date(started.expiresAt).getTime() + skewMs),
+        })
+      })
+      .catch((startError: unknown) =>
+        setError(getErrorMessage(startError, 'Could not start pairing.')),
+      )
   }, [deviceRecordId, startAttempt])
 
+  // Start once per Device. A second start supersedes the first, and the two
+  // requests can land in either order, leaving the code on screen dead. The
+  // ref survives StrictMode's effect re-run, which would otherwise do that.
+  const startedFor = useRef<string | null>(null)
   useEffect(() => {
+    if (startedFor.current === deviceRecordId) return
+    startedFor.current = deviceRecordId
     requestCode()
-  }, [requestCode])
+  }, [deviceRecordId, requestCode])
 
   const pending =
     Boolean(attempt) && (state === undefined || state === 'pending')
