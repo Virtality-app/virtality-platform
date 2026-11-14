@@ -1,5 +1,5 @@
 import { z } from 'zod/v4'
-import { authed } from '../middleware/auth.ts'
+import { adminAuthed } from '../middleware/admin.ts'
 
 const TESTER_CODE_PREFIX = 'TE-'
 const TESTER_CODE_BODY_LENGTH = 10
@@ -13,7 +13,7 @@ function generateCode(): string {
   return `${TESTER_CODE_PREFIX}${body}`
 }
 
-const listTesterCodes = authed
+const listTesterCodes = adminAuthed
   .route({ path: '/tester-code/list', method: 'GET' })
   .handler(async ({ context }) => {
     const { prisma } = context
@@ -22,7 +22,7 @@ const listTesterCodes = authed
     })
   })
 
-const createTesterCode = authed
+const createTesterCode = adminAuthed
   .route({ path: '/tester-code/create', method: 'POST' })
   .handler(async ({ context }) => {
     const { prisma } = context
@@ -61,7 +61,7 @@ const createTesterCode = authed
     })
   })
 
-const deleteTesterCode = authed
+const deleteTesterCode = adminAuthed
   .route({ path: '/tester-code/delete', method: 'DELETE' })
   .input(z.object({ id: z.number() }))
   .handler(async ({ context, input }) => {

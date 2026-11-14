@@ -13,7 +13,7 @@ import {
   validateEmailAudiencePins,
 } from '@virtality/shared/utils'
 import { z } from 'zod'
-import { authed } from '../middleware/auth.ts'
+import { adminAuthed } from '../middleware/admin.ts'
 import { resolveAudienceFromDb } from './admin-authored-email/recipient-resolution.ts'
 
 const audienceIdInput = z.object({ audienceId: z.string().min(1) })
@@ -95,7 +95,7 @@ const getAudienceOrThrow = async (prisma: PrismaClient, audienceId: string) => {
   return audience
 }
 
-const listAudiences = authed
+const listAudiences = adminAuthed
   .route({ path: '/email/audiences/list', method: 'GET' })
   .handler(async ({ context }) => {
     const audiences = await context.prisma.emailAudience.findMany({
@@ -105,14 +105,14 @@ const listAudiences = authed
     return audiences.map(mapAudience)
   })
 
-const getAudience = authed
+const getAudience = adminAuthed
   .route({ path: '/email/audiences/get', method: 'GET' })
   .input(audienceIdInput)
   .handler(async ({ context, input }) =>
     mapAudience(await getAudienceOrThrow(context.prisma, input.audienceId)),
   )
 
-const createAudience = authed
+const createAudience = adminAuthed
   .route({ path: '/email/audiences/create', method: 'POST' })
   .input(audienceFieldsInput)
   .handler(async ({ context, input }) => {
@@ -127,7 +127,7 @@ const createAudience = authed
     return mapAudience(audience)
   })
 
-const updateAudience = authed
+const updateAudience = adminAuthed
   .route({ path: '/email/audiences/update', method: 'POST' })
   .input(audienceIdInput.extend(audienceFieldsInput.shape))
   .handler(async ({ context, input }) => {
@@ -140,7 +140,7 @@ const updateAudience = authed
     return mapAudience(audience)
   })
 
-const deleteAudience = authed
+const deleteAudience = adminAuthed
   .route({ path: '/email/audiences/delete', method: 'POST' })
   .input(audienceIdInput)
   .handler(async ({ context, input }) => {
@@ -158,7 +158,7 @@ const deleteAudience = authed
   })
 
 /** Evaluate an Audience (saved or unsaved) now. Recipients stay internal. */
-const previewAudience = authed
+const previewAudience = adminAuthed
   .route({ path: '/email/audiences/preview', method: 'POST' })
   .input(audienceFieldsInput)
   .handler(async ({ context, input }) => {
@@ -181,7 +181,7 @@ const previewAudience = authed
  * Every member an Audience (saved or unsaved) resolves to right now, with the
  * Console user's name where one exists. Internal to the Adminboard.
  */
-const previewAudienceMembers = authed
+const previewAudienceMembers = adminAuthed
   .route({ path: '/email/audiences/preview-members', method: 'POST' })
   .input(audienceFieldsInput)
   .handler(async ({ context, input }) => {

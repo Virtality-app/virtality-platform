@@ -11,7 +11,7 @@ import {
 } from '@virtality/shared/utils'
 import { z } from 'zod'
 import { base } from '../context.ts'
-import { authed } from '../middleware/auth.ts'
+import { adminAuthed } from '../middleware/admin.ts'
 import {
   getEmailOptOutSecret,
   verifyEmailOptOutToken,
@@ -73,7 +73,7 @@ const recordOptOut = async (
   return { created: true as const, optOut: mapOptOut(optOut) }
 }
 
-const listOptOuts = authed
+const listOptOuts = adminAuthed
   .route({ path: '/email/opt-outs/list', method: 'GET' })
   .handler(async ({ context }) => {
     const rows = await context.prisma.emailOptOut.findMany({
@@ -82,7 +82,7 @@ const listOptOuts = authed
     return rows.map(mapOptOut)
   })
 
-const recordOptOutByAdmin = authed
+const recordOptOutByAdmin = adminAuthed
   .route({ path: '/email/opt-outs/record', method: 'POST' })
   .input(
     z.object({

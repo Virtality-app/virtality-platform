@@ -19,7 +19,7 @@ import {
   updatePartnerLogo,
   type PartnerLogoStore,
 } from '@virtality/shared/utils'
-import { authed } from '../middleware/auth.ts'
+import { adminAuthed } from '../middleware/admin.ts'
 import { base, bustWebsiteMarketingCache } from '../context.ts'
 
 function createPrismaPartnerLogoStore(prisma: PrismaClient): PartnerLogoStore {
@@ -89,7 +89,7 @@ const listPartnerLogosProcedure = base
     return listPartnerLogos(createPrismaPartnerLogoStore(prisma))
   })
 
-const createPartnerLogoProcedure = authed
+const createPartnerLogoProcedure = adminAuthed
   .route({ path: '/partner-logo/create', method: 'POST' })
   .input(createPartnerLogoInputSchema)
   .handler(async ({ context, input }) => {
@@ -100,7 +100,7 @@ const createPartnerLogoProcedure = authed
     return result
   })
 
-const updatePartnerLogoProcedure = authed
+const updatePartnerLogoProcedure = adminAuthed
   .route({ path: '/partner-logo/update', method: 'POST' })
   .input(updatePartnerLogoInputSchema)
   .handler(async ({ context, input }) => {
@@ -111,7 +111,7 @@ const updatePartnerLogoProcedure = authed
     return result
   })
 
-const reorderPartnerLogoProcedure = authed
+const reorderPartnerLogoProcedure = adminAuthed
   .route({ path: '/partner-logo/reorder', method: 'POST' })
   .input(reorderPartnerLogoInputSchema)
   .handler(async ({ context, input }) => {
@@ -122,7 +122,7 @@ const reorderPartnerLogoProcedure = authed
     return result
   })
 
-const removePartnerLogoProcedure = authed
+const removePartnerLogoProcedure = adminAuthed
   .route({ path: '/partner-logo/remove', method: 'DELETE' })
   .input(removePartnerLogoInputSchema)
   .handler(async ({ context, input }) => {
