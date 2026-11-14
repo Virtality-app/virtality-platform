@@ -21,6 +21,8 @@ type UseResourceTableOptions<TData> = {
   /** Stable row ids so selection survives deletes/inserts (defaults to row index). */
   getRowId?: TableOptions<TData>['getRowId']
   meta?: TableOptions<TData>['meta']
+  /** Search text the table opens with, e.g. from a `?search=` link. */
+  initialGlobalFilter?: string
 }
 
 export function useResourceTable<TData>({
@@ -30,10 +32,11 @@ export function useResourceTable<TData>({
   enableColumnFilters = false,
   getRowId,
   meta,
+  initialGlobalFilter = '',
 }: UseResourceTableOptions<TData>) {
   'use no memo'
   const [sorting, setSorting] = useState<SortingState>([])
-  const [globalFilter, setGlobalFilter] = useState('')
+  const [globalFilter, setGlobalFilter] = useState(initialGlobalFilter)
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])

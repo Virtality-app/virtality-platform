@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import type { ProvisionedDeviceListItem } from '@virtality/react-query'
 import {
+  accessCodeSearchHref,
+  customerProfileHref,
   devicesOnAccessCode,
   formatHeadsetSummary,
   headsetStepHeading,
@@ -20,6 +22,7 @@ const device = (
   accessCodeId: null,
   accessCode: null,
   owned: false,
+  owner: null,
   createdAt: new Date('2026-11-14T10:00:00.000Z'),
   ...overrides,
 })
@@ -43,6 +46,13 @@ describe('provisioned device display', () => {
     ]
 
     expect(inventoryDevices(devices).map((d) => d.id)).toEqual(['a'])
+  })
+
+  it('links to a code on the Access Codes table and to a customer', () => {
+    expect(accessCodeSearchHref('GO-ABC12DEF34')).toBe(
+      '/trial-redeem-codes?search=GO-ABC12DEF34',
+    )
+    expect(customerProfileHref('user 1')).toBe('/customers/user%201')
   })
 
   it('summarises a code’s headsets', () => {

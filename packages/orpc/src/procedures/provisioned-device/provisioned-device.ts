@@ -39,6 +39,8 @@ export type ProvisionedDeviceListItem = {
   accessCode: string | null
   /** A customer redeemed the code; staff can no longer change the Device. */
   owned: boolean
+  /** The customer who owns it, for linking to their profile in Adminboard. */
+  owner: { id: string; name: string } | null
   createdAt: Date
 }
 
@@ -136,6 +138,7 @@ const listSelect = {
   userId: true,
   createdAt: true,
   accessCode: { select: { code: true } },
+  user: { select: { id: true, name: true } },
 } as const
 
 type ListRow = {
@@ -147,6 +150,7 @@ type ListRow = {
   userId: string | null
   createdAt: Date
   accessCode: { code: string } | null
+  user: { id: string; name: string } | null
 }
 
 function toListItem(row: ListRow): ProvisionedDeviceListItem {
@@ -159,6 +163,7 @@ function toListItem(row: ListRow): ProvisionedDeviceListItem {
     accessCodeId: row.accessCodeId,
     accessCode: row.accessCode?.code ?? null,
     owned: row.userId != null,
+    owner: row.user ? { id: row.user.id, name: row.user.name } : null,
     createdAt: row.createdAt,
   }
 }

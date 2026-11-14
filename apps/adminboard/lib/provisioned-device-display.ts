@@ -7,13 +7,22 @@ export function devicesOnAccessCode(
   return devices.filter((device) => device.accessCodeId === accessCodeId)
 }
 
-/** Inventory: no owner and no Access Code. */
+/** Spares: no owner and no Access Code, so free to attach to a code. */
 export function inventoryDevices(
   devices: ProvisionedDeviceListItem[],
 ): ProvisionedDeviceListItem[] {
   return devices.filter(
     (device) => !device.owned && device.accessCodeId == null,
   )
+}
+
+/** The Access Codes table, searched for one code. */
+export function accessCodeSearchHref(code: string): string {
+  return `/trial-redeem-codes?search=${encodeURIComponent(code)}`
+}
+
+export function customerProfileHref(userId: string): string {
+  return `/customers/${encodeURIComponent(userId)}`
 }
 
 export function formatHeadsetSummary(

@@ -11,6 +11,8 @@ import {
   TableRow,
 } from '@virtality/ui/components/table'
 import { provisionedDeviceStatusLabel } from '@/lib/provisioned-device-display'
+import { AccessCodeLink } from './access-code-link'
+import { DeviceOwnerLink } from './device-owner-link'
 import { ProvisionedDeviceActions } from './provisioned-device-actions'
 
 type ProvisionedDeviceListProps = {
@@ -18,7 +20,10 @@ type ProvisionedDeviceListProps = {
   emptyMessage: string
   onPair: (device: ProvisionedDeviceListItem) => void
   onMove: (device: ProvisionedDeviceListItem) => void
-  /** The list is inside the headsets dialog; see ProvisionedDeviceActions. */
+  /**
+   * The list is inside one code's headsets dialog: the code column is
+   * left out, and the actions menu is modal (see ProvisionedDeviceActions).
+   */
   inDialog?: boolean
 }
 
@@ -43,6 +48,8 @@ export function ProvisionedDeviceList({
         <TableRow>
           <TableHead>Name</TableHead>
           <TableHead>Status</TableHead>
+          {inDialog ? null : <TableHead>Access Code</TableHead>}
+          <TableHead>Customer</TableHead>
           <TableHead>Headset</TableHead>
           <TableHead className='w-8' />
         </TableRow>
@@ -55,6 +62,14 @@ export function ProvisionedDeviceList({
               <Badge variant={device.paired ? 'secondary' : 'outline'}>
                 {provisionedDeviceStatusLabel(device)}
               </Badge>
+            </TableCell>
+            {inDialog ? null : (
+              <TableCell>
+                <AccessCodeLink code={device.accessCode} />
+              </TableCell>
+            )}
+            <TableCell>
+              <DeviceOwnerLink owner={device.owner} />
             </TableCell>
             <TableCell className='font-mono text-xs'>
               {device.deviceId ?? '—'}

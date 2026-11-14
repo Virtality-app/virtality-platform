@@ -296,6 +296,7 @@ describe('Provisioned Devices', () => {
         accessCodeId: 7,
         accessCode: { code: 'GO-ABCDEFGHIJ' },
         userId: 'user-1',
+        user: { id: 'user-1', name: 'Dr Rivera' },
         createdAt: NOW,
       },
       {
@@ -306,6 +307,7 @@ describe('Provisioned Devices', () => {
         accessCodeId: null,
         accessCode: null,
         userId: null,
+        user: null,
         createdAt: NOW,
       },
     ])
@@ -316,12 +318,14 @@ describe('Provisioned Devices', () => {
         accessCode: 'GO-ABCDEFGHIJ',
         paired: true,
         owned: true,
+        owner: { id: 'user-1', name: 'Dr Rivera' },
       }),
       expect.objectContaining({
         id: 'dev-2',
         accessCode: null,
         paired: false,
         owned: false,
+        owner: null,
       }),
     ])
     expect(fake.device.findMany).toHaveBeenCalledWith(
@@ -332,7 +336,7 @@ describe('Provisioned Devices', () => {
         },
       }),
     )
-    // The list never exposes who owns a Device.
+    // The owner comes as `owner`, not as the raw foreign key.
     expect(
       (await listProvisionedDevices(asPrisma(fake)))[0],
     ).not.toHaveProperty('userId')

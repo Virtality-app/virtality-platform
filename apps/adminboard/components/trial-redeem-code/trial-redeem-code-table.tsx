@@ -19,7 +19,12 @@ import { Button } from '@/components/ui/button'
 import FilterBadge from '@/components/ui/filter-badge'
 import { useResourceTable } from '@virtality/ui/lib/use-resource-table'
 
-const TrialRedeemCodeTable = () => {
+type TrialRedeemCodeTableProps = {
+  /** Search text the table opens with. */
+  initialSearch?: string
+}
+
+const TrialRedeemCodeTable = ({ initialSearch }: TrialRedeemCodeTableProps) => {
   const [createOpen, setCreateOpen] = useState(false)
   const [selectedStatuses, setSelectedStatuses] = useState<
     TrialRedeemDisplayStatus[]
@@ -32,6 +37,7 @@ const TrialRedeemCodeTable = () => {
       columns,
       getRowId: (row) => String(row.id),
       enableColumnFilters: true,
+      initialGlobalFilter: initialSearch,
     })
 
   const toggleStatus = (status: TrialRedeemDisplayStatus) => {

@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/dialog'
 import {
   headsetStepHeading,
-  inventoryDevices,
   type HeadsetStep,
 } from '@/lib/provisioned-device-display'
 import { HeadsetStepBody } from './headset-step-body'
@@ -22,9 +21,9 @@ import { ProvisionedDeviceList } from './provisioned-device-list'
 type InventoryStep = Exclude<HeadsetStep, { kind: 'list' }>
 
 /**
- * Provisioned Devices with no owner and no Access Code: spares, and
- * headsets detached from a code that expired. The list is the page; Add,
- * Pair and Move each open one dialog.
+ * Every Provisioned Device: spares with no code, headsets waiting on an
+ * Access Code, and those a customer received by redeeming one. The list is
+ * the page; Add, Pair and Move each open one dialog.
  */
 export function HeadsetInventory() {
   const [step, setStep] = useState<InventoryStep | null>(null)
@@ -37,8 +36,8 @@ export function HeadsetInventory() {
         <div>
           <h1 className='text-xl font-semibold'>Headset inventory</h1>
           <p className='text-muted-foreground text-sm'>
-            Paired headsets waiting for an Access Code. Use Move to code to send
-            one to a customer.
+            Every headset staff have added. Spares wait in inventory; the rest
+            link to their Access Code and, once redeemed, to the customer.
           </p>
         </div>
         <Button
@@ -54,8 +53,8 @@ export function HeadsetInventory() {
         <p className='text-muted-foreground text-sm'>Loading…</p>
       ) : (
         <ProvisionedDeviceList
-          devices={inventoryDevices(data ?? [])}
-          emptyMessage='No headsets in inventory.'
+          devices={data ?? []}
+          emptyMessage='No headsets yet.'
           onPair={(device) => setStep({ kind: 'pair', device })}
           onMove={(device) => setStep({ kind: 'move', device })}
         />
