@@ -267,9 +267,9 @@ export async function moveProvisionedDevice(
   prisma: PrismaClient,
   input: { deviceRecordId: string; accessCodeId: number },
   runtime: Clock = {},
-): Promise<void> {
+): Promise<{ name: string }> {
   const now = runtime.now?.() ?? new Date()
-  await serializable(prisma, async (tx) => {
+  return serializable(prisma, async (tx) => {
     await lockOpenAccessCode(tx, input.accessCodeId, now)
     const taken = await namesWaitingOn(
       tx,
@@ -277,10 +277,12 @@ export async function moveProvisionedDevice(
       input.deviceRecordId,
     )
     // Renamed to follow the headsets already on the new code.
+    const name = nextHeadsetName(taken)
     await updateOwnerless(tx, input.deviceRecordId, {
       accessCodeId: input.accessCodeId,
-      name: nextHeadsetName(taken),
+      name,
     })
+    return { name }
   })
 }
 

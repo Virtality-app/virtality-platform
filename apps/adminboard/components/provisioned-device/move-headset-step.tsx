@@ -33,12 +33,15 @@ export function MoveHeadsetStep({ device, onDone }: MoveHeadsetStepProps) {
     (code) => code.id !== device.accessCodeId,
   )
 
+  const target = options.find((code) => String(code.id) === accessCodeId)
+
   const handleMove = () =>
     move(
       { deviceRecordId: device.id, accessCodeId: Number(accessCodeId) },
       {
-        onSuccess: () => {
-          toast.success(`${device.name} moved`)
+        // Headsets are numbered per code, so a move can rename it.
+        onSuccess: ({ name }) => {
+          toast.success(`${device.name} moved to ${target?.code} as ${name}`)
           onDone()
         },
         onError: (error) =>

@@ -130,11 +130,13 @@ describe('Provisioned Devices', () => {
     const fake = fakePrisma({})
     fake.device.findMany.mockResolvedValue([{ name: 'Headset-01' }])
 
-    await moveProvisionedDevice(
-      asPrisma(fake),
-      { deviceRecordId: 'dev-1', accessCodeId: 9 },
-      { now: () => NOW },
-    )
+    await expect(
+      moveProvisionedDevice(
+        asPrisma(fake),
+        { deviceRecordId: 'dev-1', accessCodeId: 9 },
+        { now: () => NOW },
+      ),
+    ).resolves.toEqual({ name: 'Headset-02' })
 
     expect(fake.device.findMany).toHaveBeenCalledWith({
       where: {
