@@ -6,7 +6,6 @@ import {
   detachProvisionedDevice,
   listProvisionedDevices,
   moveProvisionedDevice,
-  nextHeadsetName,
   removeProvisionedDevice,
   unpairProvisionedDevice,
 } from './provisioned-device.ts'
@@ -127,7 +126,33 @@ describe('Provisioned Devices', () => {
     expect(fake.device.create).not.toHaveBeenCalled()
   })
 
-  it('moves a Device with no owner to another open code, keeping it paired', async () => {
+  it('moves a Device to another open code, renamed after the headsets there', async () => {
+    const fake = fakePrisma({})
+    fake.device.findMany.mockResolvedValue([{ name: 'Headset-01' }])
+
+    await moveProvisionedDevice(
+      asPrisma(fake),
+      { deviceRecordId: 'dev-1', accessCodeId: 9 },
+      { now: () => NOW },
+    )
+
+    expect(fake.device.findMany).toHaveBeenCalledWith({
+      where: {
+        accessCodeId: 9,
+        userId: null,
+        deletedAt: null,
+        id: { not: 'dev-1' },
+      },
+      select: { name: true },
+    })
+    // Only the code and the name change; the headset stays paired.
+    expect(fake.device.updateMany).toHaveBeenCalledWith({
+      where: { id: 'dev-1', userId: null, deletedAt: null },
+      data: { accessCodeId: 9, name: 'Headset-02' },
+    })
+  })
+
+  it('names a headset moved onto an empty code Headset-01', async () => {
     const fake = fakePrisma({})
 
     await moveProvisionedDevice(
@@ -136,10 +161,11 @@ describe('Provisioned Devices', () => {
       { now: () => NOW },
     )
 
-    expect(fake.device.updateMany).toHaveBeenCalledWith({
-      where: { id: 'dev-1', userId: null, deletedAt: null },
-      data: { accessCodeId: 9 },
-    })
+    expect(fake.device.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { accessCodeId: 9, name: 'Headset-01' },
+      }),
+    )
   })
 
   it('refuses to move a Device onto a code that is no longer open', async () => {
@@ -158,11 +184,16 @@ describe('Provisioned Devices', () => {
   it('detaches a Device with no owner to inventory', async () => {
     const fake = fakePrisma({})
 
+    fake.device.findMany.mockResolvedValue([
+      { name: 'Headset-01' },
+      { name: 'Headset-02' },
+    ])
+
     await detachProvisionedDevice(asPrisma(fake), { deviceRecordId: 'dev-1' })
 
     expect(fake.device.updateMany).toHaveBeenCalledWith({
       where: { id: 'dev-1', userId: null, deletedAt: null },
-      data: { accessCodeId: null },
+      data: { accessCodeId: null, name: 'Headset-03' },
     })
   })
 
@@ -307,35 +338,52 @@ describe('Provisioned Devices', () => {
 })
 
 describe('Provisioned Device names', () => {
-  it('numbers headsets after the highest one so far', () => {
-    expect(nextHeadsetName([])).toBe('Headset-01')
-    expect(nextHeadsetName(['Headset-01', 'Headset-07', 'Headset-03'])).toBe(
-      'Headset-08',
-    )
-    expect(nextHeadsetName(['Headset-99'])).toBe('Headset-100')
-  })
-
-  it('ignores names that are not in the Headset-## scheme', () => {
-    expect(nextHeadsetName(['Clinic room 2', 'Headset-x', 'Headset-02'])).toBe(
-      'Headset-03',
-    )
-  })
-
-  it('reads every staff-made Device, removed ones too, so no name repeats', async () => {
+  it('numbers a new headset within its code, from Headset-01', async () => {
     const fake = fakePrisma({})
 
-    await createProvisionedDevice(
+    const created = await createProvisionedDevice(
+      asPrisma(fake),
+      { accessCodeId: 7 },
+      { now: () => NOW, createId: () => 'dev-1' },
+    )
+
+    expect(fake.device.findMany).toHaveBeenCalledWith({
+      where: { accessCodeId: 7, userId: null, deletedAt: null },
+      select: { name: true },
+    })
+    expect(created.name).toBe('Headset-01')
+  })
+
+  it('numbers a new inventory headset within inventory', async () => {
+    const fake = fakePrisma({})
+    fake.device.findMany.mockResolvedValue([{ name: 'Headset-01' }])
+
+    const created = await createProvisionedDevice(
       asPrisma(fake),
       { accessCodeId: null },
       { now: () => NOW, createId: () => 'dev-1' },
     )
 
     expect(fake.device.findMany).toHaveBeenCalledWith({
-      where: {
-        name: { startsWith: 'Headset-' },
-        OR: [{ userId: null }, { accessCodeId: { not: null } }],
-      },
+      where: { accessCodeId: null, userId: null, deletedAt: null },
       select: { name: true },
+    })
+    expect(created.name).toBe('Headset-02')
+  })
+
+  it('retries when a concurrent write takes the same number', async () => {
+    const fake = fakePrisma({})
+    fake.$transaction.mockRejectedValueOnce({ code: 'P2034' })
+
+    await createProvisionedDevice(
+      asPrisma(fake),
+      { accessCodeId: 7 },
+      { now: () => NOW, createId: () => 'dev-1' },
+    )
+
+    expect(fake.$transaction).toHaveBeenCalledTimes(2)
+    expect(fake.$transaction).toHaveBeenLastCalledWith(expect.any(Function), {
+      isolationLevel: 'Serializable',
     })
   })
 })

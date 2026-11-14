@@ -1,6 +1,9 @@
 import { randomUUID } from 'node:crypto'
 import type { PrismaClient } from '@virtality/db'
-import { TRIAL_REDEEM_CODE_TTL_MS } from '@virtality/shared/utils'
+import {
+  nextHeadsetName,
+  TRIAL_REDEEM_CODE_TTL_MS,
+} from '@virtality/shared/utils'
 
 /**
  * Provisioned Devices (ADR 0011): Devices staff create and pair before a
@@ -89,7 +92,12 @@ async function throwWhyNotOwnerless(
 async function updateOwnerless(
   prisma: Pick<PrismaClient, 'device'>,
   deviceRecordId: string,
-  data: { accessCodeId?: number | null; deviceId?: null; deletedAt?: Date },
+  data: {
+    accessCodeId?: number | null
+    name?: string
+    deviceId?: null
+    deletedAt?: Date
+  },
 ) {
   const { count } = await prisma.device.updateMany({
     where: ownerless(deviceRecordId),
@@ -155,21 +163,32 @@ function toListItem(row: ListRow): ProvisionedDeviceListItem {
   }
 }
 
-const HEADSET_NAME = /^Headset-(\d+)$/
-
 /**
  * We ship one headset, so staff don't pick a model. Matches the console's
  * default for Devices clinicians add, which also picks the card's picture.
  */
 export const PROVISIONED_HEADSET_MODEL = 'Meta Quest 3S'
 
-/** `Headset-01`, `Headset-02`, … after the highest number so far. */
-export function nextHeadsetName(existingNames: string[]): string {
-  const highest = existingNames.reduce((max, name) => {
-    const match = HEADSET_NAME.exec(name)
-    return match ? Math.max(max, Number(match[1])) : max
-  }, 0)
-  return `Headset-${String(highest + 1).padStart(2, '0')}`
+/**
+ * Names of the headsets already waiting where a Device is going: on the
+ * Access Code, or in inventory when `accessCodeId` is null. Each of those
+ * groups numbers its headsets from Headset-01 (see `nextHeadsetName`).
+ */
+async function namesWaitingOn(
+  tx: Pick<PrismaClient, 'device'>,
+  accessCodeId: number | null,
+  except?: string,
+): Promise<string[]> {
+  const rows = await tx.device.findMany({
+    where: {
+      accessCodeId,
+      userId: null,
+      deletedAt: null,
+      ...(except ? { id: { not: except } } : {}),
+    },
+    select: { name: true },
+  })
+  return rows.map((row) => row.name)
 }
 
 function getPrismaErrorCode(error: unknown): unknown {
@@ -178,9 +197,32 @@ function getPrismaErrorCode(error: unknown): unknown {
     : undefined
 }
 
+type Tx = Parameters<Parameters<PrismaClient['$transaction']>[0]>[0]
+
 /**
- * Creates a Provisioned Device named `Headset-##`. Staff pick only where it
- * goes: an Access Code, or inventory when `accessCodeId` is null.
+ * Picking the next number reads a group, then writes into it. Serializable
+ * makes two admins doing that at once conflict; the loser retries and reads
+ * the winner's headset.
+ */
+async function serializable<T>(
+  prisma: PrismaClient,
+  operation: (tx: Tx) => Promise<T>,
+): Promise<T> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await prisma.$transaction(operation, {
+        isolationLevel: 'Serializable',
+      })
+    } catch (error) {
+      if (getPrismaErrorCode(error) !== 'P2034' || attempt === 4) throw error
+    }
+  }
+}
+
+/**
+ * Creates a Provisioned Device, named after the headsets already on its
+ * code (or in inventory when `accessCodeId` is null). Staff pick only where
+ * it goes.
  */
 export async function createProvisionedDevice(
   prisma: PrismaClient,
@@ -190,42 +232,20 @@ export async function createProvisionedDevice(
   const now = runtime.now?.() ?? new Date()
   const { accessCodeId } = input
 
-  const create = () =>
-    prisma.$transaction(
-      async (tx) => {
-        if (accessCodeId != null)
-          await lockOpenAccessCode(tx, accessCodeId, now)
-        // Every Device staff ever made, removed ones too, so a name never
-        // comes back. Clinicians' own Devices don't count.
-        const taken = await tx.device.findMany({
-          where: {
-            name: { startsWith: 'Headset-' },
-            OR: [{ userId: null }, { accessCodeId: { not: null } }],
-          },
-          select: { name: true },
-        })
-        return tx.device.create({
-          data: {
-            id: runtime.createId?.() ?? randomUUID(),
-            name: nextHeadsetName(taken.map((device) => device.name)),
-            model: PROVISIONED_HEADSET_MODEL,
-            accessCodeId,
-            userId: null,
-          },
-          select: listSelect,
-        })
+  const row = await serializable(prisma, async (tx) => {
+    if (accessCodeId != null) await lockOpenAccessCode(tx, accessCodeId, now)
+    return tx.device.create({
+      data: {
+        id: runtime.createId?.() ?? randomUUID(),
+        name: nextHeadsetName(await namesWaitingOn(tx, accessCodeId)),
+        model: PROVISIONED_HEADSET_MODEL,
+        accessCodeId,
+        userId: null,
       },
-      // Two admins creating at once would read the same highest number.
-      { isolationLevel: 'Serializable' },
-    )
-
-  for (let attempt = 0; ; attempt++) {
-    try {
-      return toListItem(await create())
-    } catch (error) {
-      if (getPrismaErrorCode(error) !== 'P2034' || attempt === 4) throw error
-    }
-  }
+      select: listSelect,
+    })
+  })
+  return toListItem(row)
 }
 
 /** Devices with no owner, plus Devices a code has already delivered. */
@@ -249,10 +269,17 @@ export async function moveProvisionedDevice(
   runtime: Clock = {},
 ): Promise<void> {
   const now = runtime.now?.() ?? new Date()
-  await prisma.$transaction(async (tx) => {
+  await serializable(prisma, async (tx) => {
     await lockOpenAccessCode(tx, input.accessCodeId, now)
+    const taken = await namesWaitingOn(
+      tx,
+      input.accessCodeId,
+      input.deviceRecordId,
+    )
+    // Renamed to follow the headsets already on the new code.
     await updateOwnerless(tx, input.deviceRecordId, {
       accessCodeId: input.accessCodeId,
+      name: nextHeadsetName(taken),
     })
   })
 }
@@ -261,7 +288,13 @@ export async function detachProvisionedDevice(
   prisma: PrismaClient,
   input: { deviceRecordId: string },
 ): Promise<void> {
-  await updateOwnerless(prisma, input.deviceRecordId, { accessCodeId: null })
+  await serializable(prisma, async (tx) => {
+    const taken = await namesWaitingOn(tx, null, input.deviceRecordId)
+    await updateOwnerless(tx, input.deviceRecordId, {
+      accessCodeId: null,
+      name: nextHeadsetName(taken),
+    })
+  })
 }
 
 export async function unpairProvisionedDevice(

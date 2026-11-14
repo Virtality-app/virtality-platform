@@ -22,6 +22,8 @@ type FakeOptions = {
   linkedDeviceIds?: string[]
   /** Linked Devices staff never paired. */
   unpairedDeviceIds?: string[]
+  /** Names of Devices the redeemer already owns. */
+  ownedNames?: string[]
   mode?: 'trial_grant' | 'free_grant'
 }
 
@@ -29,19 +31,23 @@ function fakeClient({
   codeUpdated = 1,
   linkedDeviceIds = [],
   unpairedDeviceIds = [],
+  ownedNames = [],
   mode = 'trial_grant',
 }: FakeOptions = {}) {
+  // Waiting on the code they are numbered from Headset-01, in this order.
+  const waiting = [
+    ...linkedDeviceIds.map((id) => ({ id, deviceId: `headset-${id}` })),
+    ...unpairedDeviceIds.map((id) => ({ id, deviceId: null })),
+  ].map((device, i) => ({ ...device, name: `Headset-0${i + 1}` }))
   const tx = {
     trialRedeemCode: {
       updateMany: vi.fn().mockResolvedValue({ count: codeUpdated }),
     },
     device: {
-      updateManyAndReturn: vi
-        .fn()
-        .mockResolvedValue([
-          ...linkedDeviceIds.map((id) => ({ id, deviceId: `headset-${id}` })),
-          ...unpairedDeviceIds.map((id) => ({ id, deviceId: null })),
-        ]),
+      findMany: vi.fn(async ({ where }: { where: { userId?: unknown } }) =>
+        where.userId === null ? waiting : ownedNames.map((name) => ({ name })),
+      ),
+      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
     },
   }
   const client = {
@@ -100,10 +106,14 @@ describe('Provisioned Device ownership at redemption', () => {
       where: { id: 7, status: 'unused' },
       data: { status: 'redeemed', usedAt: NOW, usedBy: 'user-1' },
     })
-    expect(tx.device.updateManyAndReturn).toHaveBeenCalledWith({
-      where: { accessCodeId: 7, userId: null, deletedAt: null },
-      data: { userId: 'user-1' },
-      select: { id: true, deviceId: true },
+    // A new account: its headsets keep Headset-01, Headset-02.
+    expect(tx.device.updateMany).toHaveBeenCalledWith({
+      where: { id: 'dev-1', accessCodeId: 7, userId: null, deletedAt: null },
+      data: { userId: 'user-1', name: 'Headset-01' },
+    })
+    expect(tx.device.updateMany).toHaveBeenCalledWith({
+      where: { id: 'dev-2', accessCodeId: 7, userId: null, deletedAt: null },
+      data: { userId: 'user-1', name: 'Headset-02' },
     })
     expect(owned).toHaveBeenCalledWith({
       userId: 'user-1',
@@ -126,11 +136,41 @@ describe('Provisioned Device ownership at redemption', () => {
     )
 
     // Both get the owner; the unpaired one reports when its owner pairs it.
-    expect(tx.device.updateManyAndReturn).toHaveBeenCalledTimes(1)
+    expect(tx.device.updateMany).toHaveBeenCalledTimes(2)
     expect(owned).toHaveBeenCalledWith({
       userId: 'user-1',
       deviceRecordIds: ['dev-1'],
     })
+  })
+
+  it('numbers arriving headsets after the ones the customer already has', async () => {
+    const { client, tx } = fakeClient({
+      linkedDeviceIds: ['dev-1', 'dev-2'],
+      ownedNames: ['Headset-01', 'Front desk'],
+    })
+
+    await createPrismaTrialRedeemConsumeStore(client).consumeAsRedeemed(
+      7,
+      'user-1',
+      NOW,
+    )
+
+    expect(tx.device.findMany).toHaveBeenCalledWith({
+      where: { userId: 'user-1', deletedAt: null },
+      select: { name: true },
+    })
+    expect(tx.device.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ id: 'dev-1' }),
+        data: { userId: 'user-1', name: 'Headset-02' },
+      }),
+    )
+    expect(tx.device.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ id: 'dev-2' }),
+        data: { userId: 'user-1', name: 'Headset-03' },
+      }),
+    )
   })
 
   it('leaves Devices alone when the code is no longer unused', async () => {
@@ -146,7 +186,8 @@ describe('Provisioned Device ownership at redemption', () => {
       ),
     ).resolves.toBe(false)
 
-    expect(tx.device.updateManyAndReturn).not.toHaveBeenCalled()
+    expect(tx.device.findMany).not.toHaveBeenCalled()
+    expect(tx.device.updateMany).not.toHaveBeenCalled()
     expect(owned).not.toHaveBeenCalled()
   })
 
@@ -176,8 +217,10 @@ describe('Provisioned Device ownership at redemption', () => {
       ),
     ).resolves.toMatchObject({ status: 'redeemed' })
 
-    expect(tx.device.updateManyAndReturn).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { userId: 'new-user' } }),
+    expect(tx.device.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ userId: 'new-user' }),
+      }),
     )
   })
 
@@ -198,8 +241,10 @@ describe('Provisioned Device ownership at redemption', () => {
         data: expect.objectContaining({ status: 'already_entitled' }),
       }),
     )
-    expect(tx.device.updateManyAndReturn).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { userId: 'new-user' } }),
+    expect(tx.device.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ userId: 'new-user' }),
+      }),
     )
   })
 
@@ -218,8 +263,10 @@ describe('Provisioned Device ownership at redemption', () => {
       ),
     ).resolves.toMatchObject({ effect: 'free_grant_created' })
 
-    expect(tx.device.updateManyAndReturn).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { userId: 'existing-user' } }),
+    expect(tx.device.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ userId: 'existing-user' }),
+      }),
     )
   })
 
@@ -235,8 +282,10 @@ describe('Provisioned Device ownership at redemption', () => {
       ),
     ).resolves.toMatchObject({ effect: 'already_entitled' })
 
-    expect(tx.device.updateManyAndReturn).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { userId: 'existing-user' } }),
+    expect(tx.device.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ userId: 'existing-user' }),
+      }),
     )
   })
 })

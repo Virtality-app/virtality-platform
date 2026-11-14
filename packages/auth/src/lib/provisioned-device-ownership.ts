@@ -1,4 +1,5 @@
 import type { PrismaClient } from '@virtality/db'
+import { compareHeadsetNames, nextHeadsetNames } from '@virtality/shared/utils'
 
 /**
  * Provisioned Devices that just received their owner and already have a
@@ -33,7 +34,8 @@ function notifyOwned(owned: ProvisionedDevicesOwned): void {
 
 /**
  * Marks an unused Access Code used and, in the same transaction, makes the
- * redeeming user the owner of every Provisioned Device linked to it. Returns
+ * redeeming user the owner of every Provisioned Device linked to it, renamed
+ * to follow the `Headset-##` Devices the account already has. Returns
  * false, and changes nothing, when the code is missing or no longer unused.
  */
 export async function consumeAccessCodeAndAssignDevices(
@@ -56,16 +58,43 @@ export async function consumeAccessCodeAndAssignDevices(
     })
     if (count === 0) return null
 
-    const devices = await tx.device.updateManyAndReturn({
+    const waiting = await tx.device.findMany({
       where: { accessCodeId: input.id, userId: null, deletedAt: null },
-      data: { userId: input.usedBy },
-      select: { id: true, deviceId: true },
+      select: { id: true, name: true, deviceId: true },
     })
-    // Every linked Device gets the owner, but only one with a headset bound
-    // counts as paired. An unpaired one reports when its owner pairs it.
-    return devices
-      .filter((device) => device.deviceId != null)
-      .map((device) => device.id)
+    if (waiting.length === 0) return []
+
+    // Headset names count per customer: the code's headsets continue after
+    // the ones this account already has, in the order they had on the code.
+    const owned = await tx.device.findMany({
+      where: { userId: input.usedBy, deletedAt: null },
+      select: { name: true },
+    })
+    const arriving = [...waiting].sort((a, b) =>
+      compareHeadsetNames(a.name, b.name),
+    )
+    const names = nextHeadsetNames(
+      owned.map((device) => device.name),
+      arriving.length,
+    )
+
+    const paired: string[] = []
+    for (const [i, device] of arriving.entries()) {
+      // Guarded, so a headset staff moved off the code meanwhile stays put.
+      const { count } = await tx.device.updateMany({
+        where: {
+          id: device.id,
+          accessCodeId: input.id,
+          userId: null,
+          deletedAt: null,
+        },
+        data: { userId: input.usedBy, name: names[i] },
+      })
+      // Every linked Device gets the owner, but only one with a headset bound
+      // counts as paired. An unpaired one reports when its owner pairs it.
+      if (count > 0 && device.deviceId != null) paired.push(device.id)
+    }
+    return paired
   })
 
   if (!result) return false
