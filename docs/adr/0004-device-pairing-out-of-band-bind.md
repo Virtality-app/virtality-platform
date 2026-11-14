@@ -1,6 +1,6 @@
 # Device Pairing Out-of-Band Bind
 
-**Status:** accepted
+**Status:** accepted. Extended by [ADR 0011](0011-provisioned-devices-paired-before-ownership.md): a Device may be paired before it has an owner when it is linked to an Access Code.
 
 **Device Pairing** binds a durable **Headset Identity** to a console Device out-of-band: the clinician creates a short-lived **Pairing Claim**, the console shows a 6-digit **Pairing Code**, and the VR claims over HTTPS. Socket.IO is not used for the bind. The platform API and PostgreSQL are authoritative; Redis and temporary pair-code rooms are not part of pairing correctness.
 
