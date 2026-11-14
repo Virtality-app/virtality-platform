@@ -27,7 +27,7 @@ import {
 } from '@virtality/shared/types'
 import { renderAdminAuthoredEmail } from '@virtality/ui/render-admin-authored-email'
 import { z } from 'zod'
-import { authed } from '../middleware/auth.ts'
+import { adminAuthed } from '../middleware/admin.ts'
 import {
   buildOptOutPlaceholderLinks,
   personaliseOptOutLinks,
@@ -350,7 +350,7 @@ const createDraftWithAttachmentCopies = async (
   }
 }
 
-const listDrafts = authed
+const listDrafts = adminAuthed
   .route({ path: '/email/admin-authored/drafts/list', method: 'GET' })
   .handler(async ({ context }) => {
     const drafts = await context.prisma.adminEmailDraft.findMany({
@@ -362,7 +362,7 @@ const listDrafts = authed
     return drafts.map(mapDraft)
   })
 
-const listArchivedDrafts = authed
+const listArchivedDrafts = adminAuthed
   .route({ path: '/email/admin-authored/drafts/list-archived', method: 'GET' })
   .handler(async ({ context }) => {
     const drafts = await context.prisma.adminEmailDraft.findMany({
@@ -374,7 +374,7 @@ const listArchivedDrafts = authed
     return drafts.map(mapDraft)
   })
 
-const getDraft = authed
+const getDraft = adminAuthed
   .route({ path: '/email/admin-authored/drafts/get', method: 'GET' })
   .input(draftIdInput)
   .handler(async ({ context, input }) => {
@@ -382,7 +382,7 @@ const getDraft = authed
     return mapDraft(draft)
   })
 
-const createDraft = authed
+const createDraft = adminAuthed
   .route({ path: '/email/admin-authored/drafts/create', method: 'POST' })
   .handler(async ({ context }) => {
     const draft = await context.prisma.adminEmailDraft.create({
@@ -399,7 +399,7 @@ const createDraft = authed
     return mapDraft(draft)
   })
 
-const updateDraft = authed
+const updateDraft = adminAuthed
   .route({ path: '/email/admin-authored/drafts/update', method: 'POST' })
   .input(updateDraftInput)
   .handler(async ({ context, input }) => {
@@ -434,7 +434,7 @@ const updateDraft = authed
     return mapDraft(updated)
   })
 
-const cloneDraft = authed
+const cloneDraft = adminAuthed
   .route({ path: '/email/admin-authored/drafts/clone', method: 'POST' })
   .input(cloneDraftInput)
   .handler(async ({ context, input }) => {
@@ -459,7 +459,7 @@ const cloneDraft = authed
     return mapDraft(cloned)
   })
 
-const cloneSentRecord = authed
+const cloneSentRecord = adminAuthed
   .route({
     path: '/email/admin-authored/drafts/clone-from-sent',
     method: 'POST',
@@ -504,7 +504,7 @@ const cloneSentRecord = authed
     return mapDraft(cloned)
   })
 
-const archiveDraft = authed
+const archiveDraft = adminAuthed
   .route({ path: '/email/admin-authored/drafts/archive', method: 'POST' })
   .input(draftIdInput)
   .handler(async ({ context, input }) => {
@@ -525,7 +525,7 @@ const archiveDraft = authed
     return mapDraft(archived)
   })
 
-const restoreDraft = authed
+const restoreDraft = adminAuthed
   .route({ path: '/email/admin-authored/drafts/restore', method: 'POST' })
   .input(draftIdInput)
   .handler(async ({ context, input }) => {
@@ -546,7 +546,7 @@ const restoreDraft = authed
     return mapDraft(restored)
   })
 
-const previewDraft = authed
+const previewDraft = adminAuthed
   .route({ path: '/email/admin-authored/drafts/preview', method: 'GET' })
   .input(draftIdInput)
   .handler(async ({ context, input }) => {
@@ -571,7 +571,7 @@ const toResolvedRecipientsOutput = (
  * Same resolution as `resolveRecipients`, but for unsaved targeting so the
  * workspace can show live numbers while the admin edits.
  */
-const previewDraftRecipients = authed
+const previewDraftRecipients = adminAuthed
   .route({
     path: '/email/admin-authored/drafts/preview-recipients',
     method: 'POST',
@@ -601,7 +601,7 @@ const previewDraftRecipients = authed
   })
 
 /** Explicit list ∪ Audience, minus Opt-outs — what Final Send would deliver to. */
-const resolveDraftRecipients = authed
+const resolveDraftRecipients = adminAuthed
   .route({
     path: '/email/admin-authored/drafts/resolve-recipients',
     method: 'GET',
@@ -614,7 +614,7 @@ const resolveDraftRecipients = authed
     return toResolvedRecipientsOutput(resolved)
   })
 
-const testSendDraft = authed
+const testSendDraft = adminAuthed
   .route({ path: '/email/admin-authored/drafts/test-send', method: 'POST' })
   .input(testSendInput)
   .handler(async ({ context, input }) => {
@@ -654,7 +654,7 @@ const testSendDraft = authed
     return mapDraft(updated)
   })
 
-const finalSendDraft = authed
+const finalSendDraft = adminAuthed
   .route({ path: '/email/admin-authored/drafts/final-send', method: 'POST' })
   .input(finalSendInput)
   .handler(async ({ context, input }) => {
@@ -734,7 +734,7 @@ const finalSendDraft = authed
     return mapSentRecord(sentRecord)
   })
 
-const addAttachment = authed
+const addAttachment = adminAuthed
   .route({
     path: '/email/admin-authored/drafts/attachments/add',
     method: 'POST',
@@ -768,7 +768,7 @@ const addAttachment = authed
     }
   })
 
-const removeAttachment = authed
+const removeAttachment = adminAuthed
   .route({
     path: '/email/admin-authored/drafts/attachments/remove',
     method: 'POST',
@@ -801,7 +801,7 @@ const removeAttachment = authed
     return mapDraft(updated)
   })
 
-const listSentRecords = authed
+const listSentRecords = adminAuthed
   .route({ path: '/email/admin-authored/sent/list', method: 'GET' })
   .handler(async ({ context }) => {
     const sentRecords = await context.prisma.adminEmailSentRecord.findMany({
@@ -812,7 +812,7 @@ const listSentRecords = authed
     return sentRecords.map(mapSentRecord)
   })
 
-const getSentRecord = authed
+const getSentRecord = adminAuthed
   .route({ path: '/email/admin-authored/sent/get', method: 'GET' })
   .input(sentRecordIdInput)
   .handler(async ({ context, input }) => {

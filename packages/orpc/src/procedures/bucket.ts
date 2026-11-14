@@ -16,7 +16,7 @@ import {
 } from '@virtality/shared/utils'
 import { Buffer } from 'node:buffer'
 import { z } from 'zod'
-import { authed } from '../middleware/auth.ts'
+import { adminAuthed } from '../middleware/admin.ts'
 import { createPrismaBucketReferenceReader } from './bucket-reference-reader.ts'
 
 const bucketLogger = createAppLogger({
@@ -72,7 +72,7 @@ const BucketFolderDeleteInput = z.object({
   sourcePrefix: z.string().min(1),
 })
 
-const listBucketPrefix = authed
+const listBucketPrefix = adminAuthed
   .route({ path: '/bucket/list', method: 'GET' })
   .input(BucketListInput)
   .handler(async ({ context, input }) => {
@@ -86,7 +86,7 @@ const listBucketPrefix = authed
     return formatBucketListPage(prefix, result)
   })
 
-const uploadBucket = authed
+const uploadBucket = adminAuthed
   .route({ path: '/bucket/upload', method: 'POST' })
   .input(BucketUploadInput)
   .handler(async ({ context, input }) => {
@@ -130,7 +130,7 @@ const uploadBucket = authed
     return outcome
   })
 
-const moveBucket = authed
+const moveBucket = adminAuthed
   .route({ path: '/bucket/move', method: 'POST' })
   .input(BucketMoveInput)
   .handler(async ({ context, input }) => {
@@ -164,7 +164,7 @@ const moveBucket = authed
     }
   })
 
-const deleteBucket = authed
+const deleteBucket = adminAuthed
   .route({ path: '/bucket/delete', method: 'DELETE' })
   .input(BucketDeleteInput)
   .handler(async ({ context, input }) => {
@@ -196,7 +196,7 @@ const deleteBucket = authed
     }
   })
 
-const replaceBucket = authed
+const replaceBucket = adminAuthed
   .route({ path: '/bucket/replace', method: 'POST' })
   .input(BucketReplaceInput)
   .handler(async ({ context, input }) => {
@@ -238,7 +238,7 @@ const replaceBucket = authed
     }
   })
 
-const getBucketObjectDetailsProcedure = authed
+const getBucketObjectDetailsProcedure = adminAuthed
   .route({ path: '/bucket/details', method: 'GET' })
   .input(BucketObjectDetailsInput)
   .handler(async ({ context, input }) => {
@@ -259,7 +259,7 @@ const getBucketObjectDetailsProcedure = authed
     }
   })
 
-const getBucketObjectReferences = authed
+const getBucketObjectReferences = adminAuthed
   .route({ path: '/bucket/references', method: 'GET' })
   .input(BucketReferencesInput)
   .handler(async ({ context, input }) => {
@@ -269,7 +269,7 @@ const getBucketObjectReferences = authed
     })
   })
 
-const previewBucketFolder = authed
+const previewBucketFolder = adminAuthed
   .route({ path: '/bucket/folder/preview', method: 'GET' })
   .input(BucketFolderPreviewInput)
   .handler(async ({ context, input }) => {
@@ -288,7 +288,7 @@ const previewBucketFolder = authed
     }
   })
 
-const moveBucketFolder = authed
+const moveBucketFolder = adminAuthed
   .route({ path: '/bucket/folder/move', method: 'POST' })
   .input(BucketFolderMoveInput)
   .handler(async ({ context, input }) => {
@@ -326,7 +326,7 @@ const moveBucketFolder = authed
     }
   })
 
-const deleteBucketFolder = authed
+const deleteBucketFolder = adminAuthed
   .route({ path: '/bucket/folder/delete', method: 'DELETE' })
   .input(BucketFolderDeleteInput)
   .handler(async ({ context, input }) => {

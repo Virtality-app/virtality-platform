@@ -12,7 +12,7 @@ import {
   type CampaignWindowRecord,
 } from '@virtality/shared/utils'
 import { z } from 'zod/v4'
-import { authed } from '../middleware/auth.ts'
+import { adminAuthed } from '../middleware/admin.ts'
 
 const upsertInputSchema = z
   .object({
@@ -63,7 +63,7 @@ function serializeWindow(window: CampaignWindowRecord | null) {
   }
 }
 
-const get = authed
+const get = adminAuthed
   .route({ path: '/campaign-window/get', method: 'GET' })
   .handler(async () =>
     runCampaignWindowHandler(async () => {
@@ -78,7 +78,7 @@ const get = authed
     }),
   )
 
-const listPickerCoupons = authed
+const listPickerCoupons = adminAuthed
   .route({ path: '/campaign-window/picker-coupons', method: 'GET' })
   .handler(async () =>
     runCampaignWindowHandler(async () => {
@@ -90,7 +90,7 @@ const listPickerCoupons = authed
     }),
   )
 
-const upsert = authed
+const upsert = adminAuthed
   .route({ path: '/campaign-window/upsert', method: 'POST' })
   .input(upsertInputSchema)
   .handler(async ({ input }) =>
@@ -100,7 +100,7 @@ const upsert = authed
     }),
   )
 
-const close = authed
+const close = adminAuthed
   .route({ path: '/campaign-window/close', method: 'POST' })
   .handler(async () =>
     runCampaignWindowHandler(async () => {

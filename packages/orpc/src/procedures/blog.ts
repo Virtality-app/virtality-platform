@@ -36,7 +36,7 @@ import {
   type BlogPostRecord,
   type BlogStore,
 } from '@virtality/shared/utils'
-import { authed } from '../middleware/auth.ts'
+import { adminAuthed } from '../middleware/admin.ts'
 import { base, bustWebsiteMarketingCache } from '../context.ts'
 
 function parseBody(value: Prisma.JsonValue): BodyBlock[] {
@@ -266,14 +266,14 @@ const getPublishedBySlugProcedure = base
     )
   })
 
-const listAuthorsProcedure = authed
+const listAuthorsProcedure = adminAuthed
   .route({ path: '/blog/list-authors', method: 'GET' })
   .handler(async ({ context }) => {
     await ensureBlogSeeded(context.prisma)
     return withBlogStore(context.prisma, listBlogAuthors)
   })
 
-const listProcedure = authed
+const listProcedure = adminAuthed
   .route({ path: '/blog/list', method: 'GET' })
   .input(listBlogPostsInputSchema)
   .handler(async ({ context, input }) => {
@@ -283,7 +283,7 @@ const listProcedure = authed
     )
   })
 
-const getProcedure = authed
+const getProcedure = adminAuthed
   .route({ path: '/blog/get', method: 'GET' })
   .input(getBlogPostInputSchema)
   .handler(async ({ context, input }) => {
@@ -293,7 +293,7 @@ const getProcedure = authed
     )
   })
 
-const createDraftProcedure = authed
+const createDraftProcedure = adminAuthed
   .route({ path: '/blog/create-draft', method: 'POST' })
   .input(createBlogDraftInputSchema)
   .handler(async ({ context }) => {
@@ -303,7 +303,7 @@ const createDraftProcedure = authed
     )
   })
 
-const autosaveProcedure = authed
+const autosaveProcedure = adminAuthed
   .route({ path: '/blog/autosave', method: 'POST' })
   .input(autosaveBlogPostInputSchema)
   .handler(async ({ context, input }) => {
@@ -313,7 +313,7 @@ const autosaveProcedure = authed
     )
   })
 
-const publishProcedure = authed
+const publishProcedure = adminAuthed
   .route({ path: '/blog/publish', method: 'POST' })
   .input(blogPostActionInputSchema)
   .handler(async ({ context, input }) => {
@@ -324,7 +324,7 @@ const publishProcedure = authed
     return result
   })
 
-const unpublishProcedure = authed
+const unpublishProcedure = adminAuthed
   .route({ path: '/blog/unpublish', method: 'POST' })
   .input(blogPostActionInputSchema)
   .handler(async ({ context, input }) => {
@@ -335,7 +335,7 @@ const unpublishProcedure = authed
     return result
   })
 
-const discardProcedure = authed
+const discardProcedure = adminAuthed
   .route({ path: '/blog/discard-changes', method: 'POST' })
   .input(blogPostActionInputSchema)
   .handler(async ({ context, input }) => {
@@ -344,7 +344,7 @@ const discardProcedure = authed
     )
   })
 
-const archiveProcedure = authed
+const archiveProcedure = adminAuthed
   .route({ path: '/blog/archive', method: 'POST' })
   .input(blogPostActionInputSchema)
   .handler(async ({ context, input }) => {
@@ -360,7 +360,7 @@ const archiveProcedure = authed
     return result
   })
 
-const restoreProcedure = authed
+const restoreProcedure = adminAuthed
   .route({ path: '/blog/restore', method: 'POST' })
   .input(blogPostActionInputSchema)
   .handler(async ({ context, input }) => {
@@ -369,7 +369,7 @@ const restoreProcedure = authed
     )
   })
 
-const setFeaturedProcedure = authed
+const setFeaturedProcedure = adminAuthed
   .route({ path: '/blog/set-featured', method: 'POST' })
   .input(setBlogPostFeaturedInputSchema)
   .handler(async ({ context, input }) => {

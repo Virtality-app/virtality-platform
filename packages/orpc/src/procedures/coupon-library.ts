@@ -12,7 +12,7 @@ import {
   CouponLibraryValidationError,
 } from '@virtality/shared/utils'
 import { z } from 'zod/v4'
-import { authed } from '../middleware/auth.ts'
+import { adminAuthed } from '../middleware/admin.ts'
 
 const createInputSchema = z
   .object({
@@ -76,34 +76,34 @@ async function runCouponLibraryHandler<T>(run: () => Promise<T>): Promise<T> {
   }
 }
 
-const list = authed
+const list = adminAuthed
   .route({ path: '/coupon-library/list', method: 'GET' })
   .handler(async () =>
     runCouponLibraryHandler(() => listLibraryCouponsForAdminboard()),
   )
 
-const create = authed
+const create = adminAuthed
   .route({ path: '/coupon-library/create', method: 'POST' })
   .input(createInputSchema)
   .handler(async ({ input }) =>
     runCouponLibraryHandler(() => createLibraryCouponForAdminboard(input)),
   )
 
-const updateName = authed
+const updateName = adminAuthed
   .route({ path: '/coupon-library/update-name', method: 'POST' })
   .input(updateNameInputSchema)
   .handler(async ({ input }) =>
     runCouponLibraryHandler(() => updateLibraryCouponNameForAdminboard(input)),
   )
 
-const archive = authed
+const archive = adminAuthed
   .route({ path: '/coupon-library/archive', method: 'POST' })
   .input(idInputSchema)
   .handler(async ({ input }) =>
     runCouponLibraryHandler(() => archiveLibraryCouponForAdminboard(input.id)),
   )
 
-const deleteProcedure = authed
+const deleteProcedure = adminAuthed
   .route({ path: '/coupon-library/delete', method: 'DELETE' })
   .input(idInputSchema)
   .handler(async ({ input }) => {
