@@ -91,7 +91,10 @@ describe('provisioned device display', () => {
     expect(headsetStepHeading({ kind: 'attach' }, 'GO-1').title).toBe(
       'Attach a headset to GO-1',
     )
-    expect(headsetStepHeading({ kind: 'attach' }, null).title).toBe(
+    expect(headsetStepHeading({ kind: 'add' }, 'GO-1').title).toBe(
+      'Add a headset to GO-1',
+    )
+    expect(headsetStepHeading({ kind: 'add' }, null).title).toBe(
       'Add a headset to inventory',
     )
     expect(

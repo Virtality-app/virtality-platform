@@ -9,13 +9,13 @@ import {
   DialogContent,
   DialogDescription,
   DialogHeader,
-  DialogTitle,
 } from '@/components/ui/dialog'
 import {
   headsetStepHeading,
   type HeadsetStep,
 } from '@/lib/provisioned-device-display'
 import { HeadsetStepBody } from './headset-step-body'
+import { HeadsetStepTitle } from './headset-step-title'
 import { ProvisionedDeviceList } from './provisioned-device-list'
 
 type InventoryStep = Exclude<HeadsetStep, { kind: 'list' }>
@@ -43,7 +43,7 @@ export function HeadsetInventory() {
         <Button
           variant='primary'
           className='flex items-center'
-          onClick={() => setStep({ kind: 'attach' })}
+          onClick={() => setStep({ kind: 'add' })}
         >
           <PlusSquare />
           Add headset
@@ -65,7 +65,10 @@ export function HeadsetInventory() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{heading?.title}</DialogTitle>
+            <HeadsetStepTitle
+              step={step ?? { kind: 'list' }}
+              title={heading?.title ?? ''}
+            />
             <DialogDescription>{heading?.description}</DialogDescription>
           </DialogHeader>
           {step ? (

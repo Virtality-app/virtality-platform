@@ -2,11 +2,13 @@
 
 import { useProvisionedDevices } from '@virtality/react-query'
 import type { TrialRedeemCodeListItem } from '@virtality/shared/utils'
+import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   devicesOnAccessCode,
   formatHeadsetSummary,
+  type HeadsetStep,
 } from '@/lib/provisioned-device-display'
 import { AccessCodeHeadsetsDialog } from './access-code-headsets-dialog'
 
@@ -18,7 +20,8 @@ type AccessCodeHeadsetsCellProps = {
 export function AccessCodeHeadsetsCell({
   accessCode,
 }: AccessCodeHeadsetsCellProps) {
-  const [open, setOpen] = useState(false)
+  // Null while the dialog is closed.
+  const [step, setStep] = useState<HeadsetStep | null>(null)
   const { data } = useProvisionedDevices()
   const devices = devicesOnAccessCode(data ?? [], accessCode.id)
   const canAttach = accessCode.displayStatus === 'unused'
@@ -31,19 +34,29 @@ export function AccessCodeHeadsetsCell({
     <>
       {nothingToOpen ? (
         <div>—</div>
+      ) : devices.length === 0 ? (
+        <Button
+          variant='outline'
+          size='sm'
+          className='h-7'
+          onClick={() => setStep({ kind: 'attach' })}
+        >
+          <Plus />
+          Attach
+        </Button>
       ) : (
         <Button
           variant='ghost'
           size='sm'
           className='h-7 px-2'
-          onClick={() => setOpen(true)}
+          onClick={() => setStep({ kind: 'list' })}
         >
-          {devices.length === 0 ? 'Attach' : formatHeadsetSummary(devices)}
+          {formatHeadsetSummary(devices)}
         </Button>
       )}
       <AccessCodeHeadsetsDialog
-        open={open}
-        onOpenChange={setOpen}
+        step={step}
+        onStepChange={setStep}
         accessCode={accessCode}
         devices={devices}
       />

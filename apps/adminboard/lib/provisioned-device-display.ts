@@ -54,7 +54,10 @@ export function formatCountdown(seconds: number): string {
 /** What the headsets dialog is showing. One dialog walks through these. */
 export type HeadsetStep =
   | { kind: 'list' }
+  /** Pick a spare from inventory for the code. */
   | { kind: 'attach' }
+  /** Create the next Headset-## and pair it. */
+  | { kind: 'add' }
   | { kind: 'pair'; device: Pick<ProvisionedDeviceListItem, 'id' | 'name'> }
   | { kind: 'move'; device: ProvisionedDeviceListItem }
 
@@ -71,9 +74,15 @@ export function headsetStepHeading(
           'Whoever redeems this code owns these headsets, already paired.',
       }
     case 'attach':
+      return {
+        title: `Attach a headset to ${accessCode ?? 'a code'}`,
+        description:
+          'Pick a headset from inventory. It takes the next Headset-## on this code.',
+      }
+    case 'add':
       return accessCode
         ? {
-            title: `Attach a headset to ${accessCode}`,
+            title: `Add a headset to ${accessCode}`,
             description: 'Adds the next Headset-## and pairs it here.',
           }
         : {

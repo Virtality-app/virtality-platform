@@ -3,7 +3,6 @@
 import type { ProvisionedDeviceListItem } from '@virtality/react-query'
 import type { TrialRedeemCodeListItem } from '@virtality/shared/utils'
 import { PlusSquare } from 'lucide-react'
-import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -11,18 +10,19 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
 } from '@/components/ui/dialog'
 import {
   headsetStepHeading,
   type HeadsetStep,
 } from '@/lib/provisioned-device-display'
 import { HeadsetStepBody } from './headset-step-body'
+import { HeadsetStepTitle } from './headset-step-title'
 import { ProvisionedDeviceList } from './provisioned-device-list'
 
 type AccessCodeHeadsetsDialogProps = {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  /** The step on show; null closes the dialog. */
+  step: HeadsetStep | null
+  onStepChange: (step: HeadsetStep | null) => void
   accessCode: TrialRedeemCodeListItem
   devices: ProvisionedDeviceListItem[]
 }
@@ -30,42 +30,41 @@ type AccessCodeHeadsetsDialogProps = {
 const LIST: HeadsetStep = { kind: 'list' }
 
 /**
- * One dialog for a code's headsets. Attach, Pair and Move are steps inside
- * it, each returning to the list, so no dialog opens on top of another.
+ * One dialog for a code's headsets. Attach, Add, Pair and Move are steps
+ * inside it, each returning to the list, so no dialog opens on top of
+ * another. The caller holds the step, so it can open straight on Attach.
  */
 export function AccessCodeHeadsetsDialog({
-  open,
-  onOpenChange,
+  step,
+  onStepChange,
   accessCode,
   devices,
 }: AccessCodeHeadsetsDialogProps) {
-  const [step, setStep] = useState<HeadsetStep>(LIST)
   const canAttach = accessCode.displayStatus === 'unused'
-  const heading = headsetStepHeading(step, accessCode.code)
-
-  const handleOpenChange = (next: boolean) => {
-    if (!next) setStep(LIST)
-    onOpenChange(next)
-  }
+  const shown = step ?? LIST
+  const heading = headsetStepHeading(shown, accessCode.code)
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog
+      open={step != null}
+      onOpenChange={(open) => !open && onStepChange(null)}
+    >
       <DialogContent className='sm:max-w-2xl'>
         <DialogHeader>
-          <DialogTitle>{heading.title}</DialogTitle>
+          <HeadsetStepTitle step={shown} title={heading.title} />
           <DialogDescription>
-            {step.kind === 'list' && !canAttach
+            {shown.kind === 'list' && !canAttach
               ? 'This code can no longer take headsets. Move any not yet delivered to a new code.'
               : heading.description}
           </DialogDescription>
         </DialogHeader>
-        {step.kind === 'list' ? (
+        {shown.kind === 'list' ? (
           <>
             <ProvisionedDeviceList
               devices={devices}
               emptyMessage='No headsets on this code yet.'
-              onPair={(device) => setStep({ kind: 'pair', device })}
-              onMove={(device) => setStep({ kind: 'move', device })}
+              onPair={(device) => onStepChange({ kind: 'pair', device })}
+              onMove={(device) => onStepChange({ kind: 'move', device })}
               inDialog
             />
             {canAttach ? (
@@ -73,7 +72,7 @@ export function AccessCodeHeadsetsDialog({
                 <Button
                   variant='primary'
                   className='flex items-center'
-                  onClick={() => setStep({ kind: 'attach' })}
+                  onClick={() => onStepChange({ kind: 'attach' })}
                 >
                   <PlusSquare />
                   Attach headset
@@ -83,10 +82,10 @@ export function AccessCodeHeadsetsDialog({
           </>
         ) : (
           <HeadsetStepBody
-            step={step}
+            step={shown}
             accessCodeId={accessCode.id}
-            onStep={setStep}
-            onFinished={() => setStep(LIST)}
+            onStep={onStepChange}
+            onFinished={() => onStepChange(LIST)}
           />
         )}
       </DialogContent>

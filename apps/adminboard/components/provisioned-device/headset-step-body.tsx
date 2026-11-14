@@ -1,6 +1,7 @@
 'use client'
 
 import type { HeadsetStep } from '@/lib/provisioned-device-display'
+import { AddHeadsetStep } from './add-headset-step'
 import { AttachHeadsetStep } from './attach-headset-step'
 import { MoveHeadsetStep } from './move-headset-step'
 import { PairHeadsetStep } from './pair-headset-step'
@@ -14,7 +15,7 @@ type HeadsetStepBodyProps = {
   onFinished: () => void
 }
 
-/** The body of one Attach, Pair or Move step inside the headsets dialog. */
+/** The body of one Attach, Add, Pair or Move step in the headsets dialog. */
 export function HeadsetStepBody({
   step,
   accessCodeId,
@@ -23,8 +24,21 @@ export function HeadsetStepBody({
 }: HeadsetStepBodyProps) {
   switch (step.kind) {
     case 'attach':
+      // Only a code attaches; inventory adds.
+      if (accessCodeId == null) return null
       return (
         <AttachHeadsetStep
+          accessCodeId={accessCodeId}
+          onAttached={(device) =>
+            device.paired ? onFinished() : onStep({ kind: 'pair', device })
+          }
+          onAdd={() => onStep({ kind: 'add' })}
+          onBack={onFinished}
+        />
+      )
+    case 'add':
+      return (
+        <AddHeadsetStep
           accessCodeId={accessCodeId}
           onCreated={(device) => onStep({ kind: 'pair', device })}
           onBack={onFinished}

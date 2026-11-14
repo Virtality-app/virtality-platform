@@ -1,49 +1,69 @@
 'use client'
 
 import {
-  useCreateProvisionedDevice,
+  useMoveProvisionedDevice,
+  useProvisionedDevices,
   type ProvisionedDeviceListItem,
 } from '@virtality/react-query'
-import { Headset } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { DialogFooter } from '@/components/ui/dialog'
 import { getErrorMessage } from '@/lib/get-error-message'
+import { inventoryDevices } from '@/lib/provisioned-device-display'
+import { SpareHeadsetList } from './spare-headset-list'
 
 type AttachHeadsetStepProps = {
-  /** The code that will carry the headset; null adds it to inventory. */
-  accessCodeId: number | null
-  onCreated: (device: ProvisionedDeviceListItem) => void
+  accessCodeId: number
+  /** The headset is on the code now, under its new name. */
+  onAttached: (device: ProvisionedDeviceListItem) => void
+  /** No spares: add a new headset instead. */
+  onAdd: () => void
   onBack: () => void
 }
 
-/** Creates the next `Headset-##`. The dialog then moves on to pairing it. */
+/** Picks a spare from inventory and moves it onto the code. */
 export function AttachHeadsetStep({
   accessCodeId,
-  onCreated,
+  onAttached,
+  onAdd,
   onBack,
 }: AttachHeadsetStepProps) {
-  const { mutate: create, isPending } = useCreateProvisionedDevice()
+  const { data, isPending: loading } = useProvisionedDevices()
+  const { mutate: move, isPending, variables } = useMoveProvisionedDevice()
+  const spares = inventoryDevices(data ?? [])
 
-  const handleAdd = () =>
-    create(
-      { accessCodeId },
+  const handleAttach = (device: ProvisionedDeviceListItem) =>
+    move(
+      { deviceRecordId: device.id, accessCodeId },
       {
-        onSuccess: onCreated,
+        // Headsets are numbered per code, so attaching can rename it.
+        onSuccess: ({ name }) => {
+          toast.success(
+            name === device.name
+              ? `${device.name} attached`
+              : `${device.name} attached as ${name}`,
+          )
+          onAttached({ ...device, name, accessCodeId })
+        },
         onError: (error) =>
-          toast.error(getErrorMessage(error, 'Failed to add headset')),
+          toast.error(getErrorMessage(error, 'Failed to attach headset')),
       },
     )
 
   return (
     <>
-      <div className='flex items-center gap-3 rounded-md border p-4'>
-        <Headset className='text-muted-foreground size-8 shrink-0' />
-        <p className='text-sm'>
-          Have the headset on hand. The next step shows a 6-digit Pairing Code
-          to enter on it.
+      {loading ? (
+        <p className='text-muted-foreground py-6 text-center text-sm'>
+          Loading…
         </p>
-      </div>
+      ) : (
+        <SpareHeadsetList
+          devices={spares}
+          attachingId={isPending ? variables?.deviceRecordId : undefined}
+          onAttach={handleAttach}
+          onAdd={onAdd}
+        />
+      )}
       <DialogFooter>
         <Button
           type='button'
@@ -52,14 +72,6 @@ export function AttachHeadsetStep({
           disabled={isPending}
         >
           Back
-        </Button>
-        <Button
-          type='button'
-          variant='primary'
-          onClick={handleAdd}
-          disabled={isPending}
-        >
-          {isPending ? 'Adding...' : 'Add and pair'}
         </Button>
       </DialogFooter>
     </>
