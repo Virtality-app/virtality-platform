@@ -66,6 +66,8 @@ describe('Provisioned Devices', () => {
       data: {
         id: 'dev-1',
         name: 'Headset-04',
+        // The one headset we offer, so the console shows its picture.
+        model: 'Meta Quest 3S',
         accessCodeId: 7,
         userId: null,
       },

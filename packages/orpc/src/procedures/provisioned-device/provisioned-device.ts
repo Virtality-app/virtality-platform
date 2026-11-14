@@ -157,6 +157,12 @@ function toListItem(row: ListRow): ProvisionedDeviceListItem {
 
 const HEADSET_NAME = /^Headset-(\d+)$/
 
+/**
+ * We ship one headset, so staff don't pick a model. Matches the console's
+ * default for Devices clinicians add, which also picks the card's picture.
+ */
+export const PROVISIONED_HEADSET_MODEL = 'Meta Quest 3S'
+
 /** `Headset-01`, `Headset-02`, … after the highest number so far. */
 export function nextHeadsetName(existingNames: string[]): string {
   const highest = existingNames.reduce((max, name) => {
@@ -202,6 +208,7 @@ export async function createProvisionedDevice(
           data: {
             id: runtime.createId?.() ?? randomUUID(),
             name: nextHeadsetName(taken.map((device) => device.name)),
+            model: PROVISIONED_HEADSET_MODEL,
             accessCodeId,
             userId: null,
           },
