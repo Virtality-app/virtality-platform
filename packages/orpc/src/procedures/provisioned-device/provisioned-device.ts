@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import type { PrismaClient } from '@virtality/db'
-import { getTrialRedeemDisplayStatus } from '@virtality/shared/utils'
+import { TRIAL_REDEEM_CODE_TTL_MS } from '@virtality/shared/utils'
 
 /**
  * Provisioned Devices (ADR 0011): Devices staff create and pair before a
@@ -41,17 +41,26 @@ export type ProvisionedDeviceListItem = {
 
 const ownerless = (id: string) => ({ id, userId: null, deletedAt: null })
 
-/** Only an unused, unexpired Access Code can take a headset. */
-async function assertAccessCodeOpen(
-  prisma: Pick<PrismaClient, 'trialRedeemCode'>,
+/**
+ * Only an unused, unexpired Access Code can take a headset. Call inside the
+ * transaction that writes the Device: the no-op update locks the code row
+ * until commit, so a redemption racing it either waits and then sees the
+ * Device, or wins first and this check fails.
+ */
+async function lockOpenAccessCode(
+  tx: Pick<PrismaClient, 'trialRedeemCode'>,
   accessCodeId: number,
   now: Date,
 ) {
-  const code = await prisma.trialRedeemCode.findUnique({
-    where: { id: accessCodeId },
-    select: { status: true, createdAt: true },
+  const { count } = await tx.trialRedeemCode.updateMany({
+    where: {
+      id: accessCodeId,
+      status: 'unused',
+      createdAt: { gt: new Date(now.getTime() - TRIAL_REDEEM_CODE_TTL_MS) },
+    },
+    data: { status: 'unused' },
   })
-  if (!code || getTrialRedeemDisplayStatus(code, now) !== 'unused') {
+  if (count === 0) {
     throw new ProvisionedDeviceError(
       'ACCESS_CODE_UNAVAILABLE',
       'That Access Code is used, expired or missing.',
@@ -152,19 +161,20 @@ export async function createProvisionedDevice(
   runtime: Clock & { createId?: () => string } = {},
 ): Promise<ProvisionedDeviceListItem> {
   const now = runtime.now?.() ?? new Date()
-  if (input.accessCodeId != null) {
-    await assertAccessCodeOpen(prisma, input.accessCodeId, now)
-  }
+  const { accessCodeId } = input
 
-  const row = await prisma.device.create({
-    data: {
-      id: runtime.createId?.() ?? randomUUID(),
-      name: input.name,
-      model: input.model,
-      accessCodeId: input.accessCodeId,
-      userId: null,
-    },
-    select: listSelect,
+  const row = await prisma.$transaction(async (tx) => {
+    if (accessCodeId != null) await lockOpenAccessCode(tx, accessCodeId, now)
+    return tx.device.create({
+      data: {
+        id: runtime.createId?.() ?? randomUUID(),
+        name: input.name,
+        model: input.model,
+        accessCodeId,
+        userId: null,
+      },
+      select: listSelect,
+    })
   })
   return toListItem(row)
 }
@@ -190,9 +200,11 @@ export async function moveProvisionedDevice(
   runtime: Clock = {},
 ): Promise<void> {
   const now = runtime.now?.() ?? new Date()
-  await assertAccessCodeOpen(prisma, input.accessCodeId, now)
-  await updateOwnerless(prisma, input.deviceRecordId, {
-    accessCodeId: input.accessCodeId,
+  await prisma.$transaction(async (tx) => {
+    await lockOpenAccessCode(tx, input.accessCodeId, now)
+    await updateOwnerless(tx, input.deviceRecordId, {
+      accessCodeId: input.accessCodeId,
+    })
   })
 }
 

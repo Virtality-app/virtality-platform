@@ -1,6 +1,9 @@
 import type { PrismaClient } from '@virtality/db'
 
-/** Provisioned Devices that just received their owner (ADR 0011). */
+/**
+ * Provisioned Devices that just received their owner and already have a
+ * headset bound (ADR 0011).
+ */
 export type ProvisionedDevicesOwned = {
   userId: string
   deviceRecordIds: string[]
@@ -56,9 +59,13 @@ export async function consumeAccessCodeAndAssignDevices(
     const devices = await tx.device.updateManyAndReturn({
       where: { accessCodeId: input.id, userId: null, deletedAt: null },
       data: { userId: input.usedBy },
-      select: { id: true },
+      select: { id: true, deviceId: true },
     })
-    return devices.map((device) => device.id)
+    // Every linked Device gets the owner, but only one with a headset bound
+    // counts as paired. An unpaired one reports when its owner pairs it.
+    return devices
+      .filter((device) => device.deviceId != null)
+      .map((device) => device.id)
   })
 
   if (!result) return false

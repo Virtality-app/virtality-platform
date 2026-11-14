@@ -13,23 +13,18 @@ import {
 const NOW = new Date('2026-11-14T10:00:00.000Z')
 const DAY_MS = 24 * 60 * 60 * 1000
 
-function openCode(id = 7) {
-  return {
-    id,
-    status: 'unused',
-    createdAt: new Date(NOW.getTime() - DAY_MS),
-  }
-}
-
 /** A Prisma double whose transaction client is the same object. */
 function fakePrisma(overrides: {
-  code?: unknown
+  /** Whether the Access Code is still unused and unexpired. */
+  codeOpen?: boolean
   updated?: number
   existing?: { userId: string | null } | null
 }) {
   const prisma = {
     trialRedeemCode: {
-      findUnique: vi.fn().mockResolvedValue(overrides.code ?? openCode()),
+      updateMany: vi
+        .fn()
+        .mockResolvedValue({ count: overrides.codeOpen === false ? 0 : 1 }),
     },
     device: {
       create: vi.fn(async ({ data }: { data: unknown }) => data),
@@ -74,6 +69,28 @@ describe('Provisioned Devices', () => {
     })
   })
 
+  it('locks the open code in the same transaction as the write', async () => {
+    const fake = fakePrisma({})
+
+    await createProvisionedDevice(
+      asPrisma(fake),
+      { name: 'Clinic headset 1', model: null, accessCodeId: 7 },
+      { now: () => NOW, createId: () => 'dev-1' },
+    )
+
+    // A no-op write on the code row holds its lock until the Device is
+    // written, so a redemption racing this one waits and then sees it.
+    expect(fake.$transaction).toHaveBeenCalledTimes(1)
+    expect(fake.trialRedeemCode.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: 7,
+        status: 'unused',
+        createdAt: { gt: new Date(NOW.getTime() - 7 * DAY_MS) },
+      },
+      data: { status: 'unused' },
+    })
+  })
+
   it('creates a Device in inventory when no code is given', async () => {
     const fake = fakePrisma({})
 
@@ -83,7 +100,7 @@ describe('Provisioned Devices', () => {
       { now: () => NOW, createId: () => 'dev-1' },
     )
 
-    expect(fake.trialRedeemCode.findUnique).not.toHaveBeenCalled()
+    expect(fake.trialRedeemCode.updateMany).not.toHaveBeenCalled()
     expect(fake.device.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({ accessCodeId: null, userId: null }),
@@ -91,16 +108,8 @@ describe('Provisioned Devices', () => {
     )
   })
 
-  it.each([
-    ['used', { ...openCode(), status: 'redeemed' }],
-    [
-      'expired',
-      { ...openCode(), createdAt: new Date(NOW.getTime() - 8 * DAY_MS) },
-    ],
-    ['missing', null],
-  ])('refuses to put a headset on a %s Access Code', async (_label, code) => {
-    const fake = fakePrisma({ code })
-    fake.trialRedeemCode.findUnique.mockResolvedValue(code)
+  it('refuses to put a headset on a used, expired or missing Access Code', async () => {
+    const fake = fakePrisma({ codeOpen: false })
 
     await expect(
       createProvisionedDevice(
@@ -113,7 +122,7 @@ describe('Provisioned Devices', () => {
   })
 
   it('moves a Device with no owner to another open code, keeping it paired', async () => {
-    const fake = fakePrisma({ code: openCode(9) })
+    const fake = fakePrisma({})
 
     await moveProvisionedDevice(
       asPrisma(fake),
@@ -125,6 +134,19 @@ describe('Provisioned Devices', () => {
       where: { id: 'dev-1', userId: null, deletedAt: null },
       data: { accessCodeId: 9 },
     })
+  })
+
+  it('refuses to move a Device onto a code that is no longer open', async () => {
+    const fake = fakePrisma({ codeOpen: false })
+
+    await expect(
+      moveProvisionedDevice(
+        asPrisma(fake),
+        { deviceRecordId: 'dev-1', accessCodeId: 9 },
+        { now: () => NOW },
+      ),
+    ).rejects.toMatchObject({ code: 'ACCESS_CODE_UNAVAILABLE' })
+    expect(fake.device.updateMany).not.toHaveBeenCalled()
   })
 
   it('detaches a Device with no owner to inventory', async () => {

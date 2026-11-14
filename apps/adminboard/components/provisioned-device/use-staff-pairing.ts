@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  type DevicePairingState,
   useCancelProvisionedDevicePairing,
   useInvalidateProvisionedDevices,
   useProvisionedDevicePairingStatus,
@@ -24,7 +25,7 @@ export type StaffPairingPhase =
   | 'ended'
   | 'failed'
 
-const ENDED_COPY: Record<string, string> = {
+const ENDED_COPY: Partial<Record<DevicePairingState, string>> = {
   expired: 'The code expired before the headset used it.',
   cancelled: 'Pairing was cancelled.',
   superseded: 'This code was replaced or the headset is paired elsewhere.',

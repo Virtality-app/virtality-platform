@@ -18,14 +18,17 @@ const NOW = new Date('2026-11-14T10:00:00.000Z')
 type FakeOptions = {
   /** Rows the code `updateMany` reports; 0 means the code was already used. */
   codeUpdated?: number
-  /** Provisioned Devices waiting on the code. */
+  /** Provisioned Devices waiting on the code, all with a headset bound. */
   linkedDeviceIds?: string[]
+  /** Linked Devices staff never paired. */
+  unpairedDeviceIds?: string[]
   mode?: 'trial_grant' | 'free_grant'
 }
 
 function fakeClient({
   codeUpdated = 1,
   linkedDeviceIds = [],
+  unpairedDeviceIds = [],
   mode = 'trial_grant',
 }: FakeOptions = {}) {
   const tx = {
@@ -35,7 +38,10 @@ function fakeClient({
     device: {
       updateManyAndReturn: vi
         .fn()
-        .mockResolvedValue(linkedDeviceIds.map((id) => ({ id }))),
+        .mockResolvedValue([
+          ...linkedDeviceIds.map((id) => ({ id, deviceId: `headset-${id}` })),
+          ...unpairedDeviceIds.map((id) => ({ id, deviceId: null })),
+        ]),
     },
   }
   const client = {
@@ -97,11 +103,33 @@ describe('Provisioned Device ownership at redemption', () => {
     expect(tx.device.updateManyAndReturn).toHaveBeenCalledWith({
       where: { accessCodeId: 7, userId: null, deletedAt: null },
       data: { userId: 'user-1' },
-      select: { id: true },
+      select: { id: true, deviceId: true },
     })
     expect(owned).toHaveBeenCalledWith({
       userId: 'user-1',
       deviceRecordIds: ['dev-1', 'dev-2'],
+    })
+  })
+
+  it('reports only Devices that already have a headset as paired', async () => {
+    const { client, tx } = fakeClient({
+      linkedDeviceIds: ['dev-1'],
+      unpairedDeviceIds: ['dev-2'],
+    })
+    const owned = vi.fn()
+    onProvisionedDevicesOwned(owned)
+
+    await createPrismaTrialRedeemConsumeStore(client).consumeAsRedeemed(
+      7,
+      'user-1',
+      NOW,
+    )
+
+    // Both get the owner; the unpaired one reports when its owner pairs it.
+    expect(tx.device.updateManyAndReturn).toHaveBeenCalledTimes(1)
+    expect(owned).toHaveBeenCalledWith({
+      userId: 'user-1',
+      deviceRecordIds: ['dev-1'],
     })
   })
 

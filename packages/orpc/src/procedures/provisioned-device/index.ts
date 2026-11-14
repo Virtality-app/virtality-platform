@@ -50,7 +50,9 @@ function throwProvisionedDeviceOrpcError(error: unknown): never {
   throw error
 }
 
-async function run<T>(operation: () => Promise<T>): Promise<T> {
+async function withProvisionedDeviceErrors<T>(
+  operation: () => Promise<T>,
+): Promise<T> {
   try {
     return await operation()
   } catch (error) {
@@ -66,7 +68,7 @@ const create = adminAuthed
   .route({ path: '/provisioned-device/create', method: 'POST' })
   .input(CreateInputSchema)
   .handler(({ context, input }) =>
-    run(() =>
+    withProvisionedDeviceErrors(() =>
       createProvisionedDevice(context.prisma, {
         name: input.name,
         model: input.model || null,
@@ -79,28 +81,36 @@ const move = adminAuthed
   .route({ path: '/provisioned-device/move', method: 'POST' })
   .input(MoveInputSchema)
   .handler(({ context, input }) =>
-    run(() => moveProvisionedDevice(context.prisma, input)),
+    withProvisionedDeviceErrors(() =>
+      moveProvisionedDevice(context.prisma, input),
+    ),
   )
 
 const detach = adminAuthed
   .route({ path: '/provisioned-device/detach', method: 'POST' })
   .input(DeviceRecordInputSchema)
   .handler(({ context, input }) =>
-    run(() => detachProvisionedDevice(context.prisma, input)),
+    withProvisionedDeviceErrors(() =>
+      detachProvisionedDevice(context.prisma, input),
+    ),
   )
 
 const unpair = adminAuthed
   .route({ path: '/provisioned-device/unpair', method: 'POST' })
   .input(DeviceRecordInputSchema)
   .handler(({ context, input }) =>
-    run(() => unpairProvisionedDevice(context.prisma, input)),
+    withProvisionedDeviceErrors(() =>
+      unpairProvisionedDevice(context.prisma, input),
+    ),
   )
 
 const remove = adminAuthed
   .route({ path: '/provisioned-device/remove', method: 'POST' })
   .input(DeviceRecordInputSchema)
   .handler(({ context, input }) =>
-    run(() => removeProvisionedDevice(context.prisma, input)),
+    withProvisionedDeviceErrors(() =>
+      removeProvisionedDevice(context.prisma, input),
+    ),
   )
 
 // The staff Pairing Claim reuses the clinician attempt lifecycle. The
