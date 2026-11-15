@@ -6,6 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
 import type { SegmentRow } from './exercise-library-list-segments'
 import type { ExerciseLibraryListState } from './use-exercise-library-list'
+import ExerciseDescriptionCard from './exercise-description-card'
 import SegmentDirectionToggles from './segment-direction-toggles'
 import SegmentSettings from './segment-settings'
 
@@ -45,7 +46,12 @@ const ExerciseSegmentRow = ({
             disabled={row.selectableMemberIds.length === 0}
             onCheckedChange={() => list.toggleRowSelection(row)}
           />
-          <div className='flex flex-1 gap-2 p-1'>
+          <div className='flex flex-1 items-center gap-2 p-1'>
+            {row.previewExercise ? (
+              <span className='flex' onClick={(e) => e.stopPropagation()}>
+                <ExerciseDescriptionCard exercise={row.previewExercise} />
+              </span>
+            ) : null}
             <p>{row.title}</p>
             {row.showDirectionToggles ? (
               <SegmentDirectionToggles

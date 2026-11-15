@@ -28,6 +28,8 @@ export type SegmentRow = {
   familyDisplayName: string
   title: string
   showDirectionToggles: boolean
+  /** Exercise the row's preview shows: first enabled member. */
+  previewExercise: Exercise | undefined
 }
 
 export function segmentRowKey(ex: CompleteExercise): {
@@ -110,6 +112,9 @@ export function describeSegment(
   const familyDisplayName =
     primary.exercise?.displayName ?? primaryCatalog?.displayName ?? ''
 
+  const previewMember =
+    members.find((m) => !deferredRemoval.has(m.id)) ?? primary
+
   return {
     key: isPair ? `${primary.id}:${secondary!.id}` : primary.id,
     members,
@@ -127,5 +132,8 @@ export function describeSegment(
       catalog,
       familyDisplayName,
     ),
+    previewExercise:
+      previewMember.exercise ??
+      catalog?.find((de) => de.id === previewMember.exerciseId),
   }
 }
