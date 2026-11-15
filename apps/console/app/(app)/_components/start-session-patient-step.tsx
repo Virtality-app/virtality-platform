@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { formatRelative } from 'date-fns'
 import { Plus, Search } from 'lucide-react'
 import { Input } from '@virtality/ui/components/input'
 import { useClientT } from '@/i18n/use-client-t'
@@ -9,8 +8,7 @@ import type { PatientListItem } from '@/types/models'
 import { filterPatientsBySearch } from '@/lib/patient-list'
 import { withReturnTo } from '@/lib/home-picker-return'
 import StartSessionStep from './start-session-step'
-import StartSessionOption from './start-session-option'
-import PatientInitialsAvatar from './patient-initials-avatar'
+import StartSessionPatientRow from './start-session-patient-row'
 import type { StartSessionPicker } from './use-start-session-picker'
 
 // Fewer than this fit in the list without a search box.
@@ -38,8 +36,7 @@ const StartSessionPatientStep = ({
   picker: StartSessionPicker
 }) => {
   const { t } = useClientT('home')
-  const { selection, patientQuery, setPatientQuery, selectPatient, returnTo } =
-    picker
+  const { selection, patientQuery, setPatientQuery, returnTo } = picker
   const rows = patientRows(patients, patientQuery)
 
   return (
@@ -81,28 +78,11 @@ const StartSessionPatientStep = ({
         </p>
       ) : (
         rows.map((patient) => (
-          <StartSessionOption
+          <StartSessionPatientRow
             key={patient.id}
-            selected={selection.patientId === patient.id}
-            onSelect={() => selectPatient(patient.id)}
-          >
-            <PatientInitialsAvatar
-              name={patient.name}
-              image={patient.image}
-              className='size-7 text-[11px]'
-            />
-            <div className='min-w-0 flex-1'>
-              <div className='ph-sensitive truncate'>{patient.name}</div>
-              <small className='text-muted-foreground block truncate text-xs'>
-                {patient.lastSessionAt
-                  ? formatRelative(new Date(patient.lastSessionAt), new Date())
-                  : t('noSessionsYet')}
-                {patient.activeProgramName
-                  ? ` · ${patient.activeProgramName}`
-                  : ''}
-              </small>
-            </div>
-          </StartSessionOption>
+            patient={patient}
+            picker={picker}
+          />
         ))
       )}
     </StartSessionStep>

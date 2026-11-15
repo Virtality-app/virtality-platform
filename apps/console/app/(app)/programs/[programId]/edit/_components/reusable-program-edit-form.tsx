@@ -20,6 +20,7 @@ import {
   useUpdateReusableProgram,
   useUpdateReusableProgramExercises,
 } from '@virtality/react-query'
+import { cancelHref } from '@/lib/home-picker-return'
 import { withRom } from '@/lib/with-rom'
 import {
   reusableProgramExercisesForCatalogSeed,
@@ -72,7 +73,7 @@ const ReusableProgramEditForm = ({
         queryClient.invalidateQueries({
           queryKey: orpc.reusableProgram.find.key({ input: { id: programId } }),
         })
-        router.push('/programs')
+        router.push(cancelHref('/programs'))
       },
     })
 
@@ -134,7 +135,7 @@ const ReusableProgramEditForm = ({
     })
   }
 
-  const handleCancel = () => redirect('/programs')
+  const handleCancel = () => redirect(cancelHref('/programs'))
 
   const showProgramNameField = isSelectedListStep
 

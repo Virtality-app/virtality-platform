@@ -1,14 +1,7 @@
 'use client'
 
 import { Button } from '@virtality/ui/components/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import RetireProgramDialog from '@/components/dialogs/retire-program-dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +16,6 @@ import {
   getQueryClient,
   useCopyReusableProgram,
   useORPC,
-  useRetireReusableProgram,
 } from '@virtality/react-query'
 import { useClientT } from '@/i18n/use-client-t'
 
@@ -37,14 +29,6 @@ const ProgramActionsCell = ({ programId }: ProgramActionsCellProps) => {
   const orpc = useORPC()
   const { t } = useClientT(['programs', 'common'])
   const [retireOpen, setRetireOpen] = useState(false)
-  const { mutate: retireProgram, isPending } = useRetireReusableProgram({
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: orpc.reusableProgram.list.key(),
-      })
-      setRetireOpen(false)
-    },
-  })
   const { mutate: copyProgram, isPending: isCopyPending } =
     useCopyReusableProgram({
       onSuccess: (copiedProgram) => {
@@ -60,8 +44,6 @@ const ProgramActionsCell = ({ programId }: ProgramActionsCellProps) => {
   }
 
   const handleMakeCopy = () => copyProgram({ id: programId })
-
-  const handleRetire = () => retireProgram({ id: programId })
 
   return (
     <>
@@ -95,26 +77,11 @@ const ProgramActionsCell = ({ programId }: ProgramActionsCellProps) => {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <Dialog open={retireOpen} onOpenChange={setRetireOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('retire.title')}</DialogTitle>
-            <DialogDescription>{t('retire.description')}</DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant='outline' onClick={() => setRetireOpen(false)}>
-              {t('common:btn.cancel')}
-            </Button>
-            <Button
-              variant='destructive'
-              disabled={isPending}
-              onClick={handleRetire}
-            >
-              {t('retire.confirm')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <RetireProgramDialog
+        programId={programId}
+        open={retireOpen}
+        onOpenChange={setRetireOpen}
+      />
     </>
   )
 }

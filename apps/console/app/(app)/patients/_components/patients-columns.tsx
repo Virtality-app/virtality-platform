@@ -14,16 +14,9 @@ import TranslatedColumnHeader from './translated-column-header'
 import TranslatedText from './translated-text'
 import { format } from 'date-fns'
 import { PatientListItem } from '@/types/models'
-import DeleteConfirmDialog from '@/components/dialogs/delete-confirm-dialog'
+import DeletePatientDialog from '@/components/dialogs/delete-patient-dialog'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-  useDeletePatient,
-  useORPC,
-  getQueryClient,
-} from '@virtality/react-query'
-import { trackAnalyticsEvent } from '@/lib/analytics-contract'
-import { Trans } from 'react-i18next'
 import { useClientT } from '@/i18n/use-client-t'
 
 export const columns: ColumnDef<PatientListItem>[] = [
@@ -129,22 +122,11 @@ export const columns: ColumnDef<PatientListItem>[] = [
     id: 'actions',
     enableHiding: false,
     cell: function ActionCell({ row }) {
-      const queryClient = getQueryClient()
-      const orpc = useORPC()
       const router = useRouter()
       const { t } = useClientT('patients')
       const patient = row.original
 
       const [open, setOpen] = useState(false)
-
-      const { mutate: deletePatient } = useDeletePatient({
-        onSuccess: () => {
-          trackAnalyticsEvent('patient_deleted', {})
-          return queryClient.invalidateQueries({
-            queryKey: orpc.patient.list.key(),
-          })
-        },
-      })
 
       const copyId = () => {
         navigator.clipboard.writeText(patient.id)
@@ -152,10 +134,6 @@ export const columns: ColumnDef<PatientListItem>[] = [
 
       const editHandler = () => {
         router.push(`/patients/${patient.id}/profile`)
-      }
-
-      const handleConfirmDelete = () => {
-        deletePatient({ id: patient.id })
       }
 
       return (
@@ -190,20 +168,10 @@ export const columns: ColumnDef<PatientListItem>[] = [
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <DeleteConfirmDialog
-            title={t('delete.title')}
-            description={
-              <Trans
-                t={t}
-                ns='patients'
-                i18nKey='delete.description'
-                values={{ name: patient.name }}
-                components={{ strong: <strong className='ph-sensitive' /> }}
-              />
-            }
+          <DeletePatientDialog
+            patient={patient}
             open={open}
             onOpenChange={setOpen}
-            onConfirm={handleConfirmDelete}
           />
         </>
       )

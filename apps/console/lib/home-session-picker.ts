@@ -87,6 +87,17 @@ export function reconcileHomePickerSelection(
   return { ...selection, programId, deviceId }
 }
 
+/** Drops a pick whose patient or program was just deleted. */
+export function clearRemovedHomePick(
+  selection: HomePickerSelection,
+  key: 'patientId' | 'programId',
+  removedId: string,
+): HomePickerSelection {
+  return selection[key] === removedId
+    ? { ...selection, [key]: null }
+    : selection
+}
+
 export function isSameHomePickerSelection(
   a: HomePickerSelection,
   b: HomePickerSelection,

@@ -117,7 +117,8 @@
     "noPrograms": "No programs yet. Quick Start builds the list on the fly.",
     "exercises_one": "{{count}} exercise",
     "exercises_other": "{{count}} exercises",
-    "lastUsed": "Last used"
+    "lastUsed": "Last used",
+    "rowActions": "Actions for {{name}}"
   },
   "forms": {
     "title": "Forms",

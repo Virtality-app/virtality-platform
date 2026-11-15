@@ -6,6 +6,7 @@ import { useRow, useStore } from 'tinybase/ui-react'
 import type { PatientLocalData } from '@/types/models'
 import { trackAnalyticsEvent } from '@/lib/analytics-contract'
 import {
+  clearRemovedHomePick,
   emptyHomePickerSelection,
   homeLaunchHref,
   isHeadsetSelectable,
@@ -122,6 +123,12 @@ export function useStartSessionPicker(data: HomeDashboardData) {
     setSelection((prev) => ({ ...prev, deviceId }))
   }
 
+  // A deleted patient or retired program can no longer stay picked.
+  const patientDeleted = (patientId: string) =>
+    setSelection((prev) => clearRemovedHomePick(prev, 'patientId', patientId))
+  const programRetired = (programId: string) =>
+    setSelection((prev) => clearRemovedHomePick(prev, 'programId', programId))
+
   const selectedPatient = patients.find((p) => p.id === selection.patientId)
   const selectedProgram = programs.find((p) => p.id === selection.programId)
   const selectedDevice = devices.find((d) => d.data.id === selection.deviceId)
@@ -181,6 +188,8 @@ export function useStartSessionPicker(data: HomeDashboardData) {
     selectPatient,
     selectProgram,
     selectDevice,
+    patientDeleted,
+    programRetired,
     lastProgramId: patientLocalData.lastProgram ?? null,
     pickerSummary,
     canLaunch: launchHref !== null,

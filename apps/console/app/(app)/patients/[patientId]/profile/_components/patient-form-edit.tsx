@@ -35,6 +35,7 @@ import {
   useUpdatePatient,
   useORPC,
 } from '@virtality/react-query'
+import { cancelHref } from '@/lib/home-picker-return'
 import { trackAnalyticsEvent } from '@/lib/analytics-contract'
 import type { PatientProfileTab } from '@virtality/analytics'
 
@@ -116,6 +117,9 @@ const PatientFormEdit = ({ patientId }: PatientFormEditProps) => {
     onSuccess: () => {
       trackAnalyticsEvent('patient_profile_updated', {})
       return Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: orpc.patient.list.key(),
+        }),
         queryClient.invalidateQueries({
           queryKey: orpc.patient.find.key(),
         }),
@@ -223,6 +227,9 @@ const PatientFormEdit = ({ patientId }: PatientFormEditProps) => {
         onSuccess: () => {
           notify.success({ key: 'toast.patientSaved', ns: 'patients' })
           form.reset(values, { keepDirty: false })
+          // Opened from the dashboard's Session Picker: go back with the picks.
+          const dashboardHref = cancelHref('')
+          if (dashboardHref) router.push(dashboardHref)
         },
       },
     )
@@ -238,6 +245,10 @@ const PatientFormEdit = ({ patientId }: PatientFormEditProps) => {
     deletePatient(patient)
     handleDialogToggle()
   }
+
+  // Opened from the dashboard's Session Picker, which Cancel returns to.
+  const returnsToDashboard = mounted && cancelHref('') !== ''
+  const handleCancel = () => router.push(cancelHref('/patients'))
 
   const hasErrors = Object.keys(errors).length > 0 && Object.keys(errors).length
 
@@ -307,6 +318,11 @@ const PatientFormEdit = ({ patientId }: PatientFormEditProps) => {
 
       {mounted && (
         <div className='flex justify-end space-x-4'>
+          {returnsToDashboard && (
+            <Button variant='outline' onClick={handleCancel}>
+              {t('btn.cancel', { ns: 'common' })}
+            </Button>
+          )}
           <DeleteConfirmDialog
             title={t('delete.title')}
             description={

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  clearRemovedHomePick,
   homeLaunchHref,
   isHeadsetSelectable,
   isHomePickerReady,
@@ -92,5 +93,27 @@ describe('reconcileHomePickerSelection', () => {
       programId: QUICK_START_PROGRAM_ID,
       deviceId: 'd1',
     })
+  })
+})
+
+describe('clearRemovedHomePick', () => {
+  const picked = { patientId: 'p1', programId: 'rp1', deviceId: 'd1' }
+
+  it('clears the patient pick when that patient was removed', () => {
+    expect(clearRemovedHomePick(picked, 'patientId', 'p1')).toEqual({
+      ...picked,
+      patientId: null,
+    })
+  })
+
+  it('clears the program pick when that program was removed', () => {
+    expect(clearRemovedHomePick(picked, 'programId', 'rp1')).toEqual({
+      ...picked,
+      programId: null,
+    })
+  })
+
+  it('keeps the selection when something else was removed', () => {
+    expect(clearRemovedHomePick(picked, 'patientId', 'p2')).toBe(picked)
   })
 })

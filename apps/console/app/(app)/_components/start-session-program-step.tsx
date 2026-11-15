@@ -2,13 +2,13 @@
 
 import Link from 'next/link'
 import { Plus, Zap } from 'lucide-react'
-import { Badge } from '@virtality/ui/components/badge'
 import { useClientT } from '@/i18n/use-client-t'
 import type { HomeDashboardData } from './use-home-dashboard-data'
 import { QUICK_START_PROGRAM_ID } from '@/lib/home-session-picker'
 import { withReturnTo } from '@/lib/home-picker-return'
 import StartSessionStep from './start-session-step'
 import StartSessionOption from './start-session-option'
+import StartSessionProgramRow from './start-session-program-row'
 import type { StartSessionPicker } from './use-start-session-picker'
 
 const StartSessionProgramStep = ({
@@ -64,26 +64,11 @@ const StartSessionProgramStep = ({
         </p>
       ) : null}
       {rows.map((program) => (
-        <StartSessionOption
+        <StartSessionProgramRow
           key={program.id}
-          selected={selection.programId === program.id}
-          onSelect={() => selectProgram(program.id)}
-        >
-          <div className='min-w-0 flex-1'>
-            <div className='truncate'>{program.name}</div>
-            <small className='text-muted-foreground block text-xs'>
-              {t('startSession.exercises', { count: program.exercises.length })}
-            </small>
-          </div>
-          {program.id === lastProgramId ? (
-            <Badge
-              variant='outline'
-              className='border-vital-blue-100 bg-vital-blue-50 text-vital-blue-700 dark:border-vital-blue-500/20 dark:bg-vital-blue-500/10 dark:text-vital-blue-300'
-            >
-              {t('startSession.lastUsed')}
-            </Badge>
-          ) : null}
-        </StartSessionOption>
+          program={program}
+          picker={picker}
+        />
       ))}
     </StartSessionStep>
   )
