@@ -1,0 +1,1873 @@
+<!-- PROTOTYPE (CORE-427 / #407), throwaway. Not part of the app. Open in a browser. Variant B "Launch replaces the headset list" was chosen. -->
+<title>Home Launch Prototype</title>
+<meta name="claude:viewport-fit-sides" content="cover" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap"
+/>
+<style>
+  /* CORE-427 PROTOTYPE — throwaway. Five takes on the Home Dashboard's Start a session card,
+   switchable with the bottom bar or ← →. Fake data only. Tokens mirror packages/ui/src/globals.css. */
+  :root {
+    --bg: #ffffff;
+    --fg: #09090b;
+    --card: #ffffff;
+    --muted: #f4f4f5;
+    --muted-fg: #71717a;
+    --border: #e4e4e7;
+    --accent-bg: #f4f4f5;
+    --vb-50: #e9fbfe;
+    --vb-100: #bdf4fc;
+    --vb-300: #65e6f7;
+    --vb-500: #0cd8f3;
+    --vb-700: #08899a;
+    --sel-border: var(--vb-700);
+    --sel-bg: var(--vb-50);
+    --ring: var(--vb-100);
+    --btn-bg: var(--vb-700);
+    --btn-fg: #fafafa;
+    --btn-hover: #08899ae6;
+    --badge-bg: var(--vb-50);
+    --badge-fg: var(--vb-700);
+    --badge-border: var(--vb-100);
+    --online: #16a34a;
+    --online-soft: #dcfce7;
+    --online-fg: #166534;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+    /* prototype chrome, kept apart from the design under review */
+    --chrome-bg: #f2f4f5;
+    --chrome-fg: #18181b;
+    --chrome-muted: #5f6b70;
+    --chrome-line: #d7dde0;
+    --pill-bg: #111827;
+    --pill-fg: #f9fafb;
+    --font:
+      'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --bg: #09090b;
+      --fg: #fafafa;
+      --card: #18181b;
+      --muted: #27272a;
+      --muted-fg: #a1a1aa;
+      --border: rgb(255 255 255 / 0.1);
+      --accent-bg: #27272a;
+      --sel-border: var(--vb-500);
+      --sel-bg: rgb(12 216 243 / 0.1);
+      --ring: rgb(12 216 243 / 0.3);
+      --btn-bg: var(--vb-100);
+      --btn-fg: #18181b;
+      --btn-hover: #bdf4fce6;
+      --badge-bg: rgb(12 216 243 / 0.1);
+      --badge-fg: var(--vb-300);
+      --badge-border: rgb(12 216 243 / 0.2);
+      --online: #4ade80;
+      --online-soft: rgb(74 222 128 / 0.12);
+      --online-fg: #86efac;
+      --chrome-bg: #0f1214;
+      --chrome-fg: #e7ecee;
+      --chrome-muted: #93a1a7;
+      --chrome-line: #2a3236;
+      --pill-bg: #f9fafb;
+      --pill-fg: #111827;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme='dark'] {
+    --bg: #09090b;
+    --fg: #fafafa;
+    --card: #18181b;
+    --muted: #27272a;
+    --muted-fg: #a1a1aa;
+    --border: rgb(255 255 255 / 0.1);
+    --accent-bg: #27272a;
+    --sel-border: var(--vb-500);
+    --sel-bg: rgb(12 216 243 / 0.1);
+    --ring: rgb(12 216 243 / 0.3);
+    --btn-bg: var(--vb-100);
+    --btn-fg: #18181b;
+    --btn-hover: #bdf4fce6;
+    --badge-bg: rgb(12 216 243 / 0.1);
+    --badge-fg: var(--vb-300);
+    --badge-border: rgb(12 216 243 / 0.2);
+    --online: #4ade80;
+    --online-soft: rgb(74 222 128 / 0.12);
+    --online-fg: #86efac;
+    --chrome-bg: #0f1214;
+    --chrome-fg: #e7ecee;
+    --chrome-muted: #93a1a7;
+    --chrome-line: #2a3236;
+    --pill-bg: #f9fafb;
+    --pill-fg: #111827;
+    color-scheme: dark;
+  }
+  /* The app frame can be forced to one theme, independent of the viewer's. */
+  .frame[data-mode='light'] {
+    --bg: #ffffff;
+    --fg: #09090b;
+    --card: #ffffff;
+    --muted: #f4f4f5;
+    --muted-fg: #71717a;
+    --border: #e4e4e7;
+    --accent-bg: #f4f4f5;
+    --sel-border: var(--vb-700);
+    --sel-bg: var(--vb-50);
+    --ring: var(--vb-100);
+    --btn-bg: var(--vb-700);
+    --btn-fg: #fafafa;
+    --btn-hover: #08899ae6;
+    --badge-bg: var(--vb-50);
+    --badge-fg: var(--vb-700);
+    --badge-border: var(--vb-100);
+    --online: #16a34a;
+    --online-soft: #dcfce7;
+    --online-fg: #166534;
+    color-scheme: light;
+  }
+  .frame[data-mode='dark'] {
+    --bg: #09090b;
+    --fg: #fafafa;
+    --card: #18181b;
+    --muted: #27272a;
+    --muted-fg: #a1a1aa;
+    --border: rgb(255 255 255 / 0.1);
+    --accent-bg: #27272a;
+    --sel-border: var(--vb-500);
+    --sel-bg: rgb(12 216 243 / 0.1);
+    --ring: rgb(12 216 243 / 0.3);
+    --btn-bg: var(--vb-100);
+    --btn-fg: #18181b;
+    --btn-hover: #bdf4fce6;
+    --badge-bg: rgb(12 216 243 / 0.1);
+    --badge-fg: var(--vb-300);
+    --badge-border: rgb(12 216 243 / 0.2);
+    --online: #4ade80;
+    --online-soft: rgb(74 222 128 / 0.12);
+    --online-fg: #86efac;
+    color-scheme: dark;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    background: var(--chrome-bg);
+    color: var(--chrome-fg);
+    font-family: var(--font);
+    font-size: 14px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 16px 96px;
+  }
+  button {
+    font: inherit;
+    color: inherit;
+  }
+  svg {
+    flex-shrink: 0;
+  }
+  .wrap {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  /* ---------- prototype chrome ---------- */
+  .chrome-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 6px 16px;
+  }
+  .chrome-head h1 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .chrome-head p {
+    margin: 0;
+    color: var(--chrome-muted);
+    font-size: 12.5px;
+  }
+  .tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--chrome-muted);
+    border: 1px dashed var(--chrome-line);
+    border-radius: 4px;
+    padding: 1px 6px;
+  }
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+  }
+  .ctl {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+  .ctl > span {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--chrome-muted);
+  }
+  .seg {
+    display: flex;
+    flex-wrap: wrap;
+    border: 1px solid var(--chrome-line);
+    border-radius: 7px;
+    overflow: hidden;
+  }
+  .seg button {
+    border: 0;
+    background: transparent;
+    padding: 5px 10px;
+    font-size: 12.5px;
+    cursor: pointer;
+    border-right: 1px solid var(--chrome-line);
+  }
+  .seg button:last-child {
+    border-right: 0;
+  }
+  .seg button[aria-pressed='true'] {
+    background: var(--pill-bg);
+    color: var(--pill-fg);
+  }
+  .seg button:focus-visible,
+  .sw button:focus-visible {
+    outline: 2px solid var(--vb-500);
+    outline-offset: -2px;
+  }
+  .notes {
+    display: grid;
+    gap: 4px 20px;
+    grid-template-columns: minmax(0, 1fr);
+    border-left: 3px solid var(--chrome-fg);
+    padding: 2px 0 2px 12px;
+  }
+  @media (min-width: 900px) {
+    .notes {
+      grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    }
+  }
+  .notes h2 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    grid-column: 1 / -1;
+  }
+  .notes p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--chrome-fg);
+  }
+  .notes dl {
+    margin: 0;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 2px 10px;
+    font-size: 12.5px;
+    line-height: 1.45;
+  }
+  .notes dt {
+    color: var(--chrome-muted);
+    font-weight: 500;
+  }
+  .notes dd {
+    margin: 0;
+  }
+  .state {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--chrome-muted);
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 2px;
+  }
+  .state b {
+    color: var(--chrome-fg);
+    font-weight: 500;
+  }
+
+  .stage {
+    display: flex;
+    justify-content: center;
+  }
+  .frame {
+    width: 100%;
+    height: min(860px, calc(100dvh - 120px));
+    min-height: 560px;
+    background: var(--bg);
+    color: var(--fg);
+    border: 1px solid var(--chrome-line);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    container-type: inline-size;
+    position: relative;
+    box-shadow: 0 10px 30px -12px rgb(0 0 0 / 0.18);
+  }
+  .frame[data-width='phone'] {
+    width: 390px;
+    max-width: 100%;
+    border-radius: 28px;
+    border-width: 6px;
+    border-color: var(--pill-bg);
+  }
+
+  /* ---------- app (mirrors console look) ---------- */
+  .appbar {
+    height: 52px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .appbar .brand {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .appbar .brand i {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    background: var(--vb-700);
+    display: inline-block;
+  }
+  .appbar nav {
+    display: flex;
+    gap: 14px;
+    color: var(--muted-fg);
+    font-size: 13px;
+  }
+  .appbar nav span:first-child {
+    color: var(--fg);
+    font-weight: 500;
+  }
+  @container (max-width: 560px) {
+    .appbar nav {
+      display: none;
+    }
+  }
+  .scroll {
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .page {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 24px;
+  }
+  @container (min-width: 1000px) {
+    .page {
+      padding: 40px;
+    }
+  }
+  @container (max-width: 560px) {
+    .page {
+      padding: 16px;
+      gap: 16px;
+    }
+  }
+
+  .eyebrow {
+    color: var(--muted-fg);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 0;
+  }
+  .h1 {
+    font-size: 30px;
+    line-height: 40px;
+    font-weight: 700;
+    margin: 0;
+    text-wrap: balance;
+  }
+  @container (max-width: 560px) {
+    .h1 {
+      font-size: 26px;
+      line-height: 34px;
+    }
+  }
+  .card {
+    background: var(--card);
+    color: var(--fg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  @container (max-width: 560px) {
+    .card {
+      padding: 16px;
+    }
+  }
+  .card h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .sub {
+    margin: 0;
+    color: var(--muted-fg);
+    font-size: 14px;
+  }
+  .label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted-fg);
+  }
+  .muted {
+    color: var(--muted-fg);
+  }
+  .small {
+    font-size: 12px;
+  }
+  .s13 {
+    font-size: 13px;
+  }
+
+  .steps {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  @container (min-width: 820px) {
+    .steps {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  .step {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 248px;
+    transition: box-shadow 0.15s;
+  }
+  .step.done {
+    border-color: var(--sel-border);
+    box-shadow: 0 0 0 3px var(--ring);
+  }
+  .step-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .num {
+    width: 22px;
+    height: 22px;
+    border-radius: 99px;
+    border: 1px solid var(--border);
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .step.done .num {
+    background: var(--sel-border);
+    border-color: var(--sel-border);
+    color: var(--btn-fg);
+  }
+  .frame[data-mode='dark'] .step.done .num {
+    color: #09090b;
+  }
+  .list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0 -4px;
+    padding: 2px 4px;
+    max-height: 208px;
+    overflow-y: auto;
+  }
+  .opt {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 8px 10px;
+    background: transparent;
+    text-align: left;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .opt:hover:not([aria-disabled='true']) {
+    background: var(--muted);
+  }
+  .opt[aria-selected='true'] {
+    border-color: var(--sel-border);
+    background: var(--sel-bg);
+  }
+  .opt[aria-disabled='true'] {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  .opt:focus-visible,
+  .btn:focus-visible,
+  .link:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--ring);
+  }
+  .opt .grow {
+    min-width: 0;
+    flex: 1;
+  }
+  .trunc {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .foot-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted-fg);
+    font-size: 13px;
+    margin-top: auto;
+    padding-top: 4px;
+  }
+  .avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 99px;
+    background: var(--muted);
+    color: var(--fg);
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .avatar.lg {
+    width: 40px;
+    height: 40px;
+    font-size: 13px;
+  }
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 99px;
+    background: var(--muted-fg);
+    flex-shrink: 0;
+  }
+  .dot.online {
+    background: var(--online);
+  }
+  .dot.loading {
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    50% {
+      opacity: 0.35;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dot.loading {
+      animation: none;
+    }
+  }
+  .badge {
+    border: 1px solid var(--badge-border);
+    background: var(--badge-bg);
+    color: var(--badge-fg);
+    border-radius: 6px;
+    font-size: 11.5px;
+    font-weight: 500;
+    padding: 1px 7px;
+    white-space: nowrap;
+  }
+  .search {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 10px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    color: var(--muted-fg);
+    font-size: 13px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    white-space: nowrap;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    border: 0;
+    cursor: pointer;
+    height: 36px;
+    padding: 0 16px;
+  }
+  .btn.primary {
+    background: var(--btn-bg);
+    color: var(--btn-fg);
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.12);
+  }
+  .btn.primary:hover {
+    background: var(--btn-hover);
+  }
+  .btn.lg {
+    height: 40px;
+    padding: 0 22px;
+  }
+  .btn.xl {
+    height: 52px;
+    padding: 0 28px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 10px;
+  }
+  .btn.sm {
+    height: 30px;
+    padding: 0 11px;
+    font-size: 13px;
+  }
+  .btn.outline {
+    background: var(--bg);
+    border: 1px solid var(--border);
+  }
+  .btn.outline:hover,
+  .btn.ghost:hover {
+    background: var(--accent-bg);
+  }
+  .btn.ghost {
+    background: transparent;
+  }
+  .btn[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .btn svg {
+    width: 16px;
+    height: 16px;
+  }
+  .btn.xl svg {
+    width: 18px;
+    height: 18px;
+  }
+  .link {
+    background: none;
+    border: 0;
+    padding: 0;
+    color: var(--muted-fg);
+    font-size: 13px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--border);
+  }
+  .link:hover {
+    color: var(--fg);
+  }
+
+  .launch-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+  }
+  .summary {
+    margin: 0;
+    color: var(--muted-fg);
+    font-size: 13px;
+    min-width: 0;
+  }
+  .summary b {
+    color: var(--fg);
+    font-weight: 500;
+  }
+  @container (max-width: 560px) {
+    .launch-row .btn {
+      width: 100%;
+    }
+  }
+
+  /* B: launch bar on top, sticky inside the app viewport */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    margin: -24px -24px 0;
+    padding: 14px 24px;
+    border-radius: 14px 14px 0 0;
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in srgb, var(--card) 88%, transparent);
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 16px;
+  }
+  @container (max-width: 560px) {
+    .topbar {
+      margin: -16px -16px 0;
+      padding: 12px 16px;
+    }
+    .topbar .btn {
+      width: 100%;
+    }
+  }
+  .topbar .who {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    flex: 1;
+  }
+  .status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--online-fg);
+    background: var(--online-soft);
+    border-radius: 99px;
+    padding: 3px 9px;
+    white-space: nowrap;
+  }
+  .status-chip.checking {
+    color: var(--muted-fg);
+    background: var(--muted);
+  }
+
+  /* C: ready-to-launch hero */
+  .hero {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: center;
+  }
+  @container (min-width: 820px) {
+    .hero {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+  }
+  .picks {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  @container (min-width: 640px) {
+    .picks {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  .pick {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    min-width: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .pick:last-child {
+    border-bottom: 0;
+  }
+  @container (min-width: 640px) {
+    .pick {
+      border-bottom: 0;
+      border-right: 1px solid var(--border);
+    }
+    .pick:last-child {
+      border-right: 0;
+    }
+  }
+  .pick .grow {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .pick .name {
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .icon-tile {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--muted);
+    display: grid;
+    place-items: center;
+    color: var(--muted-fg);
+    flex-shrink: 0;
+  }
+  .icon-tile svg {
+    width: 18px;
+    height: 18px;
+  }
+  .hero-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  @container (min-width: 820px) {
+    .hero-cta {
+      align-items: center;
+    }
+  }
+  .card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  /* D: header launch */
+  .home-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .head-launch {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    border-radius: 14px;
+    padding: 10px 10px 10px 16px;
+    box-shadow: var(--shadow);
+    min-width: 0;
+    max-width: 100%;
+  }
+  .head-launch .grow {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  @container (max-width: 560px) {
+    .home-head > * {
+      width: 100%;
+    }
+    .head-launch {
+      flex-wrap: wrap;
+    }
+    .head-launch .btn {
+      width: 100%;
+    }
+  }
+
+  /* program step footer: New program + Quick Start button */
+  .foot-row {
+    margin-top: auto;
+    padding-top: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .btn.qs[aria-selected='true'] {
+    border-color: var(--sel-border);
+    background: var(--sel-bg);
+  }
+
+  /* headset-column variants */
+  .launch-block {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+  }
+  .launch-block .btn {
+    width: 100%;
+  }
+  .list.tall {
+    max-height: none;
+  }
+  .opt-launch {
+    border: 1px solid var(--sel-border);
+    background: var(--sel-bg);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+  }
+  .opt-launch .opt.bare,
+  .opt-launch .opt.bare[aria-selected='true'] {
+    border-color: transparent;
+    background: transparent;
+  }
+  .opt-launch-cta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0 10px 10px;
+  }
+  .opt-launch-cta .btn {
+    width: 100%;
+  }
+  .opt-launch-cta .summary {
+    font-size: 12px;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 5px 11px;
+    background: transparent;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .chip:hover:not([aria-disabled='true']) {
+    background: var(--muted);
+  }
+  .chip[aria-selected='true'] {
+    border-color: var(--sel-border);
+    background: var(--sel-bg);
+  }
+  .chip[aria-disabled='true'] {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  .chip:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--ring);
+  }
+
+  /* E: quick launch on rows */
+  .row-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .row-wrap .opt {
+    flex: 1;
+    min-width: 0;
+  }
+  .qbtn {
+    flex-shrink: 0;
+  }
+
+  /* other dashboard cards, kept quiet */
+  .grid2 {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+  }
+  @container (min-width: 1000px) {
+    .grid2 {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    }
+  }
+  .pinned {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .pinned li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+  }
+  .pinned li:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+  .pinned .grow {
+    min-width: 0;
+    flex: 1;
+  }
+  .bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    height: 96px;
+  }
+  .bars div {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 6px;
+    height: 100%;
+  }
+  .bars i {
+    display: block;
+    width: 100%;
+    max-width: 36px;
+    border-radius: 5px 5px 2px 2px;
+    background: var(--vb-700);
+    opacity: 0.85;
+  }
+  .bars small {
+    color: var(--muted-fg);
+    font-size: 11px;
+  }
+  .stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 32px;
+  }
+  .stats div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .stats strong {
+    font-size: 20px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .gs {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .gs div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13.5px;
+  }
+  .gs .tick {
+    width: 18px;
+    height: 18px;
+    border-radius: 99px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--border);
+  }
+  .gs .tick.on {
+    background: var(--sel-border);
+    border-color: var(--sel-border);
+    color: var(--btn-fg);
+  }
+
+  .toast {
+    position: absolute;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%);
+    z-index: 20;
+    width: min(560px, calc(100% - 24px));
+    background: var(--fg);
+    color: var(--bg);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    box-shadow: 0 10px 30px rgb(0 0 0 / 0.25);
+  }
+  .toast code {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    word-break: break-all;
+  }
+
+  /* floating variant switcher */
+  .sw {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--pill-bg);
+    color: var(--pill-fg);
+    border-radius: 99px;
+    padding: 5px;
+    box-shadow: 0 8px 28px rgb(0 0 0 / 0.35);
+    max-width: calc(100vw - 32px);
+  }
+  .sw button {
+    width: 34px;
+    height: 34px;
+    border-radius: 99px;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+  .sw button:hover {
+    background: rgb(127 127 127 / 0.25);
+  }
+  .sw .lbl {
+    padding: 0 10px;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+  .sw .lbl span {
+    opacity: 0.6;
+    font-family: var(--mono);
+    font-size: 12px;
+    margin-right: 6px;
+  }
+</style>
+
+<div class="wrap">
+  <div class="chrome-head">
+    <h1>
+      Prominent Launch on the Home Dashboard
+      <span class="tag">CORE-427 · prototype</span>
+    </h1>
+    <p>
+      Fake data. Click rows in the picker to change picks. ← → switch variants.
+    </p>
+  </div>
+  <div class="controls" id="controls"></div>
+  <div class="notes" id="notes"></div>
+  <div class="state" id="state"></div>
+  <div class="stage"><div class="frame" id="frame"></div></div>
+</div>
+<div class="sw" role="group" aria-label="Prototype variant">
+  <button type="button" id="prev" aria-label="Previous variant">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="m15 18-6-6 6-6" />
+    </svg>
+  </button>
+  <div class="lbl" id="swlabel" aria-live="polite"></div>
+  <button type="button" id="next" aria-label="Next variant">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="m9 18 6-6-6-6" />
+    </svg>
+  </button>
+</div>
+
+<script>
+  const I = {
+    play: '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>',
+    check:
+      '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+    search:
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
+    plus: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>',
+    goggles:
+      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-1.6-.8l-1.6-2.13a1 1 0 0 0-1.6 0L9.6 17.2A2 2 0 0 1 8 18H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/></svg>',
+    zap: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>',
+    list: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/></svg>',
+    pencil:
+      '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></svg>',
+    down: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>',
+    user: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+  }
+
+  // ---------- fake data ----------
+  const PATIENTS = [
+    {
+      id: 'p1',
+      name: 'Maria Kostas',
+      last: 'Yesterday at 4:10 PM',
+      active: 'Knee rehab · phase 2',
+      lastProgram: 'g1',
+      lastHeadset: 'd1',
+      pinned: true,
+    },
+    {
+      id: 'p2',
+      name: 'Nikos Papadakis',
+      last: 'Last Wednesday at 11:30 AM',
+      active: 'Shoulder mobility',
+      lastProgram: 'g2',
+      lastHeadset: 'd2',
+      pinned: true,
+    },
+    {
+      id: 'p3',
+      name: 'George Antoniou',
+      last: '11/02/2026',
+      active: 'Balance & gait',
+      lastProgram: 'g3',
+      lastHeadset: 'd1',
+      pinned: false,
+    },
+    {
+      id: 'p4',
+      name: 'Eleni Vlachou',
+      last: null,
+      active: null,
+      lastProgram: null,
+      lastHeadset: null,
+      pinned: true,
+    },
+  ]
+  const PROGRAMS = [
+    { id: 'g1', name: 'Knee rehab · phase 2', exercises: 8 },
+    { id: 'g2', name: 'Shoulder mobility', exercises: 6 },
+    { id: 'g3', name: 'Balance & gait', exercises: 5 },
+  ]
+  const QUICK = 'quick'
+  const DEVICES = [
+    { id: 'd1', model: 'Quest 3', name: 'Room 1' },
+    { id: 'd2', model: 'Quest 3', name: 'Room 2' },
+  ]
+
+  const VARIANTS = [
+    {
+      key: 'today',
+      short: 'Today',
+      title: 'Today (baseline)',
+      idea: 'The card as it ships. Launch sits bottom right under the three columns and looks the same whether there are three picks left or none.',
+      trigger: 'Never changes.',
+      tour: 'Unchanged.',
+      cost: 'Reference only.',
+    },
+    {
+      key: 'swap',
+      short: 'Launch replaces the list',
+      title: 'Launch replaces the headset list',
+      idea: 'Once a headset is picked and online, the headset column stops being a list. It shows the picked headset as one line, "Switch headset" to bring the list back, and a large Launch filling the rest of the column. The bottom row goes away.',
+      trigger:
+        'Picked headset is online or checking. No headset picked yet: the list shows as today and the bottom row stays. Picking one from the list swaps it in.',
+      tour: 'The picked headset line is still a role="option" inside data-tour="session-headset", so the tour\'s headset step can click it. Launch keeps data-tour="session-launch".',
+      cost: 'Small. One new state for the headset step (list or launch), plus "Switch headset". On phone the steps stack, so Launch ends up at the bottom, about where it is today.',
+    },
+    {
+      key: 'row',
+      short: 'Launch in the headset row',
+      title: 'Launch inside the picked headset row',
+      idea: 'The headset list stays. The picked online headset grows: under its name and status a full-width Launch appears inside the selected highlight. Pick another headset and Launch moves to that row. The bottom row goes away while a row holds Launch.',
+      trigger:
+        'Picked headset is online or checking. If patient or program is missing, the row shows what to pick and Launch is disabled.',
+      tour: 'All three steps unchanged, so the tour works. Launch keeps data-tour="session-launch".',
+      cost: 'Smallest. Only the selected headset row changes. The list needs room to grow so the Launch row is not cut off by the scroll area.',
+    },
+    {
+      key: 'step',
+      short: 'Step 3 becomes Launch',
+      title: 'Step 3 becomes "Launch"',
+      idea: 'While any headset is online, the third column turns into a Launch step: headsets as compact chips on top, the summary of what will run, and a large Launch at the bottom of the column. It reads as the last step of the flow rather than a footer.',
+      trigger:
+        'Any headset in the list is online or checking. With none online, the column is the headset list as today.',
+      tour: 'Chips are role="option" inside data-tour="session-headset", so the tour still clicks one. Launch keeps data-tour="session-launch".',
+      cost: 'Small to medium. A chip layout for headsets, which gets tight past three or four headsets.',
+    },
+  ]
+
+  const PICKS = [
+    { key: 'filled', label: 'Pre-filled' },
+    { key: 'patient', label: 'Patient only' },
+    { key: 'empty', label: 'Nothing picked' },
+  ]
+  const HEADSET = [
+    { key: 'online', label: 'Last headset online' },
+    { key: 'checking', label: 'Checking…' },
+    { key: 'other', label: 'Other headset online' },
+    { key: 'offline', label: 'All offline' },
+    { key: 'none', label: 'None paired' },
+  ]
+
+  // ---------- state ----------
+  const S = {
+    v: 0,
+    picks: 'filled',
+    headset: 'online',
+    mode: 'auto',
+    width: 'full',
+    expanded: false,
+    sel: null,
+    toast: null,
+  }
+  let toastTimer
+
+  function presenceMap() {
+    switch (S.headset) {
+      case 'online':
+        return { d1: 'online', d2: 'offline' }
+      case 'checking':
+        return { d1: 'loading', d2: 'loading' }
+      case 'other':
+        return { d1: 'offline', d2: 'online' }
+      case 'offline':
+        return { d1: 'offline', d2: 'offline' }
+      default:
+        return {}
+    }
+  }
+  const devices = () => (S.headset === 'none' ? [] : DEVICES)
+  const status = (id) => presenceMap()[id] ?? 'unpaired'
+  const selectable = (id) => ['online', 'loading'].includes(status(id))
+  const onlineDevices = () => devices().filter((d) => status(d.id) === 'online')
+
+  function picksFor(patientId) {
+    const p = PATIENTS.find((x) => x.id === patientId)
+    if (!p) return { patientId: null, programId: null, deviceId: null }
+    const only = devices().length === 1 ? devices()[0].id : null
+    const dev = p.lastHeadset ?? only
+    return {
+      patientId: p.id,
+      programId: p.lastProgram,
+      deviceId: dev && selectable(dev) ? dev : null,
+    }
+  }
+  function resetSelection() {
+    S.expanded = false
+    if (S.picks === 'filled') S.sel = picksFor('p1')
+    else if (S.picks === 'patient') S.sel = picksFor('p4')
+    else S.sel = { patientId: null, programId: null, deviceId: null }
+  }
+
+  const patient = () => PATIENTS.find((p) => p.id === S.sel.patientId)
+  const program = () =>
+    S.sel.programId === QUICK
+      ? { id: QUICK, name: 'Quick Start', exercises: null }
+      : PROGRAMS.find((p) => p.id === S.sel.programId)
+  const device = () => devices().find((d) => d.id === S.sel.deviceId)
+  const canLaunch = () =>
+    Boolean(S.sel.patientId && S.sel.programId && S.sel.deviceId)
+  const pickedStatus = () => (S.sel.deviceId ? status(S.sel.deviceId) : null)
+
+  function summary() {
+    const chosen = []
+    let missing = null
+    const names = {
+      patientId: patient()?.name,
+      programId: program()?.name,
+      deviceId: device() && `${device().model} · ${device().name}`,
+    }
+    const miss = {
+      patientId: 'choose a patient',
+      programId: 'choose a program',
+      deviceId: 'choose a headset to continue',
+    }
+    for (const k of ['patientId', 'programId', 'deviceId']) {
+      if (S.sel[k] && names[k]) chosen.push(names[k])
+      else if (!missing) missing = miss[k]
+    }
+    return `${esc(chosen.join(' · '))}${missing ? `${chosen.length ? ' · ' : ''}<b>${missing}</b>` : ''}`
+  }
+
+  const esc = (s) =>
+    String(s ?? '').replace(
+      /[&<>"]/g,
+      (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c],
+    )
+  const initials = (n) =>
+    n
+      .split(/\s+/)
+      .map((w) => w[0])
+      .slice(0, 2)
+      .join('')
+  const presenceText = {
+    online: 'Online',
+    offline: 'Offline',
+    loading: 'Checking…',
+    unpaired: 'Not paired',
+  }
+
+  // ---------- shared pieces ----------
+  function launchBtn({
+    size = 'lg',
+    label = 'Launch on headset',
+    tour = true,
+    enabled = canLaunch(),
+    action = 'launch',
+    extra = '',
+  } = {}) {
+    return `<button type="button" class="btn primary ${size}" ${enabled ? '' : 'disabled'} ${tour ? 'data-tour="session-launch"' : ''} data-action="${action}" ${extra}>${I.play}${esc(label)}</button>`
+  }
+  function patientOpt(p, { quick = false } = {}) {
+    const sel = S.sel.patientId === p.id
+    const opt = `<button type="button" role="option" class="opt" aria-selected="${sel}" data-action="patient" data-id="${p.id}">
+      <span class="avatar">${initials(p.name)}</span>
+      <span class="grow"><span class="trunc" style="display:block">${esc(p.name)}</span>
+      <small class="muted small trunc" style="display:block">${esc(p.last ?? 'No sessions yet')}${p.active ? ` · ${esc(p.active)}` : ''}</small></span></button>`
+    if (!quick) return opt
+    const q = quickTarget(p)
+    return `<div class="row-wrap">${opt}${q ? quickBtn(p, q) : ''}</div>`
+  }
+  function stepFrame({ n, label, tour, done, toolbar = '', body, foot }) {
+    return `<div class="step ${done ? 'done' : ''}" role="listbox" aria-label="${label}" data-tour="${tour}">
+    <div class="step-head"><span class="label">${label}</span><span class="num" aria-hidden="true">${done ? I.check : n}</span></div>
+    ${toolbar}<div class="list">${body}</div>${foot}</div>`
+  }
+  function steps({ quick = false, third = null } = {}) {
+    const pats = [...PATIENTS].sort(
+      (a, b) => (b.last ? 1 : 0) - (a.last ? 1 : 0),
+    )
+    const p1 = stepFrame({
+      n: 1,
+      label: 'Patient',
+      tour: 'session-patient',
+      done: !!S.sel.patientId,
+      body: pats.map((p) => patientOpt(p, { quick })).join(''),
+      foot: `<div class="foot-link">${I.plus} New patient</div>`,
+    })
+    const qsel = S.sel.programId === QUICK
+    const p2 = stepFrame({
+      n: 2,
+      label: 'Program',
+      tour: 'session-program',
+      done: !!S.sel.programId,
+      body: PROGRAMS.map(
+        (
+          g,
+        ) => `<button type="button" role="option" class="opt" aria-selected="${S.sel.programId === g.id}" data-action="program" data-id="${g.id}">
+        <span class="grow"><span class="trunc" style="display:block">${esc(g.name)}</span><small class="muted small">${g.exercises} exercises</small></span>
+        ${patient()?.lastProgram === g.id ? '<span class="badge">Last used</span>' : ''}</button>`,
+      ).join(''),
+      foot: `<div class="foot-row"><div class="foot-link" style="margin-top:0;padding-top:0">${I.plus} New program</div>
+      <button type="button" role="option" class="btn outline sm qs" aria-selected="${qsel}" data-action="program" data-id="${QUICK}" title="Build the list on the fly">${I.zap}Quick Start</button></div>`,
+    })
+    const devs = devices()
+    if (third) return `<div class="steps">${p1}${p2}${third}</div>`
+    const p3 = stepFrame({
+      n: 3,
+      label: 'Headset',
+      tour: 'session-headset',
+      done: !!S.sel.deviceId,
+      body:
+        devs.length === 0
+          ? '<p class="muted s13" style="margin:0">No headsets yet. Add one and pair it to launch a session.</p>'
+          : devs
+              .map((d) => {
+                const st = status(d.id)
+                return `<button type="button" role="option" class="opt" aria-selected="${S.sel.deviceId === d.id}" ${selectable(d.id) ? '' : 'aria-disabled="true"'} data-action="device" data-id="${d.id}">
+        <span class="dot ${st}"></span><span class="grow"><span class="trunc" style="display:block">${esc(d.model)} · ${esc(d.name)}</span><small class="muted small">${presenceText[st]}</small></span></button>`
+              })
+              .join(''),
+      foot: `<div class="foot-link">${I.goggles} Pair a headset</div>`,
+    })
+    return `<div class="steps">${p1}${p2}${p3}</div>`
+  }
+  const cardTitle = () =>
+    `<div><h2>Start a session</h2><p class="sub">Pick a patient, a program, and a headset.</p></div>`
+  const bottomRow = () =>
+    `<div class="launch-row"><p class="summary" aria-live="polite">${summary()}</p>${launchBtn()}</div>`
+  const header = (right = '') =>
+    `<div class="home-head"><div><p class="eyebrow">Dashboard</p><h1 class="h1">Good afternoon, Alex</h1></div>${right}</div>`
+
+  function statusChip(id) {
+    const st = status(id)
+    const d = DEVICES.find((x) => x.id === id)
+    return `<span class="status-chip ${st === 'loading' ? 'checking' : ''}"><span class="dot ${st}"></span>${esc(d.name)} ${st === 'loading' ? 'checking…' : 'online'}</span>`
+  }
+
+  // ---------- other dashboard cards ----------
+  function sessionsCard() {
+    const days = [
+      ['Mon', 3],
+      ['Tue', 5],
+      ['Wed', 2],
+      ['Thu', 6],
+      ['Fri', 4],
+      ['Sat', 0],
+      ['Sun', 1],
+    ]
+    return `<section class="card" style="gap:16px"><div class="step-head"><span class="label">Sessions · last 7 days</span><span class="muted small">All patients</span></div>
+    <div class="stats"><div><span class="muted small">Completed</span><strong>19</strong></div><div><span class="muted small">Interrupted</span><strong>2</strong></div>
+    <div><span class="muted small">Avg length</span><strong>24 min</strong></div><div><span class="muted small">Headset time</span><strong>8 h 12 m</strong></div></div>
+    <div class="bars" role="img" aria-label="Sessions per day over the last seven days">${days.map(([d, n]) => `<div><i style="height:${Math.max((n / 6) * 70, 3)}px"></i><small>${d}</small></div>`).join('')}</div></section>`
+  }
+  function pinnedCard({ quick = false } = {}) {
+    const rows = PATIENTS.filter((p) => p.pinned)
+      .map((p) => {
+        const q = quick ? quickTarget(p) : null
+        return `<li>
+      <span class="avatar lg">${initials(p.name)}</span>
+      <div class="grow"><div class="trunc" style="font-weight:500">${esc(p.name)}</div><small class="muted trunc" style="display:block">${esc(p.last ?? 'No sessions yet')}${p.active ? ` · ${esc(p.active)}` : ''}</small></div>
+      ${q ? quickBtn(p, q) : ''}</li>`
+      })
+      .join('')
+    return `<section class="card" style="gap:16px"><div class="step-head"><span class="label">Pinned patients</span><span class="muted">${I.user}</span></div>
+    <ul class="pinned">${rows}</ul><div class="foot-link" style="margin-top:0">${I.plus} Pin a patient</div></section>`
+  }
+  function gettingStarted() {
+    const items = [
+      ['Add a patient', true],
+      ['Build a program', true],
+      ['Pair a headset', true],
+      ['Run your first session', false],
+    ]
+    return `<section class="card" style="gap:16px"><div class="step-head"><span class="label">Getting started</span><span class="muted small">3 of 4</span></div>
+    <div class="gs">${items.map(([t, on]) => `<div><span class="tick ${on ? 'on' : ''}">${on ? I.check : ''}</span><span class="${on ? 'muted' : ''}">${t}</span></div>`).join('')}</div></section>`
+  }
+  const rest = (o) =>
+    `${sessionsCard()}<div class="grid2">${pinnedCard(o)}${gettingStarted()}</div>`
+
+  // ---------- quick launch helpers (variant E) ----------
+  function quickTarget(p) {
+    if (!p.lastProgram) return null
+    if (p.lastHeadset && status(p.lastHeadset) === 'online')
+      return p.lastHeadset
+    const on = onlineDevices()
+    return on.length === 1 ? on[0].id : null
+  }
+  function quickBtn(p, devId) {
+    const d = DEVICES.find((x) => x.id === devId)
+    return `<button type="button" class="btn primary sm qbtn" data-action="quick" data-id="${p.id}" data-dev="${devId}" aria-label="Launch ${esc(p.name)} on ${esc(d.name)}" title="${esc(PROGRAMS.find((g) => g.id === p.lastProgram).name)} on ${esc(d.name)}">${I.play}Launch</button>`
+  }
+
+  // ---------- variants ----------
+  function vToday() {
+    return `${header()}<section class="card" id="start-session">${cardTitle()}${steps()}${bottomRow()}</section>${rest()}`
+  }
+
+  // ---------- headset-column variants ----------
+  const selectableNow = (id) => id && selectable(id)
+  function deviceOpt(d, { action = 'device', bare = false } = {}) {
+    const st = status(d.id)
+    return `<button type="button" role="option" class="opt ${bare ? 'bare' : ''}" aria-selected="${S.sel.deviceId === d.id}" ${selectable(d.id) ? '' : 'aria-disabled="true"'} data-action="${action}" data-id="${d.id}">
+    <span class="dot ${st}"></span><span class="grow"><span class="trunc" style="display:block">${esc(d.model)} · ${esc(d.name)}</span><small class="muted small">${presenceText[st]}</small></span></button>`
+  }
+  const pairLink = () =>
+    `<div class="foot-link">${I.goggles} Pair a headset</div>`
+  function launchBlock() {
+    return `<div class="launch-block"><p class="summary" aria-live="polite">${summary()}</p>${launchBtn({ size: 'xl' })}</div>`
+  }
+
+  function vSwap() {
+    if (!selectableNow(S.sel.deviceId) || S.expanded) {
+      const third = S.expanded
+        ? stepFrame({
+            n: 3,
+            label: 'Headset',
+            tour: 'session-headset',
+            done: !!S.sel.deviceId,
+            body: devices()
+              .map((d) => deviceOpt(d))
+              .join(''),
+            foot: pairLink(),
+          })
+        : null
+      return `${header()}<section class="card" id="start-session">${cardTitle()}${steps({ third })}${bottomRow()}</section>${rest()}`
+    }
+    const d = device()
+    const third = `<div class="step done" role="listbox" aria-label="Headset" data-tour="session-headset">
+    <div class="step-head"><span class="label">Headset</span><span class="num" aria-hidden="true">${I.check}</span></div>
+    <div class="list">${deviceOpt(d, { action: 'noop' })}</div>
+    <button type="button" class="link" style="align-self:flex-start" data-action="expand">Switch headset</button>
+    ${launchBlock()}</div>`
+    return `${header()}<section class="card" id="start-session">${cardTitle()}${steps({ third })}</section>${rest()}`
+  }
+
+  function vRow() {
+    const inRow = selectableNow(S.sel.deviceId)
+    const devs = devices()
+    const body =
+      devs.length === 0
+        ? '<p class="muted s13" style="margin:0">No headsets yet. Add one and pair it to launch a session.</p>'
+        : devs
+            .map((d) =>
+              inRow && d.id === S.sel.deviceId
+                ? `<div class="opt-launch">${deviceOpt(d, { bare: true })}<div class="opt-launch-cta"><p class="summary">${summary()}</p>${launchBtn({ size: 'lg' })}</div></div>`
+                : deviceOpt(d),
+            )
+            .join('')
+    const third = `<div class="step ${S.sel.deviceId ? 'done' : ''}" role="listbox" aria-label="Headset" data-tour="session-headset">
+    <div class="step-head"><span class="label">Headset</span><span class="num" aria-hidden="true">${S.sel.deviceId ? I.check : 3}</span></div>
+    <div class="list tall">${body}</div>${pairLink()}</div>`
+    return `${header()}<section class="card" id="start-session">${cardTitle()}${steps({ third })}${inRow ? '' : bottomRow()}</section>${rest()}`
+  }
+
+  function vStep() {
+    const devs = devices()
+    if (!devs.some((d) => selectable(d.id))) return vToday()
+    const chips = devs
+      .map((d) => {
+        const st = status(d.id)
+        return `<button type="button" role="option" class="chip" aria-selected="${S.sel.deviceId === d.id}" ${selectable(d.id) ? '' : 'aria-disabled="true"'} data-action="device" data-id="${d.id}" title="${presenceText[st]}">
+      <span class="dot ${st}"></span>${esc(d.name)}<span class="muted small">${st === 'online' ? '' : presenceText[st]}</span></button>`
+      })
+      .join('')
+    const third = `<div class="step ${canLaunch() ? 'done' : ''}" role="listbox" aria-label="Launch" data-tour="session-headset">
+    <div class="step-head"><span class="label">Launch</span><span class="num" aria-hidden="true">${canLaunch() ? I.check : 3}</span></div>
+    <div><span class="muted small" style="display:block;margin-bottom:6px">On headset</span><div class="chips">${chips}</div></div>
+    ${launchBlock()}</div>`
+    return `${header()}<section class="card" id="start-session">${cardTitle()}${steps({ third })}</section>${rest()}`
+  }
+
+  function vTop() {
+    const on = onlineDevices()
+    if (on.length === 0) return vToday()
+    const chipFor =
+      S.sel.deviceId && status(S.sel.deviceId) === 'online'
+        ? S.sel.deviceId
+        : on[0].id
+    const bar = `<div class="topbar"><div class="who">${statusChip(chipFor)}<p class="summary" aria-live="polite">${summary()}</p></div>${launchBtn()}</div>`
+    return `${header()}<section class="card" id="start-session">${bar}${cardTitle()}${steps()}</section>${rest()}`
+  }
+
+  function vHero() {
+    const st = pickedStatus()
+    const ready = canLaunch() && (st === 'online' || st === 'loading')
+    if (!ready || S.expanded) {
+      const collapse = ready
+        ? `<button type="button" class="link" data-action="collapse">Done</button>`
+        : ''
+      return `${header()}<section class="card" id="start-session"><div class="card-head">${cardTitle()}${collapse}</div>${steps()}${bottomRow()}</section>${rest()}`
+    }
+    const p = patient(),
+      g = program(),
+      d = device()
+    const picks = `<div class="picks">
+    <div class="pick"><span class="avatar lg">${initials(p.name)}</span><span class="grow"><span class="label">Patient</span><span class="name trunc">${esc(p.name)}</span><small class="muted small trunc">Last session ${esc((p.last ?? 'none').toLowerCase())}</small></span></div>
+    <div class="pick"><span class="icon-tile">${g.id === QUICK ? I.zap : I.list}</span><span class="grow"><span class="label">Program</span><span class="name trunc">${esc(g.name)}</span>
+      <small class="muted small">${g.exercises ? `${g.exercises} exercises` : 'Build the list on the fly'}${p.lastProgram === g.id ? ' · <span class="badge">Last used</span>' : ''}</small></span></div>
+    <div class="pick"><span class="icon-tile">${I.goggles}</span><span class="grow"><span class="label">Headset</span><span class="name trunc">${esc(d.model)} · ${esc(d.name)}</span>
+      <small class="small" style="display:flex;align-items:center;gap:6px;color:${st === 'online' ? 'var(--online-fg)' : 'var(--muted-fg)'}"><span class="dot ${st}"></span>${presenceText[st]}</small></span></div></div>`
+    return `${header()}<section class="card" id="start-session">
+    <div class="card-head"><div><h2>Ready to launch</h2><p class="sub">Picked up where ${esc(p.name.split(' ')[0])} left off.</p></div></div>
+    <div class="hero">${picks}<div class="hero-cta">${launchBtn({ size: 'xl' })}<button type="button" class="link" data-action="expand">${I.pencil}Change patient, program or headset</button></div></div>
+    </section>${rest()}`
+  }
+
+  function vHeader() {
+    const st = pickedStatus()
+    const on = onlineDevices()
+    let right = ''
+    if (canLaunch() && st === 'online') {
+      const p = patient(),
+        g = program(),
+        d = device()
+      right = `<div class="head-launch"><span class="dot online"></span><span class="grow"><span class="small" style="color:var(--online-fg);font-weight:500">${esc(d.name)} is online</span>
+      <span class="trunc" style="font-weight:600">${esc(p.name)}</span><span class="muted small trunc">${esc(g.name)}</span></span>
+      ${launchBtn({ size: 'lg', label: 'Launch', tour: false })}</div>`
+    } else if (on.length) {
+      const s = summary().match(/<b>(.*)<\/b>/)
+      right = `<div class="head-launch"><span class="dot online"></span><span class="grow"><span class="small" style="color:var(--online-fg);font-weight:500">${esc(on.map((d) => d.name).join(', '))} online</span>
+      <span class="muted small">To launch, ${s ? s[1] : 'finish the picks'}.</span></span>
+      <button type="button" class="btn outline sm" data-action="jump">${I.down}Start a session</button></div>`
+    }
+    return `${header(right)}<section class="card" id="start-session">${cardTitle()}${steps()}${bottomRow()}</section>${rest()}`
+  }
+
+  function vQuick() {
+    if (onlineDevices().length === 0) return vToday()
+    return `${header()}<section class="card" id="start-session">${cardTitle()}${steps({ quick: true })}${bottomRow()}</section>${rest({ quick: true })}`
+  }
+
+  const RENDER = [vToday, vSwap, vRow, vStep]
+
+  // ---------- chrome ----------
+  function seg(name, label, opts, cur) {
+    return `<div class="ctl"><span>${label}</span><div class="seg">${opts.map((o) => `<button type="button" data-ctl="${name}" data-val="${o.key}" aria-pressed="${o.key === cur}">${o.label}</button>`).join('')}</div></div>`
+  }
+  function renderChrome() {
+    document.getElementById('controls').innerHTML =
+      seg('picks', 'Picks', PICKS, S.picks) +
+      seg('headset', 'Headset', HEADSET, S.headset) +
+      seg(
+        'mode',
+        'Theme',
+        [
+          { key: 'auto', label: 'Auto' },
+          { key: 'light', label: 'Light' },
+          { key: 'dark', label: 'Dark' },
+        ],
+        S.mode,
+      ) +
+      seg(
+        'width',
+        'Width',
+        [
+          { key: 'full', label: 'Desktop' },
+          { key: 'phone', label: 'Phone' },
+        ],
+        S.width,
+      )
+    const v = VARIANTS[S.v]
+    document.getElementById('notes').innerHTML =
+      `<h2>${String.fromCharCode(65 + S.v)} · ${esc(v.title)}</h2><p>${esc(v.idea)}</p>
+    <dl><dt>Shows when</dt><dd>${esc(v.trigger)}</dd><dt>Tour</dt><dd>${esc(v.tour)}</dd><dt>Build cost</dt><dd>${esc(v.cost)}</dd></dl>`
+    document.getElementById('swlabel').innerHTML =
+      `<span>${String.fromCharCode(65 + S.v)} ${S.v + 1}/${VARIANTS.length}</span>${esc(v.short)}`
+    const d = device()
+    document.getElementById('state').innerHTML =
+      `selection { patient: <b>${esc(patient()?.name ?? 'null')}</b>, program: <b>${esc(program()?.name ?? 'null')}</b>, headset: <b>${d ? `${esc(d.name)} (${status(d.id)})` : 'null'}</b> } · canLaunch: <b>${canLaunch()}</b> · online: <b>${esc(
+        onlineDevices()
+          .map((x) => x.name)
+          .join(', ') || 'none',
+      )}</b>`
+  }
+  function render() {
+    const frame = document.getElementById('frame')
+    const prev = frame.querySelector('.scroll')?.scrollTop ?? 0
+    frame.dataset.mode = S.mode
+    frame.dataset.width = S.width
+    frame.innerHTML = `<div class="appbar"><span class="brand"><i></i>Console</span><nav><span>Home</span><span>Patients</span><span>Programs</span><span>Devices</span></nav></div>
+    <div class="scroll"><main class="page">${RENDER[S.v]()}</main></div>
+    ${S.toast ? `<div class="toast" role="status">${S.toast}</div>` : ''}`
+    frame.querySelector('.scroll').scrollTop = prev
+    renderChrome()
+  }
+
+  function launchToast(sel, source) {
+    const p = PATIENTS.find((x) => x.id === sel.patientId)
+    const g =
+      sel.programId === QUICK
+        ? { name: 'Quick Start' }
+        : PROGRAMS.find((x) => x.id === sel.programId)
+    const d = DEVICES.find((x) => x.id === sel.deviceId)
+    S.toast = `<b>Would launch</b> ${esc(p.name)} · ${esc(g.name)} on ${esc(d.name)} <span style="opacity:.7">(${source})</span><br>
+    <code>launch() → /patients/${p.id}/patient-dashboard?…  ·  session_picker_launched { reused_last_program: ${sel.programId === p.lastProgram} }</code>`
+    clearTimeout(toastTimer)
+    toastTimer = setTimeout(() => {
+      S.toast = null
+      render()
+    }, 4200)
+  }
+
+  function go(i) {
+    S.v = (i + VARIANTS.length) % VARIANTS.length
+    S.expanded = false
+    try {
+      history.replaceState(null, '', `#${VARIANTS[S.v].key}`)
+    } catch (e) {}
+    render()
+  }
+
+  document.addEventListener('click', (e) => {
+    const c = e.target.closest('[data-ctl]')
+    if (c) {
+      S[c.dataset.ctl] = c.dataset.val
+      if (c.dataset.ctl === 'picks' || c.dataset.ctl === 'headset')
+        resetSelection()
+      render()
+      return
+    }
+    const a = e.target.closest('[data-action]')
+    if (!a || a.disabled || a.getAttribute('aria-disabled') === 'true') return
+    const id = a.dataset.id
+    switch (a.dataset.action) {
+      case 'patient':
+        S.sel = picksFor(id)
+        break
+      case 'program':
+        S.sel = { ...S.sel, programId: id }
+        break
+      case 'device':
+        S.sel = { ...S.sel, deviceId: id }
+        S.expanded = false
+        break
+      case 'noop':
+        return
+      case 'expand':
+        S.expanded = true
+        break
+      case 'collapse':
+        S.expanded = false
+        break
+      case 'jump':
+        document
+          .getElementById('start-session')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        return
+      case 'launch':
+        launchToast(S.sel, 'card picks')
+        break
+      case 'quick': {
+        const p = PATIENTS.find((x) => x.id === id)
+        launchToast(
+          { patientId: id, programId: p.lastProgram, deviceId: a.dataset.dev },
+          'row quick launch',
+        )
+        break
+      }
+    }
+    render()
+  })
+  document.getElementById('prev').addEventListener('click', () => go(S.v - 1))
+  document.getElementById('next').addEventListener('click', () => go(S.v + 1))
+  document.addEventListener('keydown', (e) => {
+    if (e.target.closest('input, textarea, [contenteditable]')) return
+    if (e.key === 'ArrowLeft') go(S.v - 1)
+    if (e.key === 'ArrowRight') go(S.v + 1)
+  })
+  function fromHash() {
+    const i = VARIANTS.findIndex((v) => v.key === location.hash.slice(1))
+    if (i >= 0 && i !== S.v) {
+      S.v = i
+      S.expanded = false
+      render()
+    }
+  }
+  window.addEventListener('hashchange', fromHash)
+
+  resetSelection()
+  const start = VARIANTS.findIndex((v) => v.key === location.hash.slice(1))
+  if (start >= 0) S.v = start
+  render()
+</script>
