@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  cancelHrefFor,
   homePickerHref,
   readHomePickerSeed,
   returnHrefWithChoice,
@@ -82,5 +83,33 @@ describe('returning from a create page', () => {
         'd2',
       ),
     ).toBeNull()
+  })
+})
+
+describe('cancelling a create page', () => {
+  it('goes back to the dashboard with the earlier picks', () => {
+    const link = withReturnTo(
+      '/patients/new',
+      homePickerHref({ patientId: 'p1', programId: 'r1' }),
+    )
+    const search = link.slice(link.indexOf('?'))
+
+    expect(cancelHrefFor(search, '/patients')).toBe('/?patient=p1&program=r1')
+  })
+
+  it('uses the fallback when not opened from the dashboard', () => {
+    expect(cancelHrefFor('', '/patients')).toBe('/patients')
+    expect(cancelHrefFor('?returnTo=%2Fpatients', '/patients')).toBe(
+      '/patients',
+    )
+  })
+
+  it('never cancels to another site', () => {
+    expect(
+      cancelHrefFor(
+        `?returnTo=${encodeURIComponent('//evil.example/')}`,
+        '/programs',
+      ),
+    ).toBe('/programs')
   })
 })

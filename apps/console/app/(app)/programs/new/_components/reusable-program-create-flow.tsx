@@ -5,6 +5,7 @@ import { Button } from '@virtality/ui/components/button'
 import { H2, P } from '@/components/typography'
 import { useClientT } from '@/i18n/use-client-t'
 import { useRouter } from 'next/navigation'
+import { cancelHref } from '@/lib/home-picker-return'
 import { ExerciseLibraryProvider } from '@/context/exercise-library-context'
 import type { CompleteReusableProgram } from '@/types/models'
 import ReusableProgramFormView from './reusable-program-form'
@@ -22,7 +23,7 @@ const ReusableProgramCreateFlow = () => {
   const [step, setStep] = useState<CreateStep>('choice')
   const [editorSource, setEditorSource] = useState<EditorSource | null>(null)
 
-  const handleCancel = () => router.push('/programs')
+  const handleCancel = () => router.push(cancelHref('/programs'))
 
   if (step === 'choice') {
     return (

@@ -23,7 +23,7 @@ import { notify } from '@/lib/notify'
 import { useEffect } from 'react'
 import type { CompleteReusableProgram } from '@/types/models'
 import { withRom } from '@/lib/with-rom'
-import { afterCreateHref } from '@/lib/home-picker-return'
+import { afterCreateHref, cancelHref } from '@/lib/home-picker-return'
 import {
   ReusableProgramFormSchema,
   type ReusableProgramForm,
@@ -149,7 +149,7 @@ const ReusableProgramFormView = ({
     })
   }
 
-  const handleCancel = () => router.push('/programs')
+  const handleCancel = () => router.push(cancelHref('/programs'))
 
   const showProgramNameField = isSelectedListStep
 

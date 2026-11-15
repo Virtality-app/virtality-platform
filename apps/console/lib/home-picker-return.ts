@@ -84,3 +84,14 @@ export function afterCreateHref(
 ): string {
   return returnHrefWithChoice(window.location.search, choice, id) ?? fallback
 }
+
+/** Where Cancel goes for a page opened with `search`: the dashboard that sent us, or `fallback`. */
+export function cancelHrefFor(search: string, fallback: string): string {
+  const url = homeReturnTo(new URLSearchParams(search).get(RETURN_TO_PARAM))
+  return url ? `${url.pathname}${url.search}` : fallback
+}
+
+/** Cancel in the browser: back to the dashboard that sent us, or `fallback`. */
+export function cancelHref(fallback: string): string {
+  return cancelHrefFor(window.location.search, fallback)
+}

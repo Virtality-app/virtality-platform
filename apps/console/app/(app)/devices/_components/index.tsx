@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dialog'
 import { SelectItem } from '@virtality/ui/components/select'
 import { FormInput, FormSelect } from '@/components/ui/form'
+import BackToDashboard from './back-to-dashboard'
 import DeviceCard from './device-card'
 import AddDeviceCard from './add-device-card'
 import { DeviceSchema } from '@/lib/definitions'
@@ -62,6 +63,7 @@ const Devices = () => {
   if (isLoading)
     return (
       <div className='min-h-screen-with-nav'>
+        <BackToDashboard />
         <div className='flex flex-wrap gap-6 p-4'>
           <DeviceCardSkeleton />
           <DeviceCardSkeleton />
@@ -72,6 +74,7 @@ const Devices = () => {
 
   return (
     <div className='min-h-screen-with-nav'>
+      <BackToDashboard />
       <div className='flex flex-wrap gap-6 p-4'>
         {/* Add Device Card */}
         {!isLoading &&
