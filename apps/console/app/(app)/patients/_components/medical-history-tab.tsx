@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import { Slider } from '@/components/ui/slider'
 import dynamic from 'next/dynamic'
 import { useForm } from 'react-hook-form'
+import { bodyAreasHaveSameSelection } from '@/lib/body-areas'
 import { BodyAreas, MedHistoryDeltas } from '@/types/models'
 import { PatientFormInput } from '@/lib/definitions'
 import { useRef, useState } from 'react'
@@ -13,28 +14,6 @@ import useBeforeUnload from '@/hooks/use-before-unload'
 import useNavigationGuard from '@/hooks/use-navigation-guard'
 import { NavigationGuardDialog } from '@/components/dialogs/navigation-guard-dialog'
 import { useClientT } from '@/i18n/use-client-t'
-
-/** Compare by which parts are active; null and all-inactive are treated as equal. */
-function bodyAreasHaveSameSelection(a: BodyAreas, b: BodyAreas): boolean {
-  const activeKeys = (state: HumanState | null | undefined): Set<string> => {
-    if (!state || typeof state !== 'object') return new Set()
-    const set = new Set<string>()
-    for (const [key, entry] of Object.entries(state)) {
-      if (entry?.isActive === true) set.add(key)
-    }
-    return set
-  }
-  const frontA = activeKeys(a.front)
-  const frontB = activeKeys(b.front)
-  const backA = activeKeys(a.back)
-  const backB = activeKeys(b.back)
-  return (
-    frontA.size === frontB.size &&
-    [...frontA].every((k) => frontB.has(k)) &&
-    backA.size === backB.size &&
-    [...backA].every((k) => backB.has(k))
-  )
-}
 
 const EditorLoading = () => {
   const { t } = useClientT('patients')
