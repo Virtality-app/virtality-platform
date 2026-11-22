@@ -1,362 +1,110 @@
 'use client'
-import { useEffect, useState } from 'react'
-import { AlertCircle, Loader2 } from 'lucide-react'
-import { Button } from '@virtality/ui/components/button'
-import { Separator } from '@virtality/ui/components/separator'
-import { useForm } from 'react-hook-form'
-import { patientFormDefaultValues } from '@/lib/patient-form-defaults'
-import { PatientFormSchema, PatientFormInput } from '@/lib/definitions'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { BodyAreas, MedHistoryDeltas } from '@/types/models'
-import { cn } from '@/lib/utils'
-import useNavigationGuard from '@/hooks/use-navigation-guard'
-import { NavigationGuardDialog } from '@/components/dialogs/navigation-guard-dialog'
-import { notify } from '@/lib/notify'
-import { Trans } from 'react-i18next'
-import { useClientT } from '@/i18n/use-client-t'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import BasicInfo from '@/app/(app)/patients/_components/basic-info'
-import MedicalHistory from '@/app/(app)/patients/_components/medical-history-tab'
-import useBeforeUnload from '@/hooks/use-before-unload'
-import {
-  Language,
-  MedicalHistory as MedicalHistoryType,
-  Patient,
-} from '@virtality/db'
 import { useRouter } from 'next/navigation'
+import type { PatientProfileTab } from '@virtality/analytics'
+import { Tabs, TabsContent } from '@/components/ui/tabs'
+import { NavigationGuardDialog } from '@/components/dialogs/navigation-guard-dialog'
+import useBeforeUnload from '@/hooks/use-before-unload'
+import useNavigationGuard from '@/hooks/use-navigation-guard'
 import useMounted from '@/hooks/use-mounted'
-import DeleteConfirmDialog from '@/components/dialogs/delete-confirm-dialog'
-import SessionTab from './session-tab'
-import {
-  getQueryClient,
-  usePatient,
-  useMedicalHistory,
-  useDeletePatient,
-  useUpdatePatient,
-  useORPC,
-} from '@virtality/react-query'
 import { cancelHref } from '@/lib/home-picker-return'
 import { trackAnalyticsEvent } from '@/lib/analytics-contract'
-import type { PatientProfileTab } from '@virtality/analytics'
+import { useClientT } from '@/i18n/use-client-t'
+import { PatientProfileSkeleton } from './patient-profile-skeleton'
+import PatientProfileBreadcrumb from '@/app/(app)/patients/_components/patient-profile-breadcrumb'
+import PatientProfileHeader from './patient-profile-header'
+import PatientProfileTabsList from '@/app/(app)/patients/_components/patient-profile-tabs-list'
+import BasicInfoCards from '@/app/(app)/patients/_components/basic-info-cards'
+import ClinicalNotesCard from '@/app/(app)/patients/_components/clinical-notes-card'
+import BodyAreasCard from '@/app/(app)/patients/_components/body-areas-card'
+import SessionTab from './session-tab'
+import ProfileActionBar from './profile-action-bar'
+import { usePatientProfileForm } from './use-patient-profile-form'
+import { useDeletePatientProfile } from './use-delete-patient-profile'
 
-interface PatientFormEditProps {
-  patientId: string
-}
+const FORM_ID = 'patient-form'
 
-const PatientFormEdit = ({ patientId }: PatientFormEditProps) => {
-  const queryClient = getQueryClient()
-  const orpc = useORPC()
-  const { t } = useClientT(['patients', 'common'])
+const PatientFormEdit = ({ patientId }: { patientId: string }) => {
+  const { t } = useClientT('patients')
   const mounted = useMounted()
   const router = useRouter()
+  const profile = usePatientProfileForm(patientId)
+  const deletion = useDeletePatientProfile(profile.patient ?? undefined)
 
-  const { data: patient } = usePatient({ patientId })
-  const { data: medHistory } = useMedicalHistory({ patientId })
+  useBeforeUnload(profile.isDirty)
+  const { guard } = useNavigationGuard(profile.isDirty)
 
-  const [isDialogOpen, setDialogOpen] = useState(false)
-
-  const values = {
-    name: patient?.name ?? '',
-    email: patient?.email ?? '',
-    phone: patient?.phone ?? '',
-    height: patient?.height ?? '',
-    weight: patient?.weight ?? '',
-    dob: patient?.dob ?? undefined,
-    sex: patient?.sex ?? '',
-    language: patient?.language ?? '',
-    occupation: patient?.occupation ?? '',
-    image: patient?.image ?? null,
-    // medical history
-    anamneses: medHistory?.anamneses ?? '',
-    complaints: medHistory?.complaints ?? '',
-    expectations: medHistory?.expectations ?? '',
-    diagnosis: medHistory?.diagnosis ?? '',
-    nprs: medHistory?.nprs ?? '5',
-  }
-
-  const deltas = medHistory?.deltas
-    ? (JSON.parse(medHistory.deltas) as MedHistoryDeltas)
-    : {
-        anamnesesDeltas: null,
-        complaintsDeltas: null,
-        expectationsDeltas: null,
-        diagnosisDeltas: null,
-      }
-
-  const initialBodyAreas = {
-    front: medHistory?.bodyFront
-      ? JSON.parse(medHistory.bodyFront as string)
-      : null,
-    back: medHistory?.bodyBack
-      ? JSON.parse(medHistory.bodyBack as string)
-      : null,
-  }
-
-  const [bodyAreas, setBodyAreas] = useState<BodyAreas>({
-    front: null,
-    back: null,
-  })
-
-  useEffect(() => {
-    if (
-      medHistory?.bodyFront !== undefined ||
-      medHistory?.bodyBack !== undefined
-    ) {
-      setBodyAreas({
-        front: medHistory?.bodyFront
-          ? JSON.parse(medHistory.bodyFront as string)
-          : null,
-        back: medHistory?.bodyBack
-          ? JSON.parse(medHistory.bodyBack as string)
-          : null,
-      })
-    }
-  }, [medHistory?.bodyFront, medHistory?.bodyBack])
-
-  const { mutate: updatePatient, isPending: isFormPending } = useUpdatePatient({
-    onSuccess: () => {
-      trackAnalyticsEvent('patient_profile_updated', {})
-      return Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: orpc.patient.list.key(),
-        }),
-        queryClient.invalidateQueries({
-          queryKey: orpc.patient.find.key(),
-        }),
-        queryClient.invalidateQueries({
-          queryKey: orpc.medicalHistory.find.key(),
-        }),
-      ])
-    },
-  })
-
-  const { mutate: deletePatient, isPending: isDeleting } = useDeletePatient({
-    onSuccess: () => {
-      trackAnalyticsEvent('patient_deleted', {})
-      queryClient.invalidateQueries({
-        queryKey: orpc.patient.list.key(),
-      })
-
-      router.push('/patients')
-    },
-  })
-
-  const form = useForm<PatientFormInput>({
-    resolver: zodResolver(PatientFormSchema),
-    defaultValues: patientFormDefaultValues,
-    values,
-  })
-
-  const { errors, isDirty } = form.formState
-
-  const onSubmit = (values: PatientFormInput) => {
-    if (!patient || !medHistory) return
-
-    const {
-      name,
-      email,
-      phone,
-      dob,
-      sex,
-      weight,
-      height,
-      image,
-      language,
-      occupation,
-      anamneses,
-      complaints,
-      diagnosis,
-      expectations,
-      nprs,
-    } = values
-
-    const patientData: Omit<
-      Patient,
-      'userId' | 'image' | 'id' | 'createdAt' | 'deletedAt' | 'pinnedAt'
-    > & {
-      image: File | string | null | undefined
-    } = {
-      name,
-      email: email ?? null,
-      phone: phone ?? null,
-      dob: dob ?? null,
-      sex,
-      weight: weight ?? null,
-      height: height ?? null,
-      image: image ?? null,
-      language: language as Language,
-      occupation: occupation ?? null,
-      updatedAt: new Date(),
-    }
-
-    const updatedPatient = {
-      ...patient,
-      ...patientData,
-      id: patientId,
-    }
-
-    const medicalHistoryData: Partial<MedicalHistoryType> = {
-      patientId,
-      anamneses,
-      complaints,
-      diagnosis,
-      expectations,
-      nprs,
-      deltas: JSON.stringify(deltas),
-      bodyFront: bodyAreas.front ? JSON.stringify(bodyAreas.front) : null,
-      bodyBack: bodyAreas.back ? JSON.stringify(bodyAreas.back) : null,
-    }
-
-    const updatedMedicalHistoryData = {
-      ...medHistory,
-      ...medicalHistoryData,
-      id: medHistory.id,
-      patientId: patientId,
-    }
-
-    // Runs after the hook-level onSuccess has refetched the patient, which
-    // resets the form to the server values and clears isSubmitSuccessful.
-    updatePatient(
-      {
-        data: {
-          patient: updatedPatient,
-          medicalHistory: updatedMedicalHistoryData,
-        },
-      },
-      {
-        onSuccess: () => {
-          notify.success({ key: 'toast.patientSaved', ns: 'patients' })
-          form.reset(values, { keepDirty: false })
-          // Opened from the dashboard's Session Picker: go back with the picks.
-          const dashboardHref = cancelHref('')
-          if (dashboardHref) router.push(dashboardHref)
-        },
-      },
-    )
-  }
-
-  const onInvalid = () =>
-    notify.error({ key: 'toast.requiredFieldsEmpty', ns: 'patients' })
-
-  const handleDialogToggle = () => setDialogOpen(!isDialogOpen)
-
-  const handleDelete = () => {
-    if (!patient) return
-    deletePatient(patient)
-    handleDialogToggle()
-  }
+  if (!mounted || !profile.patient) return <PatientProfileSkeleton />
+  const { patient, form } = profile
 
   // Opened from the dashboard's Session Picker, which Cancel returns to.
-  const returnsToDashboard = mounted && cancelHref('') !== ''
-  const handleCancel = () => router.push(cancelHref('/patients'))
-
-  const hasErrors = Object.keys(errors).length > 0 && Object.keys(errors).length
-
-  useBeforeUnload(isDirty)
-  const { guard } = useNavigationGuard(isDirty)
+  const returnsToDashboard = cancelHref('') !== ''
 
   return (
-    <div
-      className={cn(
-        'min-h-screen-with-nav relative flex flex-col gap-4 overflow-auto overflow-x-hidden bg-zinc-100 p-6 dark:bg-zinc-950',
-      )}
-    >
-      <Tabs
-        defaultValue='basic-info'
-        className='flex-1'
-        onValueChange={(tab) =>
-          trackAnalyticsEvent('patient_tab_viewed', {
-            tab: tab as PatientProfileTab,
-          })
-        }
-      >
-        <TabsList className='h-12.5 gap-2 bg-zinc-200 p-2'>
-          <TabsTrigger value='basic-info' className='relative'>
-            {t('tabs.basicInfo')}
-            {hasErrors && (
-              <AlertCircle className='text-red-500 dark:text-red-700' />
-            )}
-          </TabsTrigger>
-          <TabsTrigger value='medical-history'>
-            {t('tabs.medicalHistory')}
-          </TabsTrigger>
-          <TabsTrigger value='sessions'>{t('tabs.sessions')}</TabsTrigger>
-        </TabsList>
-        <form
-          id='patient-form'
-          onSubmit={form.handleSubmit(onSubmit, onInvalid)}
-          className='max-h-[73svh] overflow-auto'
+    <div className='min-h-screen-with-nav flex flex-col bg-zinc-100 dark:bg-zinc-950'>
+      <div className='mx-auto flex w-full max-w-280 flex-1 flex-col gap-5 px-4 pt-7 pb-10 sm:px-8'>
+        <PatientProfileBreadcrumb
+          patientsLabel={t('profile.patients')}
+          name={patient.name}
+        />
+        <PatientProfileHeader form={form} patient={patient} />
+
+        <Tabs
+          defaultValue='basic-info'
+          className='gap-5'
+          onValueChange={(tab) =>
+            trackAnalyticsEvent('patient_tab_viewed', {
+              tab: tab as PatientProfileTab,
+            })
+          }
         >
-          {/* Basic Info */}
-          <TabsContent value='basic-info' className='flex flex-col pr-2'>
-            {mounted && patient && <BasicInfo form={form} patient={patient} />}
+          <PatientProfileTabsList
+            labels={{
+              basicInfo: t('tabs.basicInfo'),
+              medicalHistory: t('tabs.medicalHistory'),
+              sessions: t('tabs.sessions'),
+            }}
+            basicInfoHasErrors={profile.hasErrors}
+          />
+          <form id={FORM_ID} onSubmit={profile.onSubmit}>
+            <TabsContent value='basic-info'>
+              <BasicInfoCards form={form} />
+            </TabsContent>
+            {/* The pain slider and body map show medical data through position
+                and colour, which text masking misses, so replays hide the tab. */}
+            <TabsContent value='medical-history' className='ph-no-capture'>
+              <div className='flex flex-col gap-4'>
+                <ClinicalNotesCard form={form} deltas={profile.deltas} />
+                <BodyAreasCard
+                  bodyAreas={profile.bodyAreas}
+                  onChange={profile.setBodyAreas}
+                  onClear={profile.clearBodyAreas}
+                />
+              </div>
+            </TabsContent>
+          </form>
+          <TabsContent value='sessions'>
+            <SessionTab patientId={patientId} />
           </TabsContent>
+        </Tabs>
+      </div>
 
-          {/* Medical History */}
-          <TabsContent
-            value='medical-history'
-            className='mx-auto space-y-4 pr-2'
-          >
-            <MedicalHistory
-              form={form}
-              medHistoryDeltas={deltas}
-              initialBodyAreas={initialBodyAreas}
-              bodyAreas={bodyAreas}
-              onBodyAreasChange={setBodyAreas}
-            />
-          </TabsContent>
-        </form>
+      <ProfileActionBar
+        formId={FORM_ID}
+        patientName={patient.name}
+        isDirty={profile.isDirty}
+        isSaving={profile.isSaving}
+        isDeleting={deletion.isDeleting}
+        isConfirmingDelete={deletion.isConfirming}
+        onAskDelete={deletion.askToDelete}
+        onCancelDelete={deletion.cancelDelete}
+        onConfirmDelete={deletion.confirmDelete}
+        onCancel={
+          returnsToDashboard
+            ? () => router.push(cancelHref('/patients'))
+            : undefined
+        }
+      />
 
-        <TabsContent value='sessions' className='flex flex-col'>
-          <SessionTab patientId={patientId} />
-        </TabsContent>
-      </Tabs>
-
-      <Separator />
-
-      {/* Action Buttons */}
-
-      {mounted && (
-        <div className='flex justify-end space-x-4'>
-          {returnsToDashboard && (
-            <Button variant='outline' onClick={handleCancel}>
-              {t('btn.cancel', { ns: 'common' })}
-            </Button>
-          )}
-          <DeleteConfirmDialog
-            title={t('delete.title')}
-            description={
-              <Trans
-                t={t}
-                ns='patients'
-                i18nKey='delete.description'
-                values={{ name: patient?.name }}
-                components={{ strong: <strong className='ph-sensitive' /> }}
-              />
-            }
-            onConfirm={handleDelete}
-            asChild
-          >
-            <Button variant='destructive' onClick={handleDialogToggle}>
-              {isDeleting ? (
-                <Loader2 className='animate-spin' />
-              ) : (
-                t('btn.delete', { ns: 'common' })
-              )}
-            </Button>
-          </DeleteConfirmDialog>
-
-          <Button type='submit' form='patient-form' variant='primary'>
-            {isFormPending ? (
-              <Loader2 className='animate-spin' />
-            ) : (
-              t('btn.update', { ns: 'common' })
-            )}
-          </Button>
-        </div>
-      )}
-
-      {/* Unsaved changes confirmation dialog (from hook) */}
       <NavigationGuardDialog
         {...guard}
         title={t('unsaved.title')}
