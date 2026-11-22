@@ -205,7 +205,8 @@
     "unsavedChanges": "Unsaved changes",
     "saveChanges": "Save changes",
     "deletePrompt": "Delete <strong>{{name}}</strong>? This can't be undone.",
-    "confirmDelete": "Confirm delete"
+    "confirmDelete": "Confirm delete",
+    "unmarkArea": "Unmark {{part}}"
   },
   "bodyParts": {
     "neck": "Neck",

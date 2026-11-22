@@ -33,6 +33,16 @@ export function markedBodyAreas(bodyAreas: BodyAreas): MarkedBodyArea[] {
   ]
 }
 
+/** The same selection with one part on one view unmarked. */
+export function unmarkBodyArea(
+  bodyAreas: BodyAreas,
+  { view, part }: MarkedBodyArea,
+): BodyAreas {
+  const state = bodyAreas[view]
+  if (!state) return bodyAreas
+  return { ...bodyAreas, [view]: { ...state, [part]: { isActive: false } } }
+}
+
 /** Compare by which parts are active; null and all-inactive are treated as equal. */
 export function bodyAreasHaveSameSelection(a: BodyAreas, b: BodyAreas) {
   const same = (x: HumanState | null, y: HumanState | null) => {

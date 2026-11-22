@@ -4,6 +4,7 @@ import {
   bodyAreasHaveSameSelection,
   markedBodyAreas,
   parseBodyAreas,
+  unmarkBodyArea,
 } from './body-areas'
 
 const state = (parts: Record<string, boolean>) =>
@@ -54,6 +55,28 @@ describe('bodyAreasHaveSameSelection', () => {
         back: null,
       }),
     ).toBe(false)
+  })
+})
+
+describe('unmarkBodyArea', () => {
+  it('unmarks one part on one view and leaves the rest', () => {
+    const bodyAreas = {
+      front: state({ neck: true, groin: true }),
+      back: state({ neck: true }),
+    }
+    const next = unmarkBodyArea(bodyAreas, { view: 'front', part: 'neck' })
+    expect(markedBodyAreas(next)).toEqual([
+      { view: 'front', part: 'groin' },
+      { view: 'back', part: 'neck' },
+    ])
+    expect(markedBodyAreas(bodyAreas)).toHaveLength(3)
+  })
+
+  it('leaves an empty view alone', () => {
+    const bodyAreas = { front: null, back: null }
+    expect(unmarkBodyArea(bodyAreas, { view: 'back', part: 'neck' })).toBe(
+      bodyAreas,
+    )
   })
 })
 
