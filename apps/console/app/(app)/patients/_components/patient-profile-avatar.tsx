@@ -1,9 +1,8 @@
 'use client'
 import { ChangeEvent, useState } from 'react'
 import Image from 'next/image'
-import { Camera, Trash2 } from 'lucide-react'
+import { Camera, Trash2, User } from 'lucide-react'
 import type { UseFormReturn } from 'react-hook-form'
-import type { Patient } from '@virtality/db'
 import { shouldBypassVercelImageOptimization } from '@virtality/shared/utils'
 import { FormField } from '@/components/ui/form'
 import { PatientFormInput } from '@/lib/definitions'
@@ -12,16 +11,24 @@ import { useClientT } from '@/i18n/use-client-t'
 
 type PatientProfileAvatarProps = {
   form: UseFormReturn<PatientFormInput>
-  patient: Patient
+  /** Initials come from this; a person icon shows while it's empty. */
+  name: string
+  /** The stored photo, for a patient that already exists. */
+  savedImage?: string | null
 }
 
 /** The patient photo, or initials. Hover to change it; a corner button removes it. */
-const PatientProfileAvatar = ({ form, patient }: PatientProfileAvatarProps) => {
+const PatientProfileAvatar = ({
+  form,
+  name,
+  savedImage,
+}: PatientProfileAvatarProps) => {
   const { t } = useClientT('patients')
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [isRemoved, setRemoved] = useState(false)
 
-  const src = isRemoved ? null : (previewUrl ?? patient.image)
+  const src = isRemoved ? null : (previewUrl ?? savedImage ?? null)
+  const initials = patientInitials(name)
 
   const removePhoto = () => {
     setPreviewUrl(null)
@@ -62,10 +69,12 @@ const PatientProfileAvatar = ({ form, patient }: PatientProfileAvatarProps) => {
                   className='object-cover'
                   unoptimized={shouldBypassVercelImageOptimization(src)}
                 />
-              ) : (
+              ) : initials ? (
                 <span className='text-2xl font-semibold tracking-wide text-white'>
-                  {patientInitials(patient.name)}
+                  {initials}
                 </span>
+              ) : (
+                <User className='size-8 text-white/80' />
               )}
               <label
                 htmlFor={field.id}

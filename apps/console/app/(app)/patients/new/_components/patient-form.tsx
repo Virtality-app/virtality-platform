@@ -1,190 +1,78 @@
 'use client'
-import { useState } from 'react'
-import { AlertCircle } from 'lucide-react'
-import { Separator } from '@virtality/ui/components/separator'
-import { useForm } from 'react-hook-form'
-import { patientFormDefaultValues } from '@/lib/patient-form-defaults'
-import { PatientFormSchema, PatientFormInput } from '@/lib/definitions'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { BodyAreas } from '@/types/models'
-import { getUUID } from '@/lib/utils'
-import useNavigationGuard from '@/hooks/use-navigation-guard'
+import { Tabs, TabsContent } from '@/components/ui/tabs'
 import { NavigationGuardDialog } from '@/components/dialogs/navigation-guard-dialog'
-import { useRouter } from 'next/navigation'
-import { notify } from '@/lib/notify'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import BasicInfo from '../../_components/basic-info'
-import PatientFormActions from './patient-form-actions'
-import MedicalHistory from '../../_components/medical-history-tab'
 import useBeforeUnload from '@/hooks/use-before-unload'
-import {
-  Language,
-  MedicalHistory as MedicalHistoryType,
-  Patient,
-} from '@virtality/db'
+import useNavigationGuard from '@/hooks/use-navigation-guard'
 import useMounted from '@/hooks/use-mounted'
 import useIsAuthed from '@/hooks/use-is-authed'
-import { getQueryClient, useNewPatient, useORPC } from '@virtality/react-query'
-import { trackAnalyticsEvent } from '@/lib/analytics-contract'
-import { afterCreateHref } from '@/lib/home-picker-return'
-import useNow from '@/hooks/use-now'
 import { useClientT } from '@/i18n/use-client-t'
+import PatientProfileBreadcrumb from '@/app/(app)/patients/_components/patient-profile-breadcrumb'
+import PatientProfileTabsList from '@/app/(app)/patients/_components/patient-profile-tabs-list'
+import BasicInfoCards from '@/app/(app)/patients/_components/basic-info-cards'
+import ClinicalNotesCard from '@/app/(app)/patients/_components/clinical-notes-card'
+import BodyAreasCard from '@/app/(app)/patients/_components/body-areas-card'
+import NewPatientHeader from './new-patient-header'
+import NewPatientActionBar from './new-patient-action-bar'
+import { NO_DELTAS, useNewPatientForm } from './use-new-patient-form'
 
+const FORM_ID = 'patient-form'
+
+/** New patient, laid out like the patient profile it creates. */
 const PatientForm = () => {
   useIsAuthed()
-  const queryClient = getQueryClient()
-  const orpc = useORPC()
-  const mounted = useMounted()
-  const router = useRouter()
-  const { ts, now } = useNow()
   const { t } = useClientT('patients')
+  const mounted = useMounted()
+  const patient = useNewPatientForm()
 
-  const medHistoryDeltas = {
-    anamnesesDeltas: null,
-    complaintsDeltas: null,
-    expectationsDeltas: null,
-    diagnosisDeltas: null,
-  }
+  useBeforeUnload(patient.isDirty)
+  const { guard } = useNavigationGuard(patient.isDirty)
 
-  const { mutate: createPatient, isPending: isFormPending } = useNewPatient({
-    onSuccess: (_data, variables) => {
-      trackAnalyticsEvent('patient_created', {
-        time_spent_sec: (now() - ts.current) / 1000,
-      })
-      queryClient.invalidateQueries({
-        queryKey: orpc.patient.list.key(),
-      })
-
-      router.push(
-        afterCreateHref('patientId', variables.data.patient.id, '/patients'),
-      )
-    },
-  })
-
-  const form = useForm<PatientFormInput>({
-    resolver: zodResolver(PatientFormSchema),
-    defaultValues: patientFormDefaultValues,
-  })
-
-  const onSubmit = (values: PatientFormInput) => {
-    const {
-      name,
-      email,
-      phone,
-      dob,
-      sex,
-      weight,
-      height,
-      image,
-      language,
-      occupation,
-      anamneses,
-      complaints,
-      diagnosis,
-      expectations,
-      nprs,
-    } = values
-
-    const patientData: Omit<Patient, 'userId' | 'image'> & {
-      image: File | string | null | undefined
-    } = {
-      id: getUUID(),
-      name,
-      email: email ?? null,
-      phone: phone ?? null,
-      dob: dob ?? null,
-      sex,
-      weight: weight ?? null,
-      height: height ?? null,
-      image: image,
-      language: language as Language,
-      occupation: occupation ?? null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      deletedAt: null,
-      pinnedAt: null,
-    }
-
-    const medicalHistoryData: MedicalHistoryType = {
-      id: getUUID(),
-      patientId: patientData!.id,
-      anamneses,
-      complaints,
-      diagnosis,
-      expectations,
-      nprs,
-      deltas: JSON.stringify(medHistoryDeltas),
-      bodyFront: bodyAreas.front ? JSON.stringify(bodyAreas.front) : null,
-      bodyBack: bodyAreas.back ? JSON.stringify(bodyAreas.back) : null,
-    }
-
-    createPatient({
-      data: { patient: patientData, medicalHistory: medicalHistoryData },
-    })
-  }
-
-  const initialBodyAreas: BodyAreas = {
-    front: null,
-    back: null,
-  }
-
-  const [bodyAreas, setBodyAreas] = useState<BodyAreas>(initialBodyAreas)
-
-  const { errors, isDirty } = form.formState
-
-  const hasErrors = Object.keys(errors).length > 0 && Object.keys(errors).length
-
-  const onInvalid = () =>
-    notify.error({ key: 'toast.requiredFieldsEmpty', ns: 'patients' })
-
-  useBeforeUnload(isDirty)
-  const { guard } = useNavigationGuard(isDirty)
+  if (!mounted) return null
+  const { form } = patient
 
   return (
-    <div className='h-screen-with-header relative flex flex-col gap-4 overflow-auto overflow-x-hidden bg-zinc-100 p-6 dark:bg-zinc-950'>
-      <Tabs defaultValue='basic-info' className='flex-1'>
-        <TabsList className='h-12.5 gap-2 bg-zinc-200 p-2'>
-          <TabsTrigger value='basic-info' className='relative'>
-            {t('tabs.basicInfo')}
-            {hasErrors && (
-              <AlertCircle className='text-red-500 dark:text-red-700' />
-            )}
-          </TabsTrigger>
-          <TabsTrigger value='medical-history'>
-            {t('tabs.medicalHistory')}
-          </TabsTrigger>
-        </TabsList>
-        <form
-          id='patient-form'
-          onSubmit={form.handleSubmit(onSubmit, onInvalid)}
-          className='max-h-[77svh] overflow-auto'
-        >
-          {/* Basic Info */}
-          <TabsContent value='basic-info' className='flex h-full flex-col pr-2'>
-            {mounted && <BasicInfo form={form} />}
-          </TabsContent>
+    <div className='min-h-screen-with-nav flex flex-col bg-zinc-100 dark:bg-zinc-950'>
+      <div className='mx-auto flex w-full max-w-280 flex-1 flex-col gap-5 px-4 pt-7 pb-10 sm:px-8'>
+        <PatientProfileBreadcrumb
+          patientsLabel={t('profile.patients')}
+          name={t('list.newPatient')}
+        />
+        <NewPatientHeader form={form} />
 
-          {/* Medical History */}
-          <TabsContent
-            value='medical-history'
-            className='mx-auto space-y-4 pr-2'
-          >
-            <MedicalHistory
-              form={form}
-              medHistoryDeltas={medHistoryDeltas}
-              initialBodyAreas={initialBodyAreas}
-              bodyAreas={bodyAreas}
-              onBodyAreasChange={setBodyAreas}
-            />
-          </TabsContent>
-        </form>
-      </Tabs>
+        <Tabs defaultValue='basic-info' className='gap-5'>
+          <PatientProfileTabsList
+            labels={{
+              basicInfo: t('tabs.basicInfo'),
+              medicalHistory: t('tabs.medicalHistory'),
+            }}
+            basicInfoHasErrors={patient.hasErrors}
+          />
+          <form id={FORM_ID} onSubmit={patient.onSubmit}>
+            <TabsContent value='basic-info'>
+              <BasicInfoCards form={form} />
+            </TabsContent>
+            {/* The pain slider and body map show medical data through position
+                and colour, which text masking misses, so replays hide the tab. */}
+            <TabsContent value='medical-history' className='ph-no-capture'>
+              <div className='flex flex-col gap-4'>
+                <ClinicalNotesCard form={form} deltas={NO_DELTAS} />
+                <BodyAreasCard
+                  bodyAreas={patient.bodyAreas}
+                  onChange={patient.setBodyAreas}
+                  onClear={patient.clearBodyAreas}
+                />
+              </div>
+            </TabsContent>
+          </form>
+        </Tabs>
+      </div>
 
-      <Separator />
+      <NewPatientActionBar
+        formId={FORM_ID}
+        isDirty={patient.isDirty}
+        isCreating={patient.isCreating}
+      />
 
-      {mounted && <PatientFormActions isPending={isFormPending} />}
-
-      {/* Unsaved changes confirmation dialog (from hook) */}
       <NavigationGuardDialog
         {...guard}
         title={t('unsaved.title')}

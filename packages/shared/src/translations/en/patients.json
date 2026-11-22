@@ -206,7 +206,8 @@
     "saveChanges": "Save changes",
     "deletePrompt": "Delete <strong>{{name}}</strong>? This can't be undone.",
     "confirmDelete": "Confirm delete",
-    "unmarkArea": "Unmark {{part}}"
+    "unmarkArea": "Unmark {{part}}",
+    "newPatientHint": "Fill in the required details. You can add the medical history now or later."
   },
   "bodyParts": {
     "neck": "Neck",

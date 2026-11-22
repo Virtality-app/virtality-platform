@@ -7,7 +7,7 @@ import { PatientFormInput } from '@/lib/definitions'
 import { ageFromDob } from '@/lib/patient-profile-summary'
 import { useClientT } from '@/i18n/use-client-t'
 import { useDateFnsLocale } from '@/hooks/use-date-fns-locale'
-import PatientProfileAvatar from './patient-profile-avatar'
+import PatientProfileAvatar from '@/app/(app)/patients/_components/patient-profile-avatar'
 import ProfileMetaPill from './profile-meta-pill'
 import ProfileStat from './profile-stat'
 import { usePatientSessionSummary } from './use-patient-session-summary'
@@ -35,7 +35,11 @@ const PatientProfileHeader = ({ form, patient }: PatientProfileHeaderProps) => {
 
   return (
     <div className='flex flex-wrap items-center gap-5 rounded-xl border border-zinc-200 bg-white px-6 py-5.5 shadow-xs dark:border-zinc-800 dark:bg-zinc-900'>
-      <PatientProfileAvatar form={form} patient={patient} />
+      <PatientProfileAvatar
+        form={form}
+        name={patient.name}
+        savedImage={patient.image}
+      />
 
       <div className='flex min-w-55 flex-1 flex-col gap-2'>
         <h1 className='ph-sensitive text-[22px] font-semibold tracking-tight text-zinc-900 dark:text-zinc-50'>
