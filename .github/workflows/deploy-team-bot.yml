@@ -7,10 +7,15 @@ on:
     paths:
       - 'services/team-bot/**'
       - 'packages/shared/**'
+      - 'tooling/typescript-config/**'
+      - 'package.json'
       - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
       - '.pnpmfile.cjs'
       - '.dockerignore'
       - '.github/workflows/deploy-team-bot.yml'
+      - '.github/workflows/_build-image.yml'
+      - '.github/workflows/_deploy-image.yml'
   # First deploy, or redeploying after changing secrets in the infra repo.
   workflow_dispatch:
 
@@ -18,52 +23,28 @@ permissions:
   contents: read
   packages: write
 
-env:
-  IMAGE_NAME: ghcr.io/virtality-app/virtality-team-bot
+# Queue deploys instead of running them side by side, so an older run can
+# never finish after a newer one.
+concurrency:
+  group: deploy-team-bot
+  cancel-in-progress: false
 
 jobs:
-  build-and-push:
+  build:
     if: github.repository == 'Virtality-app/virtality-platform'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: services/team-bot/Dockerfile
-          platforms: linux/amd64
-          push: true
-          tags: |
-            ${{ env.IMAGE_NAME }}:production
-            ${{ env.IMAGE_NAME }}:${{ github.sha }}
-          cache-from: type=gha,scope=team-bot
-          cache-to: type=gha,mode=max,scope=team-bot
+    uses: ./.github/workflows/_build-image.yml
+    with:
+      image: ghcr.io/virtality-app/virtality-team-bot
+      dockerfile: services/team-bot/Dockerfile
+      channel: production
+      cache-scope: team-bot
 
   deploy:
-    if: github.repository == 'Virtality-app/virtality-platform'
-    needs: build-and-push
-    runs-on: [self-hosted, vps]
-    steps:
-      - name: Deploy team bot on VPS
-        run: |
-          set -euo pipefail
-          docker pull ghcr.io/virtality-app/virtality-team-bot:production
-          cd ~/infra
-          ./scripts/infra.sh team-bot-up
-
-      - name: Prune stale images
-        if: always()
-        run: docker image prune --force --filter "until=24h"
+    needs: build
+    uses: ./.github/workflows/_deploy-image.yml
+    with:
+      image: ghcr.io/virtality-app/virtality-team-bot
+      tag: ${{ needs.build.outputs.tag }}
+      infra-command: team-bot-up
+      tag-variable: TEAM_BOT_TAG
+      container: virtality_team_bot

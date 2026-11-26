@@ -1,0 +1,118 @@
+name: CI
+
+# Checks every PR and every push to dev and main. "Checks" and "Server image"
+# are the jobs a ruleset can require before a commit lands on dev or main.
+on:
+  pull_request:
+    branches:
+      - dev
+      - main
+  push:
+    branches:
+      - dev
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 24
+  TURBO_TELEMETRY_DISABLED: 1
+  # Builds read these at build time. They are placeholders: nothing in CI
+  # connects to a database or calls these URLs.
+  DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci
+  X_URL: https://x.com/ci
+  LINKEDIN_URL: https://www.linkedin.com/ci
+  FACEBOOK_URL: https://www.facebook.com/ci
+  INSTAGRAM_URL: https://www.instagram.com/ci
+  NEXT_PUBLIC_DEMO_BOOKING_URL: https://cal.com/ci
+
+jobs:
+  checks:
+    name: Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check formatting
+        run: pnpm format:check
+
+      # Turbo's local cache carries over between runs, so tasks whose inputs
+      # did not change replay instead of running. PRs read the cache dev saved.
+      - name: Restore Turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo/cache
+          key: turbo-${{ runner.os }}-${{ github.sha }}
+          restore-keys: turbo-${{ runner.os }}-
+
+      - name: Type-check, test and build
+        run: pnpm turbo run type-check test build --output-logs=errors-only
+
+  # ESLint reports errors that were already on dev when this job was added.
+  # It runs so they stay visible, but it does not fail the workflow. Remove
+  # continue-on-error once `pnpm lint` passes, then require it in the ruleset.
+  lint:
+    name: Lint (advisory)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm turbo run lint --continue
+
+  # Builds the server image the way the deploy does, without pushing it, so a
+  # broken Dockerfile or prune shows up before the merge instead of after.
+  server-image:
+    name: Server image
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: services/server/Dockerfile
+          platforms: linux/amd64
+          push: false
+          cache-from: type=gha,scope=server
+          cache-to: type=gha,mode=max,scope=server

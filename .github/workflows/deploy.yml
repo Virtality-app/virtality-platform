@@ -1,0 +1,168 @@
+name: Deploy
+
+# One workflow per push to dev (staging) or main (production), so database
+# migrations finish before the server that needs them starts:
+#
+#   plan ──┬── migrate ─────┬── deploy-server
+#          └── build-server ┘
+#
+# The server image builds while migrations run. If migrations fail, the
+# server is not deployed. Pushes to the same branch queue instead of running
+# side by side, so an older run can never finish after a newer one.
+#
+# Rollback: run this workflow from the Actions tab on dev or main and give it
+# the commit SHA of an earlier server image. That only redeploys the image: no
+# build, no migrations.
+on:
+  push:
+    branches:
+      - dev
+      - main
+  workflow_dispatch:
+    inputs:
+      server-image-tag:
+        description: Commit SHA of an existing server image to redeploy. Leave empty to build and deploy the branch head.
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: deploy-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    if: >-
+      github.repository == 'Virtality-app/virtality-platform' &&
+      (github.ref_name == 'dev' || github.ref_name == 'main')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      stage: ${{ steps.plan.outputs.stage }}
+      migrate: ${{ steps.plan.outputs.migrate }}
+      build-server: ${{ steps.plan.outputs.build-server }}
+      deploy-server: ${{ steps.plan.outputs.deploy-server }}
+      server-tag: ${{ steps.plan.outputs.server-tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # History without file contents: enough to diff against the
+          # previous push.
+          fetch-depth: 0
+          filter: blob:none
+
+      - name: Decide what to deploy
+        id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+          ROLLBACK_TAG: ${{ inputs.server-image-tag }}
+        run: |
+          set -euo pipefail
+          if [[ $GITHUB_REF_NAME == main ]]; then
+            echo 'stage=production' >>"$GITHUB_OUTPUT"
+          else
+            echo 'stage=preview' >>"$GITHUB_OUTPUT"
+          fi
+
+          if [[ -n ${ROLLBACK_TAG:-} ]]; then
+            if [[ ! $ROLLBACK_TAG =~ ^[0-9a-f]{40}$ ]]; then
+              echo "::error::server-image-tag must be a full 40-character commit SHA."
+              exit 1
+            fi
+            echo "Redeploying server image $ROLLBACK_TAG"
+            {
+              echo 'migrate=false'
+              echo 'build-server=false'
+              echo 'deploy-server=true'
+              echo "server-tag=$ROLLBACK_TAG"
+            } >>"$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Everything the server image is built from.
+          server_paths='^(services/server/|packages/|tooling/|package\.json$|pnpm-lock\.yaml$|pnpm-workspace\.yaml$|\.pnpmfile\.cjs$|turbo\.json$|\.dockerignore$|\.github/workflows/(deploy|_build-image|_deploy-image)\.yml$)'
+          db_paths='^packages/db/prisma/'
+
+          if [[ $EVENT == workflow_dispatch ]] ||
+            ! git cat-file -e "${BEFORE}^{commit}" 2>/dev/null; then
+            # Manual run, or the previous head is unknown (first push,
+            # force push): deploy everything.
+            server=true
+            migrate=true
+          else
+            changed=$(git diff --name-only "$BEFORE" "$GITHUB_SHA")
+            server=false
+            migrate=false
+            grep -qE "$server_paths" <<<"$changed" && server=true
+            grep -qE "$db_paths" <<<"$changed" && migrate=true
+          fi
+          # A server deploy always applies pending migrations first, even when
+          # this push has none: an earlier run's migration may have failed.
+          [[ $server == true ]] && migrate=true
+
+          echo "migrate=$migrate build-server=$server"
+          {
+            echo "migrate=$migrate"
+            echo "build-server=$server"
+            echo "deploy-server=$server"
+            echo "server-tag=$GITHUB_SHA"
+          } >>"$GITHUB_OUTPUT"
+
+  migrate:
+    needs: plan
+    if: needs.plan.outputs.migrate == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --filter @virtality/db...
+
+      - name: Deploy migrations
+        working-directory: packages/db
+        env:
+          DATABASE_URL: ${{ needs.plan.outputs.stage == 'production' && secrets.PRODUCTION_DATABASE_URL || secrets.STAGING_DATABASE_URL }}
+        run: pnpm run migrate:deploy
+
+  build-server:
+    needs: plan
+    if: needs.plan.outputs.build-server == 'true'
+    uses: ./.github/workflows/_build-image.yml
+    with:
+      image: ghcr.io/virtality-app/virtality-server
+      dockerfile: services/server/Dockerfile
+      channel: ${{ needs.plan.outputs.stage }}
+      cache-scope: server
+
+  deploy-server:
+    needs: [plan, migrate, build-server]
+    # Runs after a build, or on a rollback, where the build is skipped. Never
+    # after a failed or cancelled migration or build.
+    if: >-
+      !cancelled() &&
+      needs.plan.outputs.deploy-server == 'true' &&
+      (needs.build-server.result == 'success' || needs.build-server.result == 'skipped') &&
+      (needs.migrate.result == 'success' || needs.migrate.result == 'skipped')
+    uses: ./.github/workflows/_deploy-image.yml
+    with:
+      image: ghcr.io/virtality-app/virtality-server
+      tag: ${{ needs.plan.outputs.server-tag }}
+      infra-command: ${{ needs.plan.outputs.stage == 'production' && 'server-prod-up' || 'server-preview-up' }}
+      tag-variable: ${{ needs.plan.outputs.stage == 'production' && 'SERVER_PROD_TAG' || 'SERVER_PREVIEW_TAG' }}
+      container: ${{ needs.plan.outputs.stage == 'production' && 'virtality_server_prod' || 'virtality_server_preview' }}

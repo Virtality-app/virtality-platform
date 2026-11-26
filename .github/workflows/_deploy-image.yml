@@ -1,0 +1,105 @@
+name: Deploy Image
+
+# Reusable: starts an image that is already in GHCR on the VPS and waits until
+# it is up. The container must reach healthy (when the image has a
+# HEALTHCHECK) or stay running without a restart for 20 seconds (when it has
+# none). The job fails otherwise, and prints the container's last log lines.
+on:
+  workflow_call:
+    inputs:
+      image:
+        description: GHCR image name, without a tag.
+        required: true
+        type: string
+      tag:
+        description: Immutable tag to deploy (a commit SHA).
+        required: true
+        type: string
+      infra-command:
+        description: infra.sh command that starts the stack, e.g. server-prod-up.
+        required: true
+        type: string
+      tag-variable:
+        description: Variable the stack's compose file reads its image tag from.
+        required: true
+        type: string
+      container:
+        description: Container name the compose file gives the service.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    # Self-hosted on the VPS — avoids flaky SSH from GitHub-hosted runners.
+    runs-on: [self-hosted, vps]
+    timeout-minutes: 15
+    env:
+      IMAGE: ${{ inputs.image }}
+      TAG: ${{ inputs.tag }}
+      INFRA_COMMAND: ${{ inputs.infra-command }}
+      TAG_VARIABLE: ${{ inputs.tag-variable }}
+      CONTAINER: ${{ inputs.container }}
+    steps:
+      - name: Pull image
+        run: |
+          set -euo pipefail
+          if [[ ! $TAG =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::Tag must be a full commit SHA, got '$TAG'."
+            exit 1
+          fi
+          docker pull "$IMAGE:$TAG"
+
+      - name: Start stack
+        run: |
+          set -euo pipefail
+          cd ~/infra
+          env "$TAG_VARIABLE=$TAG" ./scripts/infra.sh "$INFRA_COMMAND"
+
+      - name: Wait until the container is up
+        run: |
+          set -euo pipefail
+          expected=$(docker image inspect --format '{{.Id}}' "$IMAGE:$TAG")
+          actual=$(docker inspect --format '{{.Image}}' "$CONTAINER")
+          if [[ $actual != "$expected" ]]; then
+            echo "::error::$CONTAINER is not running $IMAGE:$TAG. Check that ~/infra on the VPS is up to date: its compose file must read the tag from \$$TAG_VARIABLE."
+            exit 1
+          fi
+
+          started=$SECONDS
+          while true; do
+            read -r status health restarts < <(docker inspect --format \
+              '{{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}} {{.RestartCount}}' \
+              "$CONTAINER")
+            waited=$((SECONDS - started))
+            echo "${waited}s: status=$status health=$health restarts=$restarts"
+
+            if [[ $health == healthy ]]; then
+              break
+            fi
+            if [[ $health == none && $status == running && $restarts == 0 ]] && ((waited >= 20)); then
+              break
+            fi
+            if [[ $health == unhealthy || $status == exited || $status == dead ]] ||
+              ((restarts > 0)) || ((waited >= 180)); then
+              echo "::error::$CONTAINER did not come up (status=$status health=$health restarts=$restarts after ${waited}s)."
+              docker logs --tail 40 "$CONTAINER" 2>&1 || true
+              exit 1
+            fi
+            sleep 3
+          done
+          echo "$CONTAINER is up on $IMAGE:$TAG"
+
+      # Keep the three newest commit tags of this image for a quick rollback;
+      # older ones can be pulled again from GHCR. docker refuses to remove the
+      # image a container runs, hence the `|| true`. Then drop the dangling
+      # images left behind when the channel tag moves.
+      - name: Prune stale images
+        if: always()
+        run: |
+          docker image ls "$IMAGE" --format '{{.Repository}}:{{.Tag}}' |
+            grep -E ':[0-9a-f]{40}$' | tail -n +4 |
+            xargs -r docker rmi || true
+          docker image prune --force --filter "until=24h"
