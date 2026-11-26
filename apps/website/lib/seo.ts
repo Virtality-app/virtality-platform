@@ -39,16 +39,32 @@ export function buildSitemap(
   ]
 }
 
+/** Header that keeps a response out of search results. */
+export const NOINDEX_HEADER = {
+  key: 'X-Robots-Tag',
+  value: 'noindex, nofollow',
+} as const
+
 /**
- * Only production is indexable. Staging (`preview`) and local builds block
- * every crawler so they never compete with the real site in search results.
+ * Only production is indexable. Staging (`preview`) and local builds send
+ * `noindex` on every response so they never compete with the real site.
+ */
+export function buildNoindexHeaders(env: string | undefined) {
+  if (env === 'production') return []
+  return [{ source: '/:path*', headers: [NOINDEX_HEADER] }]
+}
+
+/**
+ * Production lists the private paths and the sitemap. Every other env allows
+ * everything: a `Disallow` would stop Google from fetching pages, so it would
+ * never see the `noindex` header from `buildNoindexHeaders`.
  */
 export function buildRobots(
   websiteUrl: string,
   env: string | undefined,
 ): MetadataRoute.Robots {
   if (env !== 'production') {
-    return { rules: { userAgent: '*', disallow: '/' } }
+    return { rules: { userAgent: '*', allow: '/' } }
   }
 
   return {

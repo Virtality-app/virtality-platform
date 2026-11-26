@@ -11,7 +11,15 @@ const nextConfig: NextConfig = {
   experimental: {
     useTypeScriptCli: true,
   },
-  /* config options here */
+  // Internal app: keep every response out of search results, in every env.
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+      },
+    ]
+  },
   images: {
     remotePatterns: remoteHosts.map((host) => ({
       hostname: host,

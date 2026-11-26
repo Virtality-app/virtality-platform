@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next'
+import { buildNoindexHeaders } from './lib/seo'
 
 const remoteHosts = [
   'avatars.githubusercontent.com',
@@ -20,6 +21,9 @@ const nextConfig: NextConfig = {
       hostname: host,
       protocol: 'https',
     })),
+  },
+  async headers() {
+    return buildNoindexHeaders(process.env.NEXT_PUBLIC_ENV)
   },
   async rewrites() {
     return [

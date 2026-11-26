@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildRobots, buildSitemap } from './seo'
+import { buildNoindexHeaders, buildRobots, buildSitemap } from './seo'
 
 const SITE = 'https://www.virtality.app'
 
@@ -43,11 +43,29 @@ describe('buildRobots', () => {
   })
 
   it.each(['preview', 'development', undefined])(
-    'blocks every crawler when the env is %s',
+    'allows crawling with no sitemap when the env is %s, so the noindex header is seen',
     (env) => {
       expect(buildRobots(SITE, env)).toEqual({
-        rules: { userAgent: '*', disallow: '/' },
+        rules: { userAgent: '*', allow: '/' },
       })
+    },
+  )
+})
+
+describe('buildNoindexHeaders', () => {
+  it('sends no robots header on production', () => {
+    expect(buildNoindexHeaders('production')).toEqual([])
+  })
+
+  it.each(['preview', 'development', undefined])(
+    'sends noindex, nofollow on every path when the env is %s',
+    (env) => {
+      expect(buildNoindexHeaders(env)).toEqual([
+        {
+          source: '/:path*',
+          headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+        },
+      ])
     },
   )
 })
