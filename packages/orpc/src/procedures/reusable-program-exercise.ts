@@ -13,6 +13,28 @@ export const ReusableProgramExercisesSchema = z.object({
   exercises: z.array(ReusableProgramExerciseSchema),
 })
 
+/** Another clinician's program is FORBIDDEN; a bad exercise list is BAD_REQUEST. */
+function assertCanWriteExercises(
+  program: Parameters<typeof assertClinicianCanMutateProgram>[0],
+  userId: string,
+  exercises: z.infer<typeof ReusableProgramExercisesSchema>['exercises'],
+) {
+  try {
+    assertClinicianCanMutateProgram(program, userId)
+  } catch (error) {
+    throw new ORPCError(program ? 'FORBIDDEN' : 'NOT_FOUND', {
+      message: error instanceof Error ? error.message : 'Forbidden',
+    })
+  }
+  try {
+    validateUniqueExercisePositions(exercises)
+  } catch (error) {
+    throw new ORPCError('BAD_REQUEST', {
+      message: error instanceof Error ? error.message : 'Invalid request',
+    })
+  }
+}
+
 const createReusableProgramExercises = authed
   .route({ path: '/reusable-program-exercise/create-many', method: 'POST' })
   .input(ReusableProgramExercisesSchema)
@@ -23,14 +45,7 @@ const createReusableProgramExercises = authed
       where: { id: input.reusableProgramId },
     })
 
-    try {
-      assertClinicianCanMutateProgram(program, user.id)
-      validateUniqueExercisePositions(input.exercises)
-    } catch (error) {
-      throw new ORPCError('BAD_REQUEST', {
-        message: error instanceof Error ? error.message : 'Invalid request',
-      })
-    }
+    assertCanWriteExercises(program, user.id, input.exercises)
 
     await prisma.reusableProgramExercise.createMany({
       data: input.exercises.map((exercise) => ({
@@ -50,14 +65,7 @@ const updateReusableProgramExercises = authed
       where: { id: input.reusableProgramId },
     })
 
-    try {
-      assertClinicianCanMutateProgram(program, user.id)
-      validateUniqueExercisePositions(input.exercises)
-    } catch (error) {
-      throw new ORPCError('BAD_REQUEST', {
-        message: error instanceof Error ? error.message : 'Invalid request',
-      })
-    }
+    assertCanWriteExercises(program, user.id, input.exercises)
 
     const prevExercises = await prisma.reusableProgramExercise.findMany({
       where: { reusableProgramId: input.reusableProgramId },
@@ -100,7 +108,7 @@ const updateReusableProgramExercises = authed
       for (const exercise of exercisesToUpdate) {
         await tx.reusableProgramExercise.update({
           where: { id: exercise.id },
-          data: exercise,
+          data: { ...exercise, reusableProgramId: input.reusableProgramId },
         })
       }
     })

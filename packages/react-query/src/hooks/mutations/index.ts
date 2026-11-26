@@ -2,7 +2,6 @@
 
 // User mutations
 export { useUpdateUserInfo } from './user/use-update-user-info.js'
-export { useUpdateUserEmail } from './user/use-update-user-email.ts'
 export { useStartPasswordSetup } from './user/use-start-password-setup.js'
 export { useStartPasswordChange } from './user/use-start-password-change.js'
 export { useResendPendingPasswordChange } from './user/use-resend-pending-password-change.js'
@@ -32,7 +31,6 @@ export { useDeletePatient } from './patient/use-delete-patient.js'
 export { useSetPatientPinned } from './patient/use-set-patient-pinned.js'
 
 // Patient session mutations
-export { useCreatePatientSession } from './patient-session/use-create-patient-session.js'
 export { useStartPatientSessionFromAck } from './patient-session/use-start-patient-session-from-ack.js'
 export { useUpdatePatientSession } from './patient-session/use-update-patient-session.js'
 export { useDeletePatientSession } from './patient-session/use-delete-patient-session.js'
@@ -41,12 +39,9 @@ export { useInterruptPatientSession } from './patient-session/use-interrupt-pati
 export { useSyncSessionWorkingCopy } from './patient-session/use-sync-session-working-copy.js'
 export { useStartImmersiveSession } from './patient-session/use-start-immersive-session.js'
 export { useEndImmersiveSession } from './patient-session/use-end-immersive-session.js'
-export { useCreatePatientSessionData } from './patient-session-data/use-create-patient-session-data.js'
 export { useUpsertPatientSessionData } from './patient-session-data/use-upsert-patient-session-data.js'
-export { useCreatePatientSessionExercises } from './patient-session-exercise/use-create-patient-session-exercises.js'
 
 // Device mutations
-export { useResetDeviceId } from './device/use-reset-device-id.js'
 
 // Headset library (Library Mirror) mutations
 export {

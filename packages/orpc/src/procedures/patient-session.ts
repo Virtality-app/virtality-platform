@@ -18,6 +18,11 @@ import {
   startImmersivePatientSession,
 } from './session-immersive.ts'
 import { createAppLogger } from '@virtality/shared/observability'
+import {
+  ownedSessionWhere,
+  requireOwnedPatient,
+  requireOwnedSession,
+} from './caller-scope.ts'
 
 const patientSessionLogger = createAppLogger({
   serviceName: 'server',
@@ -43,12 +48,14 @@ const listPatientSessions = authed
   .route({ path: '/patient-session/list', method: 'GET' })
   .input(PatientSessionFindManyZodSchema)
   .handler(async ({ context, input }) => {
-    const { prisma } = context
+    const { prisma, user } = context
     const patientSessions = await prisma.patientSession.findMany({
+      // The caller's filter narrows their own sessions; it can't widen them.
       where: {
-        patientId: input?.where?.patientId,
-        AND: [{ deletedAt: null }],
-        ...input.where,
+        AND: [
+          input.where ?? {},
+          { deletedAt: null, ...ownedSessionWhere(user.id) },
+        ],
       },
       take: input.take,
       skip: input.skip,
@@ -109,13 +116,14 @@ const findPatientSession = authed
   .route({ path: '/patient-session/find', method: 'GET' })
   .input(PatientSessionFindFirstZodSchema)
   .handler(async ({ context, input }) => {
-    const { prisma } = context
+    const { prisma, user } = context
 
     const patientSession = await prisma.patientSession.findFirst({
       where: {
-        ...input.where,
-        id: input.where?.id,
-        AND: [{ deletedAt: null }],
+        AND: [
+          input.where ?? {},
+          { deletedAt: null, ...ownedSessionWhere(user.id) },
+        ],
       },
       orderBy: input.orderBy,
       cursor: input.cursor,
@@ -130,25 +138,17 @@ const findPatientSession = authed
     return patientSession
   })
 
-const createPatientSession = authed
-  .route({ path: '/patient-session/create', method: 'POST' })
-  .input(PatientSessionSchema)
-  .handler(async ({ context, input }) => {
-    const { prisma } = context
-    const patientSession = await prisma.patientSession.create({
-      data: input,
-    })
-    return patientSession
-  })
-
+// Session notes are the only field the console edits after a session; the
+// rest is written by the session lifecycle procedures below.
 const updatePatientSession = authed
   .route({ path: '/patient-session/update', method: 'PUT' })
-  .input(PatientSessionSchema.partial())
+  .input(PatientSessionSchema.pick({ id: true, notes: true }))
   .handler(async ({ context, input }) => {
-    const { prisma } = context
+    const { prisma, user } = context
+    await requireOwnedSession(prisma, user.id, input.id)
     const patientSession = await prisma.patientSession.update({
       where: { id: input.id },
-      data: input,
+      data: { notes: input.notes },
     })
     return patientSession
   })
@@ -157,7 +157,8 @@ const deletePatientSession = authed
   .route({ path: '/patient-session/delete', method: 'DELETE' })
   .input(PatientSessionSchema.pick({ id: true }))
   .handler(async ({ context, input }) => {
-    const { prisma } = context
+    const { prisma, user } = context
+    await requireOwnedSession(prisma, user.id, input.id)
     const patientSession = await prisma.patientSession.update({
       where: { id: input.id },
       data: { deletedAt: new Date() },
@@ -170,6 +171,7 @@ const startPatientSessionFromAck = authed
   .input(StartPatientSessionFromAckSchema)
   .handler(async ({ context, input }) => {
     const { prisma } = context
+    await requireOwnedPatient(prisma, context.user.id, input.session.patientId)
 
     const patientSession = await prisma.$transaction(async (tx) =>
       createPatientSessionFromAck(
@@ -244,6 +246,7 @@ const completePatientSession = authed
   .input(CompletePatientSessionSchema)
   .handler(async ({ context, input }) => {
     const { prisma, user } = context
+    await requireOwnedSession(prisma, user.id, input.id)
 
     const completedSession = await completePatientSessionWithSaveChoice(
       {
@@ -295,6 +298,7 @@ const interruptSession = authed
   .input(InterruptPatientSessionSchema)
   .handler(async ({ context, input }) => {
     const { prisma } = context
+    await requireOwnedSession(prisma, context.user.id, input.id)
 
     const result = await interruptPatientSession(
       prisma.patientSession,
@@ -417,6 +421,7 @@ const syncWorkingCopy = authed
   .input(SyncSessionWorkingCopySchema)
   .handler(async ({ context, input }) => {
     const { prisma } = context
+    await requireOwnedSession(prisma, context.user.id, input.id)
 
     return syncSessionWorkingCopy(
       {
@@ -431,7 +436,6 @@ export const patientSession = {
   list: listPatientSessions,
   listRecent: listRecentPatientSessions,
   find: findPatientSession,
-  create: createPatientSession,
   startFromAck: startPatientSessionFromAck,
   update: updatePatientSession,
   delete: deletePatientSession,

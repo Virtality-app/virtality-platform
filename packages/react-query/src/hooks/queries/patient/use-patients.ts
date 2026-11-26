@@ -5,9 +5,7 @@ import { useORPC } from '../../../orpc-context.js'
 
 type PatientFindManyInput = z.infer<typeof PatientFindManyZodSchema>
 
-export interface UsePatientsInput extends Partial<PatientFindManyInput> {
-  listAll?: boolean
-}
+export type UsePatientsInput = Partial<PatientFindManyInput>
 
 export function usePatients(input?: UsePatientsInput) {
   const orpc = useORPC()

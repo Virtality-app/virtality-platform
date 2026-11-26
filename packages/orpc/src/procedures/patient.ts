@@ -1,3 +1,4 @@
+import { ORPCError } from '@orpc/server'
 import { z } from 'zod/v4'
 import type { Prisma } from '@virtality/db'
 import {
@@ -9,9 +10,10 @@ import { authed } from '../middleware/auth.ts'
 import { generateImageFile } from '@virtality/shared/utils'
 import { CDN_URL } from '@virtality/shared/types'
 
-const PatientListInputSchema = PatientFindManyZodSchema.extend({
-  listAll: z.boolean().optional(),
-}).optional()
+const PatientListInputSchema = PatientFindManyZodSchema.optional()
+
+const patientNotFound = () =>
+  new ORPCError('NOT_FOUND', { message: 'Patient not found' })
 
 const CombinedPatientSchema = z.object({
   data: z.object({
@@ -33,12 +35,11 @@ const listPatients = authed
   .input(PatientListInputSchema)
   .handler(async ({ context, input }) => {
     const { prisma, user } = context
-    const listAll = input?.listAll === true
-    const baseWhere = listAll
-      ? { deletedAt: null }
-      : { userId: user.id, AND: [{ deletedAt: null }] }
     const patients = await prisma.patient.findMany({
-      where: { ...baseWhere, ...input?.where },
+      // The caller's filter narrows their own patients; it can't widen them.
+      where: {
+        AND: [input?.where ?? {}, { userId: user.id, deletedAt: null }],
+      },
       take: input?.take,
       skip: input?.skip,
       cursor: input?.cursor,
@@ -146,7 +147,7 @@ const deletePatient = authed
     const patient = await prisma.patient.findUnique({
       where: { id, userId: user.id },
     })
-    if (!patient) throw new Error('Patient not found')
+    if (!patient) throw patientNotFound()
 
     if (patient.image) {
       let Key = patient.image
@@ -173,7 +174,20 @@ const updatePatient = authed
       where: { id: data.patient.id, userId: user.id },
     })
 
-    if (!prevPatient) throw new Error('Patient not found')
+    if (!prevPatient) throw patientNotFound()
+
+    // The history must already belong to this patient, and stays with it.
+    if (data.medicalHistory) {
+      const history = await prisma.medicalHistory.findFirst({
+        where: { id: data.medicalHistory.id, patientId: prevPatient.id },
+        select: { id: true },
+      })
+      if (!history) {
+        throw new ORPCError('NOT_FOUND', {
+          message: 'Medical history not found',
+        })
+      }
+    }
 
     // Handle the change in image
 
@@ -225,15 +239,15 @@ const updatePatient = authed
       image,
     }
 
-    const patient = await prisma.patient.update({
-      where: { id: data.patient.id },
+    await prisma.patient.update({
+      where: { id: prevPatient.id, userId: user.id },
       data: updateData,
     })
 
     if (data.medicalHistory) {
       await prisma.medicalHistory.update({
         where: { id: data.medicalHistory.id },
-        data: data.medicalHistory,
+        data: { ...data.medicalHistory, patientId: prevPatient.id },
       })
     }
   })
@@ -250,11 +264,13 @@ const setPatientPinned = authed
   .input(SetPatientPinnedSchema)
   .handler(async ({ context, input }) => {
     const { prisma, user } = context
-    const patient = await prisma.patient.update({
-      where: { id: input.id, userId: user.id, deletedAt: null },
+    const where = { id: input.id, userId: user.id, deletedAt: null }
+    const { count } = await prisma.patient.updateMany({
+      where,
       data: { pinnedAt: input.pinned ? new Date() : null },
     })
-    return patient
+    if (count === 0) throw patientNotFound()
+    return prisma.patient.findFirstOrThrow({ where })
   })
 
 export const patient = {

@@ -1,8 +1,9 @@
-import { SessionDataSchema } from '@virtality/db/definitions'
+import { ORPCError } from '@orpc/server'
 import { generateUUID } from '@virtality/shared/utils'
 import { authed } from '../middleware/auth.ts'
 import { z } from 'zod'
 import { upsertSessionProgressRecords } from './session-progress-data.ts'
+import { ownedSessionWhere } from './caller-scope.ts'
 
 const SessionProgressUpsertSchema = z.object({
   patientSessionId: z.string(),
@@ -10,25 +11,35 @@ const SessionProgressUpsertSchema = z.object({
   value: z.string(),
 })
 
-const createPatientSessionData = authed
-  .route({ path: '/patient-session-data/create', method: 'POST' })
-  .input(z.array(SessionDataSchema))
-  .handler(async ({ context, input }) => {
-    const { prisma } = context
-    await prisma.sessionData.createMany({
-      data: input,
-    })
-  })
-
 const upsertPatientSessionData = authed
   .route({ path: '/patient-session-data/upsert-many', method: 'PUT' })
   .input(z.array(SessionProgressUpsertSchema))
   .handler(async ({ context, input }) => {
-    const { prisma } = context
+    const { prisma, user } = context
+
+    // Every record must name an exercise row of one of the caller's sessions.
+    const exerciseIds = [...new Set(input.map((r) => r.sessionExerciseId))]
+    const exercises = await prisma.sessionExercise.findMany({
+      where: {
+        id: { in: exerciseIds },
+        patientSession: ownedSessionWhere(user.id),
+      },
+      select: { id: true, patientSessionId: true },
+    })
+    const sessionOf = new Map(exercises.map((e) => [e.id, e.patientSessionId]))
+    const foreign = input.some(
+      (record) =>
+        sessionOf.get(record.sessionExerciseId) !== record.patientSessionId,
+    )
+    if (foreign) {
+      throw new ORPCError('NOT_FOUND', {
+        message: 'Patient session not found',
+      })
+    }
+
     await upsertSessionProgressRecords(prisma, input, generateUUID)
   })
 
 export const patientSessionData = {
-  create: createPatientSessionData,
   upsertMany: upsertPatientSessionData,
 }

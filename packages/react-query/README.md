@@ -35,7 +35,7 @@ TanStack Query hooks and provider for the Virtality oRPC API. Use this package i
    import {
      usePatients,
      usePatient,
-     useCreatePatientSession,
+     useUpdatePatientSession,
    } from '@virtality/react-query'
    ```
 

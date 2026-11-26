@@ -11,10 +11,12 @@ import { requireAuth } from './middleware/auth.ts'
  * the website or a signed-out link needs it, and in SIGNED_IN only when the
  * console calls it. Adminboard-only procedures use `adminAuthed` and stay
  * off both lists.
+ *
+ * A signed-in procedure that takes a record id also needs a case in
+ * `caller-scope.test.ts`, which checks that another clinician's id is refused.
  */
 const PUBLIC: Record<string, string[]> = {
   blog: ['getPublishedBySlug', 'listPublished'],
-  device: ['findByDeviceId'],
   email: [
     'optOuts.confirm',
     'optOuts.inspect',
@@ -50,7 +52,7 @@ const SIGNED_IN: Record<string, string[]> = {
     'remove',
     'savePending',
   ],
-  device: ['create', 'delete', 'find', 'list', 'resetDeviceId'],
+  device: ['create', 'delete', 'list'],
   devicePairing: ['cancel', 'start', 'status'],
   deviceVideo: [
     'applyEvent',
@@ -65,11 +67,10 @@ const SIGNED_IN: Record<string, string[]> = {
   immersiveVideo: ['list'],
   map: ['list'],
   me: [''],
-  medicalHistory: ['create', 'find', 'list', 'update'],
+  medicalHistory: ['find'],
   patient: ['create', 'delete', 'find', 'list', 'setPinned', 'update'],
   patientSession: [
     'complete',
-    'create',
     'delete',
     'endImmersive',
     'find',
@@ -81,8 +82,7 @@ const SIGNED_IN: Record<string, string[]> = {
     'syncWorkingCopy',
     'update',
   ],
-  patientSessionData: ['create', 'upsertMany'],
-  patientSessionExercise: ['createMany'],
+  patientSessionData: ['upsertMany'],
   pendingAccountDeletion: ['cancel', 'getActive', 'resend', 'start'],
   pendingPasswordChange: [
     'cancel',
@@ -104,13 +104,7 @@ const SIGNED_IN: Record<string, string[]> = {
   ],
   reusableProgramExercise: ['createMany', 'updateMany'],
   supplementalTherapy: ['createRel', 'list'],
-  user: [
-    'findUsername',
-    'hasPassword',
-    'isUserVerified',
-    'updateEmail',
-    'updateInfo',
-  ],
+  user: ['findUsername', 'hasPassword', 'isUserVerified', 'updateInfo'],
 }
 
 function flatten(groups: Record<string, string[]>): Set<string> {

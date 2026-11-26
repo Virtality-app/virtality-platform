@@ -3,6 +3,7 @@ import { authed } from '../middleware/auth.ts'
 import { PatientSessionSupplementalTherapyRel } from '@virtality/db'
 import { z } from 'zod'
 import { generateUUID } from '@virtality/shared/utils'
+import { requireOwnedSession } from './caller-scope.ts'
 
 const listSupplementalTherapies = authed
   .route({ path: '/supplemental-therapy/list', method: 'GET' })
@@ -16,9 +17,9 @@ const createSupplementalTherapyRel = authed
   .route({ path: '/supplemental-therapy/create-rel', method: 'POST' })
   .input(PatientSessionSchema.extend({ patientSessionId: z.string() }))
   .handler(async ({ context, input }) => {
-    const { prisma } = context
-
+    const { prisma, user } = context
     const { patientSessionId, otherEnabled, otherText: otherLabel } = input
+    await requireOwnedSession(prisma, user.id, patientSessionId)
     const data: PatientSessionSupplementalTherapyRel[] = []
     input.methods.forEach((supplementalTherapyId) =>
       data.push({

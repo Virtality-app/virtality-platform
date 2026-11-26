@@ -1,3 +1,4 @@
+import { ORPCError } from '@orpc/server'
 import { generateUUID } from '@virtality/shared/utils'
 import { authed } from '../middleware/auth.ts'
 import { z } from 'zod'
@@ -36,9 +37,12 @@ const removeFavoriteExercise = authed
   .input(FavoriteExerciseSchema.pick({ id: true }))
   .handler(async ({ context, input }) => {
     const { prisma, user } = context
-    await prisma.favoriteExercise.delete({
+    const { count } = await prisma.favoriteExercise.deleteMany({
       where: { id: input.id, userId: user.id },
     })
+    if (count === 0) {
+      throw new ORPCError('NOT_FOUND', { message: 'Favorite not found' })
+    }
   })
 
 export const favoriteExercise = {

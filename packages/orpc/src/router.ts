@@ -11,7 +11,6 @@ import { supplementalTherapy } from './procedures/supplemental-therapy.ts'
 import { reusableProgram } from './procedures/reusable-program.ts'
 import { reusableProgramExercise } from './procedures/reusable-program-exercise.ts'
 import { patientSessionData } from './procedures/patient-session-data.ts'
-import { patientSessionExercise } from './procedures/patient-session-exercise.ts'
 import { user } from './procedures/user/index.ts'
 import { waitlist } from './procedures/waitlist.ts'
 import { partnerLogo } from './procedures/partner-logo.ts'
@@ -66,7 +65,6 @@ export const router = {
   reusableProgram,
   reusableProgramExercise,
   patientSessionData,
-  patientSessionExercise,
   waitlist,
   partnerLogo,
   highlightCard,
