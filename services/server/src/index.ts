@@ -83,6 +83,11 @@ function resolveRoute(c: Context) {
   return patterns.at(-1) ?? c.req.path
 }
 
+// Docker's HEALTHCHECK polls this, and the deploy job waits on it. It sits
+// ahead of the request logger so the polls stay out of the logs and HTTP
+// metrics.
+app.get('/healthz', (c) => c.text('ok'))
+
 app.use('*', async (c, next) => {
   const startedAt = Date.now()
   const requestId = c.req.header('x-request-id') ?? createRequestId()
