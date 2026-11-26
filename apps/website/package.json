@@ -7,7 +7,7 @@
     "build": "next build",
     "legacy": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "test": "vitest run",
     "type-check": "tsc --noEmit"
   },

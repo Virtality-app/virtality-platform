@@ -255,9 +255,11 @@
       "dependsOn": ["^lint"]
     },
     "type-check": {
-      "dependsOn": ["^type-check"]
+      "dependsOn": ["^build"]
     },
-    "test": {},
+    "test": {
+      "dependsOn": ["^build"]
+    },
     "@virtality/db#generate": {
       "outputs": ["prisma/generated/**"]
     },

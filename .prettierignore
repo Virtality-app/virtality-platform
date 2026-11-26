@@ -29,3 +29,6 @@ generated/
 # Logs and OS
 *.log
 .DS_Store
+
+# Written by next build
+next-env.d.ts

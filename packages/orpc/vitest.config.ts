@@ -17,5 +17,8 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['src/**/*.test.ts'],
+    // The router-wide suites import every procedure in beforeAll. That takes
+    // a few seconds alone and can pass 10s on a busy CI runner.
+    hookTimeout: 60_000,
   },
 })

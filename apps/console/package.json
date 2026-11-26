@@ -10,7 +10,7 @@
     "build:prerender": "next build --debug-prerender",
     "module:analyze": "next experimental-analyze",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "next:types": "next typegen",
     "test": "vitest run",
     "type-check": "tsc --noEmit"
