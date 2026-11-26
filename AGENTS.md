@@ -40,6 +40,19 @@ Five canonical triage roles mapped to GitHub label strings. See `docs/agents/tri
 
 Multi-context monorepo — read `CONTEXT-MAP.md` at the repo root, then the relevant per-context `CONTEXT.md`. System-wide ADRs in `docs/adr/`. See `docs/agents/domain.md`.
 
+### Product context (PRODUCT.md)
+
+Each app has its own `PRODUCT.md`, the Impeccable product record: users, purpose, constraints, brand, evidence. Read the one for the app you are changing before UI or copy work. Impeccable loads the nearest file only, so an app file replaces the root file. The two are not merged.
+
+| Scope                                                    | Product record               |
+| -------------------------------------------------------- | ---------------------------- |
+| `apps/console/`                                          | `apps/console/PRODUCT.md`    |
+| `apps/adminboard/`                                       | `apps/adminboard/PRODUCT.md` |
+| `apps/website/`                                          | `apps/website/PRODUCT.md`    |
+| Shared core, `packages/ui/`, other non-app UI workspaces | `PRODUCT.md` (root)          |
+
+A fact that holds for every app goes in the root file, with a short version repeated in each app file. A fact that holds for one app goes only in that app's file. Never invent evidence (metrics, testimonials, clinics, press). The confirmed list is in `apps/website/PRODUCT.md`.
+
 ### Composition
 
 Compose UI from small files: one JSX component per file. Read `docs/agents/ui-composition.md` when creating or editing React components, pages, or feature UI.
