@@ -1,16 +1,14 @@
 import LegalPdfViewer from '@/components/shared/legal-pdf-viewer'
-import {
-  LEGAL_DOCUMENTS,
-  legalDocumentPageDescription,
-} from '@/lib/legal-documents'
-import type { Metadata } from 'next'
+import { LEGAL_DOCUMENTS } from '@/lib/legal-documents'
+import { buildPageMetadata } from '@/lib/page-metadata'
 
 const privacyPolicy = LEGAL_DOCUMENTS.privacyPolicy
 
-export const metadata: Metadata = {
+export const metadata = buildPageMetadata({
   title: privacyPolicy.title,
-  description: legalDocumentPageDescription(privacyPolicy),
-}
+  description: 'How Virtality collects, uses and protects your personal data.',
+  path: '/privacy',
+})
 
 const PrivacyPolicyPage = () => {
   return <LegalPdfViewer {...privacyPolicy} />

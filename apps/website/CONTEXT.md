@@ -89,6 +89,15 @@ sections/<section>/
 | Supported by   | `sections/supported-by/`  |
 | Call to action | `sections/cta/`           |
 
+### Page sections
+
+| Section  | Path                 |
+| -------- | -------------------- |
+| Contact  | `sections/contact/`  |
+| Waitlist | `sections/waitlist/` |
+
+Their routes stay server components so they can export `metadata`. Page titles, descriptions, canonical URLs and JSON-LD come from `lib/page-metadata.ts` and `lib/json-ld.ts`.
+
 ### Blog section
 
 | Section | Path             |

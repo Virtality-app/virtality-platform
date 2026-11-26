@@ -13,6 +13,13 @@ import {
 } from '@virtality/shared/types'
 import { ORPCProvider, QueryProvider } from '@virtality/react-query'
 import { cn } from '@/lib/utils'
+import {
+  DEFAULT_OG_IMAGE,
+  HOME_DESCRIPTION,
+  HOME_TITLE,
+  SITE_NAME,
+  TITLE_TEMPLATE,
+} from '@/lib/page-metadata'
 
 const dmSans = DM_Sans({
   variable: '--font-dm-sans',
@@ -29,29 +36,25 @@ const jetbrainsMono = JetBrains_Mono({
 const websiteURL = getWebsiteUrl()
 const baseURL = getServerUrl()
 
-const metaTitle = 'Virtality - Because every move matters'
-
-const metaDescription =
-  'Where physiotherapists bridge neuroscience and technology to unlock movement faster.'
-
-const metaImage = '/open-graph/og-image.png'
-
 export const metadata: Metadata = {
   metadataBase: new URL(websiteURL),
-  title: metaTitle,
-  description: metaDescription,
+  title: { template: TITLE_TEMPLATE, default: HOME_TITLE },
+  description: HOME_DESCRIPTION,
   openGraph: {
-    title: metaTitle,
-    description: metaDescription,
-    images: [{ url: metaImage, width: 1200, height: 630 }],
+    type: 'website',
+    siteName: SITE_NAME,
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',
-    title: metaTitle,
-    description: metaDescription,
-    images: [metaImage],
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE.url],
   },
 }
+
 export default function RootLayout({
   children,
 }: Readonly<{

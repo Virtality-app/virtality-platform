@@ -31,7 +31,3 @@ export const LEGAL_DOCUMENTS = {
   ),
   privacyPolicy: createLegalDocument('Privacy Policy', 'privacy-policy.pdf', 5),
 } as const satisfies Record<string, LegalDocument>
-
-export function legalDocumentPageDescription(document: LegalDocument): string {
-  return `Virtality ${document.title}.`
-}
