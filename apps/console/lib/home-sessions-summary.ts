@@ -1,7 +1,10 @@
 import type { Translate } from '@/i18n/translate'
 import { addDays, differenceInMinutes, format, startOfDay } from 'date-fns'
 import { isCompletedClinicalSession } from '@virtality/shared/utils'
-import { getSessionSourceProgramDisplayName } from '@/lib/session-history'
+import {
+  getSessionDisplayName,
+  isImmersiveSession,
+} from '@/lib/session-history'
 
 /** Rolling window shown on the home dashboard: today and the 6 days before. */
 export const HOME_WINDOW_DAYS = 7
@@ -14,6 +17,12 @@ export type HomeSessionRow = {
   completedAt: Date | string | null
   sourceReusableProgramId: string | null
   sourceProgramName: string | null
+  kind: 'EXERCISE' | 'IMMERSIVE_VIDEO'
+  sessionImmersiveVideo: {
+    videoTitle: string
+    startedAt: Date | string
+    endedAt: Date | string | null
+  } | null
   patient: { id: string; name: string; image: string | null }
 }
 
@@ -25,7 +34,12 @@ export type HomeSessionDay = {
   count: number
 }
 
-export type HomeProgramCount = { name: string; count: number }
+/** A program, or for Immersive Sessions a video (`immersive: true`). */
+export type HomeProgramCount = {
+  name: string
+  count: number
+  immersive: boolean
+}
 
 export type HomeLastSession = {
   id: string
@@ -33,6 +47,7 @@ export type HomeLastSession = {
   patientName: string
   patientImage: string | null
   programName: string
+  immersive: boolean
   at: Date
   durationMin: number | null
   completed: boolean
@@ -67,11 +82,15 @@ function sessionAt(session: HomeSessionRow): Date {
 }
 
 function sessionDurationMin(session: HomeSessionRow): number | null {
-  if (!session.completedAt) return null
-  const minutes = differenceInMinutes(
-    new Date(session.completedAt),
-    sessionAt(session),
-  )
+  // An Immersive Session runs from play-ack to end, interrupted runs included.
+  const video = isImmersiveSession(session)
+    ? session.sessionImmersiveVideo
+    : null
+  const [start, end] = video
+    ? [video.startedAt, video.endedAt]
+    : [session.createdAt, session.completedAt]
+  if (!end) return null
+  const minutes = differenceInMinutes(new Date(end), new Date(start))
   return minutes < 0 ? null : minutes
 }
 
@@ -91,7 +110,7 @@ export function buildHomeSessionsSummary(
   const priorStart = addDays(windowStart, -HOME_WINDOW_DAYS)
 
   const days = emptyDays(windowStart)
-  const byProgram = new Map<string, number>()
+  const byProgram = new Map<string, HomeProgramCount>()
   let priorCount = 0
   let completed = 0
   let interrupted = 0
@@ -124,8 +143,12 @@ export function buildHomeSessionsSummary(
       lengthCount += 1
     }
 
-    const programName = getSessionSourceProgramDisplayName(session)
-    byProgram.set(programName, (byProgram.get(programName) ?? 0) + 1)
+    const name = getSessionDisplayName(session)
+    const immersive = isImmersiveSession(session)
+    const key = `${session.kind}:${name}`
+    const entry = byProgram.get(key) ?? { name, count: 0, immersive }
+    entry.count += 1
+    byProgram.set(key, entry)
 
     if (!latest || at > sessionAt(latest)) latest = session
   }
@@ -142,16 +165,17 @@ export function buildHomeSessionsSummary(
     interrupted,
     avgLengthMin: lengthCount ? Math.round(lengthSum / lengthCount) : null,
     headsetMinutes,
-    byProgram: [...byProgram.entries()]
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name)),
+    byProgram: [...byProgram.values()].sort(
+      (a, b) => b.count - a.count || a.name.localeCompare(b.name),
+    ),
     lastSession: latest
       ? {
           id: latest.id,
           patientId: latest.patientId,
           patientName: latest.patient.name,
           patientImage: latest.patient.image,
-          programName: getSessionSourceProgramDisplayName(latest),
+          programName: getSessionDisplayName(latest),
+          immersive: isImmersiveSession(latest),
           at: sessionAt(latest),
           durationMin: sessionDurationMin(latest),
           completed: isCompletedClinicalSession(latest.status),

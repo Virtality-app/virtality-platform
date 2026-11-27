@@ -90,7 +90,8 @@
     "hoursMinutes": "{{hours}} h {{minutes}} m",
     "hours": "{{hours}} h",
     "sameAsLastWeek": "Same as last week",
-    "vsLastWeek": "{{sign}}{{count}} vs last week"
+    "vsLastWeek": "{{sign}}{{count}} vs last week",
+    "immersiveVideo": "Immersive video"
   },
   "startSession": {
     "title": "Start a session",

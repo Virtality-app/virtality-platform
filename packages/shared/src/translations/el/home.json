@@ -90,7 +90,8 @@
     "hoursMinutes": "{{hours}} ω {{minutes}} λ",
     "hours": "{{hours}} ω",
     "sameAsLastWeek": "Ίδιο με την προηγούμενη εβδομάδα",
-    "vsLastWeek": "{{sign}}{{count}} σε σχέση με την προηγούμενη εβδομάδα"
+    "vsLastWeek": "{{sign}}{{count}} σε σχέση με την προηγούμενη εβδομάδα",
+    "immersiveVideo": "Εμβυθιστικό βίντεο"
   },
   "startSession": {
     "title": "Έναρξη συνεδρίας",

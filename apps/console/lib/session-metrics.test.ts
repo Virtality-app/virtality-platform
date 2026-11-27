@@ -2,10 +2,15 @@ import { describe, expect, it } from 'vitest'
 import type { ExtendedPatientSession, ProgressDataPoint } from '@/types/models'
 import {
   GAP_THRESHOLD_DAYS,
+  getDoseTrend,
   getFatigueIndex,
+  getImmersiveVideoSummary,
+  getSessionDurationMinutes,
+  getSessionDurationTrend,
   getSessionExerciseQualityAvg,
   getVisitConsistency,
 } from './session-metrics'
+import { immersiveSessionFixture } from './immersive-session-fixture'
 import {
   filterSessionsByDateRange,
   getSessionDateRangeForPreset,
@@ -125,5 +130,62 @@ describe('getFatigueIndex', () => {
     ])
 
     expect(getFatigueIndex(session, 'within-set').sessionDropOffPct).toBe(0)
+  })
+})
+
+describe('immersive sessions', () => {
+  const exercise = completedSession('exercise', '2026-10-01T10:00:00.000Z')
+  const ride = immersiveSessionFixture('ride', '2026-10-03T10:00:00.000Z', {
+    activity: 'CYCLING',
+    minutes: 12,
+  })
+  const walk = immersiveSessionFixture('walk', '2026-10-05T10:00:00.000Z', {
+    activity: 'WALKING',
+    minutes: 6,
+  })
+  const lost = immersiveSessionFixture('lost', '2026-10-06T10:00:00.000Z', {
+    activity: 'CYCLING',
+    status: 'INTERRUPTED',
+    minutes: 3,
+  })
+
+  it('reads duration from play-ack to end, interrupted runs included', () => {
+    expect(getSessionDurationMinutes(ride)).toBe(12)
+    expect(getSessionDurationMinutes(lost)).toBe(3)
+  })
+
+  it('has no duration while the run has no end', () => {
+    const open = immersiveSessionFixture('open', '2026-10-06T10:00:00.000Z')
+    open.sessionImmersiveVideo!.endedAt = null
+    expect(getSessionDurationMinutes(open)).toBeNull()
+  })
+
+  it('keeps session duration and volume to exercise sessions', () => {
+    const sessions = [exercise, ride, walk]
+    expect(getSessionDurationTrend(sessions).map((s) => s.sessionId)).toEqual([
+      'exercise',
+    ])
+    expect(getDoseTrend(sessions).map((s) => s.sessionId)).toEqual(['exercise'])
+  })
+
+  it('counts immersive days as visits', () => {
+    const { avgDaysBetween } = getVisitConsistency([exercise, ride, walk])
+    expect(avgDaysBetween).toBeCloseTo(2, 1)
+  })
+
+  it('sums immersive minutes per activity', () => {
+    expect(getImmersiveVideoSummary([exercise, ride, walk, lost])).toEqual({
+      count: 3,
+      totalMin: 21,
+      avgMin: 7,
+      byActivity: [
+        { activity: 'CYCLING', count: 2, totalMin: 15 },
+        { activity: 'WALKING', count: 1, totalMin: 6 },
+      ],
+    })
+  })
+
+  it('has no summary without immersive sessions', () => {
+    expect(getImmersiveVideoSummary([exercise])).toBeNull()
   })
 })

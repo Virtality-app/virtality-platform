@@ -24,6 +24,38 @@ export function getSessionSourceProgramDisplayName(
   return 'Unknown program'
 }
 
+type ImmersiveVideoTitle = {
+  sessionImmersiveVideo?: { videoTitle: string } | null
+}
+
+/** An **Immersive Session**: one video played, with no exercises. */
+export function isImmersiveSession(
+  session: Pick<PatientSession, 'kind'>,
+): boolean {
+  return session.kind === 'IMMERSIVE_VIDEO'
+}
+
+/** Sessions that ran exercises, for every exercise-only number. */
+export function filterExerciseSessions<T extends Pick<PatientSession, 'kind'>>(
+  sessions: T[],
+): T[] {
+  return sessions.filter((session) => !isImmersiveSession(session))
+}
+
+/** The video title for an Immersive Session, the program name otherwise. */
+export function getSessionDisplayName(
+  session: Pick<
+    PatientSession,
+    'kind' | 'sourceProgramName' | 'sourceReusableProgramId'
+  > &
+    ImmersiveVideoTitle,
+): string {
+  if (isImmersiveSession(session) && session.sessionImmersiveVideo) {
+    return session.sessionImmersiveVideo.videoTitle
+  }
+  return getSessionSourceProgramDisplayName(session)
+}
+
 export function filterClinicalHistorySessions(
   sessions: ExtendedPatientSession[],
 ): ExtendedPatientSession[] {
@@ -62,8 +94,9 @@ export function getClinicalHistorySessionStatusLabel(
 
 export type SessionListRow = Pick<
   PatientSession,
-  'id' | 'status' | 'sourceProgramName' | 'sourceReusableProgramId'
->
+  'id' | 'status' | 'sourceProgramName' | 'sourceReusableProgramId' | 'kind'
+> &
+  ImmersiveVideoTitle
 
 export function filterSessionsBySearch<T extends SessionListRow>(
   sessions: T[],
@@ -77,7 +110,7 @@ export function filterSessionsBySearch<T extends SessionListRow>(
     const haystack = [
       session.id,
       session.id.split('-')[0],
-      getSessionSourceProgramDisplayName(session),
+      getSessionDisplayName(session),
       statusLabel,
       session.status,
     ]

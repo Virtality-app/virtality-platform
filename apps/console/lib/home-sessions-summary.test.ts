@@ -25,6 +25,8 @@ function session(
     completedAt: new Date(overrides.createdAt.getTime() + 20 * 60_000),
     sourceReusableProgramId: 'rp1',
     sourceProgramName: 'Shoulder recovery A',
+    kind: 'EXERCISE',
+    sessionImmersiveVideo: null,
     patient,
     ...overrides,
   }
@@ -125,10 +127,47 @@ describe('buildHomeSessionsSummary', () => {
     )
 
     expect(summary.byProgram).toEqual([
-      { name: 'Shoulder recovery A', count: 2 },
-      { name: 'Quick Start', count: 1 },
-      { name: 'Wrist mobility starter', count: 1 },
+      { name: 'Shoulder recovery A', count: 2, immersive: false },
+      { name: 'Quick Start', count: 1, immersive: false },
+      { name: 'Wrist mobility starter', count: 1, immersive: false },
     ])
+  })
+
+  it('lists immersive sessions by video, with their kind and play time', () => {
+    const video = (createdAt: Date, minutes: number) =>
+      session({
+        createdAt,
+        status: minutes > 5 ? 'COMPLETED' : 'INTERRUPTED',
+        completedAt: null,
+        sourceReusableProgramId: null,
+        sourceProgramName: null,
+        kind: 'IMMERSIVE_VIDEO',
+        sessionImmersiveVideo: {
+          videoTitle: 'Lakeside ride',
+          startedAt: createdAt,
+          endedAt: new Date(createdAt.getTime() + minutes * 60_000),
+        },
+      })
+    const summary = buildHomeSessionsSummary(
+      [
+        session({ createdAt: new Date(2026, 8, 16, 9) }),
+        video(new Date(2026, 8, 17, 9), 12),
+        video(new Date(2026, 8, 18, 9), 3),
+      ],
+      now,
+    )
+
+    expect(summary.byProgram).toEqual([
+      { name: 'Lakeside ride', count: 2, immersive: true },
+      { name: 'Shoulder recovery A', count: 1, immersive: false },
+    ])
+    expect(summary.headsetMinutes).toBe(20 + 12 + 3)
+    expect(summary.lastSession).toMatchObject({
+      programName: 'Lakeside ride',
+      immersive: true,
+      durationMin: 3,
+      completed: false,
+    })
   })
 
   it('reports the most recent session in the window', () => {

@@ -9,6 +9,7 @@ import {
   ReusableProgram,
   ReusableProgramExercise,
   SessionData,
+  SessionImmersiveVideo,
 } from '@virtality/db'
 import { Delta } from 'quill'
 import { HumanState } from '@/data/static/human-body'
@@ -98,6 +99,8 @@ export type PrismaJSONtoSTR<T, R> = Omit<T, keyof R> & R
 export interface ExtendedPatientSession extends PatientSession {
   sessionExercise: SessionExercise[]
   sessionData: SessionData[]
+  /** Set on an Immersive Session: the video played and how the run ended. */
+  sessionImmersiveVideo?: SessionImmersiveVideo | null
 }
 
 export type MedHistoryDeltas = {

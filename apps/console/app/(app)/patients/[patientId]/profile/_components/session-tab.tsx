@@ -5,7 +5,9 @@ import SessionsTable from './sessions-table'
 import { SessionsOverview } from './sessions-overview'
 import { usePatientSession, usePatientSessions } from '@virtality/react-query'
 import SessionCard from './session-card'
+import ImmersiveSessionCard from './immersive-session-card'
 import { filterSessionsByDateRange } from '@/lib/session-date-range'
+import { isImmersiveSession } from '@/lib/session-history'
 import { usePatientSessionDateRange } from '@/hooks/use-patient-session-date-range'
 import { useClientT } from '@/i18n/use-client-t'
 
@@ -56,6 +58,21 @@ export default function SessionTab({ patientId }: SessionTabProps) {
           {t('session.loading')}
         </p>
       </div>
+    )
+  }
+
+  if (
+    sessionViewing !== '' &&
+    session &&
+    isImmersiveSession(session) &&
+    session.sessionImmersiveVideo
+  ) {
+    return (
+      <ImmersiveSessionCard
+        session={session}
+        video={session.sessionImmersiveVideo}
+        onBack={setSessionViewing}
+      />
     )
   }
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { ExtendedPatientSession, ProgressDataPoint } from '@/types/models'
 import { buildSessionListRows } from './session-list-row'
+import { immersiveSessionFixture } from './immersive-session-fixture'
 
 function session(
   id: string,
@@ -103,5 +104,49 @@ describe('buildSessionListRows', () => {
     expect(row.avgProgressPct).toBeNull()
     expect(row.bestRepPct).toBeNull()
     expect(row.hasNotes).toBe(false)
+  })
+})
+
+describe('buildSessionListRows with immersive sessions', () => {
+  const rep = (score: number): ProgressDataPoint =>
+    ({ rep: 0, set_1: score }) as ProgressDataPoint
+
+  it('shows the video and its duration, with no exercise numbers', () => {
+    const [row] = buildSessionListRows([
+      immersiveSessionFixture('video', '2026-10-01T09:00:00.000Z', {
+        title: 'Lakeside ride',
+        activity: 'CYCLING',
+        minutes: 12,
+      }),
+    ])
+    expect(row.programName).toBe('Lakeside ride')
+    expect(row.activity).toBe('CYCLING')
+    expect(row.durationMin).toBe(12)
+    expect(row.exercisesDone).toBeNull()
+    expect(row.exercisesPlanned).toBeNull()
+    expect(row.avgProgressPct).toBeNull()
+    expect(row.bestRepPct).toBeNull()
+  })
+
+  it('gives an interrupted immersive session its duration', () => {
+    const [row] = buildSessionListRows([
+      immersiveSessionFixture('video', '2026-10-01T09:00:00.000Z', {
+        status: 'INTERRUPTED',
+        minutes: 4,
+      }),
+    ])
+    expect(row.date).toEqual(new Date('2026-10-01T09:00:00.000Z'))
+    expect(row.durationMin).toBe(4)
+  })
+
+  it('compares progress across exercise sessions only', () => {
+    const rows = buildSessionListRows([
+      session('first', '2026-10-01T09:00:00.000Z', { progress: [[rep(40)]] }),
+      immersiveSessionFixture('video', '2026-10-02T09:00:00.000Z'),
+      session('second', '2026-10-03T09:00:00.000Z', { progress: [[rep(50)]] }),
+    ])
+    expect(rows.map((row) => row.id)).toEqual(['first', 'video', 'second'])
+    expect(rows[1].progressDeltaPct).toBeNull()
+    expect(rows[2].progressDeltaPct).toBe(10)
   })
 })

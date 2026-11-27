@@ -13,6 +13,7 @@ import {
 import HomeSectionLabel from './home-section-label'
 import PatientInitialsAvatar from './patient-initials-avatar'
 import SessionsStat from './sessions-stat'
+import ImmersiveSessionMark from './immersive-session-mark'
 
 const SessionsSideStats = ({
   summary,
@@ -74,10 +75,13 @@ const SessionsSideStats = ({
           <div className='flex flex-col gap-2'>
             {summary.byProgram.slice(0, 4).map((program) => (
               <div
-                key={program.name}
+                key={`${program.immersive}:${program.name}`}
                 className='grid grid-cols-[minmax(0,1fr)_88px_20px] items-center gap-2.5 text-[13px]'
               >
-                <span className='truncate'>{program.name}</span>
+                <span className='flex min-w-0 items-center gap-1.5'>
+                  {program.immersive ? <ImmersiveSessionMark /> : null}
+                  <span className='truncate'>{program.name}</span>
+                </span>
                 <span className='bg-muted h-2 overflow-hidden rounded-full'>
                   <i
                     className='block h-full rounded-full bg-[hsl(160_95%_30%)] dark:bg-[hsl(150_90%_45%)]'
@@ -110,12 +114,15 @@ const SessionsSideStats = ({
               <div className='ph-sensitive truncate font-medium'>
                 {last.patientName}
               </div>
-              <small className='text-muted-foreground block truncate'>
-                {formatRelative(last.at, new Date())}
-                {last.durationMin !== null
-                  ? ` · ${t('sessions.minutes', { count: last.durationMin })}`
-                  : ''}
-                {` · ${last.programName}`}
+              <small className='text-muted-foreground flex min-w-0 items-center gap-1'>
+                {last.immersive ? <ImmersiveSessionMark /> : null}
+                <span className='truncate'>
+                  {formatRelative(last.at, new Date())}
+                  {last.durationMin !== null
+                    ? ` · ${t('sessions.minutes', { count: last.durationMin })}`
+                    : ''}
+                  {` · ${last.programName}`}
+                </span>
               </small>
             </div>
             <Badge

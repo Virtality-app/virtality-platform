@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import type { ExtendedPatientSession } from '@/types/models'
+import { immersiveSessionFixture } from './immersive-session-fixture'
 import {
   filterClinicalHistorySessions,
   filterCompletedClinicalSessions,
   filterSessionsBySearch,
+  getSessionDisplayName,
   getClinicalHistorySessionDate,
   getClinicalHistorySessionStatusLabel,
   getSessionSourceProgramDisplayName,
@@ -140,5 +142,20 @@ describe('session source program display', () => {
     expect(getSessionSourceProgramDisplayName(session)).toBe(
       'Migrated library program',
     )
+  })
+})
+
+describe('immersive sessions in the history list', () => {
+  const ride = immersiveSessionFixture('ride', '2026-10-03T10:00:00.000Z', {
+    title: 'Lakeside ride',
+  })
+
+  it('finds an immersive session by its video title', () => {
+    expect(filterSessionsBySearch([ride], 'lakeside')).toEqual([ride])
+    expect(filterSessionsBySearch([ride], 'quick start')).toEqual([])
+  })
+
+  it('names an immersive session after its video', () => {
+    expect(getSessionDisplayName(ride)).toBe('Lakeside ride')
   })
 })

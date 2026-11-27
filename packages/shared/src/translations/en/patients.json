@@ -84,7 +84,26 @@
       "placeholder": "Add session notes...",
       "empty": "No notes available for this session."
     },
-    "progressDelta": "{{sign}}{{points}} points vs previous session"
+    "progressDelta": "{{sign}}{{points}} points vs previous session",
+    "immersive": {
+      "badge": "Immersive video",
+      "videoWatched": "Video watched:",
+      "watchedOf": "{{watched}} of {{total}} ({{percent}}%)",
+      "notReported": "Not reported by the headset",
+      "activity": "Activity:",
+      "ended": "Ended:",
+      "endReason": {
+        "ENDED": "Video finished",
+        "STOPPED": "Stopped by therapist",
+        "TIME_LIMIT": "Time limit reached",
+        "INTERRUPTED": "Connection lost"
+      },
+      "activities": {
+        "CYCLING": "Cycling",
+        "WALKING": "Walking"
+      },
+      "notInCatalog": "Not in catalog"
+    }
   },
   "sessionsTable": {
     "date": "Date",
@@ -170,14 +189,22 @@
     },
     "sessionDuration": {
       "title": "Session duration",
-      "description": "Average time from session start to completion across completed sessions in the selected range.",
+      "description": "Average time from session start to completion across completed exercise sessions in the selected range.",
       "minAvg": "min avg",
       "none": "No completed sessions"
     },
     "volume": {
-      "description": "Sum of the planned load (sets, repetitions, hold time and speed) across completed sessions in the selected range. Higher values represent more planned load.",
+      "description": "Sum of the planned load (sets, repetitions, hold time and speed) across completed exercise sessions in the selected range. Higher values represent more planned load.",
       "perSession": "~{{value}} per session",
       "formula": "sets × reps × hold × speed"
+    },
+    "immersive": {
+      "title": "Immersive video",
+      "description": "Immersive video sessions in the selected range, completed or interrupted, and the time from play to end, pauses included.",
+      "sessions_one": "session",
+      "sessions_other": "sessions",
+      "minutes": "{{total}} min total · {{average}} min avg",
+      "activityLine": "{{count}} · {{minutes}} min"
     }
   }
 }

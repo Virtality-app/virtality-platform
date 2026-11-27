@@ -4,7 +4,11 @@
  */
 
 import type { ExtendedPatientSession, ProgressDataPoint } from '@/types/models'
-import { filterCompletedClinicalSessions } from '@/lib/session-history'
+import {
+  filterCompletedClinicalSessions,
+  filterExerciseSessions,
+  isImmersiveSession,
+} from '@/lib/session-history'
 
 const MS_PER_DAY = 86400000
 
@@ -391,11 +395,13 @@ export function getDosePerSession(session: ExtendedPatientSession): number {
   return getDosePerExercise(session).reduce((a, b) => a + b.dose, 0)
 }
 
-/** Dose trend over time (by completedAt). */
+/** Dose trend over time (by completedAt), over exercise sessions only. */
 export function getDoseTrend(
   sessions: ExtendedPatientSession[],
 ): { sessionId: string; completedAt: Date; dose: number }[] {
-  const completed = filterCompletedClinicalSessions(sessions)
+  const completed = filterExerciseSessions(
+    filterCompletedClinicalSessions(sessions),
+  )
   return completed
     .map((s) => ({
       sessionId: s.id,
@@ -405,21 +411,31 @@ export function getDoseTrend(
     .sort((a, b) => a.completedAt.getTime() - b.completedAt.getTime())
 }
 
-/** Session duration in minutes (completedAt - createdAt). */
+/**
+ * Session duration in minutes: completedAt - createdAt, or play-ack to end
+ * for an Immersive Session, so an interrupted video run has one too.
+ */
 export function getSessionDurationMinutes(
   session: ExtendedPatientSession,
 ): number | null {
+  if (isImmersiveSession(session)) {
+    const video = session.sessionImmersiveVideo
+    if (!video?.endedAt) return null
+    const start = new Date(video.startedAt).getTime()
+    const end = new Date(video.endedAt).getTime()
+    return Math.max(0, (end - start) / 60_000)
+  }
   if (!session.completedAt || !session.createdAt) return null
   const start = new Date(session.createdAt).getTime()
   const end = new Date(session.completedAt).getTime()
   return (end - start) / 60_000
 }
 
-/** Duration trend: list of sessions with duration. */
+/** Duration trend: completed exercise sessions with their duration. */
 export function getSessionDurationTrend(
   sessions: ExtendedPatientSession[],
 ): { sessionId: string; completedAt: Date; durationMin: number }[] {
-  return filterCompletedClinicalSessions(sessions)
+  return filterExerciseSessions(filterCompletedClinicalSessions(sessions))
     .map((s) => ({
       sessionId: s.id,
       completedAt: new Date(s.completedAt!),
@@ -490,6 +506,56 @@ export function getVisitConsistency(
   }
   const avgDaysBetween = totalDays / (uniqueDays.length - 1)
   return { avgDaysBetween, gaps }
+}
+
+export type ImmersiveVideoActivity = 'CYCLING' | 'WALKING'
+
+export type ImmersiveVideoSummary = {
+  count: number
+  totalMin: number
+  avgMin: number
+  byActivity: {
+    activity: ImmersiveVideoActivity
+    count: number
+    totalMin: number
+  }[]
+}
+
+/**
+ * Immersive Sessions in the list given, completed or interrupted, with their
+ * minutes per activity. `null` when there are none, so the card can hide.
+ */
+export function getImmersiveVideoSummary(
+  sessions: ExtendedPatientSession[],
+): ImmersiveVideoSummary | null {
+  const byActivity = new Map<
+    ImmersiveVideoActivity,
+    { count: number; totalMin: number }
+  >()
+  let count = 0
+  let totalMin = 0
+  for (const session of sessions) {
+    const video = session.sessionImmersiveVideo
+    if (!isImmersiveSession(session) || !video) continue
+    const minutes = getSessionDurationMinutes(session) ?? 0
+    count += 1
+    totalMin += minutes
+    const entry = byActivity.get(video.activity) ?? { count: 0, totalMin: 0 }
+    entry.count += 1
+    entry.totalMin += minutes
+    byActivity.set(video.activity, entry)
+  }
+  if (count === 0) return null
+  return {
+    count,
+    totalMin,
+    avgMin: totalMin / count,
+    byActivity: [...byActivity.entries()]
+      .map(([activity, entry]) => ({ activity, ...entry }))
+      .sort(
+        (a, b) => b.count - a.count || a.activity.localeCompare(b.activity),
+      ),
+  }
 }
 
 export type {

@@ -20,6 +20,7 @@ import SessionStatusBadge from './session-status-badge'
 import { cn } from '@/lib/utils'
 import SessionProgressDelta from './session-progress-delta'
 import SessionNotesIcon from './session-notes-icon'
+import SessionProgramCell from './session-program-cell'
 
 const NUMERIC_CELL_CLASS = 'text-right tabular-nums'
 
@@ -51,9 +52,7 @@ export const sessionsColumns: ColumnDef<SessionListRowModel>[] = [
     id: 'program',
     accessorFn: (row) => row.programName,
     header: () => <TranslatedText labelKey='sessionsTable.program' />,
-    cell: ({ row }) => (
-      <span className='text-sm'>{row.original.programName}</span>
-    ),
+    cell: ({ row }) => <SessionProgramCell row={row.original} />,
     enableSorting: false,
   },
   {
@@ -110,6 +109,9 @@ export const sessionsColumns: ColumnDef<SessionListRowModel>[] = [
     ),
     cell: ({ row }) => {
       const { exercisesDone, exercisesPlanned } = row.original
+      if (exercisesDone == null || exercisesPlanned == null) {
+        return <div className={NUMERIC_CELL_CLASS}>—</div>
+      }
       return (
         <div
           className={cn(
