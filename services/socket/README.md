@@ -57,6 +57,9 @@ SOCKET_URL=http://localhost:8081 ROOM_CODE=<deviceId> pnpm --filter @virtality/s
 
 # Never answer videoStop, to see the console's stop timeout
 SIM_IGNORE_VIDEO_STOP=1 ROOM_CODE=<deviceId> pnpm --filter @virtality/socket dev_sim
+
+# Play every video for 90 s, with videoPlaybackProgress each second and videoEnded at the end
+SIM_VIDEO_DURATION_SEC=90 pnpm --filter @virtality/socket dev_sim
 ```
 
 The library starts empty. Any `videoId` downloads in about 10 s with progress

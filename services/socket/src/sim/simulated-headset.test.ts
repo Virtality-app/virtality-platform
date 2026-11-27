@@ -294,3 +294,46 @@ describe('video library', () => {
     expect(create().handle(event, 'x')).toEqual([])
   })
 })
+
+describe('video playback', () => {
+  const progressOf = (emit: Emit) => JSON.parse(emit.payload as string)
+
+  it('reports no playback by default, like the headset build', () => {
+    const headset = createSimulatedHeadset()
+    headset.handle(VIDEO_EVENT.Play, 'vid-1')
+    expect(collect(headset, 0, 5000, 100)).toEqual([])
+  })
+
+  it('reports progress each second, then ends the video', () => {
+    const headset = createSimulatedHeadset({ videoDurationSec: 3 })
+    headset.handle(VIDEO_EVENT.Play, 'vid-1')
+    const emits = collect(headset, 0, 4000, 100)
+
+    expect(emits.map((e) => e.event)).toEqual([
+      VIDEO_EVENT.PlaybackProgress,
+      VIDEO_EVENT.PlaybackProgress,
+      VIDEO_EVENT.Ended,
+    ])
+    expect(progressOf(emits[0])).toEqual({
+      videoId: 'vid-1',
+      positionSec: 1,
+      durationSec: 3,
+    })
+    expect(progressOf(emits[1]).positionSec).toBe(2)
+  })
+
+  it('stops reporting once the video is stopped', () => {
+    const headset = createSimulatedHeadset({ videoDurationSec: 60 })
+    headset.handle(VIDEO_EVENT.Play, 'vid-1')
+    collect(headset, 0, 1500, 100)
+    headset.handle(VIDEO_EVENT.Stop, 'vid-1')
+    expect(collect(headset, 1600, 5000, 100)).toEqual([])
+  })
+
+  it('keeps playing when a stop names another video', () => {
+    const headset = createSimulatedHeadset({ videoDurationSec: 60 })
+    headset.handle(VIDEO_EVENT.Play, 'vid-1')
+    headset.handle(VIDEO_EVENT.Stop, 'vid-2')
+    expect(collect(headset, 0, 1500, 100)).toHaveLength(1)
+  })
+})

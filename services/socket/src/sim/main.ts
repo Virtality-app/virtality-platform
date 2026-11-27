@@ -20,9 +20,16 @@ const {
   SOCKET_URL = 'http://localhost:8081',
   SERVER_URL = 'http://localhost:8080',
   SIM_IGNORE_VIDEO_STOP,
+  SIM_VIDEO_DURATION_SEC,
 } = process.env
 
 const ignoreVideoStop = SIM_IGNORE_VIDEO_STOP === '1'
+const videoDurationSec = SIM_VIDEO_DURATION_SEC
+  ? Number(SIM_VIDEO_DURATION_SEC)
+  : undefined
+if (videoDurationSec !== undefined && !(videoDurationSec > 0)) {
+  throw new Error('SIM_VIDEO_DURATION_SEC must be a positive number of seconds')
+}
 const headsets: { close(): void }[] = []
 let pairingPoller: NodeJS.Timeout | undefined
 
@@ -32,6 +39,7 @@ function connect(roomCode: string) {
       socketUrl: SOCKET_URL,
       roomCode,
       ignoreVideoStop,
+      videoDurationSec,
     }),
   )
 }

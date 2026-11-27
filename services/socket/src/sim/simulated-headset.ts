@@ -7,6 +7,7 @@ import {
   type VideoDownloadFailedPayload,
   type VideoDownloadProgressPayload,
   type VideoLibraryStatePayload,
+  type VideoPlaybackProgressPayload,
 } from '@virtality/shared/types'
 
 export type Emit = { event: string; payload?: unknown }
@@ -22,6 +23,12 @@ export type SimulatedHeadsetOptions = {
   progressIntervalMs?: number
   /** Leave `videoStop` unanswered, so the console's stop timeout can be checked. */
   ignoreVideoStop?: boolean
+  /**
+   * Play every video for this many seconds, reporting `videoPlaybackProgress`
+   * each second and `videoEnded` at the end. The headset build sends neither
+   * yet, so by default the sim doesn't either.
+   */
+  videoDurationSec?: number
 }
 
 // ── Timing and sizes (the only place these live) ───────────────────────────
@@ -29,6 +36,8 @@ export type SimulatedHeadsetOptions = {
 export const REP_INTERVAL_MS = 750
 export const DOWNLOAD_DURATION_MS = 10_000
 export const PROGRESS_INTERVAL_MS = 500
+/** The headset contract allows at most one playback progress report a second. */
+export const PLAYBACK_PROGRESS_INTERVAL_MS = 1_000
 /** Every simulated bundle reports this size; the console draws from the catalog anyway. */
 const VIDEO_SIZE_BYTES = 256 * 1024 * 1024
 const FREE_BYTES = 64 * 1024 * 1024 * 1024
@@ -93,6 +102,13 @@ function idleProgram(): ProgramState {
   }
 }
 
+type Playback = {
+  videoId: string
+  /** Armed lazily by the first tick, like the rep timer. */
+  startedAt: number | null
+  lastProgressAt: number
+}
+
 type Download = {
   /** Armed lazily by the first tick, like the rep timer. */
   startedAt: number | null
@@ -116,6 +132,9 @@ export function createSimulatedHeadset(
   const downloadDurationMs = options.downloadDurationMs ?? DOWNLOAD_DURATION_MS
   const progressIntervalMs = options.progressIntervalMs ?? PROGRESS_INTERVAL_MS
   const ignoreVideoStop = options.ignoreVideoStop ?? false
+  const videoDurationSec = options.videoDurationSec
+
+  let playback: Playback | null = null
 
   let program = idleProgram()
   /** Ids the headset holds as `ready`. Starts empty; nothing is seeded. */
@@ -274,9 +293,11 @@ export function createSimulatedHeadset(
           { event: VIDEO_EVENT.DeleteComplete, payload },
         ]
       case VIDEO_EVENT.Play:
+        playback = { videoId: payload, startedAt: null, lastProgressAt: 0 }
         return [{ event: VIDEO_EVENT.PlayAck, payload }]
       case VIDEO_EVENT.Stop:
         if (ignoreVideoStop) return []
+        if (playback?.videoId === payload) playback = null
         return [{ event: VIDEO_EVENT.StopAck, payload }]
       default:
         return []
@@ -318,6 +339,31 @@ export function createSimulatedHeadset(
     return emits
   }
 
+  function tickPlayback(now: number): Emit[] {
+    if (!playback || videoDurationSec == null) return []
+    if (playback.startedAt === null) {
+      playback.startedAt = now
+      playback.lastProgressAt = now
+      return []
+    }
+
+    const elapsedMs = now - playback.startedAt
+    if (elapsedMs >= videoDurationSec * 1000) {
+      playback = null
+      return [{ event: VIDEO_EVENT.Ended }]
+    }
+    if (now - playback.lastProgressAt < PLAYBACK_PROGRESS_INTERVAL_MS) return []
+
+    playback.lastProgressAt = now
+    return [
+      jsonEmit(VIDEO_EVENT.PlaybackProgress, {
+        videoId: playback.videoId,
+        positionSec: Math.floor(elapsedMs / 1000),
+        durationSec: videoDurationSec,
+      } satisfies VideoPlaybackProgressPayload),
+    ]
+  }
+
   // ── Public API ───────────────────────────────────────────────────────────
 
   function handle(event: string, rawPayload?: unknown): Emit[] {
@@ -329,7 +375,7 @@ export function createSimulatedHeadset(
   }
 
   function tick(now: number): Emit[] {
-    return [...tickProgram(now), ...tickDownloads(now)]
+    return [...tickProgram(now), ...tickDownloads(now), ...tickPlayback(now)]
   }
 
   return { handle, tick }

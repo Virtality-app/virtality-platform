@@ -8,6 +8,7 @@ export type HeadsetConnectionOptions = {
   socketUrl: string
   roomCode: string
   ignoreVideoStop: boolean
+  videoDurationSec?: number
 }
 
 /** Joins `roomCode` as the `vr` peer and answers events with a Simulated Headset. */
@@ -15,12 +16,16 @@ export function connectSimulatedHeadset({
   socketUrl,
   roomCode,
   ignoreVideoStop,
+  videoDurationSec,
 }: HeadsetConnectionOptions) {
   const tag = `[sim ${roomCode}]`
   const socket = io(socketUrl, {
     query: { roomCode, role: ROOM_PEER_ROLE.Vr },
   })
-  const headset = createSimulatedHeadset({ ignoreVideoStop })
+  const headset = createSimulatedHeadset({
+    ignoreVideoStop,
+    videoDurationSec,
+  })
 
   function send(emits: Emit[]) {
     for (const { event, payload } of emits) {
