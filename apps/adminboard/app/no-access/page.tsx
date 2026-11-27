@@ -1,12 +1,7 @@
-import { Fraunces } from 'next/font/google'
 import { ShieldX } from 'lucide-react'
 import { BackToConsoleButton, BackToWebsiteButton } from './no-access-cta'
 import { cn } from '@/lib/utils'
-
-const fraunces = Fraunces({
-  subsets: ['latin'],
-  display: 'swap',
-})
+import { fraunces } from '@/app/fonts/fraunces'
 
 export default function NoAccessPage() {
   return (

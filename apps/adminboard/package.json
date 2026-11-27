@@ -34,6 +34,7 @@
     "clsx": "2.1.1",
     "cmdk": "1.1.1",
     "date-fns": "4.1.0",
+    "geist": "1.9.2",
     "lodash.capitalize": "4.2.1",
     "lodash.startcase": "4.4.0",
     "lucide-react": "0.487.0",

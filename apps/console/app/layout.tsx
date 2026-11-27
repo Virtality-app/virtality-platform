@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { GeistSans } from 'geist/font/sans'
+import { GeistMono } from 'geist/font/mono'
 import { cookies, headers } from 'next/headers'
 import '@/app/globals.css'
 import RootProvider from '@/context/root-provider'
@@ -8,16 +9,6 @@ import { resolveRequestLanguage } from '@/i18n/request-language'
 import { loadServerTranslations } from '@/i18n/server-translations'
 import { settings } from '@/i18n/settings'
 import { cn } from '@/lib/utils'
-
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-})
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-})
 
 export const metadata: Metadata = {
   title: 'Virtality App',
@@ -39,8 +30,8 @@ export default async function RootLayout({
     <html lang={language} suppressHydrationWarning>
       <body
         className={cn(
-          geistSans.variable,
-          geistMono.variable,
+          GeistSans.variable,
+          GeistMono.variable,
           'min-h-svh antialiased dark:bg-zinc-950',
         )}
       >

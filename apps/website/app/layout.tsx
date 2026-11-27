@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
-import { DM_Sans, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
+import { dmSans, jetbrainsMono } from './fonts/fonts'
 import { ThemeProvider } from '@/context/ThemeProvider'
 import Navbar from '@/components/layout/navbar'
 import { Toaster } from 'sonner'
@@ -20,18 +20,6 @@ import {
   SITE_NAME,
   TITLE_TEMPLATE,
 } from '@/lib/page-metadata'
-
-const dmSans = DM_Sans({
-  variable: '--font-dm-sans',
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-})
-
-const jetbrainsMono = JetBrains_Mono({
-  variable: '--font-jetbrains-mono',
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
-})
 
 const websiteURL = getWebsiteUrl()
 const baseURL = getServerUrl()

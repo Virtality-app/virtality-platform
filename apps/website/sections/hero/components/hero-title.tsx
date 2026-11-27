@@ -4,7 +4,6 @@ import Image from 'next/image'
 import { Button } from '@virtality/ui/components/button'
 import { ArrowRight, Activity } from 'lucide-react'
 import { useEffect, useRef } from 'react'
-import { Fraunces } from 'next/font/google'
 import {
   HERO_BADGE_LABEL,
   HERO_HEADLINE,
@@ -13,13 +12,8 @@ import {
 } from '../content'
 import { scrollToFinalCta } from '@/lib/scroll-to-cta'
 import { cn, splitText } from '@/lib/utils'
+import { fraunces } from '@/app/fonts/fonts'
 import { animate, stagger } from 'motion/react'
-
-const fraunces = Fraunces({
-  subsets: ['latin'],
-  weight: ['500', '600'],
-  style: ['normal', 'italic'],
-})
 
 type HeroTitleProps = {
   align?: 'center' | 'left'
