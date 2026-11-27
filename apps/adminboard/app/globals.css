@@ -86,7 +86,7 @@
   --card-foreground: oklch(0.17 0.015 255);
   --popover: oklch(0.995 0.003 255);
   --popover-foreground: oklch(0.17 0.015 255);
-  --my-primary: #eab82e;
+  --my-primary: #1467c2; /* Control Blue, 5.6:1 with white text */
   --primary: oklch(0.205 0 0);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0.004 255);
@@ -121,7 +121,7 @@
   --card-foreground: oklch(0.97 0.004 255);
   --popover: oklch(0.18 0.012 255);
   --popover-foreground: oklch(0.97 0.004 255);
-  --my-primary: #d19e15;
+  --my-primary: #73b1ff; /* Control Blue (dark), 8:1 with zinc-900 text */
   --primary: oklch(0.922 0 0);
   --primary-foreground: oklch(0.205 0 0);
   --secondary: oklch(0.24 0.015 255);
