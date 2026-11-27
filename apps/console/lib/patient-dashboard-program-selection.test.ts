@@ -142,7 +142,22 @@ describe('resolveRecentSessionProgramId', () => {
     createdAt: string,
     sourceReusableProgramId: string | null,
     status: 'ACTIVE' | 'COMPLETED' | 'INTERRUPTED' = 'COMPLETED',
-  ) => ({ createdAt: new Date(createdAt), sourceReusableProgramId, status })
+    kind: 'EXERCISE' | 'IMMERSIVE_VIDEO' = 'EXERCISE',
+  ) => ({
+    createdAt: new Date(createdAt),
+    sourceReusableProgramId,
+    status,
+    kind,
+  })
+
+  it('skips immersive video sessions', () => {
+    expect(
+      resolveRecentSessionProgramId([
+        session('2026-10-01', 'program-old'),
+        session('2026-10-20', null, 'COMPLETED', 'IMMERSIVE_VIDEO'),
+      ]),
+    ).toBe('program-old')
+  })
 
   it("returns the latest finished session's source program", () => {
     expect(

@@ -77,7 +77,7 @@ An exercise and settings entry that belongs to a **Reusable Program**. It repres
 _Avoid_: Preset exercise, session exercise, exercise settings row
 
 **Last Used Program**:
-The most recently selected **Reusable Program** for a patient, used only as a convenience default when returning to that patient's dashboard. Remembered per browser; when the browser has none, the dashboard falls back to the source **Reusable Program** of the patient's latest completed or **Interrupted Session** (none if that session was a **Quick Start**).
+The most recently selected **Reusable Program** for a patient, used only as a convenience default when returning to that patient's dashboard. Remembered per browser; when the browser has none, the dashboard falls back to the source **Reusable Program** of the patient's latest completed or **Interrupted Session** that ran exercises (none if that session was a **Quick Start**; an **Immersive Session** never counts).
 _Avoid_: Current program, assigned program, patient program
 
 **Program Library**:
@@ -249,6 +249,10 @@ _Avoid_: Missing, orphaned, unknown video, unpublished (as physio-facing copy)
 **Session Time Limit**:
 An optional length, picked by the physio on the patient dashboard, after which the console sends `videoStop` for the running **Immersive Video**. It counts from the play command when picked before play, or from the moment it is picked when none was set mid-session, pauses included; the card's bar shows that count from 0:00 and is hidden while no limit is set. It fires once per count and waits for the headset to be in the room and holding a video. Changing a set limit keeps the running count, so it cannot be changed to a length the count has already reached; clearing it and picking again starts a new count. It is console-only: the headset is not told about it.
 _Avoid_: Auto-stop timer (in copy), video duration, playback limit
+
+**Immersive Session**:
+A patient session of kind `IMMERSIVE_VIDEO`: one **Immersive Video** played for one patient. The console saves it with no dialog. It starts when the headset confirms play (`videoPlayAck`) and ends on `videoEnded` (`ENDED`), on `videoStopAck` after the physio's Stop (`STOPPED`) or after the **Session Time Limit** (`TIME_LIMIT`), or when the headset is lost (`INTERRUPTED`, kept in history like an **Interrupted Session**). Its duration runs from play-ack to end, pauses included; video watched is the last reported `positionSec`. The video's title, activity and length are copied at start, so the session outlives the video leaving the catalog. A console that reloads mid-video carries on with the open session instead of starting another. It has no NPRS, notes or exercises, and the `sessionNumber` sent to the headset doesn't count it.
+_Avoid_: Video run, video session (in code), watch
 
 ### Access and billing
 

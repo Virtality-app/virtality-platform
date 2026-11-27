@@ -27,19 +27,20 @@ export function resolveLastUsedProgram(
 }
 
 /**
- * The source program of the patient's latest finished session, or null when
- * that session was a Quick Start. Stands in for the Last Used Program when
+ * The source program of the patient's latest finished exercise session, or
+ * null when that session was a Quick Start. Immersive Sessions have no
+ * program, so they never count. Stands in for the Last Used Program when
  * this browser has none remembered (another computer, cleared storage).
  */
 export function resolveRecentSessionProgramId<
   T extends Pick<
     PatientSession,
-    'status' | 'createdAt' | 'sourceReusableProgramId'
+    'status' | 'createdAt' | 'sourceReusableProgramId' | 'kind'
   >,
 >(sessions: T[] | undefined): string | null {
   let latest: T | null = null
   for (const session of sessions ?? []) {
-    if (session.status === 'ACTIVE') continue
+    if (session.status === 'ACTIVE' || session.kind !== 'EXERCISE') continue
     if (
       !latest ||
       new Date(session.createdAt).getTime() >

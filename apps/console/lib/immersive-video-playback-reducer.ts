@@ -14,6 +14,18 @@ export type PendingPlayMarker = { videoId: string; kind: 'play' }
 
 export type PendingStopMarker = { videoId: string }
 
+/**
+ * How the last running video left the headset: it finished, the headset
+ * confirmed a stop, or the headset was lost. A new object each time, so a
+ * watcher can tell one end from the next.
+ */
+export type ImmersivePlaybackLastEnd = {
+  videoId: string
+  reason: 'ended' | 'stopped' | 'lost'
+  /** Last reported position; `null` when the headset never reported one. */
+  positionSec: number | null
+}
+
 export type ImmersiveConfirmIntent = Extract<
   HeadsetDidNotConfirmIntent,
   'play' | 'stop'
@@ -33,6 +45,7 @@ export type ImmersivePlaybackState = {
   reattaching: boolean
   lastProgress: VideoPlaybackProgressPayload | null
   lastProgressAt: number | null
+  lastEnd: ImmersivePlaybackLastEnd | null
 }
 
 export type ImmersivePlaybackAction =
@@ -62,6 +75,7 @@ export const initialImmersivePlaybackState: ImmersivePlaybackState = {
   reattaching: false,
   lastProgress: null,
   lastProgressAt: null,
+  lastEnd: null,
 }
 
 export function isPlayingOrPaused(status: ImmersivePlaybackStatus): boolean {
@@ -72,6 +86,35 @@ export function isImmersivePlaybackBlocking(
   status: ImmersivePlaybackStatus,
 ): boolean {
   return status === 'Starting' || isPlayingOrPaused(status)
+}
+
+/**
+ * The end of the video the headset holds, or `null` when none was running
+ * (Idle, or Starting before the play-ack). Progress is the only source of
+ * position, so a video that never reported one ends with `null`.
+ */
+function endOfRunningVideo(
+  state: ImmersivePlaybackState,
+  reason: ImmersivePlaybackLastEnd['reason'],
+): ImmersivePlaybackLastEnd | null {
+  if (!isPlayingOrPaused(state.status) || state.videoId == null) return null
+  const reported = state.durationSec > 0
+  return {
+    videoId: state.videoId,
+    reason,
+    positionSec: !reported
+      ? null
+      : reason === 'ended'
+        ? state.durationSec
+        : state.positionSec,
+  }
+}
+
+function withLastEnd(
+  state: ImmersivePlaybackState,
+  lastEnd: ImmersivePlaybackLastEnd | null,
+): ImmersivePlaybackState {
+  return lastEnd ? { ...state, lastEnd } : state
 }
 
 function toIdle(
@@ -182,26 +225,35 @@ export function reduceImmersivePlayback(
           confirmIntent: 'play',
         }
       }
+      // The status stays Playing/Paused so a returning headset can
+      // re-attach, but the run on record ends here.
+      const lastEnd = endOfRunningVideo(state, 'lost')
       if (state.pendingStop != null) {
-        return {
-          ...state,
-          pendingStop: null,
-          reattaching: false,
-          confirmReason: 'disconnected',
-          confirmIntent: 'stop',
-        }
+        return withLastEnd(
+          {
+            ...state,
+            pendingStop: null,
+            reattaching: false,
+            confirmReason: 'disconnected',
+            confirmIntent: 'stop',
+          },
+          lastEnd,
+        )
       }
-      return { ...state, reattaching: false }
+      return withLastEnd({ ...state, reattaching: false }, lastEnd)
     }
     case 'roomComplete':
       return { ...state, reattaching: true }
     case 'reattachTimeout': {
       if (!state.reattaching) return state
-      return toIdle(state, {
-        confirmReason: state.confirmReason,
-        lastProgress: state.lastProgress,
-        lastProgressAt: state.lastProgressAt,
-      })
+      return withLastEnd(
+        toIdle(state, {
+          confirmReason: state.confirmReason,
+          lastProgress: state.lastProgress,
+          lastProgressAt: state.lastProgressAt,
+        }),
+        endOfRunningVideo(state, 'lost'),
+      )
     }
     case 'progress': {
       const next: ImmersivePlaybackState = {
@@ -229,21 +281,27 @@ export function reduceImmersivePlayback(
       return state
     case 'ended':
       if (!isImmersivePlaybackBlocking(state.status)) return state
-      return toIdle(state, {
-        confirmReason: state.confirmReason,
-        lastProgress: state.lastProgress,
-        lastProgressAt: state.lastProgressAt,
-      })
+      return withLastEnd(
+        toIdle(state, {
+          confirmReason: state.confirmReason,
+          lastProgress: state.lastProgress,
+          lastProgressAt: state.lastProgressAt,
+        }),
+        endOfRunningVideo(state, 'ended'),
+      )
     case 'stopAck':
       // `videoStop` honoured for the named video; a stale ack for another
       // video (the physio already started the next one) changes nothing.
       if (!isImmersivePlaybackBlocking(state.status)) return state
       if (state.videoId !== action.videoId) return state
-      return toIdle(state, {
-        confirmReason: state.confirmReason,
-        lastProgress: state.lastProgress,
-        lastProgressAt: state.lastProgressAt,
-      })
+      return withLastEnd(
+        toIdle(state, {
+          confirmReason: state.confirmReason,
+          lastProgress: state.lastProgress,
+          lastProgressAt: state.lastProgressAt,
+        }),
+        endOfRunningVideo(state, 'stopped'),
+      )
     case 'dismissConfirm':
       return { ...state, confirmReason: null }
     default:

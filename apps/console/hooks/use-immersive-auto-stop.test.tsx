@@ -63,4 +63,26 @@ describe('useImmersiveAutoStop', () => {
     })
     expect(sendStop).not.toHaveBeenCalled()
   })
+
+  it('reports that it fired until the next count starts', () => {
+    const { result, rerender } = renderHook(useImmersiveAutoStop, {
+      initialProps: input({ elapsedSec: 599 }),
+    })
+    expect(result.current.hasFired()).toBe(false)
+    rerender(input({ elapsedSec: 600 }))
+    expect(result.current.hasFired()).toBe(true)
+    // The stop-ack lands: the session returns to Idle and the count clears.
+    rerender(input({ elapsedSec: null, status: 'Idle' }))
+    expect(result.current.hasFired()).toBe(true)
+    rerender(input({ elapsedSec: 0 }))
+    expect(result.current.hasFired()).toBe(false)
+  })
+
+  it('does not report a fire when the physio stops first', () => {
+    const { result, rerender } = renderHook(useImmersiveAutoStop, {
+      initialProps: input({ elapsedSec: 120 }),
+    })
+    rerender(input({ elapsedSec: null, status: 'Idle' }))
+    expect(result.current.hasFired()).toBe(false)
+  })
 })

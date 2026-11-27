@@ -97,7 +97,12 @@ vi.mock('tinybase/ui-react', () => ({
 }))
 vi.mock('@virtality/react-query', () => ({
   usePatient: () => ({ data: { language: 'en' } }),
-  usePatientSessions: () => ({ data: [{ id: 'previous-session' }] }),
+  usePatientSessions: () => ({
+    data: [
+      { id: 'previous-session', kind: 'EXERCISE' },
+      { id: 'video-session', kind: 'IMMERSIVE_VIDEO' },
+    ],
+  }),
   useExercise: () => ({ data: [] }),
 }))
 

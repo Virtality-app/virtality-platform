@@ -56,7 +56,10 @@ const useControlPanel = () => {
   })
   const { data: patient } = usePatient({ patientId })
   const { data: defaultExercises } = useExercise()
-  const sessionNumber = patientSessions?.length ?? 0
+  // Immersive Sessions don't count, so the number doesn't jump after a video.
+  const sessionNumber =
+    patientSessions?.filter((session) => session.kind === 'EXERCISE').length ??
+    0
   const {
     programState,
     selectedMap,

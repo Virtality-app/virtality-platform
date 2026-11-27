@@ -22,6 +22,7 @@ const finished = (createdAt: string, programId: string | null) => ({
   status: 'COMPLETED',
   createdAt: new Date(createdAt),
   sourceReusableProgramId: programId,
+  kind: 'EXERCISE',
 })
 
 beforeEach(() => {

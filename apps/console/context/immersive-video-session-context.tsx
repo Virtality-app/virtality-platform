@@ -15,6 +15,7 @@ import {
 import { usePatientDashboard } from '@/context/patient-dashboard-context'
 import { useHeadsetLibrary } from '@/hooks/use-headset-library'
 import { useImmersiveAutoStop } from '@/hooks/use-immersive-auto-stop'
+import { useImmersiveSessionRecord } from '@/hooks/use-immersive-session-record'
 import { useImmersiveSessionTimer } from '@/hooks/use-immersive-session-timer'
 import { useImmersiveTimeLimit } from '@/hooks/use-immersive-time-limit'
 import { useImmersiveVideoPlayback } from '@/hooks/use-immersive-video-playback'
@@ -61,7 +62,7 @@ export function ImmersiveVideoSessionProvider({
 }: {
   children: ReactNode
 }) {
-  const { state } = usePatientDashboard()
+  const { state, patientId } = usePatientDashboard()
   const { selectedDevice, selectedMode } = state
   const { connectionError, connectionState } = useSocketConnection({
     device: selectedDevice,
@@ -94,12 +95,19 @@ export function ImmersiveVideoSessionProvider({
   const { stopAfterMin, setStopAfterMin, timeLimitElapsedSec } =
     useImmersiveTimeLimit(sessionElapsedSec)
 
-  useImmersiveAutoStop({
+  const autoStop = useImmersiveAutoStop({
     elapsedSec: timeLimitElapsedSec,
     stopAfterMin,
     status: playback.state.status,
     commandsEnabled: library.roomComplete && !replaced,
     sendStop: playback.sendStop,
+  })
+
+  useImmersiveSessionRecord({
+    state: playback.state,
+    patientId,
+    roomCode: selectedDevice?.data.deviceId ?? undefined,
+    timeLimitFired: autoStop.hasFired,
   })
 
   const presenceByDeviceId = useVrPresencePolling({

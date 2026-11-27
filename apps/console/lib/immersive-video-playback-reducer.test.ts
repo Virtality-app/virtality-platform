@@ -247,4 +247,116 @@ describe('reduceImmersivePlayback', () => {
     expect(left.pendingPlay).toBeNull()
     expect(left.status).toBe('Idle')
   })
+
+  describe('lastEnd', () => {
+    const withProgress = () =>
+      reduceImmersivePlayback(playingTrail(), {
+        type: 'progress',
+        payload: progress({ positionSec: 42, durationSec: 180 }),
+        now: 1,
+      })
+
+    it('starts empty', () => {
+      expect(initialImmersivePlaybackState.lastEnd).toBeNull()
+      expect(playingTrail().lastEnd).toBeNull()
+    })
+
+    it('records a finished video at its full length', () => {
+      const ended = reduceImmersivePlayback(withProgress(), { type: 'ended' })
+      expect(ended.lastEnd).toEqual({
+        videoId: 'trail',
+        reason: 'ended',
+        positionSec: 180,
+      })
+    })
+
+    it('records a confirmed stop at the last reported position', () => {
+      const stopped = reduceImmersivePlayback(withProgress(), {
+        type: 'stopAck',
+        videoId: 'trail',
+      })
+      expect(stopped.lastEnd).toEqual({
+        videoId: 'trail',
+        reason: 'stopped',
+        positionSec: 42,
+      })
+    })
+
+    it('has no position when the headset never reported one', () => {
+      const stopped = reduceImmersivePlayback(playingTrail(), {
+        type: 'stopAck',
+        videoId: 'trail',
+      })
+      expect(stopped.lastEnd).toEqual({
+        videoId: 'trail',
+        reason: 'stopped',
+        positionSec: null,
+      })
+    })
+
+    it('records the headset leaving mid-video and keeps the status', () => {
+      const left = reduceImmersivePlayback(withProgress(), {
+        type: 'memberLeft',
+      })
+      expect(left.status).toBe('Playing')
+      expect(left.lastEnd).toEqual({
+        videoId: 'trail',
+        reason: 'lost',
+        positionSec: 42,
+      })
+    })
+
+    it('records the headset leaving while a stop is pending', () => {
+      const stopping = reduceImmersivePlayback(withProgress(), {
+        type: 'stopSent',
+      })
+      const left = reduceImmersivePlayback(stopping, { type: 'memberLeft' })
+      expect(left.lastEnd?.reason).toBe('lost')
+    })
+
+    it('records a re-attach that finds no video', () => {
+      const waiting = reduceImmersivePlayback(withProgress(), {
+        type: 'roomComplete',
+      })
+      const idle = reduceImmersivePlayback(waiting, { type: 'reattachTimeout' })
+      expect(idle.status).toBe('Idle')
+      expect(idle.lastEnd?.reason).toBe('lost')
+    })
+
+    it('records nothing when no video was running', () => {
+      const starting = reduceImmersivePlayback(initialImmersivePlaybackState, {
+        type: 'playSent',
+        videoId: 'trail',
+      })
+      expect(
+        reduceImmersivePlayback(starting, { type: 'memberLeft' }).lastEnd,
+      ).toBeNull()
+      expect(
+        reduceImmersivePlayback(starting, { type: 'ended' }).lastEnd,
+      ).toBeNull()
+      const waiting = reduceImmersivePlayback(initialImmersivePlaybackState, {
+        type: 'roomComplete',
+      })
+      expect(
+        reduceImmersivePlayback(waiting, { type: 'reattachTimeout' }).lastEnd,
+      ).toBeNull()
+    })
+
+    it('ignores a stale stop-ack for another video', () => {
+      const stale = reduceImmersivePlayback(withProgress(), {
+        type: 'stopAck',
+        videoId: 'lake',
+      })
+      expect(stale.lastEnd).toBeNull()
+    })
+
+    it('keeps the last end through the next play', () => {
+      const ended = reduceImmersivePlayback(withProgress(), { type: 'ended' })
+      const next = reduceImmersivePlayback(ended, {
+        type: 'playSent',
+        videoId: 'lake',
+      })
+      expect(next.lastEnd).toBe(ended.lastEnd)
+    })
+  })
 })

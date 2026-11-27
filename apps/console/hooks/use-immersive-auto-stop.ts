@@ -1,14 +1,18 @@
 'use client'
 
-import { useEffect, useEffectEvent, useRef } from 'react'
+import { useCallback, useEffect, useEffectEvent, useRef } from 'react'
 import { shouldAutoStopImmersive } from '@/lib/immersive-video-auto-stop'
 import type { ImmersivePlaybackStatus } from '@/lib/immersive-video-playback-reducer'
 
 /**
  * Sends `videoStop` once per session when the **Session Time Limit** is
  * reached. If the headset ignores it, the physio's Stop button still works;
- * the hook does not resend. The clock going back to `null` (a new session, or
- * the limit cleared) re-arms it.
+ * the hook does not resend. A new count (the next session, or a limit picked
+ * again after clearing it) re-arms it.
+ *
+ * `hasFired()` says whether this count's stop has gone out. It stays true
+ * after the count stops, so the `videoStopAck` that ends the session can still
+ * be told apart from the physio's own Stop.
  */
 export function useImmersiveAutoStop(input: {
   elapsedSec: number | null
@@ -30,7 +34,7 @@ export function useImmersiveAutoStop(input: {
   const counting = elapsedSec != null
 
   useEffect(() => {
-    if (!counting) firedRef.current = false
+    if (counting) firedRef.current = false
   }, [counting])
 
   useEffect(() => {
@@ -38,4 +42,7 @@ export function useImmersiveAutoStop(input: {
     firedRef.current = true
     sendStop()
   }, [due])
+
+  const hasFired = useCallback(() => firedRef.current, [])
+  return { hasFired }
 }
