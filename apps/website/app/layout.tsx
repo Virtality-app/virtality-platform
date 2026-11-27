@@ -64,11 +64,13 @@ export default function RootLayout({
     <html
       lang='en'
       suppressHydrationWarning
-      className='scroll-pt-15 scroll-smooth'
+      className={cn(
+        dmSans.variable,
+        jetbrainsMono.variable,
+        'scroll-pt-15 scroll-smooth',
+      )}
     >
-      <body
-        className={cn(dmSans.variable, jetbrainsMono.variable, 'antialiased')}
-      >
+      <body className='antialiased'>
         <ThemeProvider
           storageKey='website-theme'
           attribute='class'
