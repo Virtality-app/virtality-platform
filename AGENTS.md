@@ -40,16 +40,16 @@ Five canonical triage roles mapped to GitHub label strings. See `docs/agents/tri
 
 Multi-context monorepo — read `CONTEXT-MAP.md` at the repo root, then the relevant per-context `CONTEXT.md`. System-wide ADRs in `docs/adr/`. See `docs/agents/domain.md`.
 
-### Product context (PRODUCT.md)
+### Product and design context (PRODUCT.md, DESIGN.md)
 
-Each app has its own `PRODUCT.md`, the Impeccable product record: users, purpose, constraints, brand, evidence. Read the one for the app you are changing before UI or copy work. Impeccable loads the nearest file only, so an app file replaces the root file. The two are not merged.
+Each app has its own `PRODUCT.md` (the Impeccable product record: users, purpose, constraints, brand, evidence) and its own `DESIGN.md` (its visual system: tokens, type, components, do's and don'ts). Before UI or copy work, read both files for the app you are changing. Impeccable loads the nearest file only, so an app file replaces the root file. The two are not merged.
 
-| Scope                                                    | Product record               |
-| -------------------------------------------------------- | ---------------------------- |
-| `apps/console/`                                          | `apps/console/PRODUCT.md`    |
-| `apps/adminboard/`                                       | `apps/adminboard/PRODUCT.md` |
-| `apps/website/`                                          | `apps/website/PRODUCT.md`    |
-| Shared core, `packages/ui/`, other non-app UI workspaces | `PRODUCT.md` (root)          |
+| Scope                                                    | Product record               | Design system               |
+| -------------------------------------------------------- | ---------------------------- | --------------------------- |
+| `apps/console/`                                          | `apps/console/PRODUCT.md`    | `apps/console/DESIGN.md`    |
+| `apps/adminboard/`                                       | `apps/adminboard/PRODUCT.md` | `apps/adminboard/DESIGN.md` |
+| `apps/website/`                                          | `apps/website/PRODUCT.md`    | `apps/website/DESIGN.md`    |
+| Shared core, `packages/ui/`, other non-app UI workspaces | `PRODUCT.md` (root)          | none                        |
 
 A fact that holds for every app goes in the root file, with a short version repeated in each app file. A fact that holds for one app goes only in that app's file. Never invent evidence (metrics, testimonials, clinics, press). The confirmed list is in `apps/website/PRODUCT.md`.
 
